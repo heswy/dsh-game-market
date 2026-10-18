@@ -317,32 +317,113 @@ export const CSS = `
   animation: dgm-spin 900ms linear infinite;
 }
 
-.dgm-chip {
+.dgm-game-hint {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 28px;
-  max-width: 280px;
-  margin-inline-end: 8px;
-  padding: 0 10px;
-  border: 1px solid var(--dgm-border);
-  border-radius: var(--dgm-radius);
-  background: transparent;
-  color: var(--dgm-fg-secondary);
+  justify-content: center;
+}
+
+/* Cute, animated waiting hint that lives in the composer dock. */
+.dgm-hint-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  max-width: min(360px, 62vw);
+  padding: 0 13px 0 9px;
+  border: 1px solid color-mix(in srgb, var(--dgm-brand) 30%, var(--dgm-border));
+  border-radius: 999px;
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--dgm-brand) 14%, var(--dgm-overlay)), var(--dgm-overlay) 64%);
+  color: var(--dgm-fg);
   font: inherit;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 16px;
   cursor: pointer;
-  animation: dgm-chip-in 160ms ease-out;
-  transition: background-color 120ms ease-out, color 120ms ease-out;
+  box-shadow:
+    0 4px 14px color-mix(in srgb, var(--dgm-brand) 14%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  animation: dgm-hint-enter 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
 }
-.dgm-chip::after { content: ''; position: absolute; inset: -2px; border-radius: 10px; }
-.dgm-chip:hover { background: var(--dgm-hover); color: var(--dgm-fg); }
-.dgm-chip:active { background: var(--dgm-hover); }
-.dgm-chip:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 2px; }
-.dgm-chip-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dgm-hint-pill::after { content: ''; position: absolute; inset: -2px; border-radius: 999px; }
+.dgm-hint-pill:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 7px 18px color-mix(in srgb, var(--dgm-brand) 20%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+.dgm-hint-pill:active { transform: translateY(0) scale(0.985); }
+.dgm-hint-pill:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 2px; }
+.dgm-hint-pill[data-status='waiting'] {
+  border-color: color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d97706) 42%, var(--dgm-border));
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d97706) 16%, var(--dgm-overlay)), var(--dgm-overlay) 66%);
+  animation: dgm-hint-enter 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2), dgm-hint-glow 1.9s ease-in-out infinite;
+}
+.dgm-hint-pill[data-status='resume'] {
+  border-color: transparent;
+  background: var(--dgm-brand);
+  color: #fff;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--dgm-brand) 34%, transparent);
+}
+.dgm-hint-pill[data-status='resume'] .dgm-hint-icon { color: currentColor; }
+.dgm-hint-pill[data-status='resume'] .dgm-hint-spark { background: #fef3c7; }
+.dgm-hint-icon {
+  display: inline-flex;
+  flex: none;
+  color: var(--dgm-brand);
+  animation: dgm-hint-bob 2.8s ease-in-out infinite;
+  transform-origin: 50% 60%;
+}
+.dgm-hint-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dgm-hint-spark {
+  position: absolute;
+  top: 3px;
+  right: 11px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--dsw-alias-state-warn-primary, #f59e0b);
+  opacity: 0;
+  animation: dgm-hint-twinkle 2.4s ease-in-out infinite;
+}
+.dgm-hint-shine {
+  position: absolute;
+  inset: 1px;
+  border-radius: 999px;
+  background: linear-gradient(100deg, transparent 18%, rgba(255, 255, 255, 0.32) 45%, transparent 62%);
+  opacity: 0;
+  pointer-events: none;
+  animation: dgm-hint-shine 4.6s ease-in-out infinite;
+}
+
+@keyframes dgm-hint-enter {
+  from { opacity: 0; transform: translateY(5px) scale(0.94); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes dgm-hint-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-2px) rotate(2deg); }
+}
+@keyframes dgm-hint-glow {
+  0%, 100% { box-shadow: 0 4px 14px color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d97706) 16%, transparent); }
+  50% { box-shadow: 0 6px 20px color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d97706) 34%, transparent); }
+}
+@keyframes dgm-hint-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.6); }
+  40% { opacity: 0.95; transform: scale(1); }
+  70% { opacity: 0.35; transform: scale(0.8); }
+}
+@keyframes dgm-hint-shine {
+  0%, 55% { opacity: 0; transform: translateX(-40%); }
+  70% { opacity: 0.55; }
+  85%, 100% { opacity: 0; transform: translateX(40%); }
+}
+
 .dgm-chip-dot {
   width: 5px;
   height: 5px;
@@ -350,9 +431,16 @@ export const CSS = `
   border-radius: 50%;
   background: var(--dgm-fg-secondary);
 }
-.dgm-chip[data-status='waiting'] .dgm-chip-dot { background: var(--dgm-brand); box-shadow: 0 0 0 2px var(--dgm-bg), 0 0 0 3px var(--dgm-brand); }
+.dgm-hint-pill[data-status='waiting'] .dgm-chip-dot { background: var(--dsw-alias-state-warn-primary, #d97706); box-shadow: 0 0 0 2px var(--dgm-bg), 0 0 0 3px var(--dsw-alias-state-warn-primary, #d97706); }
 
-.dgm-chip-anchor { position: relative; display: inline-flex; align-items: center; }
+@media (prefers-reduced-motion: reduce) {
+  .dgm-hint-pill,
+  .dgm-hint-pill[data-status='waiting'],
+  .dgm-hint-icon,
+  .dgm-hint-spark,
+  .dgm-hint-shine { animation: none; }
+  .dgm-hint-shine { display: none; }
+}
 
 .dgm-menu,
 .dgm-popover {
@@ -658,10 +746,6 @@ export const CSS = `
 .dgm-sidebar-status { pointer-events: none; }
 .dgm-sidebar-dot { stroke: var(--dgm-bg, var(--dsw-alias-bg-base, #ffffff)); }
 
-@keyframes dgm-chip-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 @keyframes dgm-menu-in {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
@@ -704,7 +788,7 @@ export const CSS = `
   .dgm-grid { grid-template-columns: 1fr; }
   .dgm-runtime-controls { left: 12px; right: 12px; }
   .dgm-presence { right: 16px; bottom: 16px; }
-  .dgm-chip { max-width: 220px; }
+  .dgm-hint-pill { max-width: 78vw; }
   .dgm-tab { padding: 0 8px; }
 }
 
@@ -719,7 +803,7 @@ export const CSS = `
   .dgm-whale-btn[data-state='running'] .dgm-whale,
   .dgm-whale-btn[data-state='waiting-user'] .dgm-whale-halo { animation: none !important; }
   .dgm-whale-btn[data-state='waiting-user'] .dgm-whale-halo { opacity: 1; }
-  .dgm-chip,
+  .dgm-hint-pill,
   .dgm-menu,
   .dgm-popover,
   .dgm-whale-bubble { animation: none !important; }

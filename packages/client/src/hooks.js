@@ -33,10 +33,10 @@ export function useClock(intervalMs) {
  */
 export function useSessionBinding(props, diagnosticRef) {
   const source = props && typeof props === 'object' ? props : {};
-  let sessionId = null;
+  let sessionId = typeof source.sessionId === 'string' && source.sessionId.length > 0 ? source.sessionId : null;
   let dshStatus = null;
 
-  if (typeof source.useSessions === 'function') {
+  if (!sessionId && typeof source.useSessions === 'function') {
     try {
       sessionId = source.useSessions(selectCurrentSessionId);
     } catch (error) {

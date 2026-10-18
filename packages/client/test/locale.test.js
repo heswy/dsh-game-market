@@ -120,13 +120,13 @@ test('interpolation and translate fallbacks are safe', function () {
     makeT(function broken() {
       throw new Error('locale seat unavailable');
     }, 'zh')('entry.chip.waiting'),
-    '需要你处理'
+    'Agent 在等你 · 去看看'
   );
   assert.equal(
     makeT(function rawKey(key) {
       return key;
     }, 'en')('entry.chip.waiting'),
-    'Needs you'
+    'Agent needs you · Take a look'
   );
 });
 

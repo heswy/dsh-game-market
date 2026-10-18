@@ -25,8 +25,12 @@ function clampMenuPosition(rect) {
   const height = 320;
   const viewportWidth = typeof window !== 'undefined' && typeof window.innerWidth === 'number' ? window.innerWidth : 1280;
   const viewportHeight = typeof window !== 'undefined' && typeof window.innerHeight === 'number' ? window.innerHeight : 800;
-  const left = Math.max(8, Math.min(rect.left, viewportWidth - width - 8));
-  const preferredTop = rect.bottom + 4;
+  // Keep the popup centered under the hint (header) and clamp it inside the
+  // viewport; when there is no room below, flip it above the trigger.
+  const left = Math.max(8, Math.min(rect.left + rect.width / 2 - width / 2, viewportWidth - width - 8));
+  const gap = 6;
+  const below = viewportHeight - rect.bottom - 8;
+  const preferredTop = below >= height ? rect.bottom + gap : rect.top - height - gap;
   const top = Math.max(8, Math.min(preferredTop, viewportHeight - height - 8));
   return { left: left, top: top };
 }
@@ -263,13 +267,7 @@ export function WaitEntryChip(props) {
   }
 
   const isWaiting = chip.status === CHIP_STATUS.WAITING;
-  const label = isWaiting
-    ? t('entry.chip.waiting')
-    : chip.status === CHIP_STATUS.RESUME
-      ? t('entry.chip.resume')
-      : chip.canResume
-        ? t('entry.chip.running.resume')
-        : t('entry.chip.running.choose');
+  const label = t('entry.chip.game');
   const ariaLabel = isWaiting
     ? t('entry.chip.a11y.waiting')
     : chip.status === CHIP_STATUS.RESUME
@@ -312,7 +310,7 @@ export function WaitEntryChip(props) {
 
   return h(
     'span',
-    { className: 'dgm-chip-anchor', ref: rootRef },
+    { className: 'dgm-chip-anchor dgm-game-hint', ref: rootRef },
     h(StyleTag),
     h('span', { className: 'dgm-sr-only', 'aria-live': isWaiting ? 'assertive' : 'polite' }, isWaiting ? t('a11y.live.waiting') : ''),
     h(
@@ -320,18 +318,20 @@ export function WaitEntryChip(props) {
       {
         type: 'button',
         ref: triggerRef,
-        className: 'dgm-chip',
+        className: 'dgm-chip dgm-hint-pill',
         'data-status': chip.status,
         'aria-label': ariaLabel,
         'aria-haspopup': isWaiting ? 'dialog' : chip.status === CHIP_STATUS.RUNNING ? 'menu' : undefined,
         'aria-expanded': isWaiting ? (waitingOpen ? 'true' : 'false') : chip.status === CHIP_STATUS.RUNNING ? (menuOpen ? 'true' : 'false') : undefined,
-        title: label,
+        title: ariaLabel,
         onClick: handleTriggerClick,
         onKeyDown: handleTriggerKeyDown,
       },
-      h(GamepadIcon, { size: 14 }),
+      h('span', { className: 'dgm-hint-spark', 'aria-hidden': 'true' }),
+      h('span', { className: 'dgm-hint-icon', 'aria-hidden': 'true' }, h(GamepadIcon, { size: 15 })),
       isWaiting ? h('span', { className: 'dgm-chip-dot' }) : null,
-      h('span', { className: 'dgm-chip-label' }, label)
+      h('span', { className: 'dgm-chip-label dgm-hint-label' }, label),
+      h('span', { className: 'dgm-hint-shine', 'aria-hidden': 'true' })
     ),
     menuOpen
       ? h(
@@ -414,7 +414,7 @@ export function WaitEntryChip(props) {
           {
             className: 'dgm-toast',
             role: 'status',
-            style: { left: anchor.left + 'px', top: anchor.top + 40 + 'px' },
+            style: { left: anchor.left + 'px', top: Math.max(8, anchor.top - 30) + 'px' },
           },
           toast
         )

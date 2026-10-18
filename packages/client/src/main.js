@@ -3,7 +3,7 @@
  *
  * Verified registration forms (DSH Desktop 0.2.1-rc.2):
  *   - `main` keyed slot + `sidebar.panellist` row with the same id
- *   - `conversation.header.leading` single slot for the waiting chip
+ *   - `conversation.session.header.actions` list slot for the cute Game hint
  *   - `ctx.locale.register(ns, { zh, en })` inside `ctx.effect`
  *   - `ctx.layout.selectPanel(id | null)` for panel navigation
  */
@@ -129,14 +129,16 @@ export function apply(ctx) {
   });
   if (sidebarController === null) reportDiagnostic('sidebar-registration-failed');
 
-  const chipController = injectSlot('conversation.header.leading', function registerWaitEntryChip() {
+  const chipController = injectSlot('conversation.session.header.actions', function registerWaitEntryChip() {
     return registerSlot(
       {
-        name: 'conversation.header.leading',
+        name: 'conversation.session.header.actions',
+        id: 'dsh-game-market-entry',
+        order: 10,
         locale: NS,
       },
       WaitEntryChip,
-      'conversation.header.leading'
+      'conversation.session.header.actions'
     );
   });
   if (chipController === null) reportDiagnostic('chip-registration-failed');
