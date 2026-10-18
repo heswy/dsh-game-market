@@ -1,0 +1,5346 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark" data-reduced-motion="false">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <title>2048 · 1.0.0</title>
+    <script>
+      // Avoid a dark flash in light mode before the SDK reports the platform theme.
+      (function () {
+        try {
+          if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            document.documentElement.dataset.theme = 'light';
+          }
+          if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.dataset.reducedMotion = 'true';
+          }
+        } catch (error) {
+          // Theme detection is best effort.
+        }
+      })();
+    </script>
+    <script type="application/json" id="dsh-game-manifest">{
+  "manifestVersion": 1,
+  "id": "2048",
+  "name": "2048",
+  "version": "1.0.0",
+  "author": {
+    "name": "DSH Game Market"
+  },
+  "description": "4×4 数字拼图：滑动、合并，冲击 2048。每局一次撤销，进度自动保存，随时可以继续。",
+  "categories": [
+    "puzzle"
+  ],
+  "tags": [
+    "numbers",
+    "keyboard",
+    "single-player",
+    "short-run"
+  ],
+  "capabilities": [
+    "storage",
+    "score"
+  ],
+  "sdkVersion": "^1.0.0",
+  "runtimeVersion": "^1.0.0",
+  "preferredTheme": "game-defined",
+  "viewport": {
+    "width": 720,
+    "height": 720,
+    "fit": "contain"
+  },
+  "score": {
+    "direction": "higher-better",
+    "min": 0,
+    "max": 1000000000,
+    "integer": true
+  },
+  "save": {
+    "schemaVersion": 1
+  },
+  "license": "MIT"
+}</script>
+    <style>
+      /* ------------------------------------------------------------------ *
+       * Tokens
+       * ------------------------------------------------------------------ */
+      :root {
+        color-scheme: dark;
+        --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, 'Songti SC',
+          'Noto Serif SC', 'Times New Roman', serif;
+        --font-ui: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+          'Microsoft YaHei', sans-serif;
+        --font-mono: ui-monospace, 'SFMono-Regular', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace;
+
+        --bg: #0b0d0c;
+        --bg-warm: rgba(206, 168, 78, 0.11);
+        --bg-cool: rgba(88, 128, 110, 0.1);
+        --grain: rgba(255, 255, 255, 0.014);
+        --ink: #ede8dc;
+        --ink-soft: #b9b2a2;
+        --ink-faint: #908a7d;
+        --hairline: rgba(237, 232, 220, 0.11);
+        --hairline-strong: rgba(237, 232, 220, 0.2);
+        --brass: #d8b364;
+        --brass-strong: #f0d79a;
+        --brass-deep: #a97f2c;
+        --brass-ink: #221a09;
+        --danger: #e8897a;
+        --ok: #9dc3a9;
+        --panel: rgba(22, 26, 23, 0.72);
+        --panel-solid: #151916;
+        --board: #141814;
+        --board-top: rgba(255, 255, 255, 0.025);
+        --board-edge: rgba(216, 179, 100, 0.2);
+        --cell: rgba(237, 232, 220, 0.042);
+        --cell-edge: rgba(237, 232, 220, 0.05);
+        --focus: #f0d79a;
+        --overlay-bg: rgba(6, 8, 7, 0.66);
+        --shadow-lg: 0 34px 80px rgba(0, 0, 0, 0.42);
+        --tile-shadow: 0 12px 26px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.26);
+        --tile-shadow-light: 0 2px 0 rgba(47, 38, 22, 0.14), 0 10px 22px rgba(60, 46, 22, 0.14),
+          inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        --stat-panel: rgba(20, 24, 21, 0.6);
+      }
+
+      html[data-theme='light'] {
+        color-scheme: light;
+        --bg: #f2ece0;
+        --bg-warm: rgba(180, 128, 44, 0.13);
+        --bg-cool: rgba(88, 128, 110, 0.09);
+        --grain: rgba(35, 28, 18, 0.02);
+        --ink: #241f17;
+        --ink-soft: #5c5345;
+        --ink-faint: #6a6153;
+        --hairline: rgba(58, 47, 30, 0.16);
+        --hairline-strong: rgba(58, 47, 30, 0.28);
+        --brass: #8a5c16;
+        --brass-strong: #6d470d;
+        --brass-deep: #b0812f;
+        --brass-ink: #fbf4e4;
+        --danger: #a33526;
+        --ok: #3f7159;
+        --panel: rgba(255, 253, 247, 0.66);
+        --panel-solid: #faf5ea;
+        --board: #d7cab4;
+        --board-top: rgba(255, 255, 255, 0.45);
+        --board-edge: rgba(120, 88, 30, 0.3);
+        --cell: rgba(64, 50, 28, 0.12);
+        --cell-edge: rgba(64, 50, 28, 0.08);
+        --focus: #6d470d;
+        --overlay-bg: rgba(54, 45, 30, 0.42);
+        --shadow-lg: 0 30px 70px rgba(68, 52, 26, 0.2);
+        --tile-shadow: var(--tile-shadow-light);
+        --stat-panel: rgba(255, 253, 247, 0.6);
+      }
+
+      /* ------------------------------------------------------------------ *
+       * Base
+       * ------------------------------------------------------------------ */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-width: 320px;
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-ui);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      html {
+        height: 100%;
+      }
+
+      body {
+        height: 100%;
+        overflow: hidden;
+        background-image: radial-gradient(120% 90% at 6% -12%, var(--bg-warm), transparent 58%),
+          radial-gradient(100% 82% at 108% 110%, var(--bg-cool), transparent 62%),
+          linear-gradient(155deg, rgba(255, 255, 255, 0.018), transparent 42%);
+        background-attachment: fixed;
+        touch-action: manipulation;
+      }
+
+      .app {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        gap: clamp(8px, 1.5vmin, 16px);
+        width: 100%;
+        max-width: 1180px;
+        height: 100vh;
+        height: 100dvh;
+        margin: 0 auto;
+        padding: clamp(14px, 2.2vmin, 26px) clamp(14px, 3.2vw, 44px) clamp(10px, 1.6vmin, 18px);
+      }
+
+      .app::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background-image: repeating-linear-gradient(112deg, var(--grain) 0 1px, transparent 1px 3px);
+        opacity: 0.55;
+      }
+
+      .ambient {
+        position: fixed;
+        z-index: 0;
+        border-radius: 50%;
+        pointer-events: none;
+        filter: blur(90px);
+      }
+
+      .ambient-brass {
+        top: -16vmin;
+        left: -13vmin;
+        width: 46vmin;
+        height: 46vmin;
+        background: radial-gradient(circle, rgba(216, 179, 100, 0.2), transparent 68%);
+        opacity: 0.55;
+      }
+
+      .ambient-jade {
+        right: -19vmin;
+        bottom: -22vmin;
+        width: 56vmin;
+        height: 56vmin;
+        background: radial-gradient(circle, rgba(94, 138, 116, 0.18), transparent 70%);
+        opacity: 0.5;
+      }
+
+      .sr-only {
+        position: absolute !important;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+
+      /* ------------------------------------------------------------------ *
+       * Masthead
+       * ------------------------------------------------------------------ */
+      .masthead {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: clamp(12px, 3vw, 40px);
+        padding-bottom: clamp(8px, 1.5vmin, 16px);
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .identity {
+        min-width: 0;
+      }
+
+      .kicker {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 clamp(5px, 0.9vmin, 9px);
+        font-family: var(--font-mono);
+        font-size: clamp(8px, 1.12vmin, 10.5px);
+        line-height: 1.2;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .kicker-mark {
+        flex: 0 0 auto;
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        background: var(--brass);
+        box-shadow: 0 0 0 3px rgba(216, 179, 100, 0.13);
+      }
+
+      .kicker-sep {
+        color: var(--brass);
+        opacity: 0.8;
+      }
+
+      .wordmark {
+        display: flex;
+        align-items: flex-start;
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: clamp(40px, 7.6vmin, 72px);
+        font-weight: 600;
+        line-height: 0.86;
+        letter-spacing: -0.045em;
+        color: var(--ink);
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+
+      .wordmark-tick {
+        width: clamp(5px, 0.85vmin, 8px);
+        height: clamp(5px, 0.85vmin, 8px);
+        margin: clamp(7px, 1.3vmin, 12px) 0 0 clamp(5px, 0.9vmin, 9px);
+        border-radius: 1px;
+        background: var(--brass);
+      }
+
+      .tagline {
+        margin: clamp(6px, 1vmin, 10px) 0 0;
+        font-family: var(--font-display);
+        font-style: italic;
+        font-size: clamp(11px, 1.5vmin, 14px);
+        line-height: 1.3;
+        letter-spacing: 0.015em;
+        color: var(--ink-soft);
+      }
+
+      .ledger {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: flex-end;
+        gap: clamp(6px, 1.1vw, 12px);
+      }
+
+      .stat {
+        position: relative;
+        min-width: clamp(54px, 7.6vmin, 86px);
+        padding: clamp(6px, 1vmin, 9px) clamp(8px, 1.2vmin, 12px) clamp(5px, 0.8vmin, 8px);
+        border: 1px solid var(--hairline);
+        border-radius: 10px;
+        background: var(--stat-panel);
+        text-align: right;
+        backdrop-filter: blur(9px);
+        -webkit-backdrop-filter: blur(9px);
+        transition: border-color 180ms ease, box-shadow 180ms ease;
+      }
+
+      .stat-label {
+        display: block;
+        font-family: var(--font-mono);
+        font-size: clamp(7px, 1.02vmin, 9.5px);
+        line-height: 1.1;
+        letter-spacing: 0.2em;
+        color: var(--ink-faint);
+      }
+
+      .stat-value {
+        display: block;
+        margin-top: 1px;
+        font-family: var(--font-mono);
+        font-size: clamp(17px, 2.8vmin, 26px);
+        font-weight: 500;
+        line-height: 1.2;
+        font-variant-numeric: tabular-nums;
+        color: var(--ink);
+      }
+
+      .stat-best .stat-value {
+        color: var(--brass);
+      }
+
+      .stat-note {
+        display: block;
+        margin-top: 1px;
+        font-family: var(--font-mono);
+        font-size: clamp(5.5px, 0.8vmin, 7.5px);
+        letter-spacing: 0.16em;
+        color: var(--ink-faint);
+        opacity: 0.85;
+      }
+
+      .stat-best.is-record {
+        border-color: var(--brass);
+        box-shadow: 0 0 0 1px rgba(216, 179, 100, 0.22), 0 10px 28px rgba(216, 179, 100, 0.1);
+      }
+
+      .stat-best.is-record .stat-note {
+        color: var(--brass);
+        opacity: 1;
+      }
+
+      .score-delta {
+        position: absolute;
+        top: 1px;
+        right: clamp(8px, 1.2vmin, 12px);
+        font-family: var(--font-mono);
+        font-size: clamp(9px, 1.2vmin, 11px);
+        letter-spacing: 0.02em;
+        color: var(--brass-strong);
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .score-delta.show {
+        animation: delta-rise 820ms cubic-bezier(0.2, 0.7, 0.25, 1) both;
+      }
+
+      @keyframes delta-rise {
+        0% {
+          opacity: 0;
+          transform: translateY(7px);
+        }
+        22% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-15px);
+        }
+      }
+
+      /* ------------------------------------------------------------------ *
+       * Board
+       * ------------------------------------------------------------------ */
+      .board-zone {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 0;
+        min-height: 0;
+      }
+
+      .board-frame {
+        --board-size: min(520px, calc(100vw - 40px));
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: clamp(7px, 1.15vmin, 12px);
+        max-width: 100%;
+      }
+
+      .board {
+        --gap: clamp(7px, calc(var(--board-size) * 0.018), 13px);
+        position: relative;
+        width: var(--board-size);
+        height: var(--board-size);
+        padding: var(--gap);
+        border: 1px solid var(--board-edge);
+        border-radius: calc(var(--board-size) * 0.028);
+        background: linear-gradient(180deg, var(--board-top), transparent 36%), var(--board);
+        box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.05),
+          inset 0 -24px 46px rgba(0, 0, 0, 0.22);
+        outline: none;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      html[data-theme='light'] .board {
+        box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.6),
+          inset 0 -20px 40px rgba(90, 68, 34, 0.1);
+      }
+
+      .board::after {
+        content: '';
+        position: absolute;
+        inset: -5px;
+        border: 1px solid rgba(216, 179, 100, 0.11);
+        border-radius: calc(var(--board-size) * 0.034);
+        pointer-events: none;
+      }
+
+      .board:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 5px;
+      }
+
+      .board.is-bumped {
+        animation: board-bump 220ms ease-out;
+      }
+
+      @keyframes board-bump {
+        0% {
+          border-color: var(--board-edge);
+        }
+        38% {
+          border-color: rgba(240, 215, 154, 0.55);
+          box-shadow: var(--shadow-lg), 0 0 0 1px rgba(240, 215, 154, 0.22);
+        }
+        100% {
+          border-color: var(--board-edge);
+        }
+      }
+
+      .board-grid {
+        position: absolute;
+        inset: var(--gap);
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        gap: var(--gap);
+      }
+
+      .grid-row {
+        display: contents;
+      }
+
+      .cell {
+        position: relative;
+        border-radius: calc(var(--gap) * 0.82);
+        background: var(--cell);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 -1px 0 var(--cell-edge);
+      }
+
+      .cell::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 3px;
+        height: 3px;
+        margin: -1.5px 0 0 -1.5px;
+        border-radius: 50%;
+        background: var(--hairline);
+        opacity: 0.85;
+      }
+
+      .tile-layer {
+        --cell: calc((100% - 3 * var(--gap)) / 4);
+        position: absolute;
+        inset: var(--gap);
+        pointer-events: none;
+      }
+
+      .tile {
+        --dx: 0;
+        --dy: 0;
+        position: absolute;
+        left: calc(var(--col) * (var(--cell) + var(--gap)));
+        top: calc(var(--row) * (var(--cell) + var(--gap)));
+        display: grid;
+        place-items: center;
+        width: var(--cell);
+        height: var(--cell);
+        border-radius: calc(var(--gap) * 0.82);
+        background: var(--tile-bg, #2a2a26);
+        color: var(--tile-fg, #f4efe3);
+        box-shadow: var(--tile-shadow), 0 0 0 1px var(--tile-edge, rgba(0, 0, 0, 0.06));
+        font-family: var(--font-display);
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: -0.04em;
+        font-variant-numeric: tabular-nums lining-nums;
+        transform: translate(calc(var(--dx) * (100% + var(--gap))), calc(var(--dy) * (100% + var(--gap))));
+        transition: transform 155ms cubic-bezier(0.2, 0.75, 0.25, 1);
+        will-change: transform;
+      }
+
+      .tile.settled {
+        transform: translate(0, 0);
+      }
+
+      .tile::before {
+        content: '';
+        position: absolute;
+        inset: 1px 1px auto;
+        height: 44%;
+        border-radius: inherit;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), transparent);
+        opacity: 0.55;
+        pointer-events: none;
+      }
+
+      .tile-face {
+        position: relative;
+        display: block;
+        transform-origin: 50% 52%;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.14);
+      }
+
+      .tile[data-digits='1'] {
+        font-size: calc(var(--board-size) * 0.098);
+      }
+
+      .tile[data-digits='2'] {
+        font-size: calc(var(--board-size) * 0.086);
+      }
+
+      .tile[data-digits='3'] {
+        font-size: calc(var(--board-size) * 0.07);
+      }
+
+      .tile[data-digits='4'] {
+        font-size: calc(var(--board-size) * 0.057);
+      }
+
+      .tile[data-digits='5'] {
+        font-size: calc(var(--board-size) * 0.046);
+      }
+
+      .tile.is-spawn .tile-face {
+        animation: face-arrive 190ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+      }
+
+      .tile.is-merge .tile-face {
+        animation: face-merge 240ms cubic-bezier(0.2, 0.85, 0.3, 1.25) 120ms both;
+      }
+
+      @keyframes face-arrive {
+        0% {
+          opacity: 0;
+          transform: scale(0.56);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @keyframes face-merge {
+        0% {
+          transform: scale(1);
+        }
+        42% {
+          transform: scale(1.16);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      /* Warm mineral progression: bone -> ember -> gold -> black foil. */
+      .tile[data-value='2'] {
+        --tile-bg: #ded7c6;
+        --tile-fg: #2a2417;
+        --tile-edge: rgba(42, 36, 23, 0.12);
+      }
+      .tile[data-value='4'] {
+        --tile-bg: #d2c2a1;
+        --tile-fg: #2a2417;
+        --tile-edge: rgba(42, 36, 23, 0.14);
+      }
+      .tile[data-value='8'] {
+        --tile-bg: #dda264;
+        --tile-fg: #2a1a07;
+        --tile-edge: rgba(61, 36, 8, 0.2);
+      }
+      .tile[data-value='16'] {
+        --tile-bg: #d08045;
+        --tile-fg: #2a1606;
+        --tile-edge: rgba(61, 30, 6, 0.22);
+      }
+      .tile[data-value='32'] {
+        --tile-bg: #b95433;
+        --tile-fg: #fdf4e6;
+        --tile-edge: rgba(74, 24, 10, 0.24);
+      }
+      .tile[data-value='64'] {
+        --tile-bg: #9e3f2b;
+        --tile-fg: #fdf4e6;
+        --tile-edge: rgba(64, 18, 8, 0.28);
+      }
+      .tile[data-value='128'] {
+        --tile-bg: #d2ad4f;
+        --tile-fg: #291e06;
+        --tile-edge: rgba(78, 55, 8, 0.24);
+      }
+      .tile[data-value='256'] {
+        --tile-bg: #ddbd63;
+        --tile-fg: #291e06;
+        --tile-edge: rgba(78, 55, 8, 0.24);
+      }
+      .tile[data-value='512'] {
+        --tile-bg: #e7cc7a;
+        --tile-fg: #291e06;
+        --tile-edge: rgba(78, 55, 8, 0.24);
+      }
+      .tile[data-value='1024'] {
+        --tile-bg: #f0dda2;
+        --tile-fg: #291e06;
+        --tile-edge: rgba(78, 55, 8, 0.22);
+      }
+      .tile[data-value='2048'] {
+        --tile-bg: #f6e8bb;
+        --tile-fg: #241a05;
+        --tile-edge: rgba(120, 84, 12, 0.34);
+      }
+      .tile[data-value='4096'] {
+        --tile-bg: #23231e;
+        --tile-fg: #e8c979;
+        --tile-edge: rgba(232, 201, 121, 0.32);
+      }
+      .tile[data-value='8192'] {
+        --tile-bg: #2b2a22;
+        --tile-fg: #f0d79a;
+        --tile-edge: rgba(240, 215, 154, 0.34);
+      }
+      .tile.is-beyond {
+        --tile-bg: #181a17;
+        --tile-fg: #f5e6b8;
+        --tile-edge: rgba(245, 230, 184, 0.4);
+      }
+
+      html[data-theme='light'] .tile[data-value='2'] {
+        --tile-bg: #f8f2e4;
+        --tile-fg: #3a3123;
+        --tile-edge: rgba(58, 49, 35, 0.2);
+      }
+      html[data-theme='light'] .tile[data-value='4'] {
+        --tile-bg: #ede0c8;
+        --tile-fg: #3a3123;
+        --tile-edge: rgba(58, 49, 35, 0.2);
+      }
+      html[data-theme='light'] .tile[data-value='8'] {
+        --tile-bg: #e8ac6d;
+        --tile-fg: #3a2409;
+        --tile-edge: rgba(92, 54, 12, 0.2);
+      }
+      html[data-theme='light'] .tile[data-value='16'] {
+        --tile-bg: #d98a4e;
+        --tile-fg: #341d07;
+        --tile-edge: rgba(84, 44, 8, 0.22);
+      }
+      html[data-theme='light'] .tile[data-value='32'] {
+        --tile-bg: #c25e3b;
+        --tile-fg: #fff6e9;
+        --tile-edge: rgba(92, 34, 12, 0.24);
+      }
+      html[data-theme='light'] .tile[data-value='64'] {
+        --tile-bg: #a94a32;
+        --tile-fg: #fff6e9;
+        --tile-edge: rgba(82, 28, 12, 0.28);
+      }
+      html[data-theme='light'] .tile[data-value='128'] {
+        --tile-bg: #c9a443;
+        --tile-fg: #2f2307;
+        --tile-edge: rgba(90, 64, 10, 0.24);
+      }
+      html[data-theme='light'] .tile[data-value='256'] {
+        --tile-bg: #d6b451;
+        --tile-fg: #2f2307;
+        --tile-edge: rgba(90, 64, 10, 0.24);
+      }
+      html[data-theme='light'] .tile[data-value='512'] {
+        --tile-bg: #e3c46c;
+        --tile-fg: #2f2307;
+        --tile-edge: rgba(90, 64, 10, 0.24);
+      }
+      html[data-theme='light'] .tile[data-value='1024'] {
+        --tile-bg: #ecd693;
+        --tile-fg: #2f2307;
+        --tile-edge: rgba(90, 64, 10, 0.22);
+      }
+      html[data-theme='light'] .tile[data-value='2048'] {
+        --tile-bg: #f3e4b4;
+        --tile-fg: #2a1f05;
+        --tile-edge: rgba(120, 84, 12, 0.36);
+      }
+      html[data-theme='light'] .tile[data-value='4096'] {
+        --tile-bg: #2a2a24;
+        --tile-fg: #eed69a;
+        --tile-edge: rgba(74, 58, 22, 0.4);
+      }
+      html[data-theme='light'] .tile[data-value='8192'] {
+        --tile-bg: #34342c;
+        --tile-fg: #f2dfa8;
+        --tile-edge: rgba(74, 58, 22, 0.44);
+      }
+      html[data-theme='light'] .tile.is-beyond {
+        --tile-bg: #1e201c;
+        --tile-fg: #f7ecc4;
+        --tile-edge: rgba(30, 32, 28, 0.5);
+      }
+
+      .tile.is-target {
+        box-shadow: var(--tile-shadow), 0 0 0 1px rgba(240, 215, 154, 0.5), 0 0 24px rgba(216, 179, 100, 0.16);
+      }
+
+      .tile.is-target::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: linear-gradient(128deg, transparent 24%, rgba(255, 255, 255, 0.42) 46%, transparent 64%);
+        opacity: 0.45;
+        pointer-events: none;
+      }
+
+      .tile.is-win {
+        animation: tile-win 900ms ease-out;
+      }
+
+      @keyframes tile-win {
+        0% {
+          box-shadow: var(--tile-shadow), 0 0 0 1px rgba(240, 215, 154, 0.9), 0 0 0 0 rgba(240, 215, 154, 0.55);
+        }
+        100% {
+          box-shadow: var(--tile-shadow), 0 0 0 1px rgba(240, 215, 154, 0.5), 0 0 0 26px rgba(240, 215, 154, 0);
+        }
+      }
+
+      /* ------------------------------------------------------------------ *
+       * Board meta
+       * ------------------------------------------------------------------ */
+      .board-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        width: var(--board-size);
+        max-width: 100%;
+        min-width: 0;
+      }
+
+      .undo-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 44px;
+        padding: 0 12px;
+        border: 1px solid var(--hairline);
+        border-radius: 10px;
+        background: var(--panel);
+        color: var(--ink);
+        font-family: var(--font-ui);
+        font-size: clamp(11.5px, 1.55vmin, 13.5px);
+        font-weight: 500;
+        cursor: pointer;
+        transition: border-color 140ms ease, background 140ms ease, opacity 140ms ease;
+      }
+
+      .undo-btn:hover:not(:disabled) {
+        border-color: var(--hairline-strong);
+        background: var(--panel-solid);
+      }
+
+      .undo-btn:active:not(:disabled) {
+        transform: translateY(1px);
+      }
+
+      .undo-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .undo-icon {
+        flex: 0 0 auto;
+        color: var(--brass);
+      }
+
+      .undo-btn:disabled .undo-icon {
+        color: var(--ink-faint);
+      }
+
+      .undo-count {
+        padding-left: 8px;
+        border-left: 1px solid var(--hairline);
+        font-family: var(--font-mono);
+        font-size: clamp(8.5px, 1.15vmin, 10.5px);
+        letter-spacing: 0.04em;
+        color: var(--brass);
+        white-space: nowrap;
+      }
+
+      .undo-btn:disabled .undo-count {
+        color: var(--ink-faint);
+      }
+
+      .meta-right {
+        display: flex;
+        flex: 1 1 auto;
+        align-items: center;
+        justify-content: flex-end;
+        gap: clamp(6px, 1vmin, 10px);
+        min-width: 0;
+      }
+
+      .save-indicator {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        gap: 6px;
+        min-height: 32px;
+        padding: 4px 2px;
+        border: 0;
+        background: none;
+        font-family: var(--font-mono);
+        font-size: clamp(8px, 1.12vmin, 10px);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+        white-space: nowrap;
+        cursor: default;
+      }
+
+      .save-indicator:disabled {
+        opacity: 1;
+      }
+
+      .save-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--ink-faint);
+        box-shadow: 0 0 0 3px rgba(144, 138, 125, 0.12);
+      }
+
+      .save-indicator[data-state='saving'] .save-dot {
+        background: var(--brass);
+        animation: save-pulse 1s ease-in-out infinite;
+      }
+
+      .save-indicator[data-state='saved'] .save-dot {
+        background: var(--ok);
+        box-shadow: 0 0 0 3px rgba(157, 195, 169, 0.14);
+      }
+
+      .save-indicator[data-state='failed'] {
+        color: var(--danger);
+        cursor: pointer;
+        text-decoration: underline;
+        text-decoration-style: dotted;
+        text-underline-offset: 3px;
+      }
+
+      .save-indicator[data-state='failed'] .save-dot {
+        background: var(--danger);
+        box-shadow: 0 0 0 3px rgba(232, 137, 122, 0.16);
+      }
+
+      @keyframes save-pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.35;
+        }
+      }
+
+      .meta-divider {
+        width: 1px;
+        height: 11px;
+        background: var(--hairline);
+      }
+
+      .meta-hint {
+        flex: 0 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        font-size: clamp(9.5px, 1.3vmin, 11.5px);
+        line-height: 1.4;
+        color: var(--ink-faint);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .meta-hint.is-alert {
+        color: var(--danger);
+      }
+
+      .meta-hint.is-brass {
+        color: var(--brass);
+      }
+
+      /* ------------------------------------------------------------------ *
+       * Footer
+       * ------------------------------------------------------------------ */
+      .footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding-top: clamp(6px, 1vmin, 10px);
+        border-top: 1px solid var(--hairline);
+      }
+
+      .keys {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px 12px;
+        font-size: clamp(9.5px, 1.28vmin, 11.5px);
+        color: var(--ink-faint);
+      }
+
+      .key-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+      }
+
+      kbd {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 19px;
+        padding: 0 4px;
+        border: 1px solid var(--hairline-strong);
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.035);
+        color: var(--ink-soft);
+        font-family: var(--font-mono);
+        font-size: clamp(8px, 1.02vmin, 9.5px);
+        line-height: 1;
+      }
+
+      html[data-theme='light'] kbd {
+        background: rgba(255, 255, 255, 0.42);
+      }
+
+      .key-or {
+        opacity: 0.6;
+      }
+
+      .key-sep {
+        width: 1px;
+        height: 11px;
+        background: var(--hairline);
+      }
+
+      .footer-mark {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--font-mono);
+        font-size: clamp(8px, 1.06vmin, 10px);
+        letter-spacing: 0.14em;
+        color: var(--ink-faint);
+        white-space: nowrap;
+      }
+
+      .footer-rule {
+        width: 24px;
+        height: 1px;
+        background: var(--hairline-strong);
+      }
+
+      /* ------------------------------------------------------------------ *
+       * Overlay
+       * ------------------------------------------------------------------ */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: grid;
+        place-items: center;
+        padding: clamp(18px, 4vw, 40px);
+        background: var(--overlay-bg);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        animation: overlay-in 180ms ease-out both;
+      }
+
+      .overlay.hidden {
+        display: none;
+      }
+
+      @keyframes overlay-in {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      .overlay-card {
+        width: min(430px, 100%);
+        padding: clamp(22px, 4vmin, 34px);
+        border: 1px solid rgba(216, 179, 100, 0.3);
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 40%), var(--panel-solid);
+        box-shadow: 0 40px 110px rgba(0, 0, 0, 0.56), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        text-align: left;
+      }
+
+      html[data-theme='light'] .overlay-card {
+        box-shadow: 0 34px 90px rgba(58, 44, 22, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      }
+
+      .overlay-ornament {
+        display: flex;
+        gap: 5px;
+        margin-bottom: clamp(12px, 2vmin, 18px);
+      }
+
+      .overlay-ornament span {
+        width: 16px;
+        height: 2px;
+        border-radius: 1px;
+        background: var(--brass);
+      }
+
+      .overlay-ornament span:nth-child(2) {
+        opacity: 0.55;
+      }
+
+      .overlay-ornament span:nth-child(3) {
+        opacity: 0.25;
+      }
+
+      .overlay-kicker {
+        margin: 0 0 9px;
+        font-family: var(--font-mono);
+        font-size: clamp(7.5px, 1.05vmin, 9.5px);
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+
+      .overlay-title {
+        margin: 0 0 10px;
+        font-family: var(--font-display);
+        font-size: clamp(25px, 4vmin, 34px);
+        font-weight: 600;
+        line-height: 1.16;
+        letter-spacing: -0.02em;
+        color: var(--ink);
+        text-wrap: balance;
+      }
+
+      .overlay-hint {
+        margin: 0 0 18px;
+        font-size: clamp(11.5px, 1.5vmin, 13px);
+        line-height: 1.7;
+        color: var(--ink-soft);
+      }
+
+      .overlay-detail {
+        margin: -6px 0 18px;
+        font-family: var(--font-mono);
+        font-size: clamp(9px, 1.2vmin, 11px);
+        line-height: 1.6;
+        letter-spacing: 0.04em;
+        color: var(--brass);
+      }
+
+      .overlay-detail.hidden {
+        display: none;
+      }
+
+      .overlay-detail.is-alert {
+        color: var(--danger);
+      }
+
+      .overlay-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .primary {
+        min-height: 46px;
+        padding: 0 22px;
+        border: 1px solid var(--brass-strong);
+        border-radius: 12px;
+        background: linear-gradient(180deg, #ecd8a4, #c9a45a);
+        color: #221a09;
+        font-family: var(--font-ui);
+        font-size: clamp(13px, 1.7vmin, 14px);
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        box-shadow: 0 10px 24px rgba(216, 179, 100, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        transition: filter 120ms ease, transform 120ms ease;
+      }
+
+      .primary:hover {
+        filter: brightness(1.05);
+      }
+
+      .primary:active {
+        transform: translateY(1px);
+      }
+
+      .overlay-footnote {
+        margin: clamp(12px, 2vmin, 18px) 0 0;
+        font-family: var(--font-mono);
+        font-size: clamp(7px, 0.95vmin, 8.5px);
+        line-height: 1.5;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+      }
+
+      /* ------------------------------------------------------------------ *
+       * Responsive
+       * ------------------------------------------------------------------ */
+      html[data-embed='true'] .app {
+        padding-top: calc(clamp(14px, 2.2vmin, 26px) + 40px);
+      }
+
+      /* Keep save/status text clear of the Agent Presence whale (bottom-right). */
+      html[data-embed='true'] .board-meta {
+        padding-right: 64px;
+      }
+
+      html[data-embed='true'] .footer-mark {
+        display: none;
+      }
+
+      @media (max-height: 760px) {
+        html[data-embed='true'] .app {
+          padding-top: calc(10px + 44px);
+        }
+        html[data-embed='true'] .board-meta {
+          padding-right: 58px;
+        }
+        .tagline {
+          display: none;
+        }
+        .app {
+          gap: 6px;
+          padding-top: 10px;
+        }
+        .masthead {
+          padding-bottom: 8px;
+        }
+      }
+
+      @media (max-height: 620px) {
+        .footer {
+          display: none;
+        }
+        .kicker {
+          margin-bottom: 4px;
+        }
+        .wordmark {
+          font-size: clamp(32px, 6.4vmin, 54px);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .app {
+          padding-right: 12px;
+          padding-left: 12px;
+        }
+        .masthead {
+          gap: 10px;
+        }
+        .kicker {
+          font-size: 7px;
+          letter-spacing: 0.14em;
+        }
+        .tagline {
+          display: none;
+        }
+        .ledger {
+          gap: 5px;
+        }
+        .stat {
+          min-width: 50px;
+          padding: 5px 7px 4px;
+        }
+        .stat-note {
+          display: none;
+        }
+        .stat-value {
+          font-size: clamp(15px, 3.4vw, 20px);
+        }
+        .stat-label {
+          letter-spacing: 0.12em;
+        }
+        .board-meta {
+          gap: 6px;
+        }
+        .undo-btn {
+          padding: 0 9px;
+          gap: 6px;
+        }
+        .undo-label {
+          display: none;
+        }
+        .meta-divider {
+          display: none;
+        }
+        .meta-hint {
+          font-size: 9px;
+        }
+        .keys {
+          gap: 3px 8px;
+        }
+        .footer-mark {
+          display: none;
+        }
+        .overlay-card {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .masthead {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 8px;
+        }
+        .ledger {
+          justify-content: flex-start;
+        }
+        .stat {
+          flex: 1 1 0;
+        }
+        .wordmark {
+          font-size: clamp(34px, 12vw, 52px);
+        }
+        .keys {
+          gap: 3px 6px;
+        }
+        .key-sep,
+        .key-or {
+          display: none;
+        }
+      }
+
+      /* ------------------------------------------------------------------ *
+       * Motion preferences
+       * ------------------------------------------------------------------ */
+      html[data-reduced-motion='true'] .tile,
+      html[data-reduced-motion='true'] .undo-btn,
+      html[data-reduced-motion='true'] .stat,
+      html[data-reduced-motion='true'] .primary,
+      html[data-reduced-motion='true'] .overlay {
+        transition: none !important;
+        animation: none !important;
+      }
+
+      html[data-reduced-motion='true'] .tile.is-spawn .tile-face,
+      html[data-reduced-motion='true'] .tile.is-merge .tile-face,
+      html[data-reduced-motion='true'] .tile.is-win,
+      html[data-reduced-motion='true'] .board.is-bumped,
+      html[data-reduced-motion='true'] .score-delta.show {
+        animation: none !important;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .tile,
+        .undo-btn,
+        .stat,
+        .primary,
+        .overlay {
+          transition-duration: 1ms !important;
+          animation-duration: 1ms !important;
+          animation-iteration-count: 1 !important;
+        }
+        .tile.is-spawn .tile-face,
+        .tile.is-merge .tile-face,
+        .tile.is-win,
+        .board.is-bumped,
+        .score-delta.show {
+          animation: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <div class="ambient ambient-brass" aria-hidden="true"></div>
+      <div class="ambient ambient-jade" aria-hidden="true"></div>
+
+      <header class="masthead">
+        <div class="identity">
+          <p class="kicker">
+            <span class="kicker-mark" aria-hidden="true"></span>
+            <span>DSH Game Market</span>
+            <span class="kicker-sep">/</span>
+            <span>Puzzle No. 2048</span>
+          </p>
+          <h1 class="wordmark">2048<span class="wordmark-tick" aria-hidden="true"></span></h1>
+          <p class="tagline">把相同的数字，推到一起。</p>
+        </div>
+        <div class="ledger" role="group" aria-label="计分板">
+          <div class="stat" id="score-stat">
+            <span class="stat-label">SCORE</span>
+            <span class="stat-value" id="score">0</span>
+            <span class="score-delta" id="score-delta" aria-hidden="true"></span>
+          </div>
+          <div class="stat stat-best" id="best-stat">
+            <span class="stat-label">BEST</span>
+            <span class="stat-value" id="best">0</span>
+            <span class="stat-note" id="best-note">PERSONAL</span>
+          </div>
+          <div class="stat stat-moves" id="moves-stat">
+            <span class="stat-label">MOVES</span>
+            <span class="stat-value" id="moves">0</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="board-zone" id="board-zone">
+        <div class="board-frame" id="board-frame">
+          <div
+            class="board"
+            id="board"
+            tabindex="0"
+            role="grid"
+            aria-rowcount="4"
+            aria-colcount="4"
+            aria-label="2048 棋盘，4 行 4 列"
+            aria-describedby="board-help"
+            aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight W A S D P U Enter"
+          >
+            <div class="board-grid" id="board-grid"></div>
+            <div class="tile-layer" id="tile-layer" aria-hidden="true"></div>
+          </div>
+          <div class="board-meta" id="board-meta">
+            <button id="undo" class="undo-btn" type="button" disabled>
+              <svg class="undo-icon" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+                <path
+                  d="M7.6 4.6 4 8.2l3.6 3.6M4.5 8.2h6.1a4.7 4.7 0 0 1 4.7 4.7v1.2"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <span class="undo-label">撤销</span>
+              <span class="undo-count" id="undo-count">剩 1 次</span>
+            </button>
+            <div class="meta-right">
+              <button id="save-indicator" class="save-indicator" type="button" data-state="idle" disabled>
+                <span class="save-dot" aria-hidden="true"></span>
+                <span id="save-text">未保存</span>
+              </button>
+              <span class="meta-divider" aria-hidden="true"></span>
+              <span class="meta-hint" id="status-line">方向键或 WASD 开始</span>
+            </div>
+          </div>
+          <p id="board-help" class="sr-only">
+            使用方向键或 WASD 滑动棋盘，相同数字合并。按 P 暂停或继续，按 U 撤销一次，按回车开始或重开。斜向滑动手势也可以操作棋盘。
+          </p>
+        </div>
+      </main>
+
+      <footer class="footer">
+        <div class="keys" aria-hidden="true">
+          <span class="key-group"><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></span>
+          <span class="key-or">或</span>
+          <span class="key-group"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span>
+          <span class="key-sep"></span>
+          <span class="key-group"><kbd>P</kbd> 暂停</span>
+          <span class="key-group"><kbd>U</kbd> 撤销</span>
+          <span class="key-group"><kbd>↵</kbd> 开始 / 重开</span>
+        </div>
+        <div class="footer-mark">
+          <span class="footer-rule" aria-hidden="true"></span>
+          <span>No. 2048 · v1.0.0</span>
+        </div>
+      </footer>
+
+      <div
+        id="overlay"
+        class="overlay hidden"
+        role="dialog"
+        aria-modal="false"
+        aria-labelledby="overlay-title"
+        aria-describedby="overlay-hint"
+      >
+        <div class="overlay-card">
+          <div class="overlay-ornament" aria-hidden="true"><span></span><span></span><span></span></div>
+          <p id="overlay-kicker" class="overlay-kicker">2048</p>
+          <h2 id="overlay-title" class="overlay-title">把相同的数字推到一起</h2>
+          <p id="overlay-hint" class="overlay-hint">方向键 / WASD 滑动 · 每局一次撤销</p>
+          <p id="overlay-detail" class="overlay-detail hidden"></p>
+          <div id="overlay-actions" class="overlay-actions">
+            <button id="primary" class="primary" type="button">开始游戏</button>
+          </div>
+          <p id="overlay-footnote" class="overlay-footnote">进度会自动保存 · 离开后可继续</p>
+        </div>
+      </div>
+
+      <div id="live-region" class="sr-only" role="status" aria-live="polite"></div>
+    </div>
+
+    <script>var DSH_GAME_SDK = (function () {
+  'use strict';
+  // Generated by scripts/bundle-lib.mjs — do not edit by hand.
+  const __mods = Object.create(null);
+
+  // module: packages/shared/src/constants.js
+  __mods["packages/shared/src/constants.js"] = (function () {
+  /**
+   * Shared constants for dsh-game-market.
+   *
+   * Pure JS: no Node built-ins, no browser globals at import time.
+   * Kept dependency-free so Host (Node ESM), Client (bundled browser), Runtime,
+   * SDK (inlined into games) and tests can all import this file.
+   */
+
+  const BUNDLE_ID = 'dsh-game-market';
+  const CLIENT_MODULE_ID = BUNDLE_ID;
+  const MAIN_PANEL_KEY = BUNDLE_ID;
+  const API_BASE = '/api/game-market';
+  const LOG_PREFIX = '[game-market]';
+
+  /** Bumped together when the Runtime/SDK contract changes. */
+  const RUNTIME_VERSION = '1.0.0';
+  const SDK_VERSION = '1.0.0';
+  const PROTOCOL_VERSION = 1;
+
+  /**
+   * V0 games stay runnable on V1 (V1-07). Their manifests declare 0.1.x ranges;
+   * 0.1.x majors are accepted as the legacy compatibility window.
+   */
+  const LEGACY_V0_VERSION = '0.1.0';
+
+  const LIMITS = Object.freeze({
+    /** Total bytes of one game's save (envelope included). PRD D-005. */
+    saveTotalBytes: 1024 * 1024,
+    /** Max UTF-8 bytes for a single key value. */
+    saveValueBytes: 256 * 1024,
+    /** Max number of keys per game. */
+    saveKeys: 32,
+    /** Max JSON request body accepted by Host API. */
+    jsonBodyBytes: 1024 * 1024,
+    /** Max bytes for one score `meta` object. */
+    scoreMetaBytes: 2048,
+    /** Max score history entries per game. */
+    scoreHistory: 200,
+    /** Max session records per game. */
+    sessionRecords: 100,
+    /** Max entry HTML bytes served to the sandbox iframe. */
+    entryBytes: 20 * 1024 * 1024,
+    /** Max bytes of one single-file game package (PRD §8.2.2). */
+    packageBytes: 20 * 1024 * 1024,
+    /** Max bytes of the inline manifest script (PRD §8.2.2). */
+    manifestBytes: 64 * 1024,
+    /** Max bytes of the static Registry index. */
+    registryBytes: 2 * 1024 * 1024,
+    /** Max games accepted from one Registry index. */
+    registryGames: 500,
+    /** Max decoded bytes of a manifest `icon` data URI. */
+    iconBytes: 256 * 1024,
+    /** Max preview image bytes served to Market UI. */
+    previewBytes: 2 * 1024 * 1024,
+  });
+
+  const TIMING = Object.freeze({
+    /** Waiting-entry appears after the Agent has run this long. PRD D-001. */
+    waitEntryThresholdMs: 5000,
+    /** Client polls the Host agent snapshot at this interval while visible. */
+    agentPollMs: 1000,
+    /** Autosave cadence while playing. PRD D-005. */
+    autosaveMs: 30000,
+    /** How long Runtime waits for a game to answer `before-save`. */
+    saveTimeoutMs: 1500,
+    /** Bridge handshake deadline. */
+    handshakeTimeoutMs: 10000,
+    /** Slow-load notice threshold. */
+    loadSlowMs: 10000,
+    /** Hard load failure threshold. */
+    loadErrorMs: 20000,
+    /** Runtime pings the iframe at this interval. */
+    iframePingMs: 5000,
+    /** Agent snapshot older than this is considered stale. */
+    agentStaleMs: 5000,
+    /** Runtime polling backoff cap. */
+    pollBackoffMaxMs: 8000,
+    /** Registry index cache TTL (PRD §8.8.3). */
+    registryTtlMs: 6 * 60 * 60 * 1000,
+    /** Stale Registry cache hard limit (PRD §8.8.3). */
+    registryStaleMs: 14 * 24 * 60 * 60 * 1000,
+    /** Minimum interval between user-triggered Registry refreshes. */
+    registryRefreshThrottleMs: 5 * 60 * 1000,
+    /** Install download: connect / total / idle-no-data budgets (PRD §8.7.2). */
+    downloadConnectMs: 10000,
+    downloadTotalMs: 120000,
+    downloadIdleMs: 20000,
+    /** Install verification + atomic move budget. */
+    installVerifyMs: 15000,
+    installMoveMs: 30000,
+    /** How long the install lock queues before returning INSTALL_IN_PROGRESS. */
+    installLockWaitMs: 10000,
+    /** How long a /entry launcher binding stays valid (TBD-10). */
+    entryBindingTtlMs: 10 * 60 * 1000,
+    /** UI animation durations (ms). */
+    motion: Object.freeze({
+      panel: 240,
+      chipIn: 160,
+      chipOut: 120,
+      bubble: 220,
+      whaleState: 240,
+      overlay: 160,
+    }),
+  });
+
+  const AGENT_STATES = Object.freeze(['idle', 'running', 'waiting-user', 'completed', 'error']);
+  const AGENT_SOURCES = Object.freeze(['turn', 'tool', 'approval', 'question', 'lifecycle', 'restore']);
+  const AGENT_PRIORITY = Object.freeze({ 'waiting-user': 100, error: 80, completed: 60, running: 30, idle: 10 });
+
+  /**
+   * V0 label templates (zh-first). V1 moves these to locale files + labelKey.
+   * The Host resolves the final string; games must not parse it.
+   */
+  const AGENT_LABELS_ZH = Object.freeze({
+    idle: 'Agent 空闲',
+    running: '正在工作…',
+    test: '正在运行测试…',
+    build: '正在构建…',
+    search: '正在查找资料…',
+    read: '正在查看文件…',
+    write: '正在修改文件…',
+    command: '正在执行命令…',
+    'waiting-approval': '需要你确认一项操作',
+    'waiting-question': '需要你回答一个问题',
+    'waiting-generic': 'Agent 在等你',
+    completed: '任务完成啦',
+    error: '遇到了一点问题',
+  });
+
+  /** Stable label keys (mirror PRD §9.8); Host only emits keys, Client localizes in V1. */
+  const AGENT_LABEL_KEYS = Object.freeze({
+    idle: 'agent.state.idle',
+    running: 'agent.state.running',
+    test: 'agent.state.test',
+    build: 'agent.state.build',
+    search: 'agent.state.search',
+    read: 'agent.state.read',
+    write: 'agent.state.write',
+    command: 'agent.state.command',
+    'waiting-approval': 'agent.state.waiting.approval',
+    'waiting-question': 'agent.state.waiting.question',
+    'waiting-generic': 'agent.state.waiting.generic',
+    completed: 'agent.state.completed',
+    error: 'agent.state.error',
+  });
+
+  const GAME_ID_PATTERN = Object.freeze(/^[a-z0-9][a-z0-9-]{1,46}[a-z0-9]$/);
+  const PLAY_SESSION_ID_PATTERN = Object.freeze(/^ps_[a-z0-9]{16,32}$/);
+  const INSTANCE_ID_PATTERN = Object.freeze(/^[a-f0-9]{32}$/);
+  const NONCE_PATTERN = Object.freeze(/^[a-f0-9]{32}$/);
+  /** DSH Session ids are opaque; keep a conservative printable bound. */
+  const DSH_SESSION_ID_PATTERN = Object.freeze(/^[A-Za-z0-9._:-]{1,128}$/);
+
+  const LAUNCH_MODES = Object.freeze(['start', 'resume-paused']);
+  const PAUSE_REASONS = Object.freeze(['user', 'hidden', 'leave', 'waiting-user']);
+  const SAVE_REASONS = Object.freeze(['interval', 'pause', 'hidden', 'leave', 'agent-complete']);
+  const SESSION_OUTCOMES = Object.freeze(['completed', 'lost', 'abandoned', 'quit']);
+
+  /** V0 built-in games. Paths are relative to the bundle root. */
+  const BUILTIN_GAMES = Object.freeze([
+    Object.freeze({
+      id: 'snake',
+      name: 'Snake',
+      version: '0.1.0',
+      dir: 'games/snake',
+      manifestFile: 'game.json',
+      entryFile: 'dist/index.html',
+      viewport: Object.freeze({ width: 960, height: 540, fit: 'contain' }),
+    }),
+  ]);
+
+  const AGENT_ACK_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+  return { BUNDLE_ID, CLIENT_MODULE_ID, MAIN_PANEL_KEY, API_BASE, LOG_PREFIX, RUNTIME_VERSION, SDK_VERSION, PROTOCOL_VERSION, LEGACY_V0_VERSION, LIMITS, TIMING, AGENT_STATES, AGENT_SOURCES, AGENT_PRIORITY, AGENT_LABELS_ZH, AGENT_LABEL_KEYS, GAME_ID_PATTERN, PLAY_SESSION_ID_PATTERN, INSTANCE_ID_PATTERN, NONCE_PATTERN, DSH_SESSION_ID_PATTERN, LAUNCH_MODES, PAUSE_REASONS, SAVE_REASONS, SESSION_OUTCOMES, BUILTIN_GAMES, AGENT_ACK_MAX_AGE_MS };
+  })();
+
+  // module: packages/shared/src/errors.js
+  __mods["packages/shared/src/errors.js"] = (function () {
+  /**
+   * Error codes shared by Host API, Runtime bridge and Client UI.
+   *
+   * External contract (PRD §8.13 / D-030): only `GM-*` codes cross the
+   * API/bridge boundary. Internal `E_*` names never reach the Client.
+   */
+
+  const GM = Object.freeze({
+    INTERNAL: 'GM-5000',
+    INVALID_JSON: 'GM-4001',
+    INVALID_PARAM: 'GM-4002',
+    UNKNOWN_METHOD: 'GM-4004',
+    BAD_GAME_ID: 'GM-4005',
+    SCORE_OUT_OF_RANGE: 'GM-4006',
+    NOT_READY: 'GM-4031',
+    CAPABILITY_DENIED: 'GM-4032',
+    SESSION_NOT_BOUND: 'GM-4033',
+    SAVE_NOT_FOUND: 'GM-4041',
+    GAME_NOT_FOUND: 'GM-4042',
+    ASSET_NOT_FOUND: 'GM-4043',
+    INSTALL_IN_PROGRESS: 'GM-4091',
+    STORAGE_CONFLICT: 'GM-4092',
+    SESSION_STATE_CONFLICT: 'GM-4093',
+    SCHEMA_READ_TOO_NEW: 'GM-4098',
+    SAVE_SCHEMA_TOO_NEW: 'GM-4099',
+    SAVE_TOO_LARGE: 'GM-4131',
+    STORAGE_QUOTA: 'GM-4132',
+    STORAGE_KEY_INVALID: 'GM-4133',
+    VALUE_NOT_SERIALIZABLE: 'GM-4134',
+    UNSUPPORTED_MEDIA_TYPE: 'GM-4150',
+    MANIFEST_INVALID: 'GM-4221',
+    RUNTIME_INCOMPATIBLE: 'GM-4260',
+    SDK_INCOMPATIBLE: 'GM-4261',
+    RATE_LIMITED: 'GM-4290',
+    BACKPRESSURE: 'GM-4291',
+    HANDSHAKE_TIMEOUT: 'GM-5001',
+    PROTOCOL_MISMATCH: 'GM-5002',
+    NO_RUNTIME: 'GM-5003',
+    MESSAGE_INVALID: 'GM-5004',
+    BRIDGE_TIMEOUT: 'GM-5005',
+    LOAD_TIMEOUT: 'GM-5011',
+    IFRAME_UNRESPONSIVE: 'GM-5012',
+    IFRAME_CRASHED: 'GM-5013',
+    ASSET_INTEGRITY: 'GM-5014',
+    SAVE_WRITE_FAILED: 'GM-5021',
+    SAVE_CORRUPT: 'GM-5022',
+    HOST_EPOCH_STALE: 'GM-5023',
+    STORE_IO: 'GM-5024',
+    STORE_READONLY: 'GM-5025',
+    HOST_UNAVAILABLE: 'GM-5031',
+    REGISTRY_UNAVAILABLE: 'GM-5032',
+    INSTALL_FAILED: 'GM-5033',
+    // V1 package / registry / install (PRD §8.13.2 / §8.13.3)
+    PACKAGE_INVALID: 'GM-4222',
+    ENTRY_NOT_SELF_CONTAINED: 'GM-4225',
+    MANIFEST_TOO_LARGE: 'GM-4229',
+    PACKAGE_TOO_LARGE: 'GM-4135',
+    INSTALL_URL_REJECTED: 'GM-4034',
+    MARKET_DISABLED: 'GM-4036',
+    STORE_PATH_ESCAPE: 'GM-4037',
+    UNINSTALL_BUILTIN: 'GM-4038',
+    NOT_IN_REGISTRY: 'GM-4044',
+    INSTALL_VERSION_CONFLICT: 'GM-4094',
+    INSTALL_VERSION_MISMATCH: 'GM-4095',
+    UPDATE_GAME_RUNNING: 'GM-4096',
+    UNINSTALL_BUSY: 'GM-4097',
+    INSTALL_DISK_FULL: 'GM-4142',
+    INSTALL_HASH_MISMATCH: 'GM-5015',
+    INSTALL_DOWNLOAD_FAILED: 'GM-5034',
+    INSTALL_DOWNLOAD_TIMEOUT: 'GM-5035',
+    INSTALL_IO: 'GM-5036',
+    INSTALL_CORRUPT: 'GM-5037',
+  });
+
+  const DEFAULT_MESSAGES = Object.freeze({
+    [GM.INTERNAL]: 'Internal error',
+    [GM.INVALID_JSON]: 'Request body must be valid JSON',
+    [GM.INVALID_PARAM]: 'Invalid parameter',
+    [GM.UNKNOWN_METHOD]: 'Unknown method',
+    [GM.BAD_GAME_ID]: 'Invalid game id',
+    [GM.SCORE_OUT_OF_RANGE]: 'Score is outside the declared range',
+    [GM.NOT_READY]: 'Game is not ready',
+    [GM.CAPABILITY_DENIED]: 'Capability not declared',
+    [GM.SESSION_NOT_BOUND]: 'No Agent Session is bound',
+    [GM.SAVE_NOT_FOUND]: 'Save not found',
+    [GM.GAME_NOT_FOUND]: 'Game not found',
+    [GM.ASSET_NOT_FOUND]: 'Asset not found',
+    [GM.INSTALL_IN_PROGRESS]: 'Another install is in progress',
+    [GM.STORAGE_CONFLICT]: 'Storage revision conflict',
+    [GM.SESSION_STATE_CONFLICT]: 'Session state conflict',
+    [GM.SCHEMA_READ_TOO_NEW]: 'Stored data needs a newer Game Market',
+    [GM.SAVE_SCHEMA_TOO_NEW]: 'Save needs a newer game version',
+    [GM.SAVE_TOO_LARGE]: 'Save exceeds the 1 MiB limit',
+    [GM.STORAGE_QUOTA]: 'Storage quota exceeded',
+    [GM.STORAGE_KEY_INVALID]: 'Invalid storage key',
+    [GM.VALUE_NOT_SERIALIZABLE]: 'Value is not JSON-serializable',
+    [GM.UNSUPPORTED_MEDIA_TYPE]: 'Unsupported media type',
+    [GM.MANIFEST_INVALID]: 'Invalid game manifest',
+    [GM.RUNTIME_INCOMPATIBLE]: 'Game requires a different Runtime version',
+    [GM.SDK_INCOMPATIBLE]: 'Game requires a different SDK version',
+    [GM.RATE_LIMITED]: 'Too many requests',
+    [GM.BACKPRESSURE]: 'Too many in-flight requests',
+    [GM.HANDSHAKE_TIMEOUT]: 'Game handshake timed out',
+    [GM.PROTOCOL_MISMATCH]: 'Game protocol version mismatch',
+    [GM.NO_RUNTIME]: 'Game Runtime is not available',
+    [GM.MESSAGE_INVALID]: 'Invalid bridge message',
+    [GM.BRIDGE_TIMEOUT]: 'Bridge request timed out',
+    [GM.LOAD_TIMEOUT]: 'Game failed to load in time',
+    [GM.IFRAME_UNRESPONSIVE]: 'Game is not responding',
+    [GM.IFRAME_CRASHED]: 'Game crashed',
+    [GM.ASSET_INTEGRITY]: 'Game files failed integrity check',
+    [GM.SAVE_WRITE_FAILED]: 'Could not write save',
+    [GM.SAVE_CORRUPT]: 'Save file is corrupt',
+    [GM.HOST_EPOCH_STALE]: 'Host restarted; refresh state',
+    [GM.STORE_IO]: 'Storage read/write failed',
+    [GM.STORE_READONLY]: 'Storage is read-only',
+    [GM.HOST_UNAVAILABLE]: 'Game Market Host is unavailable',
+    [GM.REGISTRY_UNAVAILABLE]: 'Game registry is unavailable',
+    [GM.INSTALL_FAILED]: 'Install failed',
+    [GM.PACKAGE_INVALID]: 'Package file is not valid UTF-8 HTML',
+    [GM.ENTRY_NOT_SELF_CONTAINED]: 'Game entry must be a self-contained single file',
+    [GM.MANIFEST_TOO_LARGE]: 'Inline manifest is too large',
+    [GM.PACKAGE_TOO_LARGE]: 'Game package exceeds the size limit',
+    [GM.INSTALL_URL_REJECTED]: 'Package URL is not allowed',
+    [GM.MARKET_DISABLED]: 'Game Market is disabled',
+    [GM.STORE_PATH_ESCAPE]: 'Path escapes the managed storage root',
+    [GM.UNINSTALL_BUILTIN]: 'Built-in games cannot be uninstalled',
+    [GM.NOT_IN_REGISTRY]: 'Game is not in the registry',
+    [GM.INSTALL_VERSION_CONFLICT]: 'Installed version conflicts with this install',
+    [GM.INSTALL_VERSION_MISMATCH]: 'Package version does not match the registry entry',
+    [GM.UPDATE_GAME_RUNNING]: 'Exit the game before updating',
+    [GM.UNINSTALL_BUSY]: 'Another install or uninstall is in progress',
+    [GM.INSTALL_DISK_FULL]: 'Not enough disk space for this install',
+    [GM.INSTALL_HASH_MISMATCH]: 'Package SHA-256 does not match the registry',
+    [GM.INSTALL_DOWNLOAD_FAILED]: 'Package download failed',
+    [GM.INSTALL_DOWNLOAD_TIMEOUT]: 'Package download timed out',
+    [GM.INSTALL_IO]: 'Install write failed',
+    [GM.INSTALL_CORRUPT]: 'Installed package is incomplete',
+  });
+
+  /** HTTP status for a GM code (PRD §8.5 mapping). */
+  function httpStatusFor(gmCode) {
+    const num = Number(String(gmCode).slice(3));
+    if (!Number.isFinite(num)) return 500;
+    if (gmCode === GM.INTERNAL) return 500;
+    if (gmCode === GM.MANIFEST_INVALID) return 422;
+    if (num >= 5000 && num < 6000) return num >= 5030 ? 503 : 500;
+    if (num >= 4000 && num < 5000) return Math.floor(num / 10);
+    return 500;
+  }
+
+  function isGmCode(value) {
+    return typeof value === 'string' && /^GM-\d{4}$/.test(value);
+  }
+
+  /**
+   * Internal `E_*` -> public `GM-*` map (PRD §8.13.2 / §8.13.3 / D-030).
+   * Shared validators (manifest/registry/installation) emit `E_*`; the Host and
+   * CLI must translate before crossing an API/bridge/user-visible boundary.
+   * Retired V1 codes (zip archive rules) are intentionally absent.
+   */
+  const INTERNAL_TO_GM = Object.freeze({
+    // Package / manifest (PRD §8.13.2) — names follow PRD v2.2 (single-file).
+    E_PKG_HTML_INVALID: GM.PACKAGE_INVALID,
+    E_PKG_MANIFEST_MISSING: GM.MANIFEST_INVALID,
+    E_PKG_MANIFEST_DUPLICATE: GM.MANIFEST_INVALID,
+    E_PKG_MANIFEST_JSON: 'GM-4228',
+    E_PKG_MANIFEST_TOO_LARGE: GM.MANIFEST_TOO_LARGE,
+    E_PKG_MANIFEST_VERSION: 'GM-4230',
+    E_PKG_FIELD_MISSING: 'GM-4231',
+    E_PKG_FIELD_TYPE: 'GM-4232',
+    E_PKG_FIELD_RANGE: 'GM-4233',
+    E_PKG_ID_INVALID: 'GM-4234',
+    E_PKG_ID_RESERVED: 'GM-4235',
+    E_PKG_VERSION_INVALID: 'GM-4236',
+    E_PKG_LEGACY_FIELD: 'GM-4237',
+    E_PKG_CATEGORY_UNKNOWN: 'GM-4238',
+    E_PKG_CAPABILITY_UNKNOWN: 'GM-4239',
+    E_PKG_CAPABILITY_UNSUPPORTED: 'GM-4240',
+    E_PKG_CAPABILITY_DUPLICATE: 'GM-4241',
+    E_PKG_PERMISSION_UNSUPPORTED: 'GM-4242',
+    E_PKG_SCORE_RANGE: 'GM-4243',
+    E_PKG_SAVE_SCHEMA: 'GM-4244',
+    E_PKG_RANGE_SYNTAX: 'GM-4245',
+    E_PKG_ICON_FORMAT: 'GM-4247',
+    E_PKG_ICON_TOO_LARGE: 'GM-4248',
+    E_PKG_ENTRY_NOT_SELF_CONTAINED: GM.ENTRY_NOT_SELF_CONTAINED,
+    E_PKG_TOO_LARGE: GM.PACKAGE_TOO_LARGE,
+    // Registry / install (PRD §8.13.3)
+    E_REGISTRY_INVALID: GM.REGISTRY_UNAVAILABLE,
+    E_REGISTRY_URL: 'GM-4035',
+    E_MARKET_DISABLED: GM.MARKET_DISABLED,
+    E_NOT_IN_REGISTRY: GM.NOT_IN_REGISTRY,
+    E_UNINSTALL_BUILTIN: GM.UNINSTALL_BUILTIN,
+    E_INSTALL_URL_REJECTED: GM.INSTALL_URL_REJECTED,
+    E_INSTALL_DISK_FULL: GM.INSTALL_DISK_FULL,
+    E_INSTALL_VERSION_CONFLICT: GM.INSTALL_VERSION_CONFLICT,
+    E_INSTALL_VERSION_MISMATCH: GM.INSTALL_VERSION_MISMATCH,
+    E_UPDATE_GAME_RUNNING: GM.UPDATE_GAME_RUNNING,
+    E_UNINSTALL_BUSY: GM.UNINSTALL_BUSY,
+    E_INSTALL_HASH_MISMATCH: GM.INSTALL_HASH_MISMATCH,
+    E_INSTALL_DOWNLOAD_FAILED: GM.INSTALL_DOWNLOAD_FAILED,
+    E_INSTALL_DOWNLOAD_TIMEOUT: GM.INSTALL_DOWNLOAD_TIMEOUT,
+    E_INSTALL_IO: GM.INSTALL_IO,
+    E_INSTALL_CORRUPT: GM.INSTALL_CORRUPT,
+    // Storage / compatibility (PRD §8.13.4)
+    E_STORE_SCHEMA: 'GM-4098',
+    E_STORE_SCHEMA_NEWER: 'GM-4098',
+    E_STORE_PATH_ESCAPE: GM.STORE_PATH_ESCAPE,
+  });
+
+  /** Translate an internal `E_*` code to its public `GM-*` code (fallback: GM-5000). */
+  function gmForInternal(code) {
+    if (isGmCode(code)) return code;
+    return INTERNAL_TO_GM[code] || GM.INTERNAL;
+  }
+
+  /**
+   * Create a plain error object for Host responses and bridge failures.
+   * Never include paths, stack traces or user content in `details`.
+   */
+  function makeGameError(code, message, options = {}) {
+    const gmCode = isGmCode(code) ? code : GM.INTERNAL;
+    return {
+      code: gmCode,
+      message: message || DEFAULT_MESSAGES[gmCode] || DEFAULT_MESSAGES[GM.INTERNAL],
+      retryable: options.retryable === true,
+      ...(options.details === undefined ? {} : { details: options.details }),
+    };
+  }
+
+  function errorResponseBody(code, message, options = {}) {
+    return { ok: false, error: makeGameError(code, message, options) };
+  }
+
+  function defaultMessageFor(code) {
+    return DEFAULT_MESSAGES[code] || DEFAULT_MESSAGES[GM.INTERNAL];
+  }
+
+  /** SDK/bridge error codes are the same GM codes; aliases keep call sites readable. */
+  const SDK_ERROR_CODES = Object.freeze(Object.values(GM));
+
+  return { GM, httpStatusFor, isGmCode, INTERNAL_TO_GM, gmForInternal, makeGameError, errorResponseBody, defaultMessageFor, SDK_ERROR_CODES };
+  })();
+
+  // module: packages/shared/src/protocol.js
+  __mods["packages/shared/src/protocol.js"] = (function () {
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+  const PROTOCOL_VERSION = __mods["packages/shared/src/constants.js"].PROTOCOL_VERSION;
+  /**
+   * postMessage bridge protocol helpers shared by Runtime and SDK (PRD §8.4).
+   *
+   * Runtime is the trusted side; SDK is the iframe-side client. Both must accept
+   * only the exact envelope shapes below and reject everything else.
+   */
+
+
+  const BRIDGE_VERSION = PROTOCOL_VERSION;
+  const MAX_BRIDGE_MESSAGE_BYTES = LIMITS.saveTotalBytes + 64 * 1024;
+  const MAX_BRIDGE_DEPTH = 32;
+  const MAX_INFLIGHT_REQUESTS = 32;
+  const MAX_INVALID_MESSAGES_PER_10S = 50;
+  const MAX_MESSAGES_PER_SECOND = 200;
+
+  const METHODS = Object.freeze({
+    READY: 'ready',
+    PING: 'ping',
+    STORAGE_SAVE: 'storage.save',
+    STORAGE_LOAD: 'storage.load',
+    STORAGE_REMOVE: 'storage.remove',
+    SESSION_START: 'session.start',
+    SESSION_END: 'session.end',
+    SCORE_SUBMIT: 'score.submit',
+    SCORE_GET_BEST: 'score.getBest',
+    AGENT_GET_STATUS: 'agent.getStatus',
+  });
+
+  const EVENTS = Object.freeze({
+    HELLO: 'hello',
+    INIT: 'init',
+    PAUSE: 'pause',
+    RESUME: 'resume',
+    HIDDEN: 'hidden',
+    VISIBLE: 'visible',
+    BEFORE_SAVE: 'before-save',
+    AGENT_STATUS: 'agent-status',
+    THEME: 'theme',
+    VIEWPORT: 'viewport',
+  });
+
+  /** Runtime → game methods list (SDK side handles these). */
+  const RUNTIME_TO_GAME_METHODS = Object.freeze(['ping']);
+  /** Game → Runtime methods list (Runtime side handles these). */
+  const GAME_TO_RUNTIME_METHODS = Object.freeze([
+    METHODS.READY,
+    METHODS.STORAGE_SAVE,
+    METHODS.STORAGE_LOAD,
+    METHODS.STORAGE_REMOVE,
+    METHODS.SESSION_START,
+    METHODS.SESSION_END,
+    METHODS.SCORE_SUBMIT,
+    METHODS.SCORE_GET_BEST,
+    METHODS.AGENT_GET_STATUS,
+  ]);
+
+  const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+  function isPlainObject(value) {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+    const proto = Object.getPrototypeOf(value);
+    return proto === Object.prototype || proto === null;
+  }
+
+  /** 32 lowercase hex chars from the platform CSPRNG; works in browser + Node. */
+  function randomHex32() {
+    const bytes = new Uint8Array(16);
+    const cryptoApi = globalThis.crypto;
+    if (!cryptoApi || typeof cryptoApi.getRandomValues !== 'function') {
+      throw new Error('crypto.getRandomValues is unavailable');
+    }
+    cryptoApi.getRandomValues(bytes);
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function createInstanceId() {
+    return randomHex32();
+  }
+
+  function createNonce() {
+    return randomHex32();
+  }
+
+  /** UTF-8 byte length of the JSON serialization; throws on non-JSON values. */
+  function jsonByteLength(value) {
+    return byteLength(JSON.stringify(value));
+  }
+
+  function byteLength(text) {
+    return new TextEncoder().encode(text).length;
+  }
+
+  /**
+   * Validate a JSON value: finite numbers, plain objects/arrays, depth-bounded,
+   * no prototype-pollution keys. Returns a cloned plain value.
+   */
+  function cloneJsonValue(value, depth = 0) {
+    if (depth > MAX_BRIDGE_DEPTH) {
+      throw protocolError(GM.VALUE_NOT_SERIALIZABLE, 'Value nesting is too deep');
+    }
+    if (value === null || typeof value === 'string' || typeof value === 'boolean') return value;
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value)) throw protocolError(GM.VALUE_NOT_SERIALIZABLE, 'Number must be finite');
+      return value;
+    }
+    if (Array.isArray(value)) return value.map((item) => cloneJsonValue(item, depth + 1));
+    if (isPlainObject(value)) {
+      const out = {};
+      for (const key of Object.keys(value)) {
+        if (FORBIDDEN_KEYS.has(key)) {
+          throw protocolError(GM.VALUE_NOT_SERIALIZABLE, `Forbidden key: ${key}`);
+        }
+        out[key] = cloneJsonValue(value[key], depth + 1);
+      }
+      return out;
+    }
+    throw protocolError(GM.VALUE_NOT_SERIALIZABLE, `Unsupported value type: ${typeof value}`);
+  }
+
+  function isValidStorageKey(key) {
+    return typeof key === 'string' && /^[a-z0-9][a-z0-9._-]{0,63}$/.test(key) && !FORBIDDEN_KEYS.has(key);
+  }
+
+  function protocolError(code, message) {
+    return { code, message, retryable: false };
+  }
+
+  function createRequest(id, method, params) {
+    return { v: BRIDGE_VERSION, id, kind: 'req', method, params: params === undefined ? {} : params };
+  }
+
+  function createResponse(id, result) {
+    return { v: BRIDGE_VERSION, id, kind: 'res', ok: true, result };
+  }
+
+  function createErrorResponse(id, error) {
+    return { v: BRIDGE_VERSION, id, kind: 'res', ok: false, error };
+  }
+
+  function createEvent(event, data) {
+    return { v: BRIDGE_VERSION, kind: 'evt', event, ...(data === undefined ? {} : { data }) };
+  }
+
+  function envelopeByteSize(message) {
+    try {
+      return jsonByteLength(message);
+    } catch (_error) {
+      return Infinity;
+    }
+  }
+
+  /**
+   * Structural validation. Sender/source identity and nonce matching stay with
+   * the caller because they are transport-specific.
+   *
+   * @returns {{ok: true, message: object} | {ok: false, code: string, message: string}}
+   */
+  function validateBridgeMessage(raw) {
+    if (!isPlainObject(raw)) return invalid('Message must be a plain object');
+    if (raw.v !== BRIDGE_VERSION) return invalid(`Unsupported protocol version: ${String(raw.v)}`, GM.PROTOCOL_MISMATCH);
+    if (raw.kind === 'req') {
+      if (typeof raw.id !== 'string' || raw.id.length === 0 || raw.id.length > 64) return invalid('Invalid request id');
+      if (typeof raw.method !== 'string' || raw.method.length === 0 || raw.method.length > 64) return invalid('Invalid method');
+      if (raw.params !== undefined && !isPlainObject(raw.params)) return invalid('params must be an object');
+      if (envelopeByteSize(raw) > MAX_BRIDGE_MESSAGE_BYTES) return invalid('Message too large');
+      return { ok: true, message: raw };
+    }
+    if (raw.kind === 'res') {
+      if (typeof raw.id !== 'string' || raw.id.length === 0 || raw.id.length > 64) return invalid('Invalid response id');
+      if (raw.ok === true) return { ok: true, message: raw };
+      if (raw.ok === false && isPlainObject(raw.error) && typeof raw.error.code === 'string') {
+        return { ok: true, message: raw };
+      }
+      return invalid('Invalid error response');
+    }
+    if (raw.kind === 'evt') {
+      if (typeof raw.event !== 'string' || raw.event.length === 0 || raw.event.length > 64) return invalid('Invalid event name');
+      if (envelopeByteSize(raw) > MAX_BRIDGE_MESSAGE_BYTES) return invalid('Message too large');
+      return { ok: true, message: raw };
+    }
+    return invalid(`Unknown message kind: ${String(raw.kind)}`);
+  }
+
+  function invalid(message, code = GM.MESSAGE_INVALID) {
+    return { ok: false, code, message };
+  }
+
+  /**
+   * SDK handshake inputs come from the URL query. Runtime puts them there.
+   * @returns {{instanceId: string, nonce: string} | null}
+   */
+  function parseLaunchQuery(search) {
+    try {
+      const params = new URLSearchParams(search || '');
+      const instanceId = params.get('instance') || '';
+      const nonce = params.get('nonce') || '';
+      if (!/^[a-f0-9]{32}$/.test(instanceId) || !/^[a-f0-9]{32}$/.test(nonce)) return null;
+      return { instanceId, nonce };
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  /** Narrow runtime info handed to the game in `init`. */
+  function createRuntimeInfo(fields) {
+    return {
+      sdkVersion: fields.sdkVersion,
+      protocolVersion: BRIDGE_VERSION,
+      runtimeVersion: fields.runtimeVersion,
+      gameId: fields.gameId,
+      gameVersion: fields.gameVersion,
+      locale: fields.locale || 'zh',
+      theme: fields.theme === 'dark' ? 'dark' : 'light',
+      reducedMotion: fields.reducedMotion === true,
+      capabilities: Array.isArray(fields.capabilities) ? fields.capabilities.slice() : [],
+      viewport: {
+        width: Number(fields.viewport?.width) || 0,
+        height: Number(fields.viewport?.height) || 0,
+        dpr: Number(fields.viewport?.dpr) || 1,
+      },
+      ready: fields.ready === true,
+    };
+  }
+
+  return { BRIDGE_VERSION, MAX_BRIDGE_MESSAGE_BYTES, MAX_BRIDGE_DEPTH, MAX_INFLIGHT_REQUESTS, MAX_INVALID_MESSAGES_PER_10S, MAX_MESSAGES_PER_SECOND, METHODS, EVENTS, RUNTIME_TO_GAME_METHODS, GAME_TO_RUNTIME_METHODS, isPlainObject, randomHex32, createInstanceId, createNonce, jsonByteLength, byteLength, cloneJsonValue, isValidStorageKey, protocolError, createRequest, createResponse, createErrorResponse, createEvent, envelopeByteSize, validateBridgeMessage, parseLaunchQuery, createRuntimeInfo };
+  })();
+
+  // module: packages/sdk/src/errors.js
+  __mods["packages/sdk/src/errors.js"] = (function () {
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const defaultMessageFor = __mods["packages/shared/src/errors.js"].defaultMessageFor;
+  const isGmCode = __mods["packages/shared/src/errors.js"].isGmCode;
+  /**
+   * SDK-side error type. Every error crossing the bridge uses a `GM-*` code so
+   * games can branch on a stable, documented surface (PRD §8.3 / D-030).
+   */
+
+
+  class GameError extends Error {
+    /**
+     * @param {string} code GM code
+     * @param {string} [message]
+     * @param {{retryable?: boolean, details?: object}} [options]
+     */
+    constructor(code, message, options = {}) {
+      const gmCode = isGmCode(code) ? code : GM.INTERNAL;
+      super(message || defaultMessageFor(gmCode));
+      this.name = 'GameError';
+      this.code = gmCode;
+      this.retryable = options.retryable === true;
+      if (options.details !== undefined) this.details = options.details;
+    }
+  }
+
+  function createGameError(code, message, options = {}) {
+    return new GameError(code, message, options);
+  }
+
+  function isGameError(error) {
+    if (error instanceof GameError) return true;
+    return Boolean(error) && typeof error === 'object' && isGmCode(error.code) && typeof error.message === 'string';
+  }
+
+  /** Never leak a non-GM error object across the public SDK surface. */
+  function toGameError(error) {
+    if (isGameError(error)) {
+      if (error instanceof GameError) return error;
+      return new GameError(error.code, error.message, { retryable: error.retryable === true });
+    }
+    return new GameError(GM.INTERNAL, defaultMessageFor(GM.INTERNAL), { retryable: false });
+  }
+
+  return { GameError, createGameError, isGameError, toGameError };
+  })();
+
+  // module: packages/sdk/src/bridge-client.js
+  __mods["packages/sdk/src/bridge-client.js"] = (function () {
+  const PROTOCOL_VERSION = __mods["packages/shared/src/constants.js"].PROTOCOL_VERSION;
+  const SDK_VERSION = __mods["packages/shared/src/constants.js"].SDK_VERSION;
+  const TIMING = __mods["packages/shared/src/constants.js"].TIMING;
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const EVENTS = __mods["packages/shared/src/protocol.js"].EVENTS;
+  const MAX_INFLIGHT_REQUESTS = __mods["packages/shared/src/protocol.js"].MAX_INFLIGHT_REQUESTS;
+  const METHODS = __mods["packages/shared/src/protocol.js"].METHODS;
+  const createErrorResponse = __mods["packages/shared/src/protocol.js"].createErrorResponse;
+  const createEvent = __mods["packages/shared/src/protocol.js"].createEvent;
+  const createRequest = __mods["packages/shared/src/protocol.js"].createRequest;
+  const createResponse = __mods["packages/shared/src/protocol.js"].createResponse;
+  const isPlainObject = __mods["packages/shared/src/protocol.js"].isPlainObject;
+  const parseLaunchQuery = __mods["packages/shared/src/protocol.js"].parseLaunchQuery;
+  const validateBridgeMessage = __mods["packages/shared/src/protocol.js"].validateBridgeMessage;
+  const createGameError = __mods["packages/sdk/src/errors.js"].createGameError;
+  const toGameError = __mods["packages/sdk/src/errors.js"].toGameError;
+  /**
+   * iframe-side bridge client (PRD §8.4 postMessage protocol).
+   *
+   * Runs inside the sandboxed game iframe. It only knows `window.parent` and
+   * `location.search`; it never touches host DOM, storage or network.
+   *
+   * Handshake:
+   *   hello (every 250ms, at most 30 times) -> init -> ready request -> ready.
+   */
+
+
+  const SDK_METHOD_TIMEOUTS = Object.freeze({
+    ready: 10000,
+    ping: 2000,
+    'storage.save': 6000,
+    'storage.load': 3000,
+    'storage.remove': 3000,
+    'session.start': 4000,
+    'session.end': 6000,
+    'score.submit': 4000,
+    'score.getBest': 3000,
+    'agent.getStatus': 2000,
+  });
+
+  const HELLO_INTERVAL_MS = 250;
+  const MAX_HELLO_COUNT = 30;
+  const READY_EVENT_NAMES = Object.freeze([EVENTS.PAUSE, EVENTS.RESUME, EVENTS.HIDDEN, EVENTS.VISIBLE, EVENTS.BEFORE_SAVE]);
+
+  function createBridgeClient(options = {}) {
+    const win = options.window || null;
+    const parent = options.parent || null;
+    const location = options.location || null;
+    const timers = options.timers || globalThis;
+    const now = typeof options.now === 'function' ? options.now : Date.now;
+    const cryptoApi = options.crypto || (win && win.crypto) || null;
+    const onEvent = typeof options.onEvent === 'function' ? options.onEvent : function noop() {};
+    const onInit = typeof options.onInit === 'function' ? options.onInit : function noop() {};
+    const onFatal = typeof options.onFatal === 'function' ? options.onFatal : function noop() {};
+
+    const launchQuery = parseLaunchQuery(location && location.search);
+    const available = Boolean(
+      win &&
+        parent &&
+        parent !== win &&
+        typeof parent.postMessage === 'function' &&
+        launchQuery
+    );
+
+    let started = false;
+    let disposed = false;
+    let readySettled = false;
+    let ready = false;
+    let fatalError = null;
+    let helloCount = 0;
+    let helloTimer = null;
+    let deadlineTimer = null;
+    let listenerAttached = false;
+    let initData = null;
+    let readyResult = null;
+    let requestSeq = 0;
+    let invalidMessages = 0;
+    let readyTimeoutMs = TIMING.handshakeTimeoutMs;
+    const pending = new Map();
+
+    let resolveReady = null;
+    let rejectReady = null;
+    const readyPromise = new Promise(function executor(resolve, reject) {
+      resolveReady = resolve;
+      rejectReady = reject;
+    });
+    // The promise may be observed later (or never); keep the rejection handled.
+    readyPromise.then(undefined, function ignore() {});
+
+    function isAvailable() {
+      return available;
+    }
+
+    function attachListener() {
+      if (listenerAttached || !win || typeof win.addEventListener !== 'function') return;
+      win.addEventListener('message', handleMessage);
+      listenerAttached = true;
+    }
+
+    function detachListener() {
+      if (!listenerAttached || !win || typeof win.removeEventListener !== 'function') return;
+      win.removeEventListener('message', handleMessage);
+      listenerAttached = false;
+    }
+
+    function nextId() {
+      requestSeq += 1;
+      if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
+        try {
+          return cryptoApi.randomUUID();
+        } catch (_error) {
+          // fall through
+        }
+      }
+      return `m-${requestSeq}-${Math.random().toString(36).slice(2, 10)}`;
+    }
+
+    function post(message) {
+      if (disposed || !parent) return;
+      try {
+        parent.postMessage(message, '*');
+      } catch (_error) {
+        fail(createGameError(GM.NO_RUNTIME, 'Cannot reach the Game Runtime'));
+      }
+    }
+
+    function clearHandshakeTimers() {
+      if (helloTimer !== null) {
+        timers.clearTimeout(helloTimer);
+        helloTimer = null;
+      }
+      if (deadlineTimer !== null) {
+        timers.clearTimeout(deadlineTimer);
+        deadlineTimer = null;
+      }
+    }
+
+    function clearPending(error) {
+      for (const entry of pending.values()) {
+        timers.clearTimeout(entry.timer);
+        entry.reject(error);
+      }
+      pending.clear();
+    }
+
+    function settleResolve(value) {
+      if (readySettled) return;
+      readySettled = true;
+      clearHandshakeTimers();
+      resolveReady(value);
+    }
+
+    function fail(error) {
+      const gameError = toGameError(error);
+      if (disposed) return;
+      fatalError = gameError;
+      if (!readySettled) {
+        readySettled = true;
+        clearHandshakeTimers();
+        clearPending(gameError);
+        rejectReady(gameError);
+      }
+      onFatal(gameError);
+    }
+
+    function start() {
+      if (started || disposed) return;
+      started = true;
+      if (!available) {
+        fail(createGameError(GM.NO_RUNTIME, 'Game Runtime is not available (not running inside a sandbox iframe)'));
+        return;
+      }
+      attachListener();
+      deadlineTimer = timers.setTimeout(function onDeadline() {
+        deadlineTimer = null;
+        fail(createGameError(GM.HANDSHAKE_TIMEOUT, 'Game handshake timed out'));
+      }, readyTimeoutMs);
+      sendHello();
+    }
+
+    function sendHello() {
+      if (disposed || readySettled || ready) return;
+      if (!available) return;
+      if (helloCount >= MAX_HELLO_COUNT) {
+        fail(createGameError(GM.HANDSHAKE_TIMEOUT, 'Game handshake timed out'));
+        return;
+      }
+      helloCount += 1;
+      post(
+        createEvent(EVENTS.HELLO, {
+          instanceId: launchQuery.instanceId,
+          nonce: launchQuery.nonce,
+          sdkVersion: SDK_VERSION,
+          protocolVersion: PROTOCOL_VERSION,
+        })
+      );
+      helloTimer = timers.setTimeout(sendHello, HELLO_INTERVAL_MS);
+    }
+
+    function handleInit(data) {
+      if (!isPlainObject(data)) {
+        invalidMessages += 1;
+        return;
+      }
+      if (data.instanceId !== launchQuery.instanceId || data.nonce !== launchQuery.nonce) {
+        invalidMessages += 1;
+        return;
+      }
+      if (data.protocolVersion !== PROTOCOL_VERSION) {
+        fail(createGameError(GM.PROTOCOL_MISMATCH, 'Unsupported bridge protocol version'));
+        return;
+      }
+      if (initData) return;
+      initData = data;
+      if (helloTimer !== null) {
+        timers.clearTimeout(helloTimer);
+        helloTimer = null;
+      }
+      onInit(data);
+      dispatchRequest(METHODS.READY, { sdkVersion: SDK_VERSION, protocolVersion: PROTOCOL_VERSION }, readyTimeoutMs).then(
+        function onReady(result) {
+          if (readySettled || disposed) return;
+          if (result !== null && result !== undefined && !isPlainObject(result)) {
+            fail(createGameError(GM.PROTOCOL_MISMATCH, 'Invalid ready result'));
+            return;
+          }
+          if (result && result.protocolVersion !== undefined && result.protocolVersion !== PROTOCOL_VERSION) {
+            fail(createGameError(GM.PROTOCOL_MISMATCH, 'Unsupported runtime protocol version'));
+            return;
+          }
+          ready = true;
+          readyResult = result || {};
+          settleResolve({ init: initData, result: readyResult });
+        },
+        function onReadyError(error) {
+          fail(error);
+        }
+      );
+    }
+
+    function handleResponse(message) {
+      const entry = pending.get(message.id);
+      if (!entry) {
+        invalidMessages += 1;
+        return;
+      }
+      pending.delete(message.id);
+      timers.clearTimeout(entry.timer);
+      if (message.ok === true) {
+        entry.resolve(message.result === undefined ? null : message.result);
+        return;
+      }
+      const errorPayload = message.error || {};
+      entry.reject(
+        createGameError(errorPayload.code || GM.INTERNAL, errorPayload.message, {
+          retryable: errorPayload.retryable === true,
+        })
+      );
+    }
+
+    function handleEvent(message) {
+      if (message.event === EVENTS.INIT) {
+        handleInit(message.data);
+        return;
+      }
+      if (!initData) return;
+      if (message.event === EVENTS.AGENT_STATUS) {
+        onEvent('agent-status', message.data);
+        return;
+      }
+      if (message.event === EVENTS.THEME) {
+        onEvent('theme', message.data);
+        return;
+      }
+      if (message.event === EVENTS.VIEWPORT) {
+        onEvent('viewport', message.data);
+        return;
+      }
+      if (READY_EVENT_NAMES.includes(message.event)) {
+        onEvent(message.event, message.data || {});
+        return;
+      }
+      // Unknown events are ignored by contract (forward compatibility).
+    }
+
+    function handleRequest(message) {
+      if (message.method === METHODS.PING) {
+        const requestAt = message.params && Number.isFinite(message.params.at) ? message.params.at : now();
+        post(createResponse(message.id, { at: requestAt }));
+        return;
+      }
+      post(createErrorResponse(message.id, { code: GM.UNKNOWN_METHOD, message: 'Unknown game method', retryable: false }));
+    }
+
+    function handleMessage(event) {
+      if (disposed || !event) return;
+      if (event.source !== parent) {
+        invalidMessages += 1;
+        return;
+      }
+      const checked = validateBridgeMessage(event.data);
+      if (!checked.ok) {
+        invalidMessages += 1;
+        return;
+      }
+      const message = checked.message;
+      try {
+        if (message.kind === 'evt') handleEvent(message);
+        else if (message.kind === 'req') handleRequest(message);
+        else if (message.kind === 'res') handleResponse(message);
+      } catch (_error) {
+        invalidMessages += 1;
+      }
+    }
+
+    function dispatchRequest(method, params, timeoutMs) {
+      if (disposed) return Promise.reject(createGameError(GM.NO_RUNTIME, 'Game Runtime is not available'));
+      if (fatalError) return Promise.reject(fatalError);
+      if (pending.size >= MAX_INFLIGHT_REQUESTS) {
+        return Promise.reject(createGameError(GM.BACKPRESSURE, 'Too many in-flight bridge requests'));
+      }
+      const ms = typeof timeoutMs === 'number' && timeoutMs > 0 ? timeoutMs : SDK_METHOD_TIMEOUTS[method] || 5000;
+      return new Promise(function executor(resolve, reject) {
+        const id = nextId();
+        const timer = timers.setTimeout(function onTimeout() {
+          const entry = pending.get(id);
+          if (!entry) return;
+          pending.delete(id);
+          reject(createGameError(GM.BRIDGE_TIMEOUT, `Bridge request timed out: ${method}`, { retryable: true }));
+        }, ms);
+        pending.set(id, { resolve, reject, timer });
+        post(createRequest(id, method, params));
+      });
+    }
+
+    function readyWithTimeout(timeoutMs) {
+      if (!started && typeof timeoutMs === 'number' && timeoutMs > 0 && timeoutMs < readyTimeoutMs) {
+        readyTimeoutMs = timeoutMs;
+      }
+      start();
+      return readyPromise;
+    }
+
+    function request(method, params, timeoutMs) {
+      if (fatalError) return Promise.reject(fatalError);
+      if (!ready) return Promise.reject(createGameError(GM.NOT_READY, 'Game is not ready'));
+      return dispatchRequest(method, params, timeoutMs);
+    }
+
+    function dispose() {
+      if (disposed) return;
+      disposed = true;
+      clearHandshakeTimers();
+      detachListener();
+      const error = createGameError(GM.NO_RUNTIME, 'Game Runtime was closed');
+      clearPending(error);
+      if (!readySettled) {
+        readySettled = true;
+        rejectReady(error);
+      }
+    }
+
+    return Object.freeze({
+      isAvailable,
+      isReady: function isReady() {
+        return ready;
+      },
+      getFatalError: function getFatalError() {
+        return fatalError;
+      },
+      getInfo: function getInfo() {
+        return { init: initData, result: readyResult };
+      },
+      getDiagnostics: function getDiagnostics() {
+        return { helloCount, invalidMessages, pending: pending.size };
+      },
+      start,
+      ready: readyWithTimeout,
+      request,
+      dispose,
+    });
+  }
+
+  return { SDK_METHOD_TIMEOUTS, createBridgeClient };
+  })();
+
+  // module: packages/sdk/src/event-hub.js
+  __mods["packages/sdk/src/event-hub.js"] = (function () {
+  /**
+   * Tiny event hub used for lifecycle / agent subscriptions.
+   *
+   * - Handlers run in registration order and are isolated: a throwing handler
+   *   never breaks the bridge (PRD §8.3 lifecycle semantics).
+   * - Lifecycle events that arrive before `ready` are buffered and replayed once
+   *   the game becomes ready, so "subscribe first, event later" and "event first,
+   *   subscribe later" both work for the handshake window.
+   */
+
+  const LIFECYCLE_EVENTS = Object.freeze(['pause', 'resume', 'hidden', 'visible', 'before-save']);
+
+  function isLifecycleEvent(name) {
+    return LIFECYCLE_EVENTS.includes(name);
+  }
+
+  function createEventHub() {
+    const handlers = new Map();
+    const buffered = [];
+    let open = false;
+
+    function on(name, handler) {
+      if (typeof handler !== 'function') return function off() {};
+      let set = handlers.get(name);
+      if (!set) {
+        set = new Set();
+        handlers.set(name, set);
+      }
+      set.add(handler);
+      return function off() {
+        const current = handlers.get(name);
+        if (!current) return;
+        current.delete(handler);
+        if (current.size === 0) handlers.delete(name);
+      };
+    }
+
+    function dispatch(name, payload) {
+      const set = handlers.get(name);
+      if (!set || set.size === 0) return;
+      for (const handler of Array.from(set)) {
+        try {
+          const result = handler(payload);
+          if (result && typeof result.then === 'function') {
+            result.then(undefined, function ignore() {});
+          }
+        } catch (_error) {
+          // Game callbacks must never break the bridge.
+        }
+      }
+    }
+
+    function emit(name, payload, options) {
+      const shouldBuffer = options ? options.buffer !== false : true;
+      if (!open && shouldBuffer) {
+        buffered.push([name, payload]);
+        if (buffered.length > 64) buffered.shift();
+        return;
+      }
+      dispatch(name, payload);
+    }
+
+    function openBuffer() {
+      if (open) return;
+      open = true;
+      const queued = buffered.splice(0, buffered.length);
+      for (const entry of queued) dispatch(entry[0], entry[1]);
+    }
+
+    function has(name) {
+      const set = handlers.get(name);
+      return Boolean(set && set.size > 0);
+    }
+
+    return { on, emit, open: openBuffer, has, isOpen: function isOpen() { return open; } };
+  }
+
+  return { isLifecycleEvent, createEventHub };
+  })();
+
+  // module: packages/sdk/src/validate.js
+  __mods["packages/sdk/src/validate.js"] = (function () {
+  const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+  const SESSION_OUTCOMES = __mods["packages/shared/src/constants.js"].SESSION_OUTCOMES;
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const MAX_BRIDGE_DEPTH = __mods["packages/shared/src/protocol.js"].MAX_BRIDGE_DEPTH;
+  const cloneJsonValue = __mods["packages/shared/src/protocol.js"].cloneJsonValue;
+  const isValidStorageKey = __mods["packages/shared/src/protocol.js"].isValidStorageKey;
+  const jsonByteLength = __mods["packages/shared/src/protocol.js"].jsonByteLength;
+  const createGameError = __mods["packages/sdk/src/errors.js"].createGameError;
+  /**
+   * Client-side pre-flight checks. The Host is authoritative; the SDK runs the
+   * same cheap checks locally so obvious mistakes fail with a precise GM code
+   * before a message is posted (PRD §8.3).
+   */
+
+
+  const MAX_OBJECT_KEYS = 1000;
+  const MAX_KEY_LENGTH = 128;
+  const MAX_SCORE_ABS = 1e12;
+
+  function assertStorageKey(key) {
+    if (!isValidStorageKey(key)) {
+      throw createGameError(GM.STORAGE_KEY_INVALID, `Invalid storage key: ${String(key).slice(0, 64)}`);
+    }
+  }
+
+  function cloneValue(value) {
+    try {
+      return cloneJsonValue(value);
+    } catch (error) {
+      throw createGameError(GM.VALUE_NOT_SERIALIZABLE, error && error.message ? error.message : 'Value is not JSON-serializable');
+    }
+  }
+
+  /** Extra shape rules from PRD §8.3 (depth / object size) that cloneJsonValue does not cover. */
+  function assertJsonShape(value, depth) {
+    if (depth > MAX_BRIDGE_DEPTH) {
+      throw createGameError(GM.VALUE_NOT_SERIALIZABLE, 'Value nesting is too deep');
+    }
+    if (value === null || typeof value === 'string' || typeof value === 'boolean') return;
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value)) throw createGameError(GM.VALUE_NOT_SERIALIZABLE, 'Number must be finite');
+      return;
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) assertJsonShape(item, depth + 1);
+      return;
+    }
+    if (typeof value === 'object') {
+      const keys = Object.keys(value);
+      if (keys.length > MAX_OBJECT_KEYS) {
+        throw createGameError(GM.VALUE_NOT_SERIALIZABLE, 'Object has too many keys');
+      }
+      for (const key of keys) {
+        if (key.length > MAX_KEY_LENGTH) throw createGameError(GM.VALUE_NOT_SERIALIZABLE, 'Object key is too long');
+        assertJsonShape(value[key], depth + 1);
+      }
+      return;
+    }
+    throw createGameError(GM.VALUE_NOT_SERIALIZABLE, `Unsupported value type: ${typeof value}`);
+  }
+
+  /**
+   * @returns {{value: unknown, bytes: number}}
+   */
+  function prepareStorageValue(data) {
+    const value = cloneValue(data);
+    assertJsonShape(value, 0);
+    const bytes = jsonByteLength(value);
+    if (bytes > LIMITS.saveValueBytes) {
+      throw createGameError(GM.SAVE_TOO_LARGE, `Value exceeds ${LIMITS.saveValueBytes} bytes`);
+    }
+    return { value, bytes };
+  }
+
+  /** `meta` is optional; `undefined`/`null` become `null`, never `undefined`. */
+  function prepareScoreMeta(meta) {
+    if (meta === undefined || meta === null) return null;
+    const value = cloneValue(meta);
+    assertJsonShape(value, 0);
+    const bytes = jsonByteLength(value);
+    if (bytes > LIMITS.scoreMetaBytes) {
+      throw createGameError(GM.INVALID_PARAM, `Score meta exceeds ${LIMITS.scoreMetaBytes} bytes`);
+    }
+    return value;
+  }
+
+  function assertScoreValue(score) {
+    if (typeof score !== 'number' || !Number.isFinite(score) || Math.abs(score) > MAX_SCORE_ABS) {
+      throw createGameError(GM.INVALID_PARAM, 'Score must be a finite number within ±1e12');
+    }
+  }
+
+  function assertSessionOutcome(outcome) {
+    if (!SESSION_OUTCOMES.includes(outcome)) {
+      throw createGameError(GM.INVALID_PARAM, `Invalid session outcome: ${String(outcome)}`);
+    }
+  }
+
+  return { assertStorageKey, prepareStorageValue, prepareScoreMeta, assertScoreValue, assertSessionOutcome };
+  })();
+
+  // module: packages/sdk/src/sdk.js
+  __mods["packages/sdk/src/sdk.js"] = (function () {
+  const PROTOCOL_VERSION = __mods["packages/shared/src/constants.js"].PROTOCOL_VERSION;
+  const SDK_VERSION = __mods["packages/shared/src/constants.js"].SDK_VERSION;
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const METHODS = __mods["packages/shared/src/protocol.js"].METHODS;
+  const createBridgeClient = __mods["packages/sdk/src/bridge-client.js"].createBridgeClient;
+  const SDK_METHOD_TIMEOUTS = __mods["packages/sdk/src/bridge-client.js"].SDK_METHOD_TIMEOUTS;
+  const GameErrorImpl = __mods["packages/sdk/src/errors.js"].GameError;
+  const createGameError = __mods["packages/sdk/src/errors.js"].createGameError;
+  const isGameErrorImpl = __mods["packages/sdk/src/errors.js"].isGameError;
+  const createEventHub = __mods["packages/sdk/src/event-hub.js"].createEventHub;
+  const isLifecycleEvent = __mods["packages/sdk/src/event-hub.js"].isLifecycleEvent;
+  const assertScoreValue = __mods["packages/sdk/src/validate.js"].assertScoreValue;
+  const assertSessionOutcome = __mods["packages/sdk/src/validate.js"].assertSessionOutcome;
+  const assertStorageKey = __mods["packages/sdk/src/validate.js"].assertStorageKey;
+  const prepareScoreMeta = __mods["packages/sdk/src/validate.js"].prepareScoreMeta;
+  const prepareStorageValue = __mods["packages/sdk/src/validate.js"].prepareStorageValue;
+  /**
+   * Public game SDK (PRD §8.3 / D-011).
+   *
+   *   const game = DSH_GAME_SDK.createGameSDK();
+   *   const info = await game.ready();
+   *   await game.storage.save('current', state);
+   *
+   * The API surface is intentionally tiny: ready / storage / session / score /
+   * lifecycle / agent / runtime. Anything else is out of scope by contract.
+   */
+
+
+  /** Re-export the error class as a const (the repo bundler only supports named declarations). */
+  const GameError = GameErrorImpl;
+
+  function isGameError(error) {
+    return isGameErrorImpl(error);
+  }
+
+  function createRuntimeState() {
+    return {
+      sdkVersion: SDK_VERSION,
+      protocolVersion: PROTOCOL_VERSION,
+      runtimeVersion: null,
+      gameId: '',
+      gameVersion: '',
+      locale: 'zh',
+      theme: 'light',
+      reducedMotion: false,
+      capabilities: Object.freeze([]),
+      viewport: Object.freeze({ width: 0, height: 0, dpr: 1 }),
+      ready: false,
+    };
+  }
+
+  function createRuntimeView(state) {
+    const view = {};
+    for (const key of Object.keys(state)) {
+      Object.defineProperty(view, key, {
+        enumerable: true,
+        get: function get() {
+          return state[key];
+        },
+      });
+    }
+    return Object.freeze(view);
+  }
+
+  function normalizeAgentState(value) {
+    if (!value || typeof value !== 'object') return null;
+    return {
+      state: value.state,
+      label: typeof value.label === 'string' ? value.label : '',
+      sessionId: value.sessionId === undefined ? null : value.sessionId,
+      updatedAt: value.updatedAt,
+      source: value.source,
+      seq: value.seq,
+      since: value.since,
+      turnId: value.turnId === undefined ? null : value.turnId,
+    };
+  }
+
+  function normalizeViewport(value) {
+    const source = value && typeof value === 'object' ? value : {};
+    const width = Number.isFinite(source.width) ? source.width : 0;
+    const height = Number.isFinite(source.height) ? source.height : 0;
+    const dpr = Number.isFinite(source.dpr) && source.dpr > 0 ? source.dpr : 1;
+    return Object.freeze({ width, height, dpr });
+  }
+
+  function createGameSDK(options = {}) {
+    const win = options.window || (typeof window !== 'undefined' ? window : null);
+    const parent = options.parent || (win && win.parent) || null;
+    const location = options.location || (win && win.location) || null;
+    const timers = options.timers || globalThis;
+    const now = typeof options.now === 'function' ? options.now : Date.now;
+
+    const hub = createEventHub();
+    const runtimeState = createRuntimeState();
+    const runtimeView = createRuntimeView(runtimeState);
+
+    let readyPromise = null;
+    let backfillPromise = null;
+    let lastAgent = null;
+
+    function applyViewport(value) {
+      runtimeState.viewport = normalizeViewport(value);
+    }
+
+    function applyInit(init) {
+      if (!init || typeof init !== 'object') return;
+      if (typeof init.gameId === 'string') runtimeState.gameId = init.gameId;
+      if (typeof init.gameVersion === 'string') runtimeState.gameVersion = init.gameVersion;
+      if (typeof init.runtimeVersion === 'string') runtimeState.runtimeVersion = init.runtimeVersion;
+      if (typeof init.sdkVersion === 'string') runtimeState.sdkVersion = init.sdkVersion;
+      if (typeof init.locale === 'string') runtimeState.locale = init.locale;
+      if (init.theme === 'dark' || init.theme === 'light') runtimeState.theme = init.theme;
+      if (typeof init.reducedMotion === 'boolean') runtimeState.reducedMotion = init.reducedMotion;
+      if (Array.isArray(init.capabilities)) runtimeState.capabilities = Object.freeze(init.capabilities.slice());
+      if (init.viewport) applyViewport(init.viewport);
+    }
+
+    function applyReadyResult(result) {
+      if (!result || typeof result !== 'object') return;
+      if (typeof result.runtimeVersion === 'string') runtimeState.runtimeVersion = result.runtimeVersion;
+      if (typeof result.gameId === 'string') runtimeState.gameId = result.gameId;
+      if (typeof result.gameVersion === 'string') runtimeState.gameVersion = result.gameVersion;
+      if (typeof result.sdkVersion === 'string') runtimeState.sdkVersion = result.sdkVersion;
+      if (typeof result.locale === 'string') runtimeState.locale = result.locale;
+      if (result.theme === 'dark' || result.theme === 'light') runtimeState.theme = result.theme;
+      if (typeof result.reducedMotion === 'boolean') runtimeState.reducedMotion = result.reducedMotion;
+      if (Array.isArray(result.capabilities)) runtimeState.capabilities = Object.freeze(result.capabilities.slice());
+      if (result.viewport) applyViewport(result.viewport);
+      if (typeof result.protocolVersion === 'number') runtimeState.protocolVersion = result.protocolVersion;
+      runtimeState.ready = true;
+    }
+
+    function handleRuntimeEvent(name, data) {
+      if (name === 'theme') {
+        if (!data || typeof data !== 'object') return;
+        if (data.theme === 'dark' || data.theme === 'light') runtimeState.theme = data.theme;
+        if (typeof data.reducedMotion === 'boolean') runtimeState.reducedMotion = data.reducedMotion;
+        return;
+      }
+      if (name === 'viewport') {
+        applyViewport(data);
+        return;
+      }
+      if (name === 'agent-status') {
+        const snapshot = normalizeAgentState(data);
+        if (!snapshot) return;
+        lastAgent = snapshot;
+        hub.emit('agent-status', snapshot, { buffer: false });
+        return;
+      }
+      if (isLifecycleEvent(name)) {
+        hub.emit(name, data && typeof data === 'object' ? data : {});
+      }
+    }
+
+    function handleFatal(error) {
+      hub.emit('fatal', error, { buffer: false });
+    }
+
+    const bridge = createBridgeClient({
+      window: win,
+      parent,
+      location,
+      timers,
+      now,
+      crypto: options.crypto,
+      onInit: applyInit,
+      onEvent: handleRuntimeEvent,
+      onFatal: handleFatal,
+    });
+
+    function requireReady() {
+      const fatal = bridge.getFatalError();
+      if (fatal) throw fatal;
+      if (!bridge.isReady()) {
+        throw createGameError(GM.NOT_READY, 'Game is not ready yet');
+      }
+    }
+
+    function ready(timeoutMs) {
+      if (!readyPromise) {
+        readyPromise = bridge.ready(timeoutMs).then(function onReady(info) {
+          const payload = info && typeof info === 'object' ? info : {};
+          applyInit(payload.init);
+          applyReadyResult(payload.result);
+          runtimeState.ready = true;
+          hub.open();
+          ensureAgentBackfill();
+          return runtimeView;
+        });
+        // A game may register listeners without ever awaiting ready().
+        readyPromise.then(undefined, function ignore() {});
+      }
+      return readyPromise;
+    }
+
+    function ensureAgentBackfill() {
+      if (backfillPromise) return backfillPromise;
+      if (!hub.has('agent-status')) return null;
+      backfillPromise = bridge.ready().then(function onReady() {
+        return bridge.request(METHODS.AGENT_GET_STATUS, {}, SDK_METHOD_TIMEOUTS['agent.getStatus']);
+      }).then(function onStatus(snapshot) {
+        const normalized = normalizeAgentState(snapshot);
+        if (!normalized) return;
+        lastAgent = normalized;
+        hub.emit('agent-status', normalized, { buffer: false });
+      }).then(undefined, function ignore() {});
+      return backfillPromise;
+    }
+
+    async function storageSave(key, data) {
+      requireReady();
+      assertStorageKey(key);
+      const prepared = prepareStorageValue(data);
+      return bridge.request(METHODS.STORAGE_SAVE, { key, data: prepared.value }, SDK_METHOD_TIMEOUTS['storage.save']);
+    }
+
+    async function storageLoad(key) {
+      requireReady();
+      assertStorageKey(key);
+      return bridge.request(METHODS.STORAGE_LOAD, { key }, SDK_METHOD_TIMEOUTS['storage.load']).then(function onLoaded(
+        result
+      ) {
+        return result === undefined ? null : result;
+      });
+    }
+
+    async function storageRemove(key) {
+      requireReady();
+      assertStorageKey(key);
+      return bridge.request(METHODS.STORAGE_REMOVE, { key }, SDK_METHOD_TIMEOUTS['storage.remove']);
+    }
+
+    async function sessionStart() {
+      requireReady();
+      return bridge.request(METHODS.SESSION_START, {}, SDK_METHOD_TIMEOUTS['session.start']);
+    }
+
+    async function sessionEnd(endOptions) {
+      requireReady();
+      const input = endOptions && typeof endOptions === 'object' ? endOptions : {};
+      const outcome = input.outcome === undefined ? 'completed' : input.outcome;
+      assertSessionOutcome(outcome);
+      let score = null;
+      if (input.score !== undefined && input.score !== null) {
+        assertScoreValue(input.score);
+        score = input.score;
+      }
+      return bridge.request(METHODS.SESSION_END, { outcome, score }, SDK_METHOD_TIMEOUTS['session.end']);
+    }
+
+    async function scoreSubmit(score, meta) {
+      requireReady();
+      assertScoreValue(score);
+      const preparedMeta = prepareScoreMeta(meta);
+      return bridge.request(
+        METHODS.SCORE_SUBMIT,
+        { score, meta: preparedMeta },
+        SDK_METHOD_TIMEOUTS['score.submit']
+      );
+    }
+
+    async function scoreGetBest() {
+      requireReady();
+      return bridge.request(METHODS.SCORE_GET_BEST, {}, SDK_METHOD_TIMEOUTS['score.getBest']).then(function onBest(
+        result
+      ) {
+        return result === undefined ? null : result;
+      });
+    }
+
+    async function agentGetStatus() {
+      requireReady();
+      return bridge.request(METHODS.AGENT_GET_STATUS, {}, SDK_METHOD_TIMEOUTS['agent.getStatus']).then(function onStatus(
+        snapshot
+      ) {
+        const normalized = normalizeAgentState(snapshot);
+        if (normalized) lastAgent = normalized;
+        return normalized || snapshot;
+      });
+    }
+
+    function agentOn(event, handler) {
+      if (event !== 'status') throw createGameError(GM.INVALID_PARAM, `Unknown agent event: ${String(event)}`);
+      const off = hub.on('agent-status', handler);
+      bridge.start();
+      if (bridge.isReady()) ensureAgentBackfill();
+      else bridge.ready().then(ensureAgentBackfill, function ignore() {});
+      return off;
+    }
+
+    function lifecycleOn(event, handler) {
+      if (!isLifecycleEvent(event)) {
+        throw createGameError(GM.INVALID_PARAM, `Unknown lifecycle event: ${String(event)}`);
+      }
+      const off = hub.on(event, handler);
+      bridge.start();
+      return off;
+    }
+
+    const storage = Object.freeze({
+      save: storageSave,
+      load: storageLoad,
+      remove: storageRemove,
+    });
+
+    const session = Object.freeze({
+      start: sessionStart,
+      end: sessionEnd,
+    });
+
+    const score = Object.freeze({
+      submit: scoreSubmit,
+      getBest: scoreGetBest,
+    });
+
+    const lifecycle = Object.freeze({
+      on: lifecycleOn,
+    });
+
+    const agent = Object.freeze({
+      getStatus: agentGetStatus,
+      on: agentOn,
+    });
+
+    const game = {
+      runtime: runtimeView,
+      ready,
+      storage,
+      session,
+      score,
+      lifecycle,
+      agent,
+      onError: function onError(handler) {
+        return hub.on('fatal', handler);
+      },
+      isGameError,
+    };
+
+    return Object.freeze(game);
+  }
+
+  return { GameError, isGameError, createGameSDK };
+  })();
+
+  const __entry = __mods["packages/sdk/src/sdk.js"];
+
+  return __entry;
+})();
+
+(function () {
+  'use strict';
+  // Generated by scripts/bundle-lib.mjs — do not edit by hand.
+  const __mods = Object.create(null);
+
+  // module: games/2048/src/logic.js
+  __mods["games/2048/src/logic.js"] = (function () {
+  /**
+   * 2048 · pure game logic.
+   *
+   * No DOM, no timers, no SDK, no global state: every function takes a state and
+   * returns a new one. The renderer and the platform SDK live in game.js /
+   * render.js, which keeps the rules exhaustively testable in `node --test`.
+   *
+   * Contract highlights (docs/V1-GAME-ACCEPTANCE.md §4, docs/V1-CONTRACTS.md §10):
+   *   - 4x4 board, a move merges each pair at most once and compacts towards the
+   *     target edge; every accepted move spawns exactly one 2 or 4.
+   *   - The spawn is deterministic: `rngState` is a 32-bit xorshift seed, so the
+   *     same seed + the same input sequence always reproduces the same board.
+   *   - One undo per game. Undo restores board + score + moves (and the RNG, so
+   *     the replayed future stays deterministic) and never spawns a tile.
+   *   - The game ends only when no empty cell and no equal neighbour remains.
+   *     Reaching 2048 is `won`, which the player may continue from.
+   */
+
+  const SIZE = 4;
+  const CELLS = SIZE * SIZE;
+  const TARGET = 2048;
+  const SAVE_VERSION = 1;
+  const SCORE_MAX = 1000000000;
+  const SPAWN_FOUR_RATE = 0.1;
+  const MAX_ELAPSED_MS = 24 * 60 * 60 * 1000;
+
+  const DEFAULT_SEED = 0x9e3779b9;
+  const STATUSES = Object.freeze(['ready', 'playing', 'won', 'over']);
+
+  const DIRECTIONS = Object.freeze(['up', 'right', 'down', 'left']);
+
+  const KEY_TO_DIRECTION = Object.freeze({
+    arrowup: 'up',
+    arrowdown: 'down',
+    arrowleft: 'left',
+    arrowright: 'right',
+    w: 'up',
+    a: 'left',
+    s: 'down',
+    d: 'right',
+    up: 'up',
+    down: 'down',
+    left: 'left',
+    right: 'right',
+  });
+
+  /**
+   * Lines of cell indices ordered from the target edge inward.
+   * Moving `left` processes every row from column 0 towards column 3, etc.
+   */
+  const LINES = Object.freeze({
+    left: Object.freeze([
+      Object.freeze([0, 1, 2, 3]),
+      Object.freeze([4, 5, 6, 7]),
+      Object.freeze([8, 9, 10, 11]),
+      Object.freeze([12, 13, 14, 15]),
+    ]),
+    right: Object.freeze([
+      Object.freeze([3, 2, 1, 0]),
+      Object.freeze([7, 6, 5, 4]),
+      Object.freeze([11, 10, 9, 8]),
+      Object.freeze([15, 14, 13, 12]),
+    ]),
+    up: Object.freeze([
+      Object.freeze([0, 4, 8, 12]),
+      Object.freeze([1, 5, 9, 13]),
+      Object.freeze([2, 6, 10, 14]),
+      Object.freeze([3, 7, 11, 15]),
+    ]),
+    down: Object.freeze([
+      Object.freeze([12, 8, 4, 0]),
+      Object.freeze([13, 9, 5, 1]),
+      Object.freeze([14, 10, 6, 2]),
+      Object.freeze([15, 11, 7, 3]),
+    ]),
+  });
+
+  function normalizeSeed(seed) {
+    const value = Number(seed);
+    if (!Number.isFinite(value)) return DEFAULT_SEED;
+    const normalized = Math.trunc(value) >>> 0;
+    return normalized === 0 ? DEFAULT_SEED : normalized;
+  }
+
+  /** True for 0 or a power of two in [2, 2^52] (a legal tile value). */
+  function isTileValue(value) {
+    if (value === 0) return true;
+    return Number.isSafeInteger(value) && value >= 2 && Number.isInteger(Math.log2(value));
+  }
+
+  function isScore(value) {
+    return Number.isSafeInteger(value) && value >= 0;
+  }
+
+  function clampScore(value) {
+    if (!Number.isFinite(value) || value <= 0) return 0;
+    return Math.min(SCORE_MAX, Math.floor(value));
+  }
+
+  /** Create an empty 4x4 board (16 zeros). */
+  function emptyBoard() {
+    return new Array(CELLS).fill(0);
+  }
+
+  /** Build a board from 4 rows of 4 numbers. Throws on malformed input. */
+  function boardFromRows(rows) {
+    if (!Array.isArray(rows) || rows.length !== SIZE) {
+      throw new Error('boardFromRows expects 4 rows');
+    }
+    const board = emptyBoard();
+    for (let row = 0; row < SIZE; row += 1) {
+      const values = rows[row];
+      if (!Array.isArray(values) || values.length !== SIZE) {
+        throw new Error('boardFromRows expects 4 columns per row');
+      }
+      for (let col = 0; col < SIZE; col += 1) {
+        const value = values[col];
+        if (!isTileValue(value) || value < 0) throw new Error(`invalid tile value at ${row},${col}: ${value}`);
+        board[row * SIZE + col] = value;
+      }
+    }
+    return board;
+  }
+
+  /** Split a board into 4 rows (a copy, safe for assertions). */
+  function rowsFromBoard(board) {
+    const rows = [];
+    for (let row = 0; row < SIZE; row += 1) {
+      rows.push(board.slice(row * SIZE, row * SIZE + SIZE));
+    }
+    return rows;
+  }
+
+  /** Highest tile on the board (0 for an empty board). */
+  function highestTile(board) {
+    let highest = 0;
+    for (let index = 0; index < CELLS; index += 1) {
+      if (board[index] > highest) highest = board[index];
+    }
+    return highest;
+  }
+
+  /** Number of non-empty cells. */
+  function tileCount(board) {
+    let count = 0;
+    for (let index = 0; index < CELLS; index += 1) {
+      if (board[index] !== 0) count += 1;
+    }
+    return count;
+  }
+
+  /** Map a keyboard key / direction name to `up|right|down|left` (or null). */
+  function normalizeDirection(input) {
+    if (typeof input !== 'string') return null;
+    return KEY_TO_DIRECTION[input.trim().toLowerCase()] || null;
+  }
+
+  /**
+   * Advance the 32-bit xorshift RNG. Returns the next state plus a float in
+   * [0, 1). A state of 0 is replaced by the default seed so the stream can never
+   * get stuck (xorshift is undefined for zero).
+   */
+  function nextRandom(rngState) {
+    let value = normalizeSeed(rngState);
+    value ^= value << 13;
+    value >>>= 0;
+    value ^= value >>> 17;
+    value ^= value << 5;
+    value >>>= 0;
+    return { state: value, value: value / 4294967296 };
+  }
+
+  /**
+   * Place one tile (2 with 90% probability, otherwise 4) on a random empty cell.
+   * Returns the new board + rng state + the spawned tile. A full board is left
+   * untouched and `spawned` is null.
+   */
+  function spawnTile(board, rngState) {
+    const empties = [];
+    for (let index = 0; index < CELLS; index += 1) {
+      if (board[index] === 0) empties.push(index);
+    }
+    let state = normalizeSeed(rngState);
+    if (empties.length === 0) return { board: board.slice(), rngState: state, spawned: null };
+    const first = nextRandom(state);
+    state = first.state;
+    const index = empties[Math.floor(first.value * empties.length)];
+    const second = nextRandom(state);
+    state = second.state;
+    const value = second.value < SPAWN_FOUR_RATE ? 4 : 2;
+    const nextBoard = board.slice();
+    nextBoard[index] = value;
+    return { board: nextBoard, rngState: state, spawned: { index, value } };
+  }
+
+  function makeSnapshot(state) {
+    return {
+      board: state.board.slice(),
+      score: state.score,
+      moves: state.moves,
+      rngState: state.rngState,
+    };
+  }
+
+  function validStatus(status) {
+    return STATUSES.includes(status);
+  }
+
+  /**
+   * Build a state explicitly. Tests and dev tools use this to place a known
+   * board; the game itself starts via createGame().
+   */
+  function createState(options = {}) {
+    const board = Array.isArray(options.board) ? options.board.slice() : emptyBoard();
+    if (board.length !== CELLS || board.some((value) => !isTileValue(value))) {
+      throw new Error('createState expects a 16-cell board of 0 or power-of-two tiles');
+    }
+    const status = validStatus(options.status) ? options.status : 'ready';
+    return {
+      board,
+      score: isScore(options.score) ? clampScore(options.score) : 0,
+      moves: Number.isSafeInteger(options.moves) && options.moves >= 0 ? options.moves : 0,
+      undo: options.undo || null,
+      undoUsed: options.undoUsed === true,
+      rngState: normalizeSeed(options.rngState),
+      status,
+      reached2048: options.reached2048 === true || highestTile(board) >= TARGET,
+      elapsed: Number.isFinite(options.elapsed) && options.elapsed > 0 ? Math.floor(options.elapsed) : 0,
+    };
+  }
+
+  /** Fresh game: empty board, two starting tiles, score 0, one undo available. */
+  function createGame(options = {}) {
+    const seed = normalizeSeed(options.seed);
+    let state = createState({ rngState: seed });
+    let first = spawnTile(state.board, state.rngState);
+    let second = spawnTile(first.board, first.rngState);
+    return {
+      ...state,
+      board: second.board,
+      rngState: second.rngState,
+      status: 'ready',
+    };
+  }
+
+  /** The status a game enters when the player first interacts (no move yet). */
+  function beginPlay(state) {
+    if (!state || state.status !== 'ready') return state;
+    return { ...state, status: 'playing' };
+  }
+
+  /** Remaining undos this game (1 until used, then 0). */
+  function undoAllowance(state) {
+    return state && state.undoUsed ? 0 : 1;
+  }
+
+  /** Whether an undo can be applied right now (a move exists and is unused). */
+  function canUndo(state) {
+    return Boolean(state && state.undo && !state.undoUsed);
+  }
+
+  /**
+   * Apply one move. Returns:
+   *   state       next state (same reference when the move is invalid)
+   *   moved       whether the board changed
+   *   scoreGained points earned by merges (0 when invalid)
+   *   slides      [{from, to, value, merged}] source -> destination tiles
+   *   merges      [{index, value}] merged destinations
+   *   spawned     {index, value} | null (only for accepted moves)
+   *   reachedTarget / gameOver booleans for the UI.
+   */
+  function move(state, direction) {
+    const noMove = {
+      state,
+      moved: false,
+      scoreGained: 0,
+      slides: [],
+      merges: [],
+      spawned: null,
+      reachedTarget: false,
+      gameOver: false,
+    };
+    if (!state || !Array.isArray(state.board) || state.board.length !== CELLS) return noMove;
+    const resolved = normalizeDirection(direction);
+    if (!resolved) return noMove;
+    if (state.status === 'over' || state.status === 'won') return noMove;
+
+    const board = emptyBoard();
+    const slides = [];
+    const merges = [];
+    let scoreGained = 0;
+    let changed = false;
+
+    for (const line of LINES[resolved]) {
+      const compacted = [];
+      for (const index of line) {
+        if (state.board[index] !== 0) compacted.push({ value: state.board[index], from: index });
+      }
+      const mergedLine = [];
+      for (let cursor = 0; cursor < compacted.length; cursor += 1) {
+        const current = compacted[cursor];
+        const neighbor = compacted[cursor + 1];
+        if (neighbor && neighbor.value === current.value) {
+          mergedLine.push({ value: current.value * 2, sources: [current.from, neighbor.from], merged: true });
+          cursor += 1;
+        } else {
+          mergedLine.push({ value: current.value, sources: [current.from], merged: false });
+        }
+      }
+      for (let position = 0; position < mergedLine.length; position += 1) {
+        const tile = mergedLine[position];
+        const destination = line[position];
+        board[destination] = tile.value;
+        if (tile.merged) {
+          scoreGained += tile.value;
+          merges.push({ index: destination, value: tile.value });
+        }
+        for (const source of tile.sources) {
+          slides.push({
+            from: source,
+            to: destination,
+            value: tile.value,
+            merged: tile.merged,
+            fromValue: state.board[source],
+          });
+          if (source !== destination) changed = true;
+        }
+        if (tile.merged) changed = true;
+      }
+    }
+
+    if (!changed) return noMove;
+
+    const spawnResult = spawnTile(board, state.rngState);
+    const nextBoard = spawnResult.board;
+    const nextScore = clampScore(state.score + scoreGained);
+    const previouslyReached = state.reached2048 === true;
+    const nowReached = !previouslyReached && highestTile(nextBoard) >= TARGET;
+    const gameOver = !nowReached && isGameOver(nextBoard);
+    let status = state.status === 'ready' ? 'playing' : state.status;
+    if (nowReached) status = 'won';
+    else if (gameOver) status = 'over';
+
+    const nextState = {
+      ...state,
+      board: nextBoard,
+      score: nextScore,
+      moves: state.moves + 1,
+      undo: state.undoUsed ? null : makeSnapshot(state),
+      undoUsed: state.undoUsed === true,
+      rngState: spawnResult.rngState,
+      status,
+      reached2048: previouslyReached || nowReached,
+    };
+
+    return {
+      state: nextState,
+      moved: true,
+      scoreGained,
+      slides,
+      merges,
+      spawned: spawnResult.spawned,
+      reachedTarget: nowReached,
+      gameOver: status === 'over',
+    };
+  }
+
+  /**
+   * Undo the last move. Consumes the single allowance; restores board, score,
+   * moves and rng without spawning a new tile.
+   */
+  function undo(state) {
+    if (!canUndo(state)) return { state, undone: false };
+    const snapshot = state.undo;
+    const restoredBoard = snapshot.board.slice();
+    const status = state.status === 'won' || state.status === 'over' ? 'playing' : state.status;
+    return {
+      state: {
+        ...state,
+        board: restoredBoard,
+        score: clampScore(snapshot.score),
+        moves: snapshot.moves,
+        undo: null,
+        undoUsed: true,
+        rngState: normalizeSeed(snapshot.rngState),
+        status,
+        reached2048: highestTile(restoredBoard) >= TARGET,
+      },
+      undone: true,
+    };
+  }
+
+  /** True when the board is full and no orthogonal neighbours are equal. */
+  function isGameOver(board) {
+    if (!Array.isArray(board) || board.length !== CELLS) return true;
+    for (let index = 0; index < CELLS; index += 1) {
+      if (board[index] === 0) return false;
+      const row = Math.floor(index / SIZE);
+      const col = index % SIZE;
+      if (col < SIZE - 1 && board[index] === board[index + 1]) return false;
+      if (row < SIZE - 1 && board[index] === board[index + SIZE]) return false;
+    }
+    return true;
+  }
+
+  /** Leave the `won` overlay and keep playing (or settle a locked board). */
+  function continueAfterWin(state) {
+    if (!state || state.status !== 'won') return state;
+    const status = isGameOver(state.board) ? 'over' : 'playing';
+    return { ...state, status };
+  }
+
+  /** Add active play time. Paused / ready / over states never accumulate. */
+  function addElapsed(state, milliseconds) {
+    if (!state) return state;
+    const delta = Number.isFinite(milliseconds) ? Math.max(0, Math.floor(milliseconds)) : 0;
+    if (delta === 0 || state.status !== 'playing') return state;
+    return { ...state, elapsed: Math.min(MAX_ELAPSED_MS, (state.elapsed || 0) + delta) };
+  }
+
+  /**
+   * Save payload. `version` is the game save schema (manifest save.schemaVersion
+   * = 1). Shape: { version, board, score, moves, undo, rngState, elapsed,
+   * status, reached2048, undoUsed }.
+   */
+  function serialize(state) {
+    const snapshot = state.undo
+      ? {
+          board: state.undo.board.slice(),
+          score: state.undo.score,
+          moves: state.undo.moves,
+          rngState: state.undo.rngState,
+        }
+      : null;
+    return {
+      version: SAVE_VERSION,
+      board: state.board.slice(),
+      score: state.score,
+      moves: state.moves,
+      undo: snapshot,
+      rngState: state.rngState >>> 0,
+      elapsed: Math.max(0, Math.round(state.elapsed || 0)),
+      status: state.status,
+      reached2048: state.reached2048 === true,
+      undoUsed: state.undoUsed === true,
+    };
+  }
+
+  function parseSaveInput(raw) {
+    if (typeof raw === 'string') {
+      try {
+        return JSON.parse(raw);
+      } catch (_error) {
+        return null;
+      }
+    }
+    return raw;
+  }
+
+  function parseBoard(raw) {
+    if (!Array.isArray(raw) || raw.length !== CELLS) return null;
+    const board = emptyBoard();
+    for (let index = 0; index < CELLS; index += 1) {
+      const value = raw[index];
+      if (!isTileValue(value)) return null;
+      board[index] = value;
+    }
+    return board;
+  }
+
+  function parseUndo(raw) {
+    if (raw === null || raw === undefined) return null;
+    if (typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const board = parseBoard(raw.board);
+    if (!board) return null;
+    if (!isScore(raw.score) || raw.score > SCORE_MAX) return null;
+    if (!Number.isSafeInteger(raw.moves) || raw.moves < 0) return null;
+    return {
+      board,
+      score: raw.score,
+      moves: raw.moves,
+      rngState: normalizeSeed(raw.rngState),
+    };
+  }
+
+  /**
+   * Restore a state from a save payload (object or JSON string). Returns null for
+   * anything malformed, version-mismatched or out of contract — callers treat
+   * null as "start a fresh game" and never crash.
+   */
+  function deserialize(raw) {
+    const input = parseSaveInput(raw);
+    if (!input || typeof input !== 'object' || Array.isArray(input)) return null;
+    const version = input.version !== undefined ? input.version : input.schemaVersion;
+    if (version !== SAVE_VERSION) return null;
+    const board = parseBoard(input.board);
+    if (!board) return null;
+    if (!isScore(input.score) || input.score > SCORE_MAX) return null;
+    if (!Number.isSafeInteger(input.moves) || input.moves < 0) return null;
+    const undo = parseUndo(input.undo);
+    if (input.undo !== null && input.undo !== undefined && undo === null) return null;
+    if (!Number.isSafeInteger(input.rngState) || input.rngState < 0 || input.rngState > 0xffffffff) return null;
+    const elapsed = input.elapsed === undefined ? 0 : input.elapsed;
+    if (!Number.isFinite(elapsed) || elapsed < 0) return null;
+    if (!validStatus(input.status)) return null;
+    if (input.undoUsed !== undefined && typeof input.undoUsed !== 'boolean') return null;
+    return {
+      board,
+      score: input.score,
+      moves: input.moves,
+      undo,
+      undoUsed: input.undoUsed === true,
+      rngState: normalizeSeed(input.rngState),
+      status: input.status,
+      reached2048: input.reached2048 === true || highestTile(board) >= TARGET,
+      elapsed: Math.min(MAX_ELAPSED_MS, Math.floor(elapsed)),
+    };
+  }
+
+  return { SIZE, CELLS, TARGET, SAVE_VERSION, SCORE_MAX, SPAWN_FOUR_RATE, MAX_ELAPSED_MS, DIRECTIONS, isTileValue, emptyBoard, boardFromRows, rowsFromBoard, highestTile, tileCount, normalizeDirection, nextRandom, spawnTile, createState, createGame, beginPlay, undoAllowance, canUndo, move, undo, isGameOver, continueAfterWin, addElapsed, serialize, deserialize };
+  })();
+
+  // module: games/2048/src/render.js
+  __mods["games/2048/src/render.js"] = (function () {
+  /**
+   * 2048 · DOM renderer.
+   *
+   * The renderer is a projection of the logic state: after every move the tile
+   * layer is rebuilt from the authoritative board, so what is on screen can never
+   * drift from what gets saved. Movement is conveyed with a short transform
+   * transition from the source cell; merges and spawns use a restrained pop.
+   * Reduced motion turns all of that into an instant update.
+   *
+   * It owns the presentation-only details: theme dataset, layout measurement,
+   * score formatting, undo/save indicators, overlays and screen-reader text.
+   */
+
+  const NUMBER_FORMAT = /(\d)(?=(\d{3})+(?!\d))/g;
+
+  function formatNumber(value) {
+    const number = Math.max(0, Math.floor(Number(value) || 0));
+    return String(number).replace(NUMBER_FORMAT, '$1,');
+  }
+
+  function clearTimer(win, timer) {
+    if (timer !== null && timer !== undefined && typeof win.clearTimeout === 'function') {
+      win.clearTimeout(timer);
+    }
+    return null;
+  }
+
+  function createRenderer(options) {
+    const doc = options.document;
+    const win = options.window;
+
+    const els = {
+      board: doc.getElementById('board'),
+      boardFrame: doc.getElementById('board-frame'),
+      boardZone: doc.getElementById('board-zone'),
+      boardGrid: doc.getElementById('board-grid'),
+      tileLayer: doc.getElementById('tile-layer'),
+      boardMeta: doc.getElementById('board-meta'),
+      score: doc.getElementById('score'),
+      scoreStat: doc.getElementById('score-stat'),
+      scoreDelta: doc.getElementById('score-delta'),
+      best: doc.getElementById('best'),
+      bestStat: doc.getElementById('best-stat'),
+      bestNote: doc.getElementById('best-note'),
+      moves: doc.getElementById('moves'),
+      undo: doc.getElementById('undo'),
+      undoCount: doc.getElementById('undo-count'),
+      saveIndicator: doc.getElementById('save-indicator'),
+      saveText: doc.getElementById('save-text'),
+      statusLine: doc.getElementById('status-line'),
+      overlay: doc.getElementById('overlay'),
+      overlayKicker: doc.getElementById('overlay-kicker'),
+      overlayTitle: doc.getElementById('overlay-title'),
+      overlayHint: doc.getElementById('overlay-hint'),
+      overlayDetail: doc.getElementById('overlay-detail'),
+      overlayActions: doc.getElementById('overlay-actions'),
+      overlayFootnote: doc.getElementById('overlay-footnote'),
+      primary: doc.getElementById('primary'),
+      liveRegion: doc.getElementById('live-region'),
+    };
+
+    const cells = [];
+    let overlayOpen = false;
+    let primaryAction = null;
+    let undoHandler = null;
+    let saveRetryHandler = null;
+    let swipeHandler = null;
+    let reducedMotion = false;
+    let theme = 'dark';
+    let lastScores = { score: 0, best: 0, moves: 0, record: false };
+    let renderToken = 0;
+    let deltaTimer = null;
+    let bumpTimer = null;
+    let announceTimer = null;
+    let pointerStart = null;
+    let resizeObserver = null;
+    let inertTargets = null;
+
+    function init() {
+      buildGrid();
+      theme = doc.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+      reducedMotion = doc.documentElement.dataset.reducedMotion === 'true';
+      applyTheme(theme);
+      applyReducedMotion(reducedMotion);
+      bindEvents();
+      updateBoardSummary();
+      layout();
+      return api;
+    }
+
+    function buildGrid() {
+      if (!els.boardGrid) return;
+      els.boardGrid.textContent = '';
+      for (let row = 0; row < 4; row += 1) {
+        const rowEl = doc.createElement('div');
+        rowEl.className = 'grid-row';
+        rowEl.setAttribute('role', 'row');
+        for (let col = 0; col < 4; col += 1) {
+          const cell = doc.createElement('div');
+          cell.className = 'cell';
+          cell.setAttribute('role', 'gridcell');
+          cell.setAttribute('aria-label', `第${row + 1}行第${col + 1}列：空`);
+          rowEl.appendChild(cell);
+          cells.push(cell);
+        }
+        els.boardGrid.appendChild(rowEl);
+      }
+    }
+
+    function bindEvents() {
+      if (els.undo) {
+        els.undo.addEventListener('click', function onUndoClick() {
+          if (typeof undoHandler === 'function') undoHandler();
+        });
+      }
+      if (els.saveIndicator) {
+        els.saveIndicator.addEventListener('click', function onSaveClick() {
+          if (els.saveIndicator.dataset.state === 'failed' && typeof saveRetryHandler === 'function') {
+            saveRetryHandler();
+          }
+        });
+      }
+      if (els.primary) {
+        els.primary.addEventListener('click', function onPrimaryClick() {
+          const action = primaryAction;
+          if (typeof action === 'function') action();
+        });
+      }
+      if (els.board) {
+        els.board.addEventListener('pointerdown', onPointerDown);
+        els.board.addEventListener('pointerup', onPointerUp);
+        els.board.addEventListener('pointercancel', onPointerCancel);
+      }
+      win.addEventListener('resize', layout);
+      if (typeof win.ResizeObserver === 'function' && els.boardZone) {
+        resizeObserver = new win.ResizeObserver(function onResize() {
+          layout();
+        });
+        resizeObserver.observe(els.boardZone);
+      }
+    }
+
+    function onPointerDown(event) {
+      if (!event) return;
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      pointerStart = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+      if (typeof els.board.focus === 'function') {
+        try {
+          els.board.focus({ preventScroll: true });
+        } catch (_error) {
+          els.board.focus();
+        }
+      }
+      if (typeof els.board.setPointerCapture === 'function' && event.pointerId !== undefined) {
+        try {
+          els.board.setPointerCapture(event.pointerId);
+        } catch (_error) {
+          // Pointer capture is optional.
+        }
+      }
+    }
+
+    function onPointerUp(event) {
+      if (!pointerStart || !event) return;
+      const start = pointerStart;
+      pointerStart = null;
+      const dx = event.clientX - start.x;
+      const dy = event.clientY - start.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < 22) return;
+      if (typeof swipeHandler !== 'function') return;
+      const direction = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
+      swipeHandler(direction);
+    }
+
+    function onPointerCancel() {
+      pointerStart = null;
+    }
+
+    function applyTheme(next) {
+      theme = next === 'light' ? 'light' : 'dark';
+      doc.documentElement.dataset.theme = theme;
+      updateBoardSummary();
+    }
+
+    function applyReducedMotion(value) {
+      reducedMotion = value === true;
+      doc.documentElement.dataset.reducedMotion = reducedMotion ? 'true' : 'false';
+    }
+
+    function setTheme(next) {
+      applyTheme(next);
+    }
+
+    function setReducedMotion(value) {
+      applyReducedMotion(value);
+    }
+
+    function setScores(scores) {
+      lastScores = {
+        score: Math.max(0, Math.floor(Number(scores && scores.score) || 0)),
+        best: Math.max(0, Math.floor(Number(scores && scores.best) || 0)),
+        moves: Math.max(0, Math.floor(Number(scores && scores.moves) || 0)),
+        record: Boolean(scores && scores.record),
+      };
+      if (els.score) els.score.textContent = formatNumber(lastScores.score);
+      if (els.best) els.best.textContent = formatNumber(lastScores.best);
+      if (els.moves) els.moves.textContent = formatNumber(lastScores.moves);
+      if (els.bestStat) {
+        els.bestStat.classList.toggle('is-record', lastScores.record);
+        els.bestStat.setAttribute(
+          'aria-label',
+          lastScores.record ? `最高分 ${lastScores.best}，本局正在刷新纪录` : `最高分 ${lastScores.best}`
+        );
+      }
+      if (els.bestNote) els.bestNote.textContent = lastScores.record ? 'NEW BEST' : 'PERSONAL';
+      if (els.scoreStat) els.scoreStat.setAttribute('aria-label', `本局得分 ${lastScores.score}`);
+      updateBoardSummary();
+    }
+
+    function flashScoreDelta(delta) {
+      const gain = Math.floor(Number(delta) || 0);
+      if (!els.scoreDelta || gain <= 0 || reducedMotion) return;
+      els.scoreDelta.textContent = `+${formatNumber(gain)}`;
+      els.scoreDelta.classList.remove('show');
+      // Restart the CSS animation without keeping state in the DOM.
+      void els.scoreDelta.offsetWidth;
+      els.scoreDelta.classList.add('show');
+      deltaTimer = clearTimer(win, deltaTimer);
+      deltaTimer = win.setTimeout(function hideDelta() {
+        deltaTimer = null;
+        els.scoreDelta.classList.remove('show');
+        els.scoreDelta.textContent = '';
+      }, 880);
+    }
+
+    function setUndo(status) {
+      const remaining = Number(status && status.remaining) === 0 ? 0 : 1;
+      const enabled = Boolean(status && status.enabled);
+      if (els.undo) {
+        els.undo.disabled = !enabled;
+        els.undo.setAttribute('aria-label', remaining > 0 ? `撤销上一步，本局还剩 ${remaining} 次` : '撤销已用完');
+        els.undo.title = remaining > 0 ? '撤销上一步（本局 1 次）' : '本局撤销已用完';
+      }
+      if (els.undoCount) {
+        els.undoCount.textContent = remaining > 0 ? `剩 ${remaining} 次` : '已用完';
+      }
+    }
+
+    function setSaveStatus(kind, detail) {
+      if (!els.saveIndicator) return;
+      const state = ['saving', 'saved', 'failed'].includes(kind) ? kind : 'idle';
+      els.saveIndicator.dataset.state = state;
+      const code = detail ? ` ${detail}` : '';
+      if (state === 'saving') {
+        els.saveText.textContent = '保存中';
+        els.saveIndicator.disabled = true;
+        els.saveIndicator.title = '正在保存本局进度';
+      } else if (state === 'saved') {
+        els.saveText.textContent = '已保存';
+        els.saveIndicator.disabled = true;
+        els.saveIndicator.title = '本局进度已保存';
+      } else if (state === 'failed') {
+        els.saveText.textContent = '重试保存';
+        els.saveIndicator.disabled = false;
+        els.saveIndicator.title = `保存失败${code}，点击重试`;
+        els.saveIndicator.setAttribute('aria-label', `保存失败${code}，点击重试`);
+      } else {
+        els.saveText.textContent = '未保存';
+        els.saveIndicator.disabled = true;
+        els.saveIndicator.title = '本局尚未保存';
+      }
+      if (state !== 'failed') els.saveIndicator.removeAttribute('aria-label');
+    }
+
+    function setStatus(text, tone) {
+      if (!els.statusLine) return;
+      els.statusLine.textContent = text || '';
+      els.statusLine.classList.toggle('is-alert', tone === 'alert');
+      els.statusLine.classList.toggle('is-brass', tone === 'brass');
+    }
+
+    function announce(text) {
+      if (!els.liveRegion || !text) return;
+      els.liveRegion.textContent = '';
+      announceTimer = clearTimer(win, announceTimer);
+      announceTimer = win.setTimeout(function pushAnnouncement() {
+        announceTimer = null;
+        if (els.liveRegion) els.liveRegion.textContent = text;
+      }, 40);
+    }
+
+    function updateBoardSummary() {
+      if (!els.board) return;
+      const highest = highestValueFromCells();
+      els.board.setAttribute(
+        'aria-label',
+        `2048 棋盘，4 行 4 列，最高方块 ${highest > 0 ? highest : '无'}，本局得分 ${lastScores.score}`
+      );
+    }
+
+    function highestValueFromCells() {
+      let highest = 0;
+      for (const cell of cells) {
+        const label = cell.getAttribute('aria-label') || '';
+        const match = /：(\d+)$/.exec(label);
+        if (match) {
+          const value = Number(match[1]);
+          if (value > highest) highest = value;
+        }
+      }
+      return highest;
+    }
+
+    function updateGrid(board) {
+      for (let index = 0; index < 16; index += 1) {
+        const cell = cells[index];
+        if (!cell) continue;
+        const value = board[index];
+        const row = Math.floor(index / 4) + 1;
+        const col = (index % 4) + 1;
+        cell.setAttribute('aria-label', value ? `第${row}行第${col}列：${value}` : `第${row}行第${col}列：空`);
+      }
+      updateBoardSummary();
+    }
+
+    function tileElement(value, index, effect, slideFrom, token) {
+      const row = Math.floor(index / 4);
+      const col = index % 4;
+      const tile = doc.createElement('div');
+      tile.className = 'tile';
+      tile.setAttribute('data-value', String(value));
+      tile.setAttribute('data-digits', String(String(value).length));
+      tile.style.setProperty('--row', String(row));
+      tile.style.setProperty('--col', String(col));
+      if (value > 8192) tile.classList.add('is-beyond');
+      if (value >= 2048) tile.classList.add('is-target');
+      if (effect && effect.win && value >= 2048) tile.classList.add('is-win');
+
+      const face = doc.createElement('span');
+      face.className = 'tile-face';
+      face.textContent = String(value);
+      tile.appendChild(face);
+
+      const animate = !reducedMotion && !(effect && effect.instant);
+      const merged = Boolean(effect && Array.isArray(effect.merges) && effect.merges.some((m) => m.index === index));
+      if (animate && merged) tile.classList.add('is-merge');
+      if (animate && effect && effect.spawned && effect.spawned.index === index) tile.classList.add('is-spawn');
+
+      if (animate && slideFrom !== null && slideFrom !== index) {
+        const fromRow = Math.floor(slideFrom / 4);
+        const fromCol = slideFrom % 4;
+        tile.style.setProperty('--dx', String(fromCol - col));
+        tile.style.setProperty('--dy', String(fromRow - row));
+        win.requestAnimationFrame(function firstFrame() {
+          win.requestAnimationFrame(function settle() {
+            if (token !== renderToken) return;
+            tile.classList.add('settled');
+          });
+        });
+      } else {
+        tile.classList.add('settled');
+      }
+      return tile;
+    }
+
+    function renderBoard(board, effect) {
+      if (!els.tileLayer) return;
+      const token = (renderToken += 1);
+      const tileBoard = Array.isArray(board) ? board : new Array(16).fill(0);
+      const slides = effect && Array.isArray(effect.slides) ? effect.slides : [];
+      const slideByDestination = new Map();
+      for (const slide of slides) {
+        if (!slide || !Number.isInteger(slide.to) || slide.from === slide.to) continue;
+        const existing = slideByDestination.get(slide.to);
+        if (existing === undefined) {
+          slideByDestination.set(slide.to, slide.from);
+        } else {
+          // Prefer the source farthest from the destination for a longer, more
+          // legible slide when two tiles merge into the same cell.
+          const existingDistance = Math.abs(Math.floor(existing / 4) - Math.floor(slide.to / 4)) +
+            Math.abs((existing % 4) - (slide.to % 4));
+          const nextDistance = Math.abs(Math.floor(slide.from / 4) - Math.floor(slide.to / 4)) +
+            Math.abs((slide.from % 4) - (slide.to % 4));
+          if (nextDistance > existingDistance) slideByDestination.set(slide.to, slide.from);
+        }
+      }
+
+      const fragment = doc.createDocumentFragment();
+      for (let index = 0; index < 16; index += 1) {
+        const value = tileBoard[index];
+        if (!value) continue;
+        const from = slideByDestination.has(index) ? slideByDestination.get(index) : null;
+        fragment.appendChild(tileElement(value, index, effect, from, token));
+      }
+      els.tileLayer.replaceChildren(fragment);
+      updateGrid(tileBoard);
+      if (reducedMotion || (effect && effect.instant)) {
+        for (const tile of els.tileLayer.children) tile.classList.add('settled');
+      }
+    }
+
+    function layout() {
+      if (!els.boardZone || !els.boardFrame) return;
+      const rect = els.boardZone.getBoundingClientRect();
+      if (!rect || rect.width <= 0 || rect.height <= 0) return;
+      const metaHeight = els.boardMeta ? els.boardMeta.offsetHeight : 44;
+      const gap = 12;
+      const app = doc.getElementById('app');
+      const appStyles = app ? win.getComputedStyle(app) : null;
+      const paddingX = appStyles
+        ? (parseFloat(appStyles.paddingLeft) || 0) + (parseFloat(appStyles.paddingRight) || 0)
+        : 0;
+      const viewportWidth = Math.max(0, (doc.documentElement.clientWidth || win.innerWidth || 0) - paddingX);
+      // The board itself can inflate the zone's min-content width while shrinking;
+      // clamp against the real document width so a resize can never get stuck.
+      const availableWidth = Math.max(0, Math.min(rect.width, viewportWidth));
+      const availableHeight = Math.max(0, rect.height - metaHeight - gap);
+      const size = Math.floor(Math.max(184, Math.min(availableWidth, availableHeight, 680)));
+      els.boardFrame.style.setProperty('--board-size', `${size}px`);
+    }
+
+    function focusBoard() {
+      try {
+        if (typeof win.focus === 'function') win.focus();
+      } catch (_error) {
+        // Focus is best effort.
+      }
+      if (els.board && typeof els.board.focus === 'function') {
+        try {
+          els.board.focus({ preventScroll: true });
+        } catch (_error) {
+          els.board.focus();
+        }
+      }
+    }
+
+    function bumpBoard() {
+      if (!els.board || reducedMotion) return;
+      els.board.classList.remove('is-bumped');
+      void els.board.offsetWidth;
+      els.board.classList.add('is-bumped');
+      bumpTimer = clearTimer(win, bumpTimer);
+      bumpTimer = win.setTimeout(function clearBump() {
+        bumpTimer = null;
+        els.board.classList.remove('is-bumped');
+      }, 240);
+    }
+
+    function setBackgroundInert(value) {
+      if (!inertTargets) {
+        inertTargets = ['.masthead', '.board-zone', '.footer']
+          .map(function select(selector) {
+            return doc.querySelector(selector);
+          })
+          .filter(Boolean);
+      }
+      for (const element of inertTargets) {
+        if (value) element.setAttribute('inert', '');
+        else element.removeAttribute('inert');
+      }
+    }
+
+    function showOverlay(config) {
+      const settings = config || {};
+      if (!els.overlay) return;
+      if (els.overlayKicker) els.overlayKicker.textContent = settings.kicker || '';
+      if (els.overlayTitle) els.overlayTitle.textContent = settings.title || '';
+      if (els.overlayHint) els.overlayHint.textContent = settings.hint || '';
+      if (els.overlayDetail) {
+        if (settings.detail) {
+          els.overlayDetail.textContent = settings.detail;
+          els.overlayDetail.classList.remove('hidden');
+          els.overlayDetail.classList.toggle('is-alert', settings.detailTone === 'alert');
+        } else {
+          els.overlayDetail.textContent = '';
+          els.overlayDetail.classList.add('hidden');
+          els.overlayDetail.classList.remove('is-alert');
+        }
+      }
+      if (els.overlayFootnote) {
+        if (settings.footnote === false) {
+          els.overlayFootnote.classList.add('hidden');
+        } else {
+          els.overlayFootnote.classList.remove('hidden');
+          els.overlayFootnote.textContent = settings.footnote || '进度会自动保存 · 离开后可继续';
+        }
+      }
+      primaryAction = typeof settings.onPrimary === 'function' ? settings.onPrimary : null;
+      if (els.overlayActions && els.primary) {
+        if (settings.primaryLabel && primaryAction) {
+          els.overlayActions.style.display = '';
+          els.primary.textContent = settings.primaryLabel;
+          els.primary.disabled = false;
+        } else {
+          els.overlayActions.style.display = 'none';
+        }
+      }
+      els.overlay.classList.remove('hidden');
+      overlayOpen = true;
+      setBackgroundInert(true);
+      if (primaryAction && els.primary) {
+        win.requestAnimationFrame(function focusPrimary() {
+          try {
+            els.primary.focus({ preventScroll: true });
+          } catch (_error) {
+            els.primary.focus();
+          }
+        });
+      } else if (els.overlayTitle) {
+        els.overlayTitle.setAttribute('tabindex', '-1');
+        win.requestAnimationFrame(function focusTitle() {
+          try {
+            els.overlayTitle.focus({ preventScroll: true });
+          } catch (_error) {
+            els.overlayTitle.focus();
+          }
+        });
+      }
+    }
+
+    function hideOverlay() {
+      if (!els.overlay) return;
+      els.overlay.classList.add('hidden');
+      overlayOpen = false;
+      primaryAction = null;
+      setBackgroundInert(false);
+    }
+
+    function isOverlayOpen() {
+      return overlayOpen;
+    }
+
+    function onUndo(handler) {
+      undoHandler = typeof handler === 'function' ? handler : null;
+    }
+
+    function onSaveRetry(handler) {
+      saveRetryHandler = typeof handler === 'function' ? handler : null;
+    }
+
+    function onSwipe(handler) {
+      swipeHandler = typeof handler === 'function' ? handler : null;
+    }
+
+    function destroy() {
+      deltaTimer = clearTimer(win, deltaTimer);
+      bumpTimer = clearTimer(win, bumpTimer);
+      announceTimer = clearTimer(win, announceTimer);
+      if (resizeObserver && typeof resizeObserver.disconnect === 'function') resizeObserver.disconnect();
+      resizeObserver = null;
+    }
+
+    const api = {
+      init,
+      layout,
+      setTheme,
+      setReducedMotion,
+      setScores,
+      flashScoreDelta,
+      renderBoard,
+      setUndo,
+      setSaveStatus,
+      setStatus,
+      announce,
+      showOverlay,
+      hideOverlay,
+      isOverlayOpen,
+      focusBoard,
+      bumpBoard,
+      onUndo,
+      onSaveRetry,
+      onSwipe,
+      destroy,
+    };
+
+    return api;
+  }
+
+  return { formatNumber, createRenderer };
+  })();
+
+  // module: games/2048/src/game.js
+  __mods["games/2048/src/game.js"] = (function () {
+  const addElapsed = __mods["games/2048/src/logic.js"].addElapsed;
+  const beginPlay = __mods["games/2048/src/logic.js"].beginPlay;
+  const canUndo = __mods["games/2048/src/logic.js"].canUndo;
+  const continueAfterWin = __mods["games/2048/src/logic.js"].continueAfterWin;
+  const createGame = __mods["games/2048/src/logic.js"].createGame;
+  const deserialize = __mods["games/2048/src/logic.js"].deserialize;
+  const highestTile = __mods["games/2048/src/logic.js"].highestTile;
+  const move = __mods["games/2048/src/logic.js"].move;
+  const normalizeDirection = __mods["games/2048/src/logic.js"].normalizeDirection;
+  const serialize = __mods["games/2048/src/logic.js"].serialize;
+  const undo = __mods["games/2048/src/logic.js"].undo;
+  const undoAllowance = __mods["games/2048/src/logic.js"].undoAllowance;
+  const createRenderer = __mods["games/2048/src/render.js"].createRenderer;
+  const formatNumber = __mods["games/2048/src/render.js"].formatNumber;
+  /**
+   * 2048 · game shell: SDK handshake, input, lifecycle, persistence.
+   *
+   * The platform contract lives here (docs/V1-CONTRACTS.md §8, §10):
+   *   ready -> session.start(); pause/hidden stop the clock; before-save writes
+   *   `current`; Game Over submits the score once and ends the session; the
+   *   Player Best comes from score.getBest(). Opening dist/index.html directly
+   *   falls back to a tiny in-memory/local preview SDK so the single file stays
+   *   playable outside the host, without any network access.
+   */
+
+
+  function mediaMatches(query) {
+    try {
+      return typeof window.matchMedia === 'function' && window.matchMedia(query).matches;
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function readParams() {
+    try {
+      return new URLSearchParams(window.location.search);
+    } catch (_error) {
+      return new URLSearchParams('');
+    }
+  }
+
+  function createOfflineStore() {
+    const memory = new Map();
+    let local = null;
+    try {
+      local = window.localStorage;
+      const probe = '__dsh2048_probe__';
+      local.setItem(probe, '1');
+      local.removeItem(probe);
+    } catch (_error) {
+      local = null;
+    }
+    function read(key) {
+      const storageKey = `dsh2048.${key}`;
+      if (local) {
+        try {
+          const raw = local.getItem(storageKey);
+          if (raw !== null) return JSON.parse(raw);
+        } catch (_error) {
+          // Fall through to the in-memory copy.
+        }
+      }
+      return memory.has(storageKey) ? memory.get(storageKey) : undefined;
+    }
+    function write(key, value) {
+      const storageKey = `dsh2048.${key}`;
+      memory.set(storageKey, value);
+      if (local) {
+        try {
+          local.setItem(storageKey, JSON.stringify(value));
+        } catch (_error) {
+          // Storage may be unavailable or full; the game still works.
+        }
+      }
+    }
+    function remove(key) {
+      const storageKey = `dsh2048.${key}`;
+      memory.delete(storageKey);
+      if (local) {
+        try {
+          local.removeItem(storageKey);
+        } catch (_error) {
+          // Ignore.
+        }
+      }
+    }
+    return { read, write, remove };
+  }
+
+  function createOfflineSDK() {
+    const store = createOfflineStore();
+    const params = readParams();
+    if (params.get('fresh') === '1') {
+      store.remove('current');
+      store.remove('best');
+    }
+    if (params.get('failSave') === '1') {
+      try {
+        window.__2048ForceSaveFailure = true;
+      } catch (_error) {
+        // Preview-only diagnostic flag.
+      }
+    }
+    if (params.get('failLoad') === '1') {
+      try {
+        window.__2048ForceLoadFailure = true;
+      } catch (_error) {
+        // Preview-only diagnostic flag.
+      }
+    }
+    let revision = 0;
+    let best = 0;
+    const storedBest = store.read('best');
+    if (Number.isFinite(storedBest) && storedBest > 0) best = Math.floor(storedBest);
+
+    const themeParam = params.get('theme');
+    const motionParam = params.get('motion');
+    const theme = themeParam === 'light' || themeParam === 'dark'
+      ? themeParam
+      : mediaMatches('(prefers-color-scheme: light)')
+        ? 'light'
+        : 'dark';
+    const reducedMotion = motionParam === 'reduced'
+      ? true
+      : motionParam === 'full'
+        ? false
+        : mediaMatches('(prefers-reduced-motion: reduce)');
+
+    const info = {
+      sdkVersion: '1.0.0',
+      protocolVersion: 1,
+      runtimeVersion: '1.0.0',
+      gameId: '2048',
+      gameVersion: '1.0.0',
+      locale: 'zh-CN',
+      theme,
+      reducedMotion,
+      capabilities: ['storage', 'score'],
+      viewport: {
+        width: window.innerWidth || 0,
+        height: window.innerHeight || 0,
+        dpr: window.devicePixelRatio || 1,
+      },
+      ready: true,
+    };
+
+    function stamp() {
+      return new Date().toISOString();
+    }
+
+    return {
+      runtime: info,
+      ready: function ready() {
+        return Promise.resolve(info);
+      },
+      storage: {
+        save: function save(key, data) {
+          if (window.__2048ForceSaveFailure === true) {
+            return Promise.reject({ code: 'GM-4131', message: 'Local preview: simulated save failure', retryable: true });
+          }
+          const value = JSON.parse(JSON.stringify(data));
+          store.write(key, value);
+          revision += 1;
+          return Promise.resolve({
+            key,
+            bytes: JSON.stringify(value).length,
+            revision,
+            updatedAt: stamp(),
+          });
+        },
+        load: function load(key) {
+          if (window.__2048ForceLoadFailure === true) {
+            return Promise.reject({ code: 'GM-5022', message: 'Local preview: simulated load failure', retryable: true });
+          }
+          const value = store.read(key);
+          if (value === undefined) return Promise.resolve(null);
+          return Promise.resolve({ key, data: value, revision, updatedAt: null });
+        },
+        remove: function remove(key) {
+          store.remove(key);
+          revision += 1;
+          return Promise.resolve({ key, removed: true, revision });
+        },
+      },
+      session: {
+        start: function start() {
+          return Promise.resolve({ playSessionId: 'local-preview', startedAt: stamp(), adopted: false });
+        },
+        end: function end() {
+          return Promise.resolve(null);
+        },
+      },
+      score: {
+        submit: function submit(score) {
+          const value = Number.isFinite(score) ? Math.max(0, Math.floor(score)) : 0;
+          const isBest = value > best;
+          if (isBest) {
+            best = value;
+            store.write('best', best);
+          }
+          return Promise.resolve({ best: best || value, isBest, submittedAt: stamp() });
+        },
+        getBest: function getBest() {
+          if (!(best > 0)) return Promise.resolve(null);
+          return Promise.resolve({ score: best, achievedAt: null, meta: null });
+        },
+      },
+      lifecycle: {
+        on: function on() {
+          return function off() {};
+        },
+      },
+      agent: {
+        getStatus: function getStatus() {
+          return Promise.resolve({ state: 'idle', label: '', labelKey: null, sessionId: null });
+        },
+        on: function on() {
+          return function off() {};
+        },
+      },
+      onError: function onError() {
+        return function off() {};
+      },
+      isGameError: function isGameError() {
+        return false;
+      },
+    };
+  }
+
+  const sdkGlobal = typeof DSH_GAME_SDK !== 'undefined' ? DSH_GAME_SDK : null;
+
+  function createPlatformSDK() {
+    if (!(sdkGlobal && typeof sdkGlobal.createGameSDK === 'function')) return null;
+    let embedded = false;
+    try {
+      embedded = window.parent !== window;
+    } catch (_error) {
+      embedded = false;
+    }
+    if (!embedded) return null;
+    try {
+      return sdkGlobal.createGameSDK();
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  const platformSDK = createPlatformSDK();
+  const offlineMode = platformSDK === null;
+  const game = offlineMode ? createOfflineSDK() : platformSDK;
+  const doc = document;
+  const win = window;
+
+  // The Runtime paints its back/pause/save controls over the top of the stage.
+  // Leave a small safe band in embedded mode so the masthead and ledger are not
+  // hidden under host chrome; the standalone preview keeps the tighter layout.
+  let embedded = !offlineMode;
+  if (offlineMode) {
+    try {
+      embedded = readParams().get('embed') === '1';
+    } catch (_error) {
+      embedded = false;
+    }
+  }
+  doc.documentElement.dataset.embed = embedded ? 'true' : 'false';
+
+  const renderer = createRenderer({ document, window });
+
+  let state = null;
+  let mode = 'boot';
+  let booted = false;
+  let restoredSave = false;
+  let runtimePaused = false;
+  let pausedFromMode = null;
+  let resumeRequested = false;
+  let currentTheme = 'dark';
+  let reducedMotion = false;
+  let best = 0;
+  let bestAtGameStart = 0;
+  let sessionActive = false;
+  let overHandled = false;
+  let scoreSubmittedForGame = false;
+  let saveTimer = null;
+  let saveSeq = 0;
+  let lastSaveState = 'idle';
+  let lastSaveFailed = false;
+  let lastActiveAt = 0;
+  let windowBlurred = false;
+  let runtimeWatchTimer = null;
+
+  function now() {
+    return typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now();
+  }
+
+  function makeSeed() {
+    return (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
+  }
+
+  function errorCode(error) {
+    return error && typeof error.code === 'string' && error.code ? error.code : 'GM-5000';
+  }
+
+  function errorMessage(error) {
+    return error && typeof error.message === 'string' && error.message ? error.message : '请返回游戏市场后重新进入';
+  }
+
+  function clearSaveTimer() {
+    if (saveTimer !== null) {
+      win.clearTimeout(saveTimer);
+      saveTimer = null;
+    }
+  }
+
+  function displayBest() {
+    if (!state) return best;
+    return Math.max(best, state.score);
+  }
+
+  function isRecord() {
+    return Boolean(state && state.score > best && state.score > 0);
+  }
+
+  function syncElapsed(force) {
+    const stamp = now();
+    if (
+      state &&
+      mode === 'playing' &&
+      !runtimePaused &&
+      !windowBlurred &&
+      (force === true || !doc.hidden) &&
+      state.status === 'playing'
+    ) {
+      const delta = Math.max(0, Math.round(stamp - lastActiveAt));
+      if (delta > 0) state = addElapsed(state, delta);
+    }
+    lastActiveAt = stamp;
+  }
+
+  function applyRuntime(info) {
+    const runtime = info || game.runtime || {};
+    currentTheme = runtime.theme === 'light' ? 'light' : 'dark';
+    reducedMotion = runtime.reducedMotion === true;
+    renderer.setTheme(currentTheme);
+    renderer.setReducedMotion(reducedMotion);
+  }
+
+  function watchRuntime() {
+    const runtime = game.runtime;
+    if (!runtime) return;
+    if ((runtime.theme === 'light' || runtime.theme === 'dark') && runtime.theme !== currentTheme) {
+      currentTheme = runtime.theme;
+      renderer.setTheme(currentTheme);
+    }
+    if (typeof runtime.reducedMotion === 'boolean' && runtime.reducedMotion !== reducedMotion) {
+      reducedMotion = runtime.reducedMotion;
+      renderer.setReducedMotion(reducedMotion);
+    }
+  }
+
+  function refreshHud() {
+    if (!state) return;
+    renderer.setScores({
+      score: state.score,
+      best: displayBest(),
+      moves: state.moves,
+      record: isRecord(),
+    });
+    renderer.setUndo({
+      remaining: undoAllowance(state),
+      enabled: mode === 'playing' && !runtimePaused && canUndo(state),
+    });
+  }
+
+  function updateStatus() {
+    if (mode === 'ready') {
+      renderer.setStatus(restoredSave ? '已恢复上一局 · 按方向键继续' : '按方向键 / 回车开始', restoredSave ? 'brass' : '');
+    } else if (mode === 'playing') {
+      renderer.setStatus(state && state.reached2048 ? '已达成 2048 · 继续冲分' : '方向键 / WASD 滑动', state && state.reached2048 ? 'brass' : '');
+    } else if (mode === 'paused') {
+      renderer.setStatus(runtimePaused ? '平台已暂停 · 请在平台菜单中继续' : '已暂停 · 按 P 继续');
+    } else if (mode === 'won') {
+      renderer.setStatus('达成 2048 · 选择继续', 'brass');
+    } else if (mode === 'over') {
+      renderer.setStatus('本局结束 · 按回车再来一局');
+    } else if (mode === 'error') {
+      renderer.setStatus('无法启动', 'alert');
+    } else {
+      renderer.setStatus('正在准备…');
+    }
+  }
+
+  function startSession() {
+    if (sessionActive) return;
+    sessionActive = true;
+    Promise.resolve()
+      .then(function () {
+        return game.session.start();
+      })
+      .catch(function () {
+        sessionActive = false;
+      });
+  }
+
+  function loadBest() {
+    return Promise.resolve()
+      .then(function () {
+        return game.score.getBest();
+      })
+      .then(function (result) {
+        if (result && Number.isFinite(result.score) && result.score >= 0) return Math.floor(result.score);
+        return 0;
+      })
+      .catch(function () {
+        return 0;
+      });
+  }
+
+  function loadSavedState() {
+    return Promise.resolve()
+      .then(function () {
+        return game.storage.load('current');
+      })
+      .then(function (saved) {
+        return { saved, error: null };
+      })
+      .catch(function (error) {
+        return { saved: null, error };
+      });
+  }
+
+  function scheduleSave(delayMs) {
+    if (!state || mode === 'boot' || mode === 'error') return;
+    clearSaveTimer();
+    const delay = typeof delayMs === 'number' ? delayMs : 450;
+    saveTimer = win.setTimeout(function flushScheduledSave() {
+      saveTimer = null;
+      saveNow();
+    }, delay);
+  }
+
+  function saveNow() {
+    if (!state || mode === 'boot' || mode === 'error') return Promise.resolve(null);
+    clearSaveTimer();
+    syncElapsed();
+    const payload = serialize(state);
+    const seq = (saveSeq += 1);
+    lastSaveState = 'saving';
+    renderer.setSaveStatus('saving');
+    return Promise.resolve()
+      .then(function () {
+        return game.storage.save('current', payload);
+      })
+      .then(function (result) {
+        if (seq === saveSeq) {
+          const recovered = lastSaveFailed;
+          lastSaveState = 'saved';
+          lastSaveFailed = false;
+          renderer.setSaveStatus('saved');
+          if (recovered) updateStatus();
+        }
+        return result;
+      })
+      .catch(function (error) {
+        if (seq === saveSeq) {
+          lastSaveState = 'failed';
+          lastSaveFailed = true;
+          const code = errorCode(error);
+          renderer.setSaveStatus('failed', code);
+          renderer.setStatus(`保存失败 ${code} · 点击「重试保存」`, 'alert');
+          renderer.announce(`保存失败 ${code}`);
+        }
+        return null;
+      });
+  }
+
+  function showReadyOverlay(notice) {
+    if (restoredSave && state) {
+      renderer.showOverlay({
+        kicker: '已恢复上一局',
+        title: '继续这一局',
+        hint: '棋盘、分数和步数都已恢复。按方向键或回车继续。',
+        detail: notice || `得分 ${formatNumber(state.score)} · 步数 ${state.moves} · 最高方块 ${highestTile(state.board) || '无'}`,
+        detailTone: notice ? 'alert' : '',
+        primaryLabel: '继续游戏',
+        onPrimary: function onContinue() {
+          startPlaying(true);
+        },
+        footnote: '平台确认后即可继续 · 进度已自动保存',
+      });
+      return;
+    }
+    renderer.showOverlay({
+      kicker: '数字拼图',
+      title: '把相同的数字推到一起',
+      hint: '方向键 / WASD 滑动棋盘，相同数字合并。每局可以撤销一次，达成 2048 后还能继续冲分。',
+      detail: notice || '',
+      detailTone: notice ? 'alert' : '',
+      primaryLabel: '开始游戏',
+      onPrimary: function onStart() {
+        startPlaying(false);
+      },
+      footnote: '进度会自动保存 · 离开后可继续',
+    });
+  }
+
+  function showWinOverlay() {
+    renderer.showOverlay({
+      kicker: '达成 2048',
+      title: '2048 达成',
+      hint: '更强的数字还在后面。按回车继续冲分，看看能走多远。',
+      detail: `得分 ${formatNumber(state.score)} · 步数 ${state.moves} · 最高方块 ${highestTile(state.board)}`,
+      primaryLabel: '继续游戏',
+      onPrimary: continueWin,
+      footnote: '继续后仍可挑战 4096 · 分数在结束时提交',
+    });
+  }
+
+  function showLocalPauseOverlay() {
+    renderer.showOverlay({
+      kicker: '已暂停',
+      title: '喘口气',
+      hint: '按 P 或回车继续。暂停的时间不会计入本局用时。',
+      detail: `得分 ${formatNumber(state.score)} · 步数 ${state.moves}`,
+      primaryLabel: '继续',
+      onPrimary: resumeLocal,
+      footnote: '进度已自动保存',
+    });
+  }
+
+  function showPlatformPauseOverlay() {
+    renderer.showOverlay({
+      kicker: '已暂停',
+      title: '平台暂停中',
+      hint: '请在平台的暂停菜单中点击「继续」，游戏会从当前棋盘恢复。',
+      detail: '',
+      primaryLabel: '',
+      onPrimary: null,
+      footnote: false,
+    });
+  }
+
+  function showGameOverOverlay(fromSave) {
+    const record = !fromSave && state.score > bestAtGameStart && state.score > 0;
+    renderer.showOverlay({
+      kicker: '本局结束',
+      title: `得分 ${formatNumber(state.score)}`,
+      hint: `没有可以移动的方向了 · 最高方块 ${highestTile(state.board)}`,
+      detail: fromSave
+        ? '这局已经结束 · 分数已在上一局提交'
+        : record
+          ? '新纪录 · 分数已提交'
+          : `个人最高 ${formatNumber(best)}`,
+      primaryLabel: '再来一局',
+      onPrimary: restart,
+      footnote: fromSave ? '按回车开始新的一局' : '按回车重开 · 分数只会提交一次',
+    });
+  }
+
+  function showFatal(error) {
+    mode = 'error';
+    const code = errorCode(error);
+    renderer.setStatus('无法启动', 'alert');
+    renderer.setUndo({ remaining: 0, enabled: false });
+    renderer.setSaveStatus('idle');
+    renderer.showOverlay({
+      kicker: '无法开始',
+      title: '游戏暂时不可用',
+      hint: `${errorMessage(error)} · ${code}`,
+      primaryLabel: '重新加载',
+      onPrimary: function reloadPage() {
+        try {
+          win.location.reload();
+        } catch (_reloadError) {
+          // The host error overlay offers the final recovery path.
+        }
+      },
+      footnote: '如果问题持续，请返回游戏市场后重试。',
+    });
+    renderer.announce(`游戏无法启动 ${code}`);
+  }
+
+  function startPlaying(fromResume) {
+    if (mode !== 'ready' && mode !== 'paused') return;
+    const wasRestored = restoredSave;
+    restoredSave = false;
+    if (state.status === 'ready') state = beginPlay(state);
+    mode = 'playing';
+    runtimePaused = false;
+    pausedFromMode = null;
+    renderer.hideOverlay();
+    renderer.renderBoard(state.board, { instant: true });
+    startSession();
+    lastActiveAt = now();
+    renderer.focusBoard();
+    refreshHud();
+    updateStatus();
+    if (wasRestored) {
+      renderer.announce(fromResume ? '已恢复上一局，继续游戏' : '已恢复上一局');
+    }
+  }
+
+  function resumeLocal() {
+    if (mode !== 'paused' || runtimePaused) return;
+    mode = 'playing';
+    renderer.hideOverlay();
+    lastActiveAt = now();
+    renderer.focusBoard();
+    refreshHud();
+    updateStatus();
+  }
+
+  function toggleLocalPause() {
+    if (runtimePaused || mode !== 'playing') return;
+    syncElapsed();
+    mode = 'paused';
+    saveNow();
+    showLocalPauseOverlay();
+    refreshHud();
+    updateStatus();
+  }
+
+  function undoMove() {
+    if (mode !== 'playing' || runtimePaused) return;
+    if (!state || !canUndo(state)) {
+      renderer.bumpBoard();
+      return;
+    }
+    syncElapsed();
+    const result = undo(state);
+    if (!result.undone) return;
+    state = result.state;
+    renderer.renderBoard(state.board, { instant: true });
+    renderer.bumpBoard();
+    refreshHud();
+    updateStatus();
+    renderer.announce('已撤销上一步，本局撤销机会已用完');
+    scheduleSave(0);
+  }
+
+  function buildMoveAnnouncement(result) {
+    const parts = [];
+    if (result.scoreGained > 0) parts.push(`合并 +${result.scoreGained}`);
+    parts.push(`得分 ${state.score}`);
+    parts.push(`最高方块 ${highestTile(state.board)}`);
+    if (result.reachedTarget) parts.push('达成 2048');
+    if (state.status === 'over') parts.push('没有可移动的方向');
+    return parts.join('，');
+  }
+
+  function applyDirection(direction) {
+    const resolved = normalizeDirection(direction);
+    if (!resolved || !state) return;
+    if (mode === 'ready') startPlaying(false);
+    if (mode !== 'playing' || runtimePaused) return;
+    syncElapsed();
+    const result = move(state, resolved);
+    if (!result.moved) {
+      renderer.bumpBoard();
+      renderer.announce('这个方向没有可以移动的方块');
+      return;
+    }
+    state = result.state;
+    renderer.renderBoard(state.board, {
+      slides: result.slides,
+      merges: result.merges,
+      spawned: result.spawned,
+      win: result.reachedTarget,
+    });
+    renderer.flashScoreDelta(result.scoreGained);
+    refreshHud();
+    updateStatus();
+    renderer.announce(buildMoveAnnouncement(result));
+    if (state.status === 'won') {
+      onWin();
+      return;
+    }
+    if (state.status === 'over') {
+      onGameOver();
+      return;
+    }
+    scheduleSave();
+  }
+
+  function submitFinalScore(finalScore) {
+    Promise.resolve()
+      .then(function () {
+        return game.score.submit(finalScore);
+      })
+      .then(function (result) {
+        if (result && Number.isFinite(result.best)) best = Math.max(best, Math.floor(result.best));
+        else best = Math.max(best, finalScore);
+        refreshHud();
+        renderer.announce('分数已提交');
+      })
+      .catch(function (error) {
+        const code = errorCode(error);
+        if (mode === 'over') {
+          renderer.setStatus(`分数提交失败 ${code} · 可重开一局`, 'alert');
+        }
+        renderer.announce(`分数提交失败 ${code}`);
+      });
+  }
+
+  function endSession(finalScore) {
+    if (!sessionActive) return;
+    sessionActive = false;
+    Promise.resolve()
+      .then(function () {
+        return game.session.end({ outcome: 'completed', score: finalScore });
+      })
+      .catch(function (error) {
+        if (mode === 'over') renderer.setStatus(`结算请求失败 ${errorCode(error)}`, 'alert');
+      });
+  }
+
+  function onWin() {
+    mode = 'won';
+    syncElapsed();
+    saveNow();
+    showWinOverlay();
+    refreshHud();
+    updateStatus();
+    renderer.announce('达成 2048，可以继续游戏');
+  }
+
+  function continueWin() {
+    if (mode !== 'won') return;
+    state = continueAfterWin(state);
+    renderer.hideOverlay();
+    if (state.status === 'over') {
+      onGameOver();
+      return;
+    }
+    mode = 'playing';
+    lastActiveAt = now();
+    renderer.focusBoard();
+    refreshHud();
+    updateStatus();
+    renderer.announce('继续游戏');
+    scheduleSave();
+  }
+
+  function onGameOver() {
+    if (mode === 'over' && overHandled) return;
+    mode = 'over';
+    overHandled = true;
+    syncElapsed();
+    renderer.renderBoard(state.board, { instant: true });
+    showGameOverOverlay(false);
+    refreshHud();
+    updateStatus();
+    saveNow();
+    renderer.announce(`本局结束，得分 ${state.score}`);
+    if (!scoreSubmittedForGame) {
+      scoreSubmittedForGame = true;
+      const finalScore = state.score;
+      submitFinalScore(finalScore);
+      endSession(finalScore);
+    }
+  }
+
+  function restart() {
+    state = beginPlay(createGame({ seed: makeSeed() }));
+    mode = 'playing';
+    restoredSave = false;
+    runtimePaused = false;
+    pausedFromMode = null;
+    overHandled = false;
+    scoreSubmittedForGame = false;
+    bestAtGameStart = best;
+    renderer.hideOverlay();
+    renderer.renderBoard(state.board, { instant: true });
+    startSession();
+    lastActiveAt = now();
+    renderer.focusBoard();
+    refreshHud();
+    updateStatus();
+    renderer.announce('新的一局开始');
+    saveNow();
+  }
+
+  function onRuntimePause() {
+    if (!booted) {
+      runtimePaused = true;
+      return;
+    }
+    if (mode === 'over' || mode === 'error') {
+      runtimePaused = true;
+      return;
+    }
+    if (runtimePaused) return;
+    runtimePaused = true;
+    if (mode === 'playing') syncElapsed();
+    pausedFromMode = mode;
+    mode = 'paused';
+    saveNow();
+    showPlatformPauseOverlay();
+    refreshHud();
+    updateStatus();
+  }
+
+  function onRuntimeResume() {
+    if (!booted) {
+      runtimePaused = false;
+      resumeRequested = true;
+      return;
+    }
+    runtimePaused = false;
+    if (mode === 'over' || mode === 'error') {
+      lastActiveAt = now();
+      return;
+    }
+    if (mode !== 'paused') {
+      lastActiveAt = now();
+      return;
+    }
+    const previous = pausedFromMode || 'playing';
+    pausedFromMode = null;
+    if (previous === 'paused') {
+      mode = 'paused';
+      showLocalPauseOverlay();
+      refreshHud();
+      updateStatus();
+      return;
+    }
+    if (previous === 'ready') {
+      mode = 'ready';
+      if (restoredSave) {
+        startPlaying(true);
+        return;
+      }
+      showReadyOverlay();
+      refreshHud();
+      updateStatus();
+      return;
+    }
+    if (previous === 'won') {
+      mode = 'won';
+      showWinOverlay();
+      refreshHud();
+      updateStatus();
+      return;
+    }
+    mode = 'playing';
+    if (state.status === 'ready') state = beginPlay(state);
+    renderer.hideOverlay();
+    lastActiveAt = now();
+    renderer.focusBoard();
+    refreshHud();
+    updateStatus();
+    saveNow();
+  }
+
+  function onHidden() {
+    syncElapsed(true);
+    saveNow();
+  }
+
+  function onVisible() {
+    lastActiveAt = now();
+  }
+
+  function onBeforeSave() {
+    syncElapsed();
+    return saveNow();
+  }
+
+  function onVisibilityChange() {
+    if (doc.hidden) onHidden();
+    else onVisible();
+  }
+
+  function onWindowBlur() {
+    syncElapsed();
+    windowBlurred = true;
+  }
+
+  function onWindowFocus() {
+    windowBlurred = false;
+    lastActiveAt = now();
+  }
+
+  function onPageHide() {
+    syncElapsed(true);
+    saveNow();
+  }
+
+  function isSpaceKey(event, key) {
+    return key === ' ' || key === 'Spacebar' || event.code === 'Space';
+  }
+
+  function handleKeydown(event) {
+    if (!event || typeof event.key !== 'string') return;
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (mode === 'boot' || mode === 'error') return;
+    const key = event.key;
+    const lower = key.toLowerCase();
+    const space = isSpaceKey(event, key);
+    const enter = key === 'Enter';
+    const direction = normalizeDirection(key);
+
+    if (runtimePaused) {
+      if (direction || lower === 'p' || enter || space) event.preventDefault();
+      return;
+    }
+
+    if (mode === 'ready') {
+      if (direction) {
+        event.preventDefault();
+        startPlaying(false);
+        applyDirection(direction);
+        return;
+      }
+      if (enter || space) {
+        event.preventDefault();
+        if (!event.repeat) startPlaying(false);
+        return;
+      }
+      return;
+    }
+
+    if (mode === 'paused') {
+      if (lower === 'p' || enter || space) {
+        event.preventDefault();
+        if (!event.repeat) resumeLocal();
+        return;
+      }
+      if (direction) event.preventDefault();
+      return;
+    }
+
+    if (mode === 'won') {
+      if (enter || space) {
+        event.preventDefault();
+        if (!event.repeat) continueWin();
+      }
+      return;
+    }
+
+    if (mode === 'over') {
+      if (enter || space) {
+        event.preventDefault();
+        if (!event.repeat) restart();
+      }
+      return;
+    }
+
+    if (mode !== 'playing') return;
+
+    if (direction) {
+      event.preventDefault();
+      applyDirection(direction);
+      return;
+    }
+    if (lower === 'p') {
+      event.preventDefault();
+      if (!event.repeat) toggleLocalPause();
+      return;
+    }
+    if (lower === 'u') {
+      event.preventDefault();
+      if (!event.repeat) undoMove();
+    }
+  }
+
+  function handleSwipe(direction) {
+    if (runtimePaused) return;
+    if (mode === 'ready') {
+      startPlaying(false);
+      applyDirection(direction);
+      return;
+    }
+    if (mode === 'playing') applyDirection(direction);
+  }
+
+  function bindEvents() {
+    win.addEventListener('keydown', handleKeydown);
+    win.addEventListener('blur', onWindowBlur);
+    win.addEventListener('focus', onWindowFocus);
+    win.addEventListener('pagehide', onPageHide);
+    doc.addEventListener('visibilitychange', onVisibilityChange);
+    renderer.onUndo(undoMove);
+    renderer.onSaveRetry(function retrySave() {
+      saveNow();
+    });
+    renderer.onSwipe(handleSwipe);
+    game.lifecycle.on('pause', onRuntimePause);
+    game.lifecycle.on('resume', onRuntimeResume);
+    game.lifecycle.on('hidden', onHidden);
+    game.lifecycle.on('visible', onVisible);
+    game.lifecycle.on('before-save', onBeforeSave);
+  }
+
+  async function boot() {
+    renderer.init();
+    bindEvents();
+    renderer.showOverlay({
+      kicker: '载入中',
+      title: '正在准备棋盘',
+      hint: '正在连接游戏运行时…',
+      footnote: false,
+    });
+
+    try {
+      const info = await game.ready();
+      applyRuntime(info);
+      best = await loadBest();
+      bestAtGameStart = best;
+      const loaded = await loadSavedState();
+      const restored = loaded.saved ? deserialize(loaded.saved.data) : null;
+      let bootNotice = null;
+      if (loaded.error) bootNotice = `存档读取失败 ${errorCode(loaded.error)} · 已开始新局`;
+      else if (loaded.saved && !restored) bootNotice = '存档不可用 · 已开始新局';
+      booted = true;
+
+      if (restored) {
+        state = restored;
+        restoredSave = true;
+        renderer.renderBoard(state.board, { instant: true });
+        if (restored.status === 'over') {
+          mode = 'over';
+          overHandled = true;
+          scoreSubmittedForGame = true;
+          renderer.hideOverlay();
+          showGameOverOverlay(true);
+          refreshHud();
+          updateStatus();
+        } else if (restored.status === 'won') {
+          mode = 'won';
+          showWinOverlay();
+          refreshHud();
+          updateStatus();
+        } else {
+          mode = 'ready';
+          showReadyOverlay(bootNotice);
+          refreshHud();
+          updateStatus();
+        }
+      } else {
+        state = createGame({ seed: makeSeed() });
+        mode = 'ready';
+        renderer.renderBoard(state.board, { instant: true });
+        showReadyOverlay(bootNotice);
+        refreshHud();
+        updateStatus();
+      }
+
+      if (mode !== 'over') startSession();
+
+      if (runtimePaused && mode !== 'over' && mode !== 'error') {
+        pausedFromMode = mode;
+        mode = 'paused';
+        showPlatformPauseOverlay();
+        refreshHud();
+        updateStatus();
+      } else if (resumeRequested && !runtimePaused && mode === 'ready' && restoredSave) {
+        resumeRequested = false;
+        startPlaying(true);
+      } else if (resumeRequested && !runtimePaused && mode === 'won') {
+        resumeRequested = false;
+        showWinOverlay();
+      }
+      resumeRequested = false;
+
+      renderer.setSaveStatus(restored ? 'saved' : 'idle');
+      lastActiveAt = now();
+      runtimeWatchTimer = win.setInterval(watchRuntime, 1800);
+      renderer.announce('2048 已就绪');
+      if (bootNotice) {
+        renderer.setStatus(bootNotice, 'alert');
+        renderer.announce(bootNotice);
+      }
+    } catch (error) {
+      booted = true;
+      showFatal(error);
+    }
+  }
+
+  if (typeof window !== 'undefined') {
+    window.__dsh2048Debug = function __dsh2048Debug() {
+      return {
+        mode,
+        runtimePaused,
+        restoredSave,
+        sessionActive,
+        offline: offlineMode,
+        status: state ? state.status : null,
+        score: state ? state.score : 0,
+        moves: state ? state.moves : 0,
+        best: displayBest(),
+        board: state ? state.board.slice() : [],
+        undoRemaining: state ? undoAllowance(state) : 0,
+        undoReady: state ? canUndo(state) : false,
+        elapsed: state ? state.elapsed : 0,
+        theme: currentTheme,
+        reducedMotion,
+        overlay: renderer.isOverlayOpen(),
+        saveState: lastSaveState,
+        saveFailed: lastSaveFailed,
+        saveTimer: saveTimer !== null,
+        runtimeWatch: runtimeWatchTimer !== null,
+      };
+    };
+    window.addEventListener('error', function onWindowError() {
+      // The player sees failures through the save indicator and status line; do
+      // not swallow them into a hidden console-only state.
+      if (mode === 'playing') {
+        renderer.setStatus('出现异常 · 进度会自动保存', 'alert');
+      }
+    });
+  }
+
+  boot();
+
+  return {};
+  })();
+
+  const __entry = __mods["games/2048/src/game.js"];
+
+  return __entry;
+})();</script>
+  </body>
+</html>
