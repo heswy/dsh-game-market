@@ -1538,7 +1538,7 @@
    */
 
 
-  /** Re-export the error class without `export { }` (restricted bundler syntax). */
+  /** Re-export the error class as a const (the repo bundler only supports named declarations). */
   const GameError = GameErrorImpl;
 
   function isGameError(error) {
