@@ -33,36 +33,305 @@ window.__ModuleLoader__.load({
       'common.close': '关闭',
       'common.retry': '重试',
       'common.back': '返回',
+      'common.confirm': '确认',
+      'common.delete': '删除',
+      'common.done': '完成',
+      'common.learnMore': '了解详情',
 
+      'market.title': 'Game Market',
+      'market.tab.market': '市场',
+      'market.tab.mygames': '我的游戏',
+      'market.backToChat': '返回会话',
+      'market.localInstall': '安装本地游戏',
+      'market.localInstall.title': '从本地安装游戏？',
+      'market.localInstall.body': '选择一个自包含的 .html 游戏包。本地文件不经过商店校验，请只安装你信任的来源。',
+      'market.localInstall.warning': '本地安装不会校验文件来源。',
+      'market.localInstall.tryAgain': '选择其他文件',
+      'market.localInstall.confirm': '继续安装',
+      'market.localInstall.reading': '正在读取文件…',
+      'market.localInstall.done': '《{gameName}》已从本地安装',
+      'market.localInstall.failed': '本地安装失败',
+      'market.localInstall.unsupported': '这个文件不是受支持的 .html 游戏包',
+      'market.localInstall.tooLarge': '文件超过 20 MB，无法安装',
+      'market.localInstall.fileLabel': '所选文件：{fileName}',
+
+      'market.search.placeholder': '搜索游戏',
+      'market.search.a11y': '搜索游戏',
+      'market.search.results': '{count} 个结果',
+      'market.search.empty': '没有找到相关游戏',
+      'market.search.clear': '清除搜索',
+      'market.search.open': '打开搜索',
+      'market.search.close': '关闭搜索',
+
+      'market.filter.all': '全部',
+      'market.filter.a11y': '按类型筛选',
+      'market.category.arcade': '街机',
+      'market.category.puzzle': '益智',
+      'market.category.card': '卡牌',
+      'market.category.idle': '放置',
+      'market.category.action': '动作',
+      'market.category.strategy': '策略',
+      'market.category.trivia': '问答',
+      'market.category.sandbox': '沙盒',
+      'market.category.unknown': '其他',
+
+      'market.section.continue': '继续游戏',
+      'market.section.recent': '最近游玩',
+      'market.section.quick': '快速一局',
+      'market.section.popular': '热门',
+      'market.section.new': '新上架',
       'market.section.all': '全部游戏',
-      'market.loading': '正在加载游戏列表…',
+      'market.hero.empty.title': '挑一个游戏，等 Agent 的时候玩',
+      'market.hero.empty.body': '安装后就能在这里直接继续上一局。',
+      'market.hero.empty.action': '浏览游戏',
+      'market.hero.continue': '继续',
+      'market.hero.lastPlayed': '上次 {relativeTime}',
+      'market.hero.best': '最高 {score}',
+      'market.hero.paused': '已暂停，继续上一局',
+      'market.hero.a11y': '继续《{gameName}》，上次游玩 {relativeTime}',
+
+      'market.loading': '正在加载游戏列表',
       'market.error.title': '游戏列表加载失败',
+      'market.error.detail': '{code} · 可以重试',
       'market.error.retry': '重试',
+      'market.error.installedOnly': '已安装的游戏仍可继续游玩。',
       'market.empty.all': '暂时没有可显示的游戏',
+      'market.empty.offline': '还没有安装任何游戏',
+      'market.empty.offline.body': '连接网络后再试一次。',
+      'market.offline': '离线模式，仅显示已安装游戏',
+      'market.offline.retry': '重试',
+      'market.retry': '重试',
+      'market.footer.synced': '更新于 {relativeTime}',
+      'market.footer.offline': '离线',
+
       'market.card.installed': '已安装',
-      'market.card.continue': '继续',
+      'market.card.update': '有更新',
       'market.card.play': '开始游戏',
-      'market.card.best': '最高 {score}',
-      'market.card.noBest': '暂无最高分',
-      'market.card.lastPlayed': '上次游玩 {relativeTime}',
-      'market.card.neverPlayed': '还没玩过',
+      'market.card.continue': '继续游戏',
+      'market.card.open': '查看详情',
+      'market.card.builtin': '内置',
+      'market.card.a11y': '{name}，{author}，{category}{installed}{update}',
+      'market.card.a11y.installed': '，已安装',
+      'market.card.a11y.update': '，有更新',
       'market.card.authorMeta': '{author} · {category}',
-      'market.card.continueAvailable': '可继续',
+      'market.card.noAuthor': '未知作者',
+
       'market.source.builtin': '内置',
+      'market.source.registry': '商店',
+      'market.source.local': '本地',
+      'market.source.dev': '开发中',
+
       'market.waiting.banner': 'Agent 需要你处理一下',
       'market.waiting.action': '去处理',
       'market.refreshed': '更新于 {relativeTime}',
 
       'mygames.title': '我的游戏',
-      'mygames.loading': '正在加载游戏库…',
+      'mygames.loading': '正在加载游戏库',
       'mygames.error.load': '游戏库加载失败',
       'mygames.empty.title': '我的游戏还是空的',
+      'mygames.empty.body': '安装一个游戏，下次等待时就能直接开玩。',
       'mygames.empty.action': '去市场看看',
-      'mygames.row.best': '最高 {score}',
-      'mygames.row.lastPlayed': '{relativeTime}玩过',
-      'mygames.row.neverPlayed': '还没玩过',
+      'mygames.progress.score': '上一局 {score} 分',
+      'mygames.progress.generic': '继续上次进度',
+      'mygames.progress.none': '还没有进度',
+      'mygames.best': '最高 {score}',
+      'mygames.lastPlayed': '{relativeTime}玩过',
+      'mygames.neverPlayed': '还没玩过',
+      'mygames.update.available': '可更新至 {version}',
+      'mygames.update.incompatible': '更新需要更新的 Runtime',
       'mygames.action.continue': '继续',
       'mygames.action.play': '开始',
+      'mygames.action.update': '更新',
+      'mygames.action.updating': '更新中…',
+      'mygames.action.updateFailed': '更新失败',
+      'mygames.action.reinstall': '重新安装',
+      'mygames.menu': '更多操作',
+      'mygames.menu.restart': '重新开始',
+      'mygames.menu.uninstall': '卸载',
+      'mygames.menu.deleteData': '删除游戏数据…',
+      'mygames.menu.builtinNote': '内置游戏不可卸载',
+      'mygames.row.a11y': '{name}，{status}，{progress}',
+      'mygames.row.status.continue': '可继续',
+      'mygames.row.status.play': '可开始',
+      'mygames.row.status.updating': '正在更新',
+      'mygames.row.installing': '正在安装 {percent}',
+      'mygames.row.installingUnknown': '正在安装',
+      'mygames.builtin': '内置',
+      'mygames.uninstall.title': '卸载《{gameName}》？',
+      'mygames.uninstall.body': '存档和最高分会保留，重新安装后可继续。',
+      'mygames.uninstall.deleteData': '同时删除存档与成绩',
+      'mygames.uninstall.warning': '此操作不可撤销',
+      'mygames.uninstall.confirm': '卸载',
+      'mygames.uninstall.confirmDelete': '卸载并删除数据',
+      'mygames.deleteData.title': '删除《{gameName}》的游戏数据？',
+      'mygames.deleteData.body': '存档、最高分和历史成绩将被永久删除，无法恢复。',
+      'mygames.deleteData.confirm': '永久删除',
+      'mygames.deleteData.confirmAgain': '再次点击确认删除',
+      'mygames.deleteData.uninstallNote': '游戏也会被卸载，需要时可以重新安装。',
+      'mygames.restart.title': '重新开始《{gameName}》？',
+      'mygames.restart.body': '当前未完成的进度会被覆盖，最高分不受影响。',
+      'mygames.restart.confirm': '重新开始',
+      'mygames.remove.busy': '正在卸载…',
+
+      'detail.back': '返回',
+      'detail.breadcrumb': '{page} / {gameName}',
+      'detail.more': '更多操作',
+      'detail.loading': '正在加载',
+      'detail.meta.version': '版本 {version}',
+      'detail.meta.versionLabel': '版本',
+      'detail.meta.size': '{size}',
+      'detail.meta.sizeLabel': '大小',
+      'detail.meta.updated': '更新于 {relativeTime}',
+      'detail.meta.updatedLabel': '更新',
+      'detail.meta.by': '作者 {author}',
+      'detail.meta.categories': '类型',
+      'detail.meta.tags': '标签',
+      'detail.permissions.title': '权限',
+      'detail.permissions.none': '不需要额外权限',
+      'detail.permissions.storageScore': '可保存游戏进度与成绩',
+      'detail.permissions.note': '不访问文件、网络或对话内容。',
+      'detail.permissions.unknown': '此游戏请求了未知权限',
+      'detail.permissions.storage': '可保存游戏进度',
+      'detail.permissions.score': '可保存最高分与成绩',
+      'detail.leaderboard.title': '本地排行',
+      'detail.leaderboard.best': '个人最高 {score}',
+      'detail.leaderboard.recent': '最近成绩',
+      'detail.leaderboard.empty': '还没有成绩',
+      'detail.preview': '预览',
+      'detail.screenshot.open': '查看预览图',
+      'detail.screenshot.close': '关闭预览',
+      'detail.screenshot.prev': '上一张',
+      'detail.screenshot.next': '下一张',
+      'detail.screenshot.failed': '预览图无法加载',
+      'detail.expand': '展开',
+      'detail.collapse': '收起',
+      'detail.update.available': '可更新至 {version}',
+      'detail.update.incompatible': '更新不可用：{reason}',
+      'detail.incompatible.reason': '需要 Game Runtime {version} 或更高版本',
+      'detail.reason.offline': '离线状态下无法安装或更新',
+      'detail.reason.unknownCapability': '此游戏请求了当前版本不支持的权限',
+      'detail.reason.missingPackage': '游戏文件缺失，重新安装后可以继续',
+      'detail.reason.checksum': '安装包校验失败，请重试',
+      'detail.error.missing': '游戏不存在或已下架',
+      'detail.error.missing.action': '返回市场',
+      'detail.error.offline': '离线状态下只能查看已安装游戏',
+      'detail.error.offline.action': '重试',
+      'detail.error.load': '游戏详情加载失败',
+      'detail.error.retry': '重试',
+      'detail.action.install': '安装',
+      'detail.action.cancelInstall': '取消安装',
+      'detail.install.cancelCleanup': '取消并清理',
+      'detail.action.play': '开始游戏',
+      'detail.action.continue': '继续游戏',
+      'detail.action.update': '更新',
+      'detail.action.playCurrent': '先玩当前版本',
+      'detail.action.updating': '更新中…',
+      'detail.action.updateUnavailable': '更新不可用',
+      'detail.action.incompatible': '不兼容',
+      'detail.action.reinstall': '重新安装',
+      'detail.action.checkUpdate': '检查更新',
+      'detail.action.resume': '回到游戏',
+      'detail.action.retry': '重试',
+      'detail.action.uninstall': '卸载',
+      'detail.action.cancelling': '正在取消…',
+      'detail.install.stage.preparing': '准备中…',
+      'detail.install.stage.queued': '排队中…',
+      'detail.install.stage.downloading': '下载中 {percent}%',
+      'detail.install.stage.downloadingUnknown': '下载中…',
+      'detail.install.stage.verifying': '校验中…',
+      'detail.install.stage.installing': '正在安装…',
+      'detail.install.stage.installed': '安装完成',
+      'detail.install.stage.failed': '安装失败',
+      'detail.install.stage.cancelled': '已取消安装',
+      'detail.install.done': '《{gameName}》已安装',
+      'detail.install.done.action': '开始游戏',
+      'detail.install.failed': '安装失败',
+      'detail.install.failed.download': '下载中断，请重试',
+      'detail.install.failed.verify': '文件校验未通过',
+      'detail.install.failed.write': '安装包写入失败',
+      'detail.install.failed.unknown': '安装没有完成，请重试',
+      'detail.install.failed.stage': '失败阶段：{stage}',
+      'detail.install.a11y': '安装进度 {stage}',
+      'detail.install.percent': '{percent}%',
+
+      'dialog.a11y': '确认操作',
+      'dialog.installLocal.title': '从本地安装《{fileName}》？',
+      'dialog.installLocal.body': '本地文件不经过商店校验，请确认来源可信。安装后可以随时卸载，存档会保留。',
+      'dialog.installLocal.confirm': '安装',
+      'dialog.pending': '处理中…',
+
+      'menu.a11y': '更多操作',
+      'menu.update': '更新',
+      'menu.builtinDisabled': '内置游戏不可卸载',
+
+      'toast.installed': '《{gameName}》已安装',
+      'toast.installed.action': '开始游戏',
+      'toast.updated': '《{gameName}》已更新至 {version}',
+      'toast.update.failed': '《{gameName}》更新失败',
+      'toast.uninstalled': '《{gameName}》已卸载',
+      'toast.uninstalledData': '《{gameName}》已卸载，存档与成绩已删除',
+      'toast.dataDeleted': '《{gameName}》的游戏数据已删除',
+      'toast.installCancelled': '已取消安装',
+      'toast.registryRefreshed': '游戏目录已刷新',
+      'toast.registryThrottled': '刚刚刷新过，请稍后再试',
+      'toast.offline': '离线模式',
+      'toast.dismiss': '关闭提示',
+
+      'install.busy': '另一个安装正在进行，正在重试…',
+      'install.cancelled': '安装已取消',
+      'install.retry': '重试安装',
+      'install.estimated': '预计 {seconds} 秒',
+
+      'error.gm.badRequest': '请求无效，请重试',
+      'error.gm.invalidGame': '游戏标识无效',
+      'error.gm.notFound': '游戏不存在或已下架',
+      'error.gm.unknownMethod': '此操作暂不支持',
+      'error.gm.host': '无法连接 Game Market，请重试',
+      'error.gm.registry': '游戏目录暂时不可用，正在使用本地缓存',
+      'error.gm.offline': '当前离线，无法完成此操作',
+      'error.gm.throttled': '刚刚刷新过，请稍后再试',
+      'error.gm.installBusy': '另一个安装正在进行，请稍后再试',
+      'error.gm.installRunning': '游戏正在运行，请先退出游戏',
+      'error.gm.installUrl': '安装包地址不被信任',
+      'error.gm.installVersion': '版本冲突，请先卸载或检查更新',
+      'error.gm.installVersionMismatch': '安装包版本与商店记录不一致',
+      'error.gm.packageInvalid': '安装包无效或已损坏',
+      'error.gm.packageTooLarge': '安装包超过 20 MB 限制',
+      'error.gm.manifest': '安装包缺少有效的游戏信息',
+      'error.gm.notSelfContained': '安装包不是自包含的单文件',
+      'error.gm.integrity': '文件校验未通过，请重新下载',
+      'error.gm.download': '下载中断，请重试',
+      'error.gm.downloadTimeout': '下载超时，请重试',
+      'error.gm.diskFull': '磁盘空间不足',
+      'error.gm.write': '安装包写入失败，请重试',
+      'error.gm.verify': '安装包校验失败，请重试',
+      'error.gm.compat': '需要更新版本的 Game Market',
+      'error.gm.uninstallBuiltin': '内置游戏不可卸载',
+      'error.gm.storage': '本地存储不可用，请检查权限',
+      'error.gm.storageReadOnly': '存储目录不可写',
+      'error.gm.storageTooNew': '本地数据来自更新版本的 Game Market',
+      'error.gm.saveCorrupt': '存档损坏，无法恢复',
+      'error.gm.scoreRange': '分数超出游戏允许的范围',
+      'error.gm.capability': '游戏没有声明该权限',
+      'error.gm.unsupportedMedia': '不支持的文件类型',
+      'error.gm.cancelled': '操作已取消',
+      'error.gm.unknown': '出了点问题，请重试',
+
+      'a11y.installed': '已安装',
+      'a11y.updateAvailable': '有可用更新',
+      'a11y.installProgress': '安装进度 {percent}%',
+      'a11y.loading': '正在加载',
+      'a11y.searchResults': '{count} 个结果',
+      'a11y.offline': '离线模式',
+      'a11y.openMenu': '打开更多操作',
+      'a11y.closeMenu': '关闭菜单',
+      'a11y.live.waiting': 'Agent 需要你处理。按下按钮回到会话。',
+      'a11y.live.completed': 'Agent 已完成任务。',
+      'a11y.live.error': 'Agent 遇到问题。',
+      'a11y.live.returned': '已返回会话。',
+      'a11y.live.installed': '《{gameName}》安装完成',
+      'a11y.live.installFailed': '《{gameName}》安装失败',
+      'a11y.live.uninstalled': '《{gameName}》已卸载',
 
       'entry.chip.game': '游戏',
       'entry.tab.game': '游戏',
@@ -169,11 +438,6 @@ window.__ModuleLoader__.load({
       'runtime.diagnostic.copied': '已复制',
       'runtime.toast.resumed': '已恢复上一局',
       'runtime.toast.saveGap': '上次未能保存，已从更早的存档恢复',
-
-      'a11y.live.waiting': 'Agent 需要你处理。按下按钮回到会话。',
-      'a11y.live.completed': 'Agent 已完成任务。',
-      'a11y.live.error': 'Agent 遇到问题。',
-      'a11y.live.returned': '已返回会话。',
     });
 
     const EN = Object.freeze({
@@ -190,36 +454,305 @@ window.__ModuleLoader__.load({
       'common.close': 'Close',
       'common.retry': 'Retry',
       'common.back': 'Back',
+      'common.confirm': 'Confirm',
+      'common.delete': 'Delete',
+      'common.done': 'Done',
+      'common.learnMore': 'Learn more',
 
+      'market.title': 'Game Market',
+      'market.tab.market': 'Market',
+      'market.tab.mygames': 'My Games',
+      'market.backToChat': 'Back to conversation',
+      'market.localInstall': 'Install local game',
+      'market.localInstall.title': 'Install a game from this device?',
+      'market.localInstall.body': 'Choose a self-contained .html game package. Local files are not verified by the store, so only install sources you trust.',
+      'market.localInstall.warning': 'Local installs do not verify where the file came from.',
+      'market.localInstall.tryAgain': 'Choose another file',
+      'market.localInstall.confirm': 'Install anyway',
+      'market.localInstall.reading': 'Reading file…',
+      'market.localInstall.done': '{gameName} installed from this device',
+      'market.localInstall.failed': 'Local install failed',
+      'market.localInstall.unsupported': 'This file is not a supported .html game package',
+      'market.localInstall.tooLarge': 'This file is larger than 20 MB and cannot be installed',
+      'market.localInstall.fileLabel': 'Selected file: {fileName}',
+
+      'market.search.placeholder': 'Search games',
+      'market.search.a11y': 'Search games',
+      'market.search.results': '{count} results',
+      'market.search.empty': 'No games found',
+      'market.search.clear': 'Clear search',
+      'market.search.open': 'Open search',
+      'market.search.close': 'Close search',
+
+      'market.filter.all': 'All',
+      'market.filter.a11y': 'Filter by category',
+      'market.category.arcade': 'Arcade',
+      'market.category.puzzle': 'Puzzle',
+      'market.category.card': 'Card',
+      'market.category.idle': 'Idle',
+      'market.category.action': 'Action',
+      'market.category.strategy': 'Strategy',
+      'market.category.trivia': 'Trivia',
+      'market.category.sandbox': 'Sandbox',
+      'market.category.unknown': 'Other',
+
+      'market.section.continue': 'Continue playing',
+      'market.section.recent': 'Recently played',
+      'market.section.quick': 'Quick play',
+      'market.section.popular': 'Popular',
+      'market.section.new': 'New',
       'market.section.all': 'All games',
-      'market.loading': 'Loading games…',
+      'market.hero.empty.title': 'Pick a game for the next wait',
+      'market.hero.empty.body': 'Install one and pick up where you left off.',
+      'market.hero.empty.action': 'Browse games',
+      'market.hero.continue': 'Continue',
+      'market.hero.lastPlayed': 'Last played {relativeTime}',
+      'market.hero.best': 'Best {score}',
+      'market.hero.paused': 'Paused, continue your last run',
+      'market.hero.a11y': 'Continue {gameName}, last played {relativeTime}',
+
+      'market.loading': 'Loading games',
       'market.error.title': 'Could not load games',
+      'market.error.detail': '{code} · Try again',
       'market.error.retry': 'Retry',
+      'market.error.installedOnly': 'Installed games are still playable.',
       'market.empty.all': 'No games to show yet',
+      'market.empty.offline': 'No games installed yet',
+      'market.empty.offline.body': 'Connect to the network and try again.',
+      'market.offline': 'Offline. Showing installed games only.',
+      'market.offline.retry': 'Retry',
+      'market.retry': 'Retry',
+      'market.footer.synced': 'Updated {relativeTime}',
+      'market.footer.offline': 'Offline',
+
       'market.card.installed': 'Installed',
-      'market.card.continue': 'Continue',
+      'market.card.update': 'Update available',
       'market.card.play': 'Play',
-      'market.card.best': 'Best {score}',
-      'market.card.noBest': 'No best score yet',
-      'market.card.lastPlayed': 'Played {relativeTime}',
-      'market.card.neverPlayed': 'Not played yet',
+      'market.card.continue': 'Continue',
+      'market.card.open': 'View details',
+      'market.card.builtin': 'Built-in',
+      'market.card.a11y': '{name}, {author}, {category}{installed}{update}',
+      'market.card.a11y.installed': ', installed',
+      'market.card.a11y.update': ', update available',
       'market.card.authorMeta': '{author} · {category}',
-      'market.card.continueAvailable': 'Continue available',
+      'market.card.noAuthor': 'Unknown author',
+
       'market.source.builtin': 'Built-in',
+      'market.source.registry': 'Store',
+      'market.source.local': 'Local',
+      'market.source.dev': 'In development',
+
       'market.waiting.banner': 'The agent needs you',
       'market.waiting.action': 'Handle it',
       'market.refreshed': 'Updated {relativeTime}',
 
       'mygames.title': 'My Games',
-      'mygames.loading': 'Loading your library…',
+      'mygames.loading': 'Loading your library',
       'mygames.error.load': 'Could not load your library',
       'mygames.empty.title': 'Your library is empty',
+      'mygames.empty.body': 'Install a game and it will be ready the next time you wait.',
       'mygames.empty.action': 'Browse the market',
-      'mygames.row.best': 'Best {score}',
-      'mygames.row.lastPlayed': 'Played {relativeTime}',
-      'mygames.row.neverPlayed': 'Not played yet',
+      'mygames.progress.score': 'Last run {score}',
+      'mygames.progress.generic': 'Continue where you left off',
+      'mygames.progress.none': 'No progress yet',
+      'mygames.best': 'Best {score}',
+      'mygames.lastPlayed': 'Played {relativeTime}',
+      'mygames.neverPlayed': 'Not played yet',
+      'mygames.update.available': 'Update to {version}',
+      'mygames.update.incompatible': 'Update needs a newer Runtime',
       'mygames.action.continue': 'Continue',
       'mygames.action.play': 'Play',
+      'mygames.action.update': 'Update',
+      'mygames.action.updating': 'Updating…',
+      'mygames.action.updateFailed': 'Update failed',
+      'mygames.action.reinstall': 'Reinstall',
+      'mygames.menu': 'More actions',
+      'mygames.menu.restart': 'Start over',
+      'mygames.menu.uninstall': 'Uninstall',
+      'mygames.menu.deleteData': 'Delete game data…',
+      'mygames.menu.builtinNote': 'Built-in games cannot be uninstalled',
+      'mygames.row.a11y': '{name}, {status}, {progress}',
+      'mygames.row.status.continue': 'can continue',
+      'mygames.row.status.play': 'ready to play',
+      'mygames.row.status.updating': 'updating',
+      'mygames.row.installing': 'Installing {percent}',
+      'mygames.row.installingUnknown': 'Installing',
+      'mygames.builtin': 'Built-in',
+      'mygames.uninstall.title': 'Uninstall {gameName}?',
+      'mygames.uninstall.body': 'Saves and best scores are kept for reinstall.',
+      'mygames.uninstall.deleteData': 'Also delete saves and scores',
+      'mygames.uninstall.warning': 'This cannot be undone',
+      'mygames.uninstall.confirm': 'Uninstall',
+      'mygames.uninstall.confirmDelete': 'Uninstall and delete data',
+      'mygames.deleteData.title': 'Delete game data for {gameName}?',
+      'mygames.deleteData.body': 'Saves, best scores and history will be permanently deleted.',
+      'mygames.deleteData.confirm': 'Delete permanently',
+      'mygames.deleteData.confirmAgain': 'Click again to delete',
+      'mygames.deleteData.uninstallNote': 'The game will also be uninstalled; you can reinstall it later.',
+      'mygames.restart.title': 'Start over in {gameName}?',
+      'mygames.restart.body': 'Your unfinished progress will be overwritten. Best scores are kept.',
+      'mygames.restart.confirm': 'Start over',
+      'mygames.remove.busy': 'Uninstalling…',
+
+      'detail.back': 'Back',
+      'detail.breadcrumb': '{page} / {gameName}',
+      'detail.more': 'More actions',
+      'detail.loading': 'Loading',
+      'detail.meta.version': 'Version {version}',
+      'detail.meta.versionLabel': 'Version',
+      'detail.meta.size': '{size}',
+      'detail.meta.sizeLabel': 'Size',
+      'detail.meta.updated': 'Updated {relativeTime}',
+      'detail.meta.updatedLabel': 'Updated',
+      'detail.meta.by': 'By {author}',
+      'detail.meta.categories': 'Categories',
+      'detail.meta.tags': 'Tags',
+      'detail.permissions.title': 'Permissions',
+      'detail.permissions.none': 'No extra permissions',
+      'detail.permissions.storageScore': 'Can save progress and scores',
+      'detail.permissions.note': 'No access to files, network or conversations.',
+      'detail.permissions.unknown': 'This game requests unknown permissions',
+      'detail.permissions.storage': 'Can save game progress',
+      'detail.permissions.score': 'Can save best scores and history',
+      'detail.leaderboard.title': 'Local leaderboard',
+      'detail.leaderboard.best': 'Personal best {score}',
+      'detail.leaderboard.recent': 'Recent runs',
+      'detail.leaderboard.empty': 'No scores yet',
+      'detail.preview': 'Preview',
+      'detail.screenshot.open': 'Open preview',
+      'detail.screenshot.close': 'Close preview',
+      'detail.screenshot.prev': 'Previous image',
+      'detail.screenshot.next': 'Next image',
+      'detail.screenshot.failed': 'Preview image could not load',
+      'detail.expand': 'Show more',
+      'detail.collapse': 'Show less',
+      'detail.update.available': 'Update to {version}',
+      'detail.update.incompatible': 'Update unavailable: {reason}',
+      'detail.incompatible.reason': 'Requires Game Runtime {version} or later',
+      'detail.reason.offline': 'Installing or updating is unavailable offline',
+      'detail.reason.unknownCapability': 'This game requests permissions this version does not support',
+      'detail.reason.missingPackage': 'Game files are missing. Reinstall to continue.',
+      'detail.reason.checksum': 'The package failed verification. Try again.',
+      'detail.error.missing': 'Game not found or removed',
+      'detail.error.missing.action': 'Back to market',
+      'detail.error.offline': 'Offline. Only installed games are available.',
+      'detail.error.offline.action': 'Retry',
+      'detail.error.load': 'Could not load this game',
+      'detail.error.retry': 'Retry',
+      'detail.action.install': 'Install',
+      'detail.action.cancelInstall': 'Cancel install',
+      'detail.install.cancelCleanup': 'Cancel and clean up',
+      'detail.action.play': 'Play',
+      'detail.action.continue': 'Continue',
+      'detail.action.update': 'Update',
+      'detail.action.playCurrent': 'Play current version',
+      'detail.action.updating': 'Updating…',
+      'detail.action.updateUnavailable': 'Update unavailable',
+      'detail.action.incompatible': 'Not compatible',
+      'detail.action.reinstall': 'Reinstall',
+      'detail.action.checkUpdate': 'Check for updates',
+      'detail.action.resume': 'Back to game',
+      'detail.action.retry': 'Retry',
+      'detail.action.uninstall': 'Uninstall',
+      'detail.action.cancelling': 'Cancelling…',
+      'detail.install.stage.preparing': 'Preparing…',
+      'detail.install.stage.queued': 'Queued…',
+      'detail.install.stage.downloading': 'Downloading {percent}%',
+      'detail.install.stage.downloadingUnknown': 'Downloading…',
+      'detail.install.stage.verifying': 'Verifying…',
+      'detail.install.stage.installing': 'Installing…',
+      'detail.install.stage.installed': 'Installed',
+      'detail.install.stage.failed': 'Installation failed',
+      'detail.install.stage.cancelled': 'Installation cancelled',
+      'detail.install.done': '{gameName} installed',
+      'detail.install.done.action': 'Play',
+      'detail.install.failed': 'Installation failed',
+      'detail.install.failed.download': 'Download interrupted. Try again.',
+      'detail.install.failed.verify': 'File verification failed',
+      'detail.install.failed.write': 'Could not write the game package',
+      'detail.install.failed.unknown': 'The install did not finish. Try again.',
+      'detail.install.failed.stage': 'Failed stage: {stage}',
+      'detail.install.a11y': 'Installation progress: {stage}',
+      'detail.install.percent': '{percent}%',
+
+      'dialog.a11y': 'Confirm action',
+      'dialog.installLocal.title': 'Install {fileName} from this device?',
+      'dialog.installLocal.body': 'Local files are not verified by the store. Only install files you trust. You can uninstall at any time and saves are kept.',
+      'dialog.installLocal.confirm': 'Install',
+      'dialog.pending': 'Working…',
+
+      'menu.a11y': 'More actions',
+      'menu.update': 'Update',
+      'menu.builtinDisabled': 'Built-in games cannot be uninstalled',
+
+      'toast.installed': '{gameName} installed',
+      'toast.installed.action': 'Play',
+      'toast.updated': '{gameName} updated to {version}',
+      'toast.update.failed': 'Could not update {gameName}',
+      'toast.uninstalled': '{gameName} uninstalled',
+      'toast.uninstalledData': '{gameName} uninstalled, saves and scores deleted',
+      'toast.dataDeleted': 'Game data for {gameName} deleted',
+      'toast.installCancelled': 'Installation cancelled',
+      'toast.registryRefreshed': 'Game catalog refreshed',
+      'toast.registryThrottled': 'Already refreshed recently. Try again later.',
+      'toast.offline': 'Offline mode',
+      'toast.dismiss': 'Dismiss notification',
+
+      'install.busy': 'Another install is running. Retrying…',
+      'install.cancelled': 'Installation cancelled',
+      'install.retry': 'Retry install',
+      'install.estimated': 'About {seconds}s',
+
+      'error.gm.badRequest': 'Invalid request. Try again.',
+      'error.gm.invalidGame': 'Invalid game id',
+      'error.gm.notFound': 'Game not found or removed',
+      'error.gm.unknownMethod': 'This action is not supported',
+      'error.gm.host': 'Cannot reach Game Market. Try again.',
+      'error.gm.registry': 'The game catalog is unavailable; showing the local cache',
+      'error.gm.offline': 'This action is unavailable offline',
+      'error.gm.throttled': 'Already refreshed recently. Try again later.',
+      'error.gm.installBusy': 'Another install is in progress. Try again later.',
+      'error.gm.installRunning': 'Exit the game before updating',
+      'error.gm.installUrl': 'The package address is not trusted',
+      'error.gm.installVersion': 'Version conflict. Uninstall or check for updates first.',
+      'error.gm.installVersionMismatch': 'The package version does not match the store entry',
+      'error.gm.packageInvalid': 'The game package is invalid or damaged',
+      'error.gm.packageTooLarge': 'The package exceeds the 20 MB limit',
+      'error.gm.manifest': 'The package is missing valid game metadata',
+      'error.gm.notSelfContained': 'The package is not a self-contained single file',
+      'error.gm.integrity': 'File verification failed. Download again.',
+      'error.gm.download': 'Download interrupted. Try again.',
+      'error.gm.downloadTimeout': 'Download timed out. Try again.',
+      'error.gm.diskFull': 'Not enough disk space',
+      'error.gm.write': 'Could not write the package. Try again.',
+      'error.gm.verify': 'Package verification failed. Try again.',
+      'error.gm.compat': 'This needs a newer version of Game Market',
+      'error.gm.uninstallBuiltin': 'Built-in games cannot be uninstalled',
+      'error.gm.storage': 'Local storage is unavailable. Check permissions.',
+      'error.gm.storageReadOnly': 'The storage folder is read-only',
+      'error.gm.storageTooNew': 'Local data comes from a newer Game Market',
+      'error.gm.saveCorrupt': 'Save data is corrupted',
+      'error.gm.scoreRange': 'Score is outside the range allowed by the game',
+      'error.gm.capability': 'The game did not declare this permission',
+      'error.gm.unsupportedMedia': 'Unsupported file type',
+      'error.gm.cancelled': 'Cancelled',
+      'error.gm.unknown': 'Something went wrong. Try again.',
+
+      'a11y.installed': 'Installed',
+      'a11y.updateAvailable': 'Update available',
+      'a11y.installProgress': 'Installation {percent}%',
+      'a11y.loading': 'Loading',
+      'a11y.searchResults': '{count} results',
+      'a11y.offline': 'Offline mode',
+      'a11y.openMenu': 'Open more actions',
+      'a11y.closeMenu': 'Close menu',
+      'a11y.live.waiting': 'Agent needs you. Press the button to return to the conversation.',
+      'a11y.live.completed': 'Agent finished the task.',
+      'a11y.live.error': 'The agent ran into a problem.',
+      'a11y.live.returned': 'Back in the conversation.',
+      'a11y.live.installed': '{gameName} installed',
+      'a11y.live.installFailed': 'Could not install {gameName}',
+      'a11y.live.uninstalled': '{gameName} uninstalled',
 
       'entry.chip.game': 'Game',
       'entry.tab.game': 'Game',
@@ -606,6 +1139,7 @@ window.__ModuleLoader__.load({
     const PAGES = Object.freeze({
       MARKET: 'market',
       MY_GAMES: 'my-games',
+      DETAIL: 'detail',
       RUNTIME: 'runtime',
     });
 
@@ -623,7 +1157,84 @@ window.__ModuleLoader__.load({
 
     const PAUSED_REASONS = Object.freeze(['waiting-user', 'view-result', 'leave']);
 
-    return { MAIN_PANEL_KEY, SIDEBAR_ORDER, PAGES, RUNTIME_STATES, PAUSED_REASONS };
+    /**
+     * Manifest `categories` enum (shared/manifest.js CATEGORIES). Duplicated as a
+     * frozen client list so the browser bundle does not pull the manifest validator.
+     */
+    const CATEGORIES = Object.freeze([
+      'arcade',
+      'puzzle',
+      'card',
+      'idle',
+      'action',
+      'strategy',
+      'trivia',
+      'sandbox',
+    ]);
+
+    const CATEGORY_ALL = 'all';
+
+    /** One category chip row: "All" plus the eight manifest categories. */
+    const CATEGORY_FILTERS = Object.freeze([CATEGORY_ALL].concat(CATEGORIES));
+
+    /** Search debounce from PRD 9.3.5 (local catalog filtering). */
+    const SEARCH_DEBOUNCE_MS = 150;
+
+    /** Skeleton appears only after this delay to avoid a white flash (PRD 9.3.6). */
+    const SKELETON_DELAY_MS = 300;
+
+    /** Slow-load notice threshold (PRD 9.3.6). */
+    const SLOW_LOAD_MS = 800;
+
+    /** Section size caps from PRD 9.3.3. */
+    const SECTION_LIMIT = 8;
+
+    /** "New" means published within this window (PRD 9.3.3). */
+    const NEW_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
+
+    /** Detail preview images (PRD 9.5.1). */
+    const MAX_SCREENSHOTS = 3;
+
+    /** Visible install/uninstall job states (PRD 9.5.3 + install state machine). */
+    const INSTALL_JOB_STAGES = Object.freeze([
+      'queued',
+      'downloading',
+      'verifying',
+      'installing',
+      'installed',
+      'failed',
+      'cancelled',
+    ]);
+
+    /** Stages where the operation is still running. */
+    const INSTALL_ACTIVE_STAGES = Object.freeze(['queued', 'downloading', 'verifying', 'installing']);
+
+    /** Stages where the install may still be aborted (PRD 9.5.3). */
+    const INSTALL_CANCELLABLE_STAGES = Object.freeze(['queued', 'downloading', 'verifying', 'installing']);
+
+    /** Stages whose cancel label becomes "Cancel and clean up" (PRD 9.5.3). */
+    const INSTALL_CLEANUP_STAGES = Object.freeze(['verifying', 'installing']);
+
+    /** Stage hint delay before switching the label to "Downloading..." without a byte stream. */
+    const INSTALL_STAGE_HINT_MS = 320;
+
+    /** Busy retry backoff for the serialized install queue (GM-4091 / GM-4097). */
+    const INSTALL_BUSY_RETRY_DELAYS_MS = Object.freeze([600, 1400]);
+
+    /** Toast lifetimes (PRD 9.4.4 / 9.5.5). */
+    const TOAST_MS = 3000;
+    const TOAST_UPDATE_MS = 1600;
+
+    /** Maximum simultaneously rendered toasts. */
+    const TOAST_LIMIT = 3;
+
+    /** Offset used by scroll restoration and focus rings under the sticky header. */
+    const HEADER_HEIGHT = 52;
+
+    /** Minimum viewport width where the header search stays expanded (PRD 9.3.5). */
+    const SEARCH_EXPANDED_MIN_WIDTH = 840;
+
+    return { MAIN_PANEL_KEY, SIDEBAR_ORDER, PAGES, RUNTIME_STATES, PAUSED_REASONS, CATEGORIES, CATEGORY_ALL, CATEGORY_FILTERS, SEARCH_DEBOUNCE_MS, SKELETON_DELAY_MS, SLOW_LOAD_MS, SECTION_LIMIT, NEW_WINDOW_MS, MAX_SCREENSHOTS, INSTALL_JOB_STAGES, INSTALL_ACTIVE_STAGES, INSTALL_CANCELLABLE_STAGES, INSTALL_CLEANUP_STAGES, INSTALL_STAGE_HINT_MS, INSTALL_BUSY_RETRY_DELAYS_MS, TOAST_MS, TOAST_UPDATE_MS, TOAST_LIMIT, HEADER_HEIGHT, SEARCH_EXPANDED_MIN_WIDTH };
     })();
 
     // module: packages/client/src/store.js
@@ -632,6 +1243,10 @@ window.__ModuleLoader__.load({
     const PAGES = __mods["packages/client/src/constants.js"].PAGES;
     const RUNTIME_STATES = __mods["packages/client/src/constants.js"].RUNTIME_STATES;
     const PAUSED_REASONS = __mods["packages/client/src/constants.js"].PAUSED_REASONS;
+    const CATEGORY_FILTERS = __mods["packages/client/src/constants.js"].CATEGORY_FILTERS;
+    const CATEGORY_ALL = __mods["packages/client/src/constants.js"].CATEGORY_ALL;
+    const INSTALL_JOB_STAGES = __mods["packages/client/src/constants.js"].INSTALL_JOB_STAGES;
+    const TOAST_LIMIT = __mods["packages/client/src/constants.js"].TOAST_LIMIT;
     /**
      * Module-level client store.
      *
@@ -641,6 +1256,7 @@ window.__ModuleLoader__.load({
      */
 
     const AGENT_STATES = Object.freeze(['idle', 'running', 'waiting-user', 'completed', 'error']);
+    const DIALOG_KINDS = Object.freeze(['uninstall', 'delete-data', 'restart', 'install-local']);
 
     function initialRuntime() {
       return {
@@ -656,6 +1272,39 @@ window.__ModuleLoader__.load({
       };
     }
 
+    function initialDetail() {
+      return {
+        gameId: null,
+        status: 'idle',
+        view: null,
+        scores: null,
+        error: null,
+        returnPage: PAGES.MARKET,
+      };
+    }
+
+    function initialUi() {
+      return {
+        query: '',
+        draftQuery: '',
+        category: CATEGORY_ALL,
+        searchOpen: false,
+        lightbox: null,
+      };
+    }
+
+    function initialMarket() {
+      return {
+        status: 'idle',
+        games: [],
+        error: null,
+        refreshedAt: 0,
+        offline: false,
+        registry: null,
+        source: null,
+      };
+    }
+
     /** Fresh state; every test starts from here so module singletons never leak. */
     function createInitialState(overrides) {
       const base = {
@@ -668,7 +1317,15 @@ window.__ModuleLoader__.load({
         acknowledged: null,
         waitEntry: { sessionId: null, turnId: null, ignoredTurnId: null },
         runtime: initialRuntime(),
-        market: { status: 'idle', games: [], error: null, refreshedAt: 0 },
+        market: initialMarket(),
+        detail: initialDetail(),
+        ui: initialUi(),
+        scroll: { market: 0, 'my-games': 0 },
+        toasts: [],
+        dialog: null,
+        installJobs: {},
+        focus: null,
+        health: null,
         surface: { chip: false, runtime: false, activePanelId: null },
       };
       if (!overrides || typeof overrides !== 'object') return base;
@@ -678,6 +1335,11 @@ window.__ModuleLoader__.load({
         waitEntry: { ...base.waitEntry, ...(overrides.waitEntry || {}) },
         runtime: { ...base.runtime, ...(overrides.runtime || {}) },
         market: { ...base.market, ...(overrides.market || {}) },
+        detail: { ...base.detail, ...(overrides.detail || {}) },
+        ui: { ...base.ui, ...(overrides.ui || {}) },
+        scroll: { ...base.scroll, ...(overrides.scroll || {}) },
+        toasts: Array.isArray(overrides.toasts) ? overrides.toasts : base.toasts,
+        installJobs: overrides.installJobs && typeof overrides.installJobs === 'object' ? overrides.installJobs : base.installJobs,
         surface: { ...base.surface, ...(overrides.surface || {}) },
       };
     }
@@ -700,6 +1362,7 @@ window.__ModuleLoader__.load({
         code: typeof error.code === 'string' ? error.code : 'GM-5000',
         retryable: error.retryable === true,
         unresponsive: error.unresponsive === true,
+        stage: typeof error.stage === 'string' ? error.stage : null,
       };
     }
 
@@ -725,16 +1388,44 @@ window.__ModuleLoader__.load({
       return true;
     }
 
+    function isPage(value) {
+      return value === PAGES.MARKET || value === PAGES.MY_GAMES || value === PAGES.RUNTIME;
+    }
+
+    function clampText(value, max) {
+      if (typeof value !== 'string') return '';
+      return value.slice(0, max);
+    }
+
+    function normalizeJobStage(value) {
+      return INSTALL_JOB_STAGES.indexOf(value) !== -1 ? value : null;
+    }
+
+    function normalizePercent(value) {
+      if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+      if (value < 0) return 0;
+      if (value > 100) return 100;
+      return Math.round(value);
+    }
+
+    function toastId(action) {
+      if (typeof action.id === 'string' && action.id.length > 0) return action.id;
+      return null;
+    }
+
     /** Pure reducer over the state shape above. Unknown actions return the state. */
     function reduce(state, action) {
       if (!action || typeof action.type !== 'string') return state;
       switch (action.type) {
         case 'page': {
-          if (action.page !== PAGES.MARKET && action.page !== PAGES.MY_GAMES && action.page !== PAGES.RUNTIME) {
-            return state;
-          }
+          if (!isPage(action.page)) return state;
           if (state.page === action.page) return state;
-          return { ...state, page: action.page };
+          return {
+            ...state,
+            page: action.page,
+            detail: action.page === PAGES.MARKET || action.page === PAGES.MY_GAMES ? initialDetail() : state.detail,
+            ui: action.page === PAGES.MARKET || action.page === PAGES.MY_GAMES ? { ...state.ui, lightbox: null } : state.ui,
+          };
         }
 
         case 'session-bind': {
@@ -836,6 +1527,7 @@ window.__ModuleLoader__.load({
 
         case 'market-ready': {
           const items = Array.isArray(action.items) ? action.items : [];
+          const registry = action.registry && typeof action.registry === 'object' ? action.registry : state.market.registry;
           return {
             ...state,
             market: {
@@ -843,6 +1535,9 @@ window.__ModuleLoader__.load({
               games: items,
               error: null,
               refreshedAt: typeof action.refreshedAt === 'number' ? action.refreshedAt : state.market.refreshedAt,
+              offline: action.offline === true,
+              registry: registry,
+              source: typeof action.source === 'string' ? action.source : state.market.source,
             },
           };
         }
@@ -851,9 +1546,251 @@ window.__ModuleLoader__.load({
           return { ...state, market: { ...state.market, status: 'error', error: normalizeError(action.error) } };
         }
 
+        case 'market-offline': {
+          const offline = action.offline === true;
+          const registry = action.registry && typeof action.registry === 'object' ? action.registry : state.market.registry;
+          if (state.market.offline === offline && registry === state.market.registry) return state;
+          return { ...state, market: { ...state.market, offline: offline, registry: registry } };
+        }
+
         case 'market-invalidate': {
           if (state.market.status === 'loading') return state;
           return { ...state, market: { ...state.market, status: 'idle', error: null } };
+        }
+
+        case 'detail-open': {
+          if (!isGameId(action.gameId)) return state;
+          const returnPage = action.returnPage === PAGES.MY_GAMES ? PAGES.MY_GAMES : PAGES.MARKET;
+          if (state.page === PAGES.DETAIL && state.detail.gameId === action.gameId && state.detail.status !== 'idle') {
+            return state;
+          }
+          return {
+            ...state,
+            page: PAGES.DETAIL,
+            detail: { gameId: action.gameId, status: 'loading', view: null, scores: null, error: null, returnPage: returnPage },
+            ui: { ...state.ui, lightbox: null },
+          };
+        }
+
+        case 'detail-ready': {
+          const gameId = action.gameId;
+          if (!isGameId(gameId) || state.detail.gameId !== gameId) return state;
+          if (!action.view || !action.view.game) return state;
+          return {
+            ...state,
+            detail: { ...state.detail, status: 'ready', view: action.view, error: null },
+          };
+        }
+
+        case 'detail-failed': {
+          const gameId = action.gameId;
+          if (!isGameId(gameId) || (state.detail.gameId && state.detail.gameId !== gameId)) return state;
+          return {
+            ...state,
+            detail: { ...state.detail, status: 'error', error: normalizeError(action.error) },
+          };
+        }
+
+        case 'detail-scores': {
+          if (!state.detail.gameId) return state;
+          const scores = action.scores && typeof action.scores === 'object' ? action.scores : null;
+          if (scores === state.detail.scores) return state;
+          return { ...state, detail: { ...state.detail, scores: scores } };
+        }
+
+        case 'detail-close': {
+          if (state.page !== PAGES.DETAIL) return state;
+          const returnPage = state.detail.returnPage === PAGES.MY_GAMES ? PAGES.MY_GAMES : PAGES.MARKET;
+          const gameId = state.detail.gameId;
+          return {
+            ...state,
+            page: returnPage,
+            detail: initialDetail(),
+            ui: { ...state.ui, lightbox: null },
+            focus: gameId ? { kind: returnPage === PAGES.MY_GAMES ? 'row' : 'card', gameId: gameId } : state.focus,
+          };
+        }
+
+        case 'ui-query-draft': {
+          const value = clampText(action.value, 100);
+          if (value === state.ui.draftQuery) return state;
+          return { ...state, ui: { ...state.ui, draftQuery: value } };
+        }
+
+        case 'ui-query-apply': {
+          const value = clampText(action.query, 100);
+          if (value === state.ui.query) return state;
+          return { ...state, ui: { ...state.ui, query: value } };
+        }
+
+        case 'ui-category': {
+          const value = action.category;
+          if (CATEGORY_FILTERS.indexOf(value) === -1) return state;
+          if (value === state.ui.category) return state;
+          return { ...state, ui: { ...state.ui, category: value } };
+        }
+
+        case 'ui-search-open': {
+          const open = action.open === true;
+          if (open === state.ui.searchOpen) return state;
+          return { ...state, ui: { ...state.ui, searchOpen: open } };
+        }
+
+        case 'ui-clear-filters': {
+          if (state.ui.query.length === 0 && state.ui.draftQuery.length === 0 && state.ui.category === CATEGORY_ALL) return state;
+          return { ...state, ui: { ...state.ui, query: '', draftQuery: '', category: CATEGORY_ALL } };
+        }
+
+        case 'ui-lightbox': {
+          const index = typeof action.index === 'number' && action.index >= 0 ? Math.floor(action.index) : null;
+          if (index === null) {
+            if (state.ui.lightbox === null) return state;
+            return { ...state, ui: { ...state.ui, lightbox: null } };
+          }
+          return { ...state, ui: { ...state.ui, lightbox: index } };
+        }
+
+        case 'scroll-save': {
+          const page = action.page;
+          if (page !== 'market' && page !== 'my-games') return state;
+          if (typeof action.top !== 'number' || !Number.isFinite(action.top) || action.top < 0) return state;
+          const top = Math.round(action.top);
+          if (state.scroll[page] === top) return state;
+          return { ...state, scroll: { ...state.scroll, [page]: top } };
+        }
+
+        case 'dialog-open': {
+          if (DIALOG_KINDS.indexOf(action.kind) === -1) return state;
+          if (!isGameId(action.gameId) && action.kind !== 'install-local') return state;
+          return {
+            ...state,
+            dialog: {
+              kind: action.kind,
+              gameId: isGameId(action.gameId) ? action.gameId : null,
+              deleteData: false,
+              confirmAgain: false,
+              busy: false,
+              fileName: typeof action.fileName === 'string' ? action.fileName : null,
+              file: action.file || null,
+              returnFocus: action.returnFocus && typeof action.returnFocus === 'object' ? action.returnFocus : null,
+            },
+          };
+        }
+
+        case 'dialog-delete-data': {
+          if (!state.dialog) return state;
+          const value = action.value === true;
+          if (value === state.dialog.deleteData) return state;
+          return { ...state, dialog: { ...state.dialog, deleteData: value } };
+        }
+
+        case 'dialog-confirm-again': {
+          if (!state.dialog || state.dialog.kind !== 'delete-data' || state.dialog.confirmAgain === true) return state;
+          return { ...state, dialog: { ...state.dialog, confirmAgain: true } };
+        }
+
+        case 'dialog-busy': {
+          if (!state.dialog) return state;
+          const busy = action.busy === true;
+          if (busy === state.dialog.busy) return state;
+          return { ...state, dialog: { ...state.dialog, busy: busy } };
+        }
+
+        case 'dialog-close': {
+          if (!state.dialog) return state;
+          const dialog = state.dialog;
+          const focus =
+            dialog.returnFocus && dialog.returnFocus.kind
+              ? dialog.returnFocus
+              : dialog.gameId
+                ? { kind: 'menu', gameId: dialog.gameId }
+                : state.focus;
+          return { ...state, dialog: null, focus: focus };
+        }
+
+        case 'toast-push': {
+          const id = toastId(action);
+          if (id === null) return state;
+          const toast = {
+            id: id,
+            kind: typeof action.kind === 'string' ? action.kind : 'info',
+            textKey: typeof action.textKey === 'string' ? action.textKey : null,
+            params: action.params && typeof action.params === 'object' ? action.params : {},
+            action: action.action && typeof action.action === 'object' ? action.action : null,
+            at: typeof action.at === 'number' ? action.at : 0,
+          };
+          if (state.toasts.some(function same(candidate) {
+            return candidate.id === id;
+          })) {
+            return state;
+          }
+          const next = state.toasts.concat([toast]);
+          return { ...state, toasts: next.slice(Math.max(0, next.length - TOAST_LIMIT)) };
+        }
+
+        case 'toast-dismiss': {
+          if (!Array.isArray(state.toasts) || state.toasts.length === 0) return state;
+          const next = state.toasts.filter(function keep(toast) {
+            return toast.id !== action.id;
+          });
+          if (next.length === state.toasts.length) return state;
+          return { ...state, toasts: next };
+        }
+
+        case 'install-stage': {
+          if (!isGameId(action.gameId)) return state;
+          const stage = normalizeJobStage(action.stage);
+          if (stage === null) return state;
+          const previous = state.installJobs[action.gameId] || null;
+          const job = {
+            gameId: action.gameId,
+            kind: action.kind === 'uninstall' ? 'uninstall' : 'install',
+            stage: stage,
+            percent: Object.prototype.hasOwnProperty.call(action, 'percent') ? normalizePercent(action.percent) : previous ? previous.percent : null,
+            operationId: typeof action.operationId === 'string' ? action.operationId : previous ? previous.operationId : null,
+            error: Object.prototype.hasOwnProperty.call(action, 'error') ? normalizeError(action.error) : stage === 'failed' ? previous && previous.error : null,
+            failureStage: typeof action.failureStage === 'string' ? action.failureStage : null,
+            reasonKey: typeof action.reasonKey === 'string' ? action.reasonKey : null,
+            startedAt: previous && previous.stage !== 'installed' ? previous.startedAt : typeof action.at === 'number' ? action.at : 0,
+          };
+          if (previous && previous.stage === job.stage && previous.percent === job.percent && previous.error === job.error && previous.reasonKey === job.reasonKey) {
+            return state;
+          }
+          return { ...state, installJobs: { ...state.installJobs, [action.gameId]: job } };
+        }
+
+        case 'install-percent': {
+          if (!isGameId(action.gameId)) return state;
+          const job = state.installJobs[action.gameId];
+          if (!job) return state;
+          const percent = normalizePercent(action.percent);
+          if (percent === job.percent) return state;
+          return { ...state, installJobs: { ...state.installJobs, [action.gameId]: { ...job, percent: percent } } };
+        }
+
+        case 'install-clear': {
+          if (!isGameId(action.gameId)) return state;
+          if (!state.installJobs[action.gameId]) return state;
+          const next = { ...state.installJobs };
+          delete next[action.gameId];
+          return { ...state, installJobs: next };
+        }
+
+        case 'focus-set': {
+          const intent = action.intent;
+          if (!intent || typeof intent !== 'object' || typeof intent.kind !== 'string') return state;
+          return { ...state, focus: { kind: intent.kind, gameId: isGameId(intent.gameId) ? intent.gameId : null, page: intent.page || null } };
+        }
+
+        case 'focus-consume': {
+          if (!state.focus) return state;
+          return { ...state, focus: null };
+        }
+
+        case 'health-ready': {
+          const health = action.health && typeof action.health === 'object' ? action.health : null;
+          if (!health) return state;
+          return { ...state, health: health };
         }
 
         case 'runtime-start': {
@@ -870,6 +1807,7 @@ window.__ModuleLoader__.load({
               state: 'launching',
               attempt: 0,
             },
+            ui: { ...state.ui, lightbox: null },
           };
         }
 
@@ -932,6 +1870,7 @@ window.__ModuleLoader__.load({
             page: PAGES.MARKET,
             runtime: initialRuntime(),
             market: { ...state.market, status: 'idle', error: null },
+            focus: { kind: 'heading', page: PAGES.MARKET },
           };
         }
 
@@ -988,8 +1927,8 @@ window.__ModuleLoader__.load({
       return { type: 'market-loading' };
     }
 
-    function marketReady(items, refreshedAt) {
-      return { type: 'market-ready', items: items, refreshedAt: refreshedAt };
+    function marketReady(items, refreshedAt, extra) {
+      return Object.assign({ type: 'market-ready', items: items, refreshedAt: refreshedAt }, extra || {});
     }
 
     function marketFailed(error) {
@@ -998,6 +1937,110 @@ window.__ModuleLoader__.load({
 
     function marketInvalidated() {
       return { type: 'market-invalidate' };
+    }
+
+    function marketOffline(offline, registry) {
+      return { type: 'market-offline', offline: offline, registry: registry };
+    }
+
+    function detailOpened(gameId, returnPage) {
+      return { type: 'detail-open', gameId: gameId, returnPage: returnPage };
+    }
+
+    function detailReady(gameId, view) {
+      return { type: 'detail-ready', gameId: gameId, view: view };
+    }
+
+    function detailFailed(gameId, error) {
+      return { type: 'detail-failed', gameId: gameId, error: error };
+    }
+
+    function detailScores(scores) {
+      return { type: 'detail-scores', scores: scores };
+    }
+
+    function detailClosed() {
+      return { type: 'detail-close' };
+    }
+
+    function queryDraftChanged(value) {
+      return { type: 'ui-query-draft', value: value };
+    }
+
+    function queryApplied(query) {
+      return { type: 'ui-query-apply', query: query };
+    }
+
+    function categoryChanged(category) {
+      return { type: 'ui-category', category: category };
+    }
+
+    function searchOpenChanged(open) {
+      return { type: 'ui-search-open', open: open };
+    }
+
+    function filtersCleared() {
+      return { type: 'ui-clear-filters' };
+    }
+
+    function lightboxChanged(index) {
+      return { type: 'ui-lightbox', index: index };
+    }
+
+    function scrollSaved(page, top) {
+      return { type: 'scroll-save', page: page, top: top };
+    }
+
+    function dialogOpened(kind, gameId, extra) {
+      return Object.assign({ type: 'dialog-open', kind: kind, gameId: gameId }, extra || {});
+    }
+
+    function dialogDeleteDataChanged(value) {
+      return { type: 'dialog-delete-data', value: value };
+    }
+
+    function dialogConfirmAgain() {
+      return { type: 'dialog-confirm-again' };
+    }
+
+    function dialogBusyChanged(busy) {
+      return { type: 'dialog-busy', busy: busy };
+    }
+
+    function dialogClosed() {
+      return { type: 'dialog-close' };
+    }
+
+    function toastPushed(toast) {
+      return Object.assign({ type: 'toast-push' }, toast || {});
+    }
+
+    function toastDismissed(id) {
+      return { type: 'toast-dismiss', id: id };
+    }
+
+    function installStageChanged(gameId, stage, extra) {
+      return Object.assign({ type: 'install-stage', gameId: gameId, stage: stage }, extra || {});
+    }
+
+    function installPercentChanged(gameId, percent) {
+      return { type: 'install-percent', gameId: gameId, percent: percent };
+    }
+
+    function installCleared(gameId) {
+      return { type: 'install-clear', gameId: gameId };
+    }
+
+    function focusSet(intent) {
+      return { type: 'focus-set', intent: intent };
+    }
+
+    function focusConsumed() {
+      return { type: 'focus-consume' };
+    }
+
+    function healthReady(health) {
+      return { type: 'health-ready', health: health };
     }
 
     function runtimeStarted(gameId, mode, sessionId) {
@@ -1104,7 +2147,26 @@ window.__ModuleLoader__.load({
       });
     }
 
-    return { createInitialState, reduce, pageChanged, sessionBound, agentSnapshotReceived, agentFresh, agentPollFailed, pausedGameRecorded, pausedGameCleared, turnIgnored, completedAcknowledged, marketLoading, marketReady, marketFailed, marketInvalidated, runtimeStarted, runtimeLaunchInfo, runtimePatched, runtimeFailed, runtimeExited, runtimeRetried, runtimeReset, leaveCompleted, surfaceChanged, createStore, store, selectGame, selectResumableGames };
+    /** Installed games for My Games, including built-ins. */
+    function selectInstalledGames(state) {
+      if (!state || !state.market || !Array.isArray(state.market.games)) return [];
+      return state.market.games.filter(function installed(game) {
+        return game && game.installed === true;
+      });
+    }
+
+    /** Job for one game (install/update/uninstall progress). */
+    function selectInstallJob(state, gameId) {
+      if (!state || !state.installJobs || typeof state.installJobs !== 'object') return null;
+      return state.installJobs[gameId] || null;
+    }
+
+    /** Active dialog (or null). */
+    function selectDialog(state) {
+      return state && state.dialog ? state.dialog : null;
+    }
+
+    return { createInitialState, reduce, pageChanged, sessionBound, agentSnapshotReceived, agentFresh, agentPollFailed, pausedGameRecorded, pausedGameCleared, turnIgnored, completedAcknowledged, marketLoading, marketReady, marketFailed, marketInvalidated, marketOffline, detailOpened, detailReady, detailFailed, detailScores, detailClosed, queryDraftChanged, queryApplied, categoryChanged, searchOpenChanged, filtersCleared, lightboxChanged, scrollSaved, dialogOpened, dialogDeleteDataChanged, dialogConfirmAgain, dialogBusyChanged, dialogClosed, toastPushed, toastDismissed, installStageChanged, installPercentChanged, installCleared, focusSet, focusConsumed, healthReady, runtimeStarted, runtimeLaunchInfo, runtimePatched, runtimeFailed, runtimeExited, runtimeRetried, runtimeReset, leaveCompleted, surfaceChanged, createStore, store, selectGame, selectResumableGames, selectInstalledGames, selectInstallJob, selectDialog };
     })();
 
     // module: packages/client/src/diagnostics.js
@@ -1698,16 +2760,299 @@ window.__ModuleLoader__.load({
     return { GameMarketApiError, randomOperationId, createApiClient };
     })();
 
+    // module: packages/client/src/api-v1.js
+    __mods["packages/client/src/api-v1.js"] = (function () {
+    const API_BASE = __mods["packages/shared/src/constants.js"].API_BASE;
+    const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+    const GameMarketApiError = __mods["packages/shared/src/api-client.js"].GameMarketApiError;
+    const randomOperationId = __mods["packages/shared/src/api-client.js"].randomOperationId;
+    const GM = __mods["packages/shared/src/errors.js"].GM;
+    /**
+     * V1 Host API client for the Market surfaces (PRD 8.5, V1-CONTRACTS 7).
+     *
+     * The shared V0 client only knows the V0 endpoints; install/registry routes are
+     * added here without touching the frozen `packages/shared` contract. Every call
+     * uses the same JSON envelope and turns failures into `GameMarketApiError`
+     * carrying a single `GM-*` code.
+     */
+
+    const V1_TIMEOUTS = Object.freeze({
+      health: 3000,
+      games: 5000,
+      game: 5000,
+      installed: 5000,
+      install: 130000,
+      'install-local': 30000,
+      uninstall: 10000,
+      'registry-refresh': 30000,
+      scores: 3000,
+    });
+
+    const JSON_TIMEOUT_FALLBACK = 5000;
+
+    function stripLeadingSlash(path) {
+      return path.charAt(0) === '/' ? path.slice(1) : path;
+    }
+
+    function buildQuery(query) {
+      if (!query || typeof query !== 'object') return '';
+      const params = new URLSearchParams();
+      for (const key of Object.keys(query)) {
+        const value = query[key];
+        if (value === undefined || value === null || value === '') continue;
+        params.set(key, String(value));
+      }
+      const text = params.toString();
+      return text.length > 0 ? '?' + text : '';
+    }
+
+    async function safeJson(response) {
+      try {
+        return await response.json();
+      } catch (_error) {
+        return null;
+      }
+    }
+
+    function asApiError(code, message, options) {
+      return new GameMarketApiError(code, message, options || {});
+    }
+
+    /**
+     * Read a local file as UTF-8 text. Uses `File.text()` when present and falls
+     * back to `FileReader.readAsText` (the browser path in DSH).
+     */
+    function readFileText(file, options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      if (!file || typeof file !== 'object') {
+        return Promise.reject(new Error('No file selected'));
+      }
+      if (typeof file.text === 'function') {
+        return Promise.resolve(file.text()).then(function asText(value) {
+          return typeof value === 'string' ? value : '';
+        });
+      }
+      const Reader = opts.FileReader || (typeof globalThis.FileReader === 'function' ? globalThis.FileReader : null);
+      if (!Reader) return Promise.reject(new Error('FileReader is unavailable'));
+      return new Promise(function read(resolve, reject) {
+        let reader = null;
+        try {
+          reader = new Reader();
+        } catch (error) {
+          reject(error);
+          return;
+        }
+        reader.onload = function loaded() {
+          resolve(typeof reader.result === 'string' ? reader.result : '');
+        };
+        reader.onerror = function failed() {
+          reject(reader.error || new Error('Could not read the file'));
+        };
+        reader.onabort = function aborted() {
+          reject(new Error('File read aborted'));
+        };
+        try {
+          reader.readAsText(file);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }
+
+    /**
+     * @param {{base?: string, fetchImpl?: Function, timeouts?: object}} [options]
+     */
+    function createMarketApi(options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const base = stripLeadingSlash(opts.base || API_BASE);
+      const fetchImpl = opts.fetchImpl || globalThis.fetch;
+      const timeouts = Object.assign({}, V1_TIMEOUTS, opts.timeouts || {});
+      if (typeof fetchImpl !== 'function') throw new Error('fetch is unavailable');
+
+      async function request(name, config) {
+        const cfg = config && typeof config === 'object' ? config : {};
+        const method = cfg.method || 'GET';
+        const timeoutMs = typeof cfg.timeoutMs === 'number' ? cfg.timeoutMs : timeouts[name] || JSON_TIMEOUT_FALLBACK;
+        const url = base + '/' + name + buildQuery(cfg.query);
+        const json = cfg.body !== undefined && cfg.contentType !== 'text/html; charset=utf-8';
+        const body = cfg.body === undefined ? undefined : json ? JSON.stringify(cfg.body) : cfg.body;
+        if (json && body !== undefined && new TextEncoder().encode(body).length > LIMITS.jsonBodyBytes) {
+          throw asApiError(GM.INVALID_PARAM, 'Request body is too large');
+        }
+        const headers = {};
+        if (cfg.body !== undefined) headers['content-type'] = cfg.contentType || 'application/json';
+        const controller = typeof AbortController === 'function' ? new AbortController() : null;
+        let timer = null;
+        let onAbort = null;
+        if (controller) {
+          timer = setTimeout(function abortOnTimeout() {
+            try {
+              controller.abort('timeout');
+            } catch (_error) {
+              // Older engines may ignore the reason.
+            }
+          }, timeoutMs);
+          if (typeof timer.unref === 'function') timer.unref();
+          if (cfg.signal && typeof cfg.signal.addEventListener === 'function') {
+            if (cfg.signal.aborted) controller.abort('cancelled');
+            else {
+              onAbort = function abortFromCaller() {
+                controller.abort('cancelled');
+              };
+              cfg.signal.addEventListener('abort', onAbort);
+            }
+          }
+        }
+
+        try {
+          const response = await fetchImpl(url, {
+            method: method,
+            headers: Object.keys(headers).length > 0 ? headers : undefined,
+            body: body,
+            credentials: 'same-origin',
+            signal: controller ? controller.signal : undefined,
+          });
+          const payload = await safeJson(response);
+          if (payload && payload.ok === true) return payload.data;
+          if (payload && payload.ok === false && payload.error) {
+            throw asApiError(payload.error.code || GM.INTERNAL, payload.error.message, {
+              retryable: payload.error.retryable === true,
+              status: response.status,
+              details: payload.error.details,
+            });
+          }
+          // A non-JSON body usually means this Host predates the V1 route.
+          throw asApiError(GM.HOST_UNAVAILABLE, 'Unexpected response from ' + name, {
+            retryable: true,
+            status: response.status,
+          });
+        } catch (error) {
+          if (error instanceof GameMarketApiError) throw error;
+          const aborted = Boolean(controller && controller.signal.aborted);
+          const cancelled = Boolean(aborted && cfg.signal && cfg.signal.aborted);
+          const failure = asApiError(cancelled ? GM.INSTALL_FAILED : GM.HOST_UNAVAILABLE, cancelled ? 'Cancelled' : 'Cannot reach Game Market Host (' + name + ')', {
+            retryable: !cancelled,
+            status: 0,
+          });
+          failure.cancelled = cancelled;
+          failure.timedOut = aborted && !cancelled;
+          throw failure;
+        } finally {
+          if (timer !== null) clearTimeout(timer);
+          if (onAbort && cfg.signal && typeof cfg.signal.removeEventListener === 'function') {
+            cfg.signal.removeEventListener('abort', onAbort);
+          }
+        }
+      }
+
+      return {
+        base: base,
+        operationId: randomOperationId,
+        health: function health() {
+          return request('health', { timeoutMs: timeouts.health });
+        },
+        listGames: function listGames(filter) {
+          const f = filter && typeof filter === 'object' ? filter : {};
+          return request('games', {
+            query: {
+              q: typeof f.q === 'string' && f.q.length > 0 ? f.q.slice(0, 100) : undefined,
+              category: typeof f.category === 'string' && f.category.length > 0 ? f.category : undefined,
+              cursor: typeof f.cursor === 'string' ? f.cursor : undefined,
+              limit: typeof f.limit === 'number' ? f.limit : undefined,
+            },
+            timeoutMs: timeouts.games,
+          });
+        },
+        getGame: function getGame(gameId) {
+          return request('game', { query: { id: gameId }, timeoutMs: timeouts.game });
+        },
+        listInstalled: function listInstalled() {
+          return request('installed', { timeoutMs: timeouts.installed });
+        },
+        install: function install(input) {
+          const body = input && typeof input === 'object' ? input : {};
+          return request('install', {
+            method: 'POST',
+            body: {
+              gameId: body.gameId,
+              ...(typeof body.version === 'string' && body.version.length > 0 ? { version: body.version } : {}),
+              operationId: body.operationId || randomOperationId(),
+            },
+            timeoutMs: timeouts.install,
+            signal: body.signal,
+          });
+        },
+        installLocal: function installLocal(input) {
+          const body = input && typeof input === 'object' ? input : {};
+          const textPromise =
+            typeof body.text === 'string'
+              ? Promise.resolve(body.text)
+              : readFileText(body.file, { FileReader: body.FileReader });
+          return textPromise.then(function post(text) {
+            return request('install-local', {
+              method: 'POST',
+              query: { operationId: body.operationId || randomOperationId() },
+              body: text,
+              contentType: 'text/html; charset=utf-8',
+              timeoutMs: timeouts['install-local'],
+              signal: body.signal,
+            });
+          });
+        },
+        uninstall: function uninstall(input) {
+          const body = input && typeof input === 'object' ? input : {};
+          const deleteData = body.deleteData === true;
+          return request('uninstall', {
+            method: 'POST',
+            body: {
+              gameId: body.gameId,
+              deleteData: deleteData,
+              ...(deleteData ? { confirmDataDeletion: true } : {}),
+              operationId: body.operationId || randomOperationId(),
+            },
+            timeoutMs: timeouts.uninstall,
+            signal: body.signal,
+          });
+        },
+        refreshRegistry: function refreshRegistry(input) {
+          const body = input && typeof input === 'object' ? input : {};
+          return request('registry-refresh', {
+            method: 'POST',
+            body: {
+              force: body.force === true,
+              operationId: body.operationId || randomOperationId(),
+            },
+            timeoutMs: timeouts['registry-refresh'],
+            signal: body.signal,
+          });
+        },
+        getScores: function getScores(gameId) {
+          return request('scores', { query: { gameId: gameId }, timeoutMs: timeouts.scores });
+        },
+      };
+    }
+
+    /** Exposed for tests: the exact query string builder used by every call. */
+    function buildRequestQuery(query) {
+      return buildQuery(query);
+    }
+
+    return { V1_TIMEOUTS, readFileText, createMarketApi, buildRequestQuery };
+    })();
+
     // module: packages/client/src/api.js
     __mods["packages/client/src/api.js"] = (function () {
     const sharedCreateApiClient = __mods["packages/shared/src/api-client.js"].createApiClient;
     const GameMarketApiError = __mods["packages/shared/src/api-client.js"].GameMarketApiError;
+    const createMarketApi = __mods["packages/client/src/api-v1.js"].createMarketApi;
     const reportDiagnostic = __mods["packages/client/src/diagnostics.js"].reportDiagnostic;
     /**
-     * Same-origin Host API client used by the Client and injected into Runtime.
+     * Same-origin Host API clients used by the Client and injected into Runtime.
      *
-     * The heavy lifting lives in the shared client (all V0 endpoints + GM error
-     * mapping). This module only owns the browser singleton and the test seam.
+     * - `getApiClient()` is the shared V0 client (agent snapshots, launch, saves).
+     * - `getMarketApi()` adds the V1 install/registry routes from `api-v1.js`.
+     *
+     * Both keep a test seam so components never construct fetch calls themselves.
      */
 
     const ClientApiError = GameMarketApiError;
@@ -1718,12 +3063,21 @@ window.__ModuleLoader__.load({
     };
 
     let client = null;
+    let marketClient = null;
 
     /** Inject a client in tests or replace it at runtime. */
     function configureApiClient(nextClient) {
       client = nextClient && typeof nextClient === 'object' ? nextClient : null;
       return function reset() {
         client = null;
+      };
+    }
+
+    /** Inject the V1 Market client (install/registry) in tests. */
+    function configureMarketApi(nextClient) {
+      marketClient = nextClient && typeof nextClient === 'object' ? nextClient : null;
+      return function reset() {
+        marketClient = null;
       };
     }
 
@@ -1739,12 +3093,29 @@ window.__ModuleLoader__.load({
       return client;
     }
 
+    /** Return the V1 Market API client, or null when fetch is unavailable. */
+    function getMarketApi() {
+      if (marketClient !== null) return marketClient;
+      try {
+        marketClient = createMarketApi();
+      } catch (error) {
+        reportDiagnostic('market-api-unavailable', error);
+        marketClient = null;
+      }
+      return marketClient;
+    }
+
     /** True when a same-origin fetch client can be built. */
     function isApiAvailable() {
       return getApiClient() !== null;
     }
 
-    return { ClientApiError, createClientApi, configureApiClient, getApiClient, isApiAvailable };
+    /** True when the V1 Market client can be built. */
+    function isMarketApiAvailable() {
+      return getMarketApi() !== null;
+    }
+
+    return { ClientApiError, createClientApi, configureApiClient, configureMarketApi, getApiClient, getMarketApi, isApiAvailable, isMarketApiAvailable };
     })();
 
     // module: packages/client/src/ui-errors.js
@@ -2332,6 +3703,1285 @@ window.__ModuleLoader__.load({
     return { RESUME_WINDOW_MS, CHIP_STATUS, SIDEBAR_STATUS, isAgentFresh, agentMatchesSession, deriveTurnKey, activePausedGame, pausedBelongsToSession, findResumableGame, waitingKind, deriveChipState, deriveSidebarStatus, sidebarLabelKey };
     })();
 
+    // module: packages/client/src/format.js
+    __mods["packages/client/src/format.js"] = (function () {
+    /** Locale-aware formatting helpers (no host DOM reads). */
+
+    /** Browser locale for `Intl`; zh-first fallback keeps V0 copy consistent. */
+    function preferredLocale() {
+      try {
+        const nav = globalThis.navigator;
+        if (nav && typeof nav.language === 'string' && nav.language.length > 0) {
+          return nav.language.toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en';
+        }
+      } catch (_error) {
+        // Optional browser global.
+      }
+      return 'zh';
+    }
+
+    /** Grouped score text; invalid values render as an empty string. */
+    function formatScore(value, locale) {
+      if (typeof value !== 'number' || !Number.isFinite(value)) return '';
+      try {
+        return new Intl.NumberFormat(locale || preferredLocale(), { maximumFractionDigits: 0 }).format(value);
+      } catch (_error) {
+        return String(Math.round(value));
+      }
+    }
+
+    /** Relative time used by cards and the resume menu subtitle. */
+    function formatRelativeTime(iso, now, locale) {
+      if (typeof iso !== 'string' || iso.length === 0) return '';
+      const then = Date.parse(iso);
+      if (!Number.isFinite(then)) return '';
+      const clock = typeof now === 'number' && Number.isFinite(now) ? now : Date.now();
+      const diffSeconds = Math.round((then - clock) / 1000);
+      const abs = Math.abs(diffSeconds);
+      let value = diffSeconds;
+      let unit = 'second';
+      if (abs >= 86400 * 30) {
+        value = Math.round(diffSeconds / (86400 * 30));
+        unit = 'month';
+      } else if (abs >= 86400) {
+        value = Math.round(diffSeconds / 86400);
+        unit = 'day';
+      } else if (abs >= 3600) {
+        value = Math.round(diffSeconds / 3600);
+        unit = 'hour';
+      } else if (abs >= 60) {
+        value = Math.round(diffSeconds / 60);
+        unit = 'minute';
+      }
+      try {
+        return new Intl.RelativeTimeFormat(locale || preferredLocale(), { numeric: 'auto' }).format(value, unit);
+      } catch (_error) {
+        return '';
+      }
+    }
+
+    /** First manifest category, title-cased for the compact card metadata line. */
+    function formatCategory(categories) {
+      if (!Array.isArray(categories) || categories.length === 0) return '';
+      const first = categories.find(function text(value) {
+        return typeof value === 'string' && value.length > 0;
+      });
+      if (!first) return '';
+      return first.charAt(0).toUpperCase() + first.slice(1);
+    }
+
+    /** Locale-normalized category id: lowercase, validated against the enum. */
+    function normalizeCategory(value) {
+      if (typeof value !== 'string') return '';
+      const normalized = value.trim().toLowerCase();
+      return normalized.length > 0 ? normalized : '';
+    }
+
+    /** Human byte size for the detail metadata row (1.4 MB / 482 KB / 912 B). */
+    function formatBytes(value, locale) {
+      if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return '';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      let size = value;
+      let index = 0;
+      while (size >= 1024 && index < units.length - 1) {
+        size /= 1024;
+        index += 1;
+      }
+      const maximumFractionDigits = index === 0 ? 0 : size >= 100 ? 0 : 1;
+      try {
+        return new Intl.NumberFormat(locale || preferredLocale(), {
+          maximumFractionDigits: maximumFractionDigits,
+          minimumFractionDigits: 0,
+        }).format(size) + ' ' + units[index];
+      } catch (_error) {
+        return String(Math.round(size)) + ' ' + units[index];
+      }
+    }
+
+    /** Absolute date used only in `title` tooltips (PRD 9.4.2). */
+    function formatAbsoluteTime(iso, locale) {
+      if (typeof iso !== 'string' || iso.length === 0) return '';
+      const value = Date.parse(iso);
+      if (!Number.isFinite(value)) return '';
+      try {
+        return new Intl.DateTimeFormat(locale || preferredLocale(), {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        }).format(new Date(value));
+      } catch (_error) {
+        try {
+          return new Date(value).toISOString();
+        } catch (_inner) {
+          return '';
+        }
+      }
+    }
+
+    /** Integer count for result lines and metadata. */
+    function formatCount(value, locale) {
+      if (typeof value !== 'number' || !Number.isFinite(value)) return '';
+      try {
+        return new Intl.NumberFormat(locale || preferredLocale(), { maximumFractionDigits: 0 }).format(value);
+      } catch (_error) {
+        return String(Math.round(value));
+      }
+    }
+
+    /** Clamp a percentage into 0..100, or return null when unknown. */
+    function clampPercent(value) {
+      if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+      if (value <= 0) return 0;
+      if (value >= 100) return 100;
+      return Math.round(value);
+    }
+
+    return { preferredLocale, formatScore, formatRelativeTime, formatCategory, normalizeCategory, formatBytes, formatAbsoluteTime, formatCount, clampPercent };
+    })();
+
+    // module: packages/client/src/catalog.js
+    __mods["packages/client/src/catalog.js"] = (function () {
+    const CATEGORY_ALL = __mods["packages/client/src/constants.js"].CATEGORY_ALL;
+    const CATEGORIES = __mods["packages/client/src/constants.js"].CATEGORIES;
+    const NEW_WINDOW_MS = __mods["packages/client/src/constants.js"].NEW_WINDOW_MS;
+    const SECTION_LIMIT = __mods["packages/client/src/constants.js"].SECTION_LIMIT;
+    const INSTALL_ACTIVE_STAGES = __mods["packages/client/src/constants.js"].INSTALL_ACTIVE_STAGES;
+    const translate = __mods["packages/client/src/locale.js"].translate;
+    const normalizeCategory = __mods["packages/client/src/format.js"].normalizeCategory;
+    /**
+     * Market catalog logic: normalizes Host payloads, derives Home sections, applies
+     * local search/category filters, orders My Games and resolves the single primary
+     * action on the detail page (PRD 9.3 / 9.4 / 9.5).
+     *
+     * Everything here is pure so the interesting behaviour is testable without React.
+     */
+
+    const CAPABILITIES = Object.freeze(['storage', 'score']);
+    const SOURCES = Object.freeze(['builtin', 'registry', 'local', 'dev']);
+    const COMPAT_STATUSES = Object.freeze(['ok', 'incompatible', 'broken']);
+
+    function asString(value) {
+      return typeof value === 'string' ? value.trim() : '';
+    }
+
+    function asNumber(value) {
+      return typeof value === 'number' && Number.isFinite(value) ? value : null;
+    }
+
+    function asBool(value) {
+      return value === true;
+    }
+
+    function stringList(value) {
+      if (!Array.isArray(value)) return [];
+      const output = [];
+      for (const item of value) {
+        const text = asString(item);
+        if (text.length > 0 && output.indexOf(text) === -1) output.push(text);
+      }
+      return output;
+    }
+
+    function asIso(value) {
+      const text = asString(value);
+      if (text.length === 0) return null;
+      return Number.isFinite(Date.parse(text)) ? text : null;
+    }
+
+    function pickNumber() {
+      for (let index = 0; index < arguments.length; index += 1) {
+        const value = asNumber(arguments[index]);
+        if (value !== null) return value;
+      }
+      return null;
+    }
+
+    function sameOriginPreview(value) {
+      const url = asString(value);
+      if (url.length === 0) return null;
+      if (url.indexOf('data:image/') === 0) return url;
+      const relative = url.charAt(0) === '/' ? url : '/' + url;
+      if (relative.indexOf('/api/game-market/preview') === 0) return relative;
+      try {
+        const location = globalThis.location;
+        const origin = location && typeof location.origin === 'string' ? location.origin : '';
+        if (!origin) return null;
+        const parsed = new URL(url, origin);
+        if (parsed.origin !== origin) return null;
+        if (parsed.pathname !== '/api/game-market/preview') return null;
+        return parsed.pathname + parsed.search;
+      } catch (_error) {
+        return null;
+      }
+    }
+
+    function normalizeAuthor(value) {
+      if (typeof value === 'string') {
+        const name = asString(value);
+        return name.length > 0 ? { name: name, url: null } : { name: '', url: null };
+      }
+      if (value && typeof value === 'object') {
+        return { name: asString(value.name), url: asString(value.url) || null };
+      }
+      return { name: '', url: null };
+    }
+
+    function normalizeCategories(value, legacy) {
+      const list = stringList(value);
+      const categories = [];
+      for (const item of list) {
+        const key = normalizeCategory(item);
+        if (CATEGORIES.indexOf(key) !== -1 && categories.indexOf(key) === -1) categories.push(key);
+        else if (key.length > 0 && categories.indexOf(key) === -1) categories.push(key);
+      }
+      if (categories.length === 0) {
+        const single = normalizeCategory(legacy);
+        if (single.length > 0) categories.push(single);
+      }
+      return categories;
+    }
+
+    function normalizeCompatibility(raw, installedView) {
+      const summary = raw && typeof raw.compatibility === 'object' ? raw.compatibility : null;
+      const installed = installedView && typeof installedView.compatibility === 'object' ? installedView.compatibility : null;
+      const source = installed || summary || {};
+      const status = COMPAT_STATUSES.indexOf(source.status) !== -1 ? source.status : null;
+      const ok = source.ok === false || status === 'incompatible' || status === 'broken' ? false : true;
+      const reasons = stringList(source.reasons);
+      const reason =
+        asString(source.reason) ||
+        reasons[0] ||
+        (status === 'broken' ? 'missing-package' : status === 'incompatible' ? 'incompatible' : '');
+      const range = asString(source.runtimeRange) || asString(source.sdkRange);
+      return {
+        ok: ok,
+        status: status || (ok ? 'ok' : 'incompatible'),
+        reason: reason.length > 0 ? reason : null,
+        requiredRuntime: /^[\^~<>= ]*[0-9]/.test(range) ? range.replace(/^[\^~]\s*/, '') : null,
+      };
+    }
+
+    function normalizeSource(rawSource, builtin, installed) {
+      const source = asString(rawSource);
+      if (SOURCES.indexOf(source) !== -1) return source;
+      if (builtin === true) return 'builtin';
+      if (installed) return 'registry';
+      return 'registry';
+    }
+
+    /**
+     * Normalize one GameSummary / GameDetail / V0 GameRecord.
+     * Unknown fields are dropped; external image URLs never reach the renderer.
+     */
+    function normalizeGame(raw, options) {
+      if (!raw || typeof raw !== 'object') return null;
+      const opts = options && typeof options === 'object' ? options : {};
+      const id = asString(raw.id);
+      if (id.length === 0) return null;
+      const installedView = opts.installedView || (raw.installedView && typeof raw.installedView === 'object' ? raw.installedView : null);
+      const registry = opts.registry || (raw.registry && typeof raw.registry === 'object' ? raw.registry : null) || null;
+      const registryPackage = registry && typeof registry.package === 'object' ? registry.package : null;
+      const installedVersion =
+        asString(raw.installedVersion) ||
+        (installedView ? asString(installedView.version) : '') ||
+        (raw.installed === true ? asString(raw.version) : '');
+      const installed = raw.installed === true || installedVersion.length > 0 || Boolean(installedView);
+      const update = installedView && installedView.update && typeof installedView.update === 'object' ? installedView.update : null;
+      const updateAvailable = asBool(raw.updateAvailable) || Boolean(update && update.available === true);
+      const updateVersion = asString(update && update.latestVersion) || asString(raw.latestVersion) || (updateAvailable ? asString(registry && registry.version) : '');
+      const screenshots = stringList([].concat(Array.isArray(raw.screenshots) ? raw.screenshots : [], Array.isArray(registry && registry.screenshots) ? registry.screenshots : []))
+        .map(sameOriginPreview)
+        .filter(Boolean);
+      const compatibility = normalizeCompatibility(raw, installedView);
+      const missing = asBool(raw.missing) || asBool(raw.packageMissing) || asBool(raw.missingPackage);
+      const description = asString(raw.description) || asString(registry && registry.description);
+      const name = asString(raw.name) || asString(registry && registry.name) || id;
+      return {
+        id: id,
+        name: name,
+        version: asString(raw.version) || asString(installedView && installedView.version) || '',
+        description: description,
+        author: normalizeAuthor(raw.author && typeof raw.author === 'object' ? raw.author : registry && registry.author ? registry.author : raw.author),
+        categories: normalizeCategories(raw.categories || (registry && registry.categories), raw.category),
+        tags: stringList([].concat(Array.isArray(raw.tags) ? raw.tags : [], Array.isArray(registry && registry.tags) ? registry.tags : [])),
+        capabilities: stringList(raw.capabilities || (registry && registry.capabilities)),
+        permissions: raw.permissions && typeof raw.permissions === 'object' ? raw.permissions : null,
+        sdkVersion: asString(raw.sdkVersion) || asString(registry && registry.sdkVersion),
+        runtimeVersion: asString(raw.runtimeVersion) || asString(registry && registry.runtimeVersion),
+        icon: sameOriginPreview(raw.icon) || sameOriginPreview(registry && registry.icon),
+        cover: sameOriginPreview(raw.cover) || sameOriginPreview(registry && registry.cover),
+        screenshots: screenshots.slice(0, 5),
+        homepage: asString(raw.homepage) || asString(registry && registry.homepage) || null,
+        repository: asString(raw.repository) || asString(registry && registry.repository) || null,
+        license: asString(raw.license) || asString(registry && registry.license) || null,
+        changelog: asString(registry && registry.changelog) || null,
+        featured: asBool(raw.featured) || asBool(registry && registry.featured),
+        quickPlay: asBool(raw.quickPlay) || asBool(registry && registry.quickPlay),
+        publishedAt: asIso(raw.publishedAt) || asIso(registry && registry.publishedAt),
+        updatedAt: asIso(raw.updatedAt) || asIso(installedView && installedView.updatedAt) || asIso(registry && registry.updatedAt),
+        source: normalizeSource(raw.source, raw.builtin, installed),
+        dev: asBool(raw.dev) || raw.source === 'dev',
+        builtin: asBool(raw.builtin) || raw.source === 'builtin',
+        installed: installed,
+        installedVersion: installedVersion.length > 0 ? installedVersion : null,
+        installedAt: asIso(raw.installedAt) || asIso(installedView && installedView.installedAt),
+        updateAvailable: updateAvailable,
+        updateVersion: updateVersion.length > 0 ? updateVersion : null,
+        updateReason: asString(update && update.reason) || asString(raw.updateReason) || null,
+        canContinue: asBool(raw.canContinue),
+        bestScore: pickNumber(raw.bestScore, installedView && installedView.bestScore),
+        lastPlayedAt: asIso(raw.lastPlayedAt) || asIso(installedView && installedView.lastPlayedAt),
+        compatibility: compatibility,
+        missing: Boolean(missing),
+        activePlaySession: raw.activePlaySession && typeof raw.activePlaySession === 'object' ? raw.activePlaySession : null,
+        saveInfo: raw.saveInfo && typeof raw.saveInfo === 'object' ? raw.saveInfo : null,
+        preferredTheme: asString(raw.preferredTheme) || null,
+        sizeBytes: pickNumber(installedView && installedView.sizeBytes, registryPackage && registryPackage.size, raw.sizeBytes),
+        registryVersion: asString(registry && registry.version) || null,
+        playCount: pickNumber(raw.playCount, installedView && installedView.playCount),
+      };
+    }
+
+    /** Normalize a `GET /games` payload; tolerates a bare array and V0 records. */
+    function normalizeCatalog(payload) {
+      const items = Array.isArray(payload) ? payload : payload && Array.isArray(payload.items) ? payload.items : [];
+      const games = [];
+      for (const item of items) {
+        const game = normalizeGame(item);
+        if (game) games.push(game);
+      }
+      return games;
+    }
+
+    /** Normalize `GET /game` (V1 wrapper) or a bare V0 GameRecord. */
+    function normalizeDetailPayload(payload) {
+      const base = payload && typeof payload === 'object' ? payload : {};
+      const rawGame = base.game && typeof base.game === 'object' ? base.game : base.id ? base : null;
+      if (!rawGame) return null;
+      const installed = base.installed && typeof base.installed === 'object' ? base.installed : base.installedView || null;
+      const registry = base.registry && typeof base.registry === 'object' ? base.registry : null;
+      const game = normalizeGame(rawGame, { installedView: installed, registry: registry });
+      if (!game) return null;
+      const canContinue = base.canContinue === true || game.canContinue;
+      return {
+        game: game,
+        installed: installed,
+        canContinue: canContinue,
+        bestScore: asNumber(base.bestScore) !== null ? asNumber(base.bestScore) : game.bestScore,
+        activePlaySession: base.activePlaySession && typeof base.activePlaySession === 'object' ? base.activePlaySession : game.activePlaySession,
+        registry: registry,
+      };
+    }
+
+    function authorName(game) {
+      return game && game.author && typeof game.author.name === 'string' && game.author.name.length > 0 ? game.author.name : '';
+    }
+
+    function categoryLabelKey(category) {
+      const key = normalizeCategory(category);
+      if (CATEGORIES.indexOf(key) !== -1) return 'market.category.' + key;
+      return 'market.category.unknown';
+    }
+
+    function categoryLabel(category, locale) {
+      return translate(locale || 'zh', categoryLabelKey(category));
+    }
+
+    /** First category id, or empty string. */
+    function primaryCategory(game) {
+      return game && Array.isArray(game.categories) && game.categories.length > 0 ? game.categories[0] : '';
+    }
+
+    function isBuiltin(game) {
+      return Boolean(game && (game.builtin === true || game.source === 'builtin'));
+    }
+
+    function isInstalled(game) {
+      return Boolean(game && game.installed === true);
+    }
+
+    function hasUpdate(game) {
+      return Boolean(game && game.updateAvailable === true);
+    }
+
+    /** Installed games, preserving caller order. */
+    function installedGames(games) {
+      return Array.isArray(games) ? games.filter(isInstalled) : [];
+    }
+
+    /** Collator with a deterministic fallback for old engines/tests. */
+    function hasLocaleCollator() {
+      return typeof Intl !== 'undefined' && typeof Intl.Collator === 'function';
+    }
+
+    function createCollator(locale) {
+      if (!hasLocaleCollator()) {
+        return {
+          compare: function compare(left, right) {
+            const a = String(left || '').toLowerCase();
+            const b = String(right || '').toLowerCase();
+            if (a < b) return -1;
+            if (a > b) return 1;
+            return 0;
+          },
+        };
+      }
+      try {
+        return new Intl.Collator(locale || 'zh', { sensitivity: 'base', numeric: true });
+      } catch (_error) {
+        return new Intl.Collator('en', { sensitivity: 'base', numeric: true });
+      }
+    }
+
+    function compareNames(left, right, collator) {
+      return collator.compare(left.name || left.id, right.name || right.id);
+    }
+
+    function timeValue(iso) {
+      if (typeof iso !== 'string') return 0;
+      const value = Date.parse(iso);
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    function compareTimeDesc(leftIso, rightIso) {
+      return timeValue(rightIso) - timeValue(leftIso);
+    }
+
+    /**
+     * Local search over name, author, categories (id + localized label), tags and id.
+     * Case-insensitive, prefix and substring; whitespace-separated tokens are ANDed.
+     */
+    function matchesQuery(game, query, locale) {
+      const text = asString(query).toLowerCase();
+      if (text.length === 0) return true;
+      if (!game) return false;
+      const fields = [game.name, game.id, authorName(game), game.description];
+      for (const category of game.categories) {
+        fields.push(category);
+        fields.push(categoryLabel(category, locale));
+      }
+      for (const tag of game.tags) fields.push(tag);
+      const haystack = fields
+        .filter(function keep(value) {
+          return typeof value === 'string' && value.length > 0;
+        })
+        .join(' ')
+        .toLowerCase();
+      const tokens = text.split(/\s+/).filter(Boolean);
+      for (const token of tokens) {
+        if (haystack.indexOf(token) === -1) return false;
+      }
+      return true;
+    }
+
+    /** Category filter; `all` (or empty) keeps everything. */
+    function matchesCategory(game, category) {
+      const key = normalizeCategory(category);
+      if (key.length === 0 || key === CATEGORY_ALL) return true;
+      return Boolean(game && Array.isArray(game.categories) && game.categories.indexOf(key) !== -1);
+    }
+
+    /** Default "All games" ordering: installed first, then locale-aware name order. */
+    function sortCatalog(games, locale) {
+      const collator = createCollator(locale);
+      return [...games].sort(function compare(left, right) {
+        const installedDelta = (isInstalled(right) ? 1 : 0) - (isInstalled(left) ? 1 : 0);
+        if (installedDelta !== 0) return installedDelta;
+        return compareNames(left, right, collator);
+      });
+    }
+
+    /** Filter + order the searchable/paginated grid. */
+    function filterCatalog(games, options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const query = asString(opts.query);
+      const category = normalizeCategory(opts.category || CATEGORY_ALL);
+      const source = Array.isArray(games) ? games : [];
+      const filtered = source.filter(function keep(game) {
+        if (!game) return false;
+        if (opts.offline === true && !isInstalled(game)) return false;
+        if (!matchesCategory(game, category)) return false;
+        return matchesQuery(game, query, opts.locale);
+      });
+      return sortCatalog(filtered, opts.locale);
+    }
+
+    /** Installed games with a resumable save, most recent first. */
+    function selectHero(games) {
+      const candidates = (Array.isArray(games) ? games : []).filter(function resumable(game) {
+        return game && game.canContinue === true && isInstalled(game) && !game.missing;
+      });
+      if (candidates.length === 0) return null;
+      candidates.sort(function compare(left, right) {
+        return compareTimeDesc(left.lastPlayedAt, right.lastPlayedAt);
+      });
+      return candidates[0];
+    }
+
+    function isNewGame(game, now) {
+      if (!game || !game.publishedAt) return false;
+      const clock = typeof now === 'number' ? now : Date.now();
+      const published = Date.parse(game.publishedAt);
+      if (!Number.isFinite(published)) return false;
+      return published <= clock && clock - published <= NEW_WINDOW_MS;
+    }
+
+    function byLastPlayedThenName(locale) {
+      const collator = createCollator(locale);
+      return function compare(left, right) {
+        const timeDelta = compareTimeDesc(left.lastPlayedAt, right.lastPlayedAt);
+        if (timeDelta !== 0) return timeDelta;
+        return compareNames(left, right, collator);
+      };
+    }
+
+    /**
+     * Home sections (PRD 9.3.3). Popular/New are hidden when empty; Quick Play puts
+     * installed games first; Hero and Quick Play do not repeat.
+     */
+    function selectSections(games, options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const now = typeof opts.now === 'number' ? opts.now : Date.now();
+      const locale = opts.locale;
+      const offline = opts.offline === true;
+      const source = (Array.isArray(games) ? games : []).filter(Boolean);
+      const hero = selectHero(source);
+      const collator = createCollator(locale);
+
+      const quickPool = source.filter(function quick(game) {
+        return game.quickPlay === true && !(hero && hero.id === game.id);
+      });
+      quickPool.sort(function compare(left, right) {
+        const installedDelta = (isInstalled(right) ? 1 : 0) - (isInstalled(left) ? 1 : 0);
+        if (installedDelta !== 0) return installedDelta;
+        const playDelta = (right.playCount || 0) - (left.playCount || 0);
+        if (playDelta !== 0) return playDelta;
+        const timeDelta = compareTimeDesc(left.publishedAt, right.publishedAt);
+        if (timeDelta !== 0) return timeDelta;
+        return compareNames(left, right, collator);
+      });
+
+      const popular = source
+        .filter(function featured(game) {
+          return game.featured === true;
+        })
+        .sort(function compare(left, right) {
+          const timeDelta = compareTimeDesc(left.publishedAt, right.publishedAt);
+          if (timeDelta !== 0) return timeDelta;
+          return compareNames(left, right, collator);
+        })
+        .slice(0, SECTION_LIMIT);
+
+      const newest = source
+        .filter(function published(game) {
+          return isNewGame(game, now);
+        })
+        .sort(function compare(left, right) {
+          const timeDelta = compareTimeDesc(left.publishedAt, right.publishedAt);
+          if (timeDelta !== 0) return timeDelta;
+          return compareNames(left, right, collator);
+        })
+        .slice(0, SECTION_LIMIT);
+
+      return {
+        hero: hero,
+        quick: offline ? [] : quickPool.slice(0, SECTION_LIMIT),
+        popular: offline ? [] : popular,
+        newGames: offline ? [] : newest,
+        all: filterCatalog(source, {
+          query: opts.query,
+          category: opts.category,
+          offline: offline,
+          locale: locale,
+        }),
+      };
+    }
+
+    /**
+     * My Games ordering (PRD 9.4.1): resumable first, then played, then never played
+     * (newest install first), and finally locale name order.
+     */
+    function sortMyGames(games, locale) {
+      const collator = createCollator(locale);
+      function rank(game) {
+        if (game.canContinue === true) return 0;
+        if (game.lastPlayedAt) return 1;
+        return 2;
+      }
+      return (Array.isArray(games) ? games : []).filter(isInstalled).sort(function compare(left, right) {
+        const rankDelta = rank(left) - rank(right);
+        if (rankDelta !== 0) return rankDelta;
+        if (rank(left) < 2) {
+          const playedDelta = compareTimeDesc(left.lastPlayedAt, right.lastPlayedAt);
+          if (playedDelta !== 0) return playedDelta;
+        }
+        const installedDelta = compareTimeDesc(left.installedAt || left.updatedAt, right.installedAt || right.updatedAt);
+        if (installedDelta !== 0) return installedDelta;
+        return compareNames(left, right, collator);
+      });
+    }
+
+    /** Progress line for a My Games row (locale key + params). */
+    function progressSummary(game, locale) {
+      if (!game) return { key: 'mygames.progress.none', params: {} };
+      const canScore = Array.isArray(game.capabilities) && game.capabilities.indexOf('score') !== -1;
+      if (canScore && typeof game.bestScore === 'number') {
+        return { key: 'mygames.progress.score', params: { score: game.bestScore } };
+      }
+      if (game.canContinue === true) return { key: 'mygames.progress.generic', params: {} };
+      return { key: 'mygames.progress.none', params: {} };
+    }
+
+    /** Permit display line (PRD 9.5.4). */
+    function resolvePermissions(game) {
+      const capabilities = game && Array.isArray(game.capabilities) ? game.capabilities : [];
+      const unknown = capabilities.some(function known(capability) {
+        return CAPABILITIES.indexOf(capability) === -1;
+      });
+      const permissions = game && game.permissions && typeof game.permissions === 'object' ? game.permissions : null;
+      const hasPermissions = permissions ? Object.keys(permissions).length > 0 : false;
+      if (unknown || hasPermissions) {
+        return { unknown: true, key: 'detail.permissions.unknown', noteKey: null };
+      }
+      const hasStorage = capabilities.indexOf('storage') !== -1;
+      const hasScore = capabilities.indexOf('score') !== -1;
+      let key = 'detail.permissions.none';
+      if (hasStorage && hasScore) key = 'detail.permissions.storageScore';
+      else if (hasStorage) key = 'detail.permissions.storage';
+      else if (hasScore) key = 'detail.permissions.score';
+      return { unknown: false, key: key, noteKey: 'detail.permissions.note' };
+    }
+
+    function activeJob(job) {
+      return job && INSTALL_ACTIVE_STAGES.indexOf(job.stage) !== -1;
+    }
+
+    function isCancellable(stage) {
+      return stage === 'queued' || stage === 'downloading' || stage === 'verifying' || stage === 'installing';
+    }
+
+    /**
+     * Single primary action matrix (PRD 9.5.2).
+     *
+     * @param {{game: object|null, detailStatus: string, detailError: object|null,
+     *   job: object|null, paused: boolean, offline: boolean, canContinue: boolean}} view
+     */
+    function resolveDetailAction(view) {
+      const input = view && typeof view === 'object' ? view : {};
+      if (input.detailStatus === 'loading') return { kind: 'loading', disabled: true };
+      if (input.detailStatus === 'error' || !input.game) {
+        return { kind: 'unavailable', disabled: true, error: input.detailError || null };
+      }
+      const game = input.game;
+      const job = input.job || null;
+      const installed = isInstalled(game);
+
+      if (job && job.kind === 'uninstall' && (job.stage === 'queued' || job.stage === 'downloading' || job.stage === 'installing')) {
+        return { kind: 'uninstalling', disabled: true, reasonKey: 'mygames.remove.busy' };
+      }
+      if (job && activeJob(job)) {
+        const stage = job.stage;
+        return {
+          kind: 'cancel-install',
+          stage: stage,
+          percent: typeof job.percent === 'number' ? job.percent : null,
+          cleanup: stage === 'verifying' || stage === 'installing',
+          disabled: stage === 'queued' ? false : !isCancellable(stage),
+          labelKey: stage === 'verifying' || stage === 'installing' ? 'detail.install.cancelCleanup' : 'detail.action.cancelInstall',
+        };
+      }
+      if (job && job.stage === 'failed') {
+        return {
+          kind: 'retry-install',
+          error: job.error || null,
+          failureStage: job.failureStage || null,
+          reasonKey: job.reasonKey || 'detail.install.failed.unknown',
+          disabled: false,
+        };
+      }
+
+      if (!installed) {
+        if (input.offline === true) {
+          return { kind: 'install', disabled: true, reasonKey: 'detail.reason.offline' };
+        }
+        if (!game.compatibility.ok) {
+          return {
+            kind: 'incompatible',
+            disabled: true,
+            reasonKey: 'detail.incompatible.reason',
+            reasonParams: { version: game.compatibility.requiredRuntime || '1.0.0' },
+            secondary: { kind: 'check-update', labelKey: 'detail.action.checkUpdate' },
+          };
+        }
+        return { kind: 'install', disabled: false, labelKey: 'detail.action.install' };
+      }
+
+      if (game.missing === true || game.compatibility.status === 'broken') {
+        return {
+          kind: 'reinstall',
+          disabled: false,
+          labelKey: 'detail.action.reinstall',
+          reasonKey: 'detail.reason.missingPackage',
+          secondary: { kind: 'uninstall', labelKey: 'mygames.menu.uninstall' },
+        };
+      }
+
+      if (game.updateAvailable === true) {
+        if (input.offline === true) {
+          const offlinePrimary = input.paused === true ? 'resume' : input.canContinue === true || game.canContinue === true ? 'continue' : 'play';
+          return {
+            kind: offlinePrimary,
+            disabled: false,
+            secondary: {
+              kind: 'update-unavailable',
+              disabled: true,
+              labelKey: 'detail.action.updateUnavailable',
+              reasonKey: 'detail.reason.offline',
+            },
+          };
+        }
+        const blocked = game.updateReason === 'incompatible' || game.compatibility.ok === false;
+        if (blocked) {
+          const primary = input.paused === true ? 'resume' : input.canContinue === true || game.canContinue === true ? 'continue' : 'play';
+          return {
+            kind: primary,
+            disabled: false,
+            secondary: {
+              kind: 'update-unavailable',
+              disabled: true,
+              labelKey: 'detail.action.updateUnavailable',
+              reasonKey: 'detail.update.incompatible',
+              reasonParams: { reason: game.updateReason || 'incompatible' },
+            },
+          };
+        }
+        return {
+          kind: 'update',
+          disabled: false,
+          labelKey: 'detail.action.update',
+          secondary: { kind: 'play-current', labelKey: 'detail.action.playCurrent' },
+        };
+      }
+
+      if (input.paused === true) {
+        return { kind: 'resume', disabled: false, labelKey: 'detail.action.resume' };
+      }
+      if (input.canContinue === true || game.canContinue === true) {
+        return {
+          kind: 'continue',
+          disabled: false,
+          labelKey: 'detail.action.continue',
+          secondary: { kind: 'restart', labelKey: 'mygames.menu.restart' },
+        };
+      }
+      return { kind: 'play', disabled: false, labelKey: 'detail.action.play' };
+    }
+
+    /** Copy key for a primary action line under the button. */
+    function detailActionReasonKey(action) {
+      if (!action || typeof action !== 'object') return null;
+      return action.reasonKey || null;
+    }
+
+    /** Deterministic hue pair used by procedural cover art (content layer only). */
+    function coverTone(game) {
+      const seed = String((game && (game.id || game.name)) || 'game');
+      let hash = 0;
+      for (let index = 0; index < seed.length; index += 1) {
+        hash = (hash * 31 + seed.charCodeAt(index)) % 360;
+      }
+      const hue = hash;
+      return {
+        hue: hue,
+        hue2: (hue + 42) % 360,
+        saturation: 48 + (hash % 17),
+      };
+    }
+
+    /** First printable character for the cover placeholder. */
+    function initialFor(name) {
+      const text = asString(name);
+      if (text.length === 0) return '?';
+      const chars = Array.from(text);
+      return chars[0].toUpperCase();
+    }
+
+    /** Selected screenshots for the detail gallery (max 3 by PRD 9.5.1). */
+    function screenshotsFor(game, limit) {
+      const list = game && Array.isArray(game.screenshots) ? game.screenshots : [];
+      const max = typeof limit === 'number' ? limit : 3;
+      return list.slice(0, max);
+    }
+
+    /** Image URL for a game cover, falling back to the icon. */
+    function coverImageFor(game) {
+      if (!game) return null;
+      return game.cover || game.icon || null;
+    }
+
+    return { normalizeGame, normalizeCatalog, normalizeDetailPayload, authorName, categoryLabelKey, categoryLabel, primaryCategory, isBuiltin, isInstalled, hasUpdate, installedGames, hasLocaleCollator, createCollator, matchesQuery, matchesCategory, sortCatalog, filterCatalog, selectHero, isNewGame, selectSections, sortMyGames, progressSummary, resolvePermissions, resolveDetailAction, detailActionReasonKey, coverTone, initialFor, screenshotsFor, coverImageFor };
+    })();
+
+    // module: packages/client/src/errors-text.js
+    __mods["packages/client/src/errors-text.js"] = (function () {
+    const GM = __mods["packages/shared/src/errors.js"].GM;
+    /**
+     * GM-* code to user-facing copy mapping (PRD 8.13 / 9.8, D-030).
+     *
+     * The Host only ever sends `GM-*` codes; message strings are diagnostics and are
+     * never shown. Every known code maps to a locale key; unknown codes degrade to a
+     * generic key instead of leaking the raw message.
+     */
+
+    const ERROR_KEYS = Object.freeze({
+      [GM.INTERNAL]: 'error.gm.unknown',
+      [GM.INVALID_JSON]: 'error.gm.badRequest',
+      [GM.INVALID_PARAM]: 'error.gm.badRequest',
+      [GM.UNKNOWN_METHOD]: 'error.gm.unknownMethod',
+      [GM.BAD_GAME_ID]: 'error.gm.invalidGame',
+      [GM.SCORE_OUT_OF_RANGE]: 'error.gm.scoreRange',
+      [GM.NOT_READY]: 'error.gm.unknown',
+      [GM.CAPABILITY_DENIED]: 'error.gm.capability',
+      [GM.SESSION_NOT_BOUND]: 'error.gm.unknown',
+      [GM.SAVE_NOT_FOUND]: 'error.gm.unknown',
+      [GM.GAME_NOT_FOUND]: 'error.gm.notFound',
+      [GM.ASSET_NOT_FOUND]: 'error.gm.notFound',
+      [GM.INSTALL_IN_PROGRESS]: 'error.gm.installBusy',
+      [GM.STORAGE_CONFLICT]: 'error.gm.unknown',
+      [GM.SESSION_STATE_CONFLICT]: 'error.gm.unknown',
+      [GM.SCHEMA_READ_TOO_NEW]: 'error.gm.storageTooNew',
+      [GM.SAVE_SCHEMA_TOO_NEW]: 'error.gm.saveCorrupt',
+      [GM.SAVE_TOO_LARGE]: 'error.gm.storage',
+      [GM.STORAGE_QUOTA]: 'error.gm.storage',
+      [GM.STORAGE_KEY_INVALID]: 'error.gm.badRequest',
+      [GM.VALUE_NOT_SERIALIZABLE]: 'error.gm.unknown',
+      [GM.UNSUPPORTED_MEDIA_TYPE]: 'error.gm.unsupportedMedia',
+      [GM.MANIFEST_INVALID]: 'error.gm.manifest',
+      [GM.RUNTIME_INCOMPATIBLE]: 'error.gm.compat',
+      [GM.SDK_INCOMPATIBLE]: 'error.gm.compat',
+      [GM.RATE_LIMITED]: 'error.gm.throttled',
+      [GM.BACKPRESSURE]: 'error.gm.installBusy',
+      [GM.HANDSHAKE_TIMEOUT]: 'error.gm.unknown',
+      [GM.PROTOCOL_MISMATCH]: 'error.gm.compat',
+      [GM.NO_RUNTIME]: 'error.gm.compat',
+      [GM.MESSAGE_INVALID]: 'error.gm.unknown',
+      [GM.BRIDGE_TIMEOUT]: 'error.gm.unknown',
+      [GM.LOAD_TIMEOUT]: 'error.gm.unknown',
+      [GM.IFRAME_UNRESPONSIVE]: 'error.gm.unknown',
+      [GM.IFRAME_CRASHED]: 'error.gm.unknown',
+      [GM.ASSET_INTEGRITY]: 'error.gm.integrity',
+      [GM.SAVE_WRITE_FAILED]: 'error.gm.storage',
+      [GM.SAVE_CORRUPT]: 'error.gm.saveCorrupt',
+      [GM.HOST_EPOCH_STALE]: 'error.gm.host',
+      [GM.STORE_IO]: 'error.gm.storage',
+      [GM.STORE_READONLY]: 'error.gm.storageReadOnly',
+      [GM.HOST_UNAVAILABLE]: 'error.gm.host',
+      [GM.REGISTRY_UNAVAILABLE]: 'error.gm.registry',
+      [GM.INSTALL_FAILED]: 'error.gm.unknown',
+      [GM.PACKAGE_INVALID]: 'error.gm.packageInvalid',
+      [GM.ENTRY_NOT_SELF_CONTAINED]: 'error.gm.notSelfContained',
+      [GM.MANIFEST_TOO_LARGE]: 'error.gm.manifest',
+      [GM.PACKAGE_TOO_LARGE]: 'error.gm.packageTooLarge',
+      [GM.INSTALL_URL_REJECTED]: 'error.gm.installUrl',
+      [GM.MARKET_DISABLED]: 'error.gm.compat',
+      [GM.STORE_PATH_ESCAPE]: 'error.gm.storage',
+      [GM.UNINSTALL_BUILTIN]: 'error.gm.uninstallBuiltin',
+      [GM.NOT_IN_REGISTRY]: 'error.gm.notFound',
+      [GM.INSTALL_VERSION_CONFLICT]: 'error.gm.installVersion',
+      [GM.INSTALL_VERSION_MISMATCH]: 'error.gm.installVersionMismatch',
+      [GM.UPDATE_GAME_RUNNING]: 'error.gm.installRunning',
+      [GM.UNINSTALL_BUSY]: 'error.gm.installBusy',
+      [GM.INSTALL_DISK_FULL]: 'error.gm.diskFull',
+      [GM.INSTALL_HASH_MISMATCH]: 'error.gm.integrity',
+      [GM.INSTALL_DOWNLOAD_FAILED]: 'error.gm.download',
+      [GM.INSTALL_DOWNLOAD_TIMEOUT]: 'error.gm.downloadTimeout',
+      [GM.INSTALL_IO]: 'error.gm.write',
+      [GM.INSTALL_CORRUPT]: 'error.gm.verify',
+    });
+
+    const DOWNLOAD_STAGE_ERRORS = Object.freeze([
+      GM.INSTALL_DOWNLOAD_FAILED,
+      GM.INSTALL_DOWNLOAD_TIMEOUT,
+      GM.HOST_UNAVAILABLE,
+      GM.REGISTRY_UNAVAILABLE,
+      GM.INSTALL_URL_REJECTED,
+      GM.RATE_LIMITED,
+    ]);
+
+    const VERIFY_STAGE_ERRORS = Object.freeze([
+      GM.INSTALL_HASH_MISMATCH,
+      GM.INSTALL_CORRUPT,
+      GM.MANIFEST_INVALID,
+      GM.PACKAGE_INVALID,
+      GM.ENTRY_NOT_SELF_CONTAINED,
+      GM.INSTALL_VERSION_MISMATCH,
+      GM.PACKAGE_TOO_LARGE,
+      GM.NOT_IN_REGISTRY,
+    ]);
+
+    const WRITE_STAGE_ERRORS = Object.freeze([
+      GM.INSTALL_IO,
+      GM.INSTALL_DISK_FULL,
+      GM.STORE_IO,
+      GM.STORE_READONLY,
+    ]);
+
+    const OFFLINE_ERRORS = Object.freeze([GM.HOST_UNAVAILABLE, GM.REGISTRY_UNAVAILABLE]);
+
+    const BUSY_ERRORS = Object.freeze([GM.INSTALL_IN_PROGRESS, GM.UNINSTALL_BUSY, GM.BACKPRESSURE]);
+
+    function includes(list, value) {
+      return list.indexOf(value) !== -1;
+    }
+
+    /** Locale key for any GM code; unknown codes never leak the raw message. */
+    function errorTextKey(code) {
+      if (typeof code !== 'string') return 'error.gm.unknown';
+      if (Object.prototype.hasOwnProperty.call(ERROR_KEYS, code)) return ERROR_KEYS[code];
+      // Manifest field-level codes (GM-4228, GM-4230..GM-4248) are all package problems.
+      if (/^GM-42(2[8-9]|[3-4]\d)$/.test(code)) return 'error.gm.manifest';
+      if (/^GM-\d{4}$/.test(code)) return 'error.gm.unknown';
+      return 'error.gm.badRequest';
+    }
+
+    /** Install failure bucket used for stage copy (PRD 9.5.3). */
+    function installFailureStage(code) {
+      if (includes(DOWNLOAD_STAGE_ERRORS, code)) return 'download';
+      if (includes(VERIFY_STAGE_ERRORS, code)) return 'verify';
+      if (includes(WRITE_STAGE_ERRORS, code)) return 'write';
+      return 'unknown';
+    }
+
+    /** Locale key describing why the install failed. */
+    function installFailureReasonKey(code) {
+      const stage = installFailureStage(code);
+      if (stage === 'download') return 'detail.install.failed.download';
+      if (stage === 'verify') return 'detail.install.failed.verify';
+      if (stage === 'write') return 'detail.install.failed.write';
+      return 'detail.install.failed.unknown';
+    }
+
+    /** Stage label key for the progress row (queued/downloading/verifying/installing). */
+    function installStageTextKey(stage, percent) {
+      switch (stage) {
+        case 'queued':
+          return 'detail.install.stage.queued';
+        case 'downloading':
+          return typeof percent === 'number' ? 'detail.install.stage.downloading' : 'detail.install.stage.downloadingUnknown';
+        case 'verifying':
+          return 'detail.install.stage.verifying';
+        case 'installing':
+          return 'detail.install.stage.installing';
+        case 'installed':
+          return 'detail.install.stage.installed';
+        case 'failed':
+          return 'detail.install.stage.failed';
+        case 'cancelled':
+          return 'detail.install.stage.cancelled';
+        default:
+          return 'detail.install.stage.preparing';
+      }
+    }
+
+    /** Whether the operation failed because the Host/registry is unreachable. */
+    function isOfflineError(code) {
+      return includes(OFFLINE_ERRORS, code);
+    }
+
+    /** Whether another install/uninstall currently holds the Host lock. */
+    function isBusyError(code) {
+      return includes(BUSY_ERRORS, code);
+    }
+
+    /** Install failures that are worth an automatic retry once the lock clears. */
+    function isInstallRetryable(code) {
+      return isBusyError(code);
+    }
+
+    return { errorTextKey, installFailureStage, installFailureReasonKey, installStageTextKey, isOfflineError, isBusyError, isInstallRetryable };
+    })();
+
+    // module: packages/client/src/install-manager.js
+    __mods["packages/client/src/install-manager.js"] = (function () {
+    const GM = __mods["packages/shared/src/errors.js"].GM;
+    const INSTALL_BUSY_RETRY_DELAYS_MS = __mods["packages/client/src/constants.js"].INSTALL_BUSY_RETRY_DELAYS_MS;
+    const INSTALL_STAGE_HINT_MS = __mods["packages/client/src/constants.js"].INSTALL_STAGE_HINT_MS;
+    const installCleared = __mods["packages/client/src/store.js"].installCleared;
+    const installStageChanged = __mods["packages/client/src/store.js"].installStageChanged;
+    const isBusyError = __mods["packages/client/src/errors-text.js"].isBusyError;
+    const installFailureReasonKey = __mods["packages/client/src/errors-text.js"].installFailureReasonKey;
+    const installFailureStage = __mods["packages/client/src/errors-text.js"].installFailureStage;
+    const normalizeUiError = __mods["packages/client/src/ui-errors.js"].normalizeUiError;
+    const getMarketApi = __mods["packages/client/src/api.js"].getMarketApi;
+    const reportDiagnostic = __mods["packages/client/src/diagnostics.js"].reportDiagnostic;
+    const store = __mods["packages/client/src/store.js"].store;
+    /**
+     * Serialized install/uninstall orchestration for the Client (PRD 9.5.3 / D-021,
+     * V1-CONTRACTS 6.8 "global install lock").
+     *
+     * The Host serializes installs too; doing it on the Client as well keeps the UI
+     * honest: one visible job runs at a time, later requests queue, and a busy Host
+     * (GM-4091 / GM-4097) is retried a couple of times before surfacing an error.
+     */
+
+    function defaultScheduler() {
+      return {
+        setTimeout: function schedule(callback, delay) {
+          const handle = setTimeout(callback, delay);
+          if (handle && typeof handle.unref === 'function') handle.unref();
+          return handle;
+        },
+        clearTimeout: function clear(handle) {
+          clearTimeout(handle);
+        },
+      };
+    }
+
+    function sleep(ms, signal, scheduler) {
+      return new Promise(function wait(resolve) {
+        let settled = false;
+        function finish() {
+          if (settled) return;
+          settled = true;
+          scheduler.clearTimeout(timer);
+          if (signal && typeof signal.removeEventListener === 'function') signal.removeEventListener('abort', finish);
+          resolve();
+        }
+        const timer = scheduler.setTimeout(finish, ms);
+        if (signal && typeof signal.addEventListener === 'function') signal.addEventListener('abort', finish);
+      });
+    }
+
+    function noop() {}
+
+    /**
+     * @param {{store: object, getApi: Function, now?: Function, scheduler?: object,
+     *   stageHintMs?: number, retryDelays?: number[]}} options
+     */
+    function createInstallManager(options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const target = opts.store;
+      const getApi = typeof opts.getApi === 'function' ? opts.getApi : function unavailable() {
+        return null;
+      };
+      const now = typeof opts.now === 'function' ? opts.now : function clock() {
+        return Date.now();
+      };
+      const scheduler = opts.scheduler && typeof opts.scheduler.setTimeout === 'function' ? opts.scheduler : defaultScheduler();
+      const stageHintMs = typeof opts.stageHintMs === 'number' ? opts.stageHintMs : INSTALL_STAGE_HINT_MS;
+      const retryDelays = Array.isArray(opts.retryDelays) ? opts.retryDelays : INSTALL_BUSY_RETRY_DELAYS_MS;
+
+      let tail = Promise.resolve();
+      let active = null;
+      const pending = new Map();
+
+      function dispatch(action) {
+        if (target && typeof target.dispatch === 'function') return target.dispatch(action);
+        return null;
+      }
+
+      function enqueue(task) {
+        const run = tail.then(task, task);
+        tail = run.then(noop, noop);
+        return run;
+      }
+
+      function jobFor(gameId) {
+        const state = target && typeof target.getState === 'function' ? target.getState() : null;
+        return state && state.installJobs ? state.installJobs[gameId] || null : null;
+      }
+
+      function finishFailure(gameId, kind, failure) {
+        const code = failure && failure.code ? failure.code : GM.INTERNAL;
+        dispatch(
+          installStageChanged(gameId, 'failed', {
+            kind: kind,
+            error: { code: code, retryable: failure && failure.retryable === true },
+            failureStage: installFailureStage(code),
+            reasonKey: installFailureReasonKey(code),
+            at: now(),
+          })
+        );
+        return {
+          ok: false,
+          kind: kind,
+          gameId: gameId,
+          error: { code: code, retryable: Boolean(failure && failure.retryable === true) },
+        };
+      }
+
+      async function runInstall(gameId, kind, request) {
+        const operationId = request.operationId;
+        const controller = request.controller;
+        const signal = controller.signal;
+        if (signal.aborted) {
+          dispatch(installStageChanged(gameId, 'cancelled', { kind: kind, operationId: operationId, at: now() }));
+          return { ok: false, kind: kind, gameId: gameId, cancelled: true, error: { code: GM.INSTALL_FAILED, retryable: false } };
+        }
+        dispatch(installStageChanged(gameId, 'queued', { kind: kind, operationId: operationId, at: now() }));
+        if (typeof signal.addEventListener === 'function') {
+          active = { gameId: gameId, kind: kind, controller: controller, operationId: operationId };
+        }
+        const hintTimer = scheduler.setTimeout(function showDownloading() {
+          if (controller.signal.aborted) return;
+          if (kind === 'uninstall') return;
+          const job = jobFor(gameId);
+          if (job && job.stage === 'queued') {
+            dispatch(installStageChanged(gameId, 'downloading', { kind: kind, operationId: operationId, percent: null, at: now() }));
+          }
+        }, stageHintMs);
+
+        try {
+          let attempt = 0;
+          for (;;) {
+            try {
+              const data = await request.call(controller);
+              if (kind === 'uninstall') dispatch(installCleared(gameId));
+              else dispatch(installStageChanged(gameId, 'installed', { kind: kind, operationId: operationId, at: now() }));
+              return { ok: true, kind: kind, gameId: gameId, data: data, operationId: operationId };
+            } catch (error) {
+              if (controller.signal.aborted) {
+                dispatch(installStageChanged(gameId, 'cancelled', { kind: kind, operationId: operationId, at: now() }));
+                return { ok: false, kind: kind, gameId: gameId, cancelled: true, error: { code: GM.INSTALL_FAILED, retryable: false } };
+              }
+              const normalized = normalizeUiError(error, GM.INSTALL_FAILED);
+              if (isBusyError(normalized.code) && attempt < retryDelays.length) {
+                const delay = retryDelays[attempt];
+                attempt += 1;
+                await sleep(delay, signal, scheduler);
+                continue;
+              }
+              if (error && error.code) {
+                reportDiagnostic('install-failed:' + error.code, error);
+              }
+              return finishFailure(gameId, kind, normalized);
+            }
+          }
+        } finally {
+          scheduler.clearTimeout(hintTimer);
+          if (active && active.gameId === gameId && active.kind === kind) active = null;
+        }
+      }
+
+      function start(kind, gameId, request) {
+        if (pending.has(gameId)) return pending.get(gameId);
+        const controller = typeof AbortController === 'function' ? new AbortController() : null;
+        if (!controller) {
+          return Promise.resolve(finishFailure(gameId, kind, { code: GM.HOST_UNAVAILABLE, retryable: false }));
+        }
+        const promise = enqueue(function run() {
+          return runInstall(gameId, kind, {
+            operationId: request.operationId,
+            controller: controller,
+            call: function call() {
+              return request.call(controller.signal);
+            },
+          });
+        });
+        pending.set(gameId, promise);
+        promise.then(noop, noop).then(function clear() {
+          pending.delete(gameId);
+        });
+        return promise;
+      }
+
+      return {
+        install: function install(gameId, request) {
+          const input = request && typeof request === 'object' ? request : {};
+          const api = getApi();
+          if (!api || typeof api.install !== 'function') {
+            return Promise.resolve(finishFailure(gameId, 'install', { code: GM.HOST_UNAVAILABLE, retryable: true }));
+          }
+          const operationId = input.operationId || (typeof api.operationId === 'function' ? api.operationId() : undefined);
+          return start('install', gameId, {
+            operationId: operationId,
+            call: function call(signal) {
+              return api.install({
+                gameId: gameId,
+                version: input.version,
+                operationId: operationId,
+                signal: signal,
+              });
+            },
+          });
+        },
+        update: function update(gameId, request) {
+          return this.install(gameId, request);
+        },
+        installLocal: function installLocal(input) {
+          const request = input && typeof input === 'object' ? input : {};
+          const gameId = typeof request.gameId === 'string' && request.gameId.length > 0 ? request.gameId : 'local:' + now();
+          const api = getApi();
+          if (!api || typeof api.installLocal !== 'function') {
+            return Promise.resolve(finishFailure(gameId, 'local', { code: GM.HOST_UNAVAILABLE, retryable: true }));
+          }
+          const operationId = request.operationId || (typeof api.operationId === 'function' ? api.operationId() : undefined);
+          return start('local', gameId, {
+            operationId: operationId,
+            call: function call(signal) {
+              return api.installLocal({
+                file: request.file,
+                text: request.text,
+                FileReader: request.FileReader,
+                operationId: operationId,
+                signal: signal,
+              });
+            },
+          });
+        },
+        uninstall: function uninstall(gameId, request) {
+          const input = request && typeof request === 'object' ? request : {};
+          const api = getApi();
+          if (!api || typeof api.uninstall !== 'function') {
+            return Promise.resolve(finishFailure(gameId, 'uninstall', { code: GM.HOST_UNAVAILABLE, retryable: true }));
+          }
+          const operationId = input.operationId || (typeof api.operationId === 'function' ? api.operationId() : undefined);
+          return start('uninstall', gameId, {
+            operationId: operationId,
+            call: function call(signal) {
+              return api.uninstall({
+                gameId: gameId,
+                deleteData: input.deleteData === true,
+                operationId: operationId,
+                signal: signal,
+              });
+            },
+          });
+        },
+        cancel: function cancel(gameId) {
+          if (!active || active.gameId !== gameId) return false;
+          try {
+            active.controller.abort('cancelled');
+          } catch (_error) {
+            return false;
+          }
+          return true;
+        },
+        reportPercent: function reportPercent(gameId, percent) {
+          if (typeof percent !== 'number' || !Number.isFinite(percent)) return;
+          dispatch(installStageChanged(gameId, 'downloading', { percent: percent, at: now() }));
+        },
+        activeJob: function activeJob() {
+          return active ? { gameId: active.gameId, kind: active.kind } : null;
+        },
+        isBusy: function isBusy() {
+          return active !== null;
+        },
+      };
+    }
+
+    let manager = null;
+
+    /** Plugin-wide manager wired to the real store + Market API. */
+    function getInstallManager() {
+      if (manager === null) {
+        manager = createInstallManager({ store: store, getApi: getMarketApi });
+      }
+      return manager;
+    }
+
+    return { createInstallManager, getInstallManager };
+    })();
+
     // module: packages/client/src/actions.js
     __mods["packages/client/src/actions.js"] = (function () {
     const GM = __mods["packages/shared/src/errors.js"].GM;
@@ -2339,14 +4989,31 @@ window.__ModuleLoader__.load({
     const marketLoading = __mods["packages/client/src/store.js"].marketLoading;
     const marketReady = __mods["packages/client/src/store.js"].marketReady;
     const marketFailed = __mods["packages/client/src/store.js"].marketFailed;
+    const marketOffline = __mods["packages/client/src/store.js"].marketOffline;
     const marketInvalidated = __mods["packages/client/src/store.js"].marketInvalidated;
+    const detailOpened = __mods["packages/client/src/store.js"].detailOpened;
+    const detailReady = __mods["packages/client/src/store.js"].detailReady;
+    const detailFailed = __mods["packages/client/src/store.js"].detailFailed;
+    const detailScores = __mods["packages/client/src/store.js"].detailScores;
+    const detailClosed = __mods["packages/client/src/store.js"].detailClosed;
+    const installCleared = __mods["packages/client/src/store.js"].installCleared;
+    const toastPushed = __mods["packages/client/src/store.js"].toastPushed;
+    const toastDismissed = __mods["packages/client/src/store.js"].toastDismissed;
+    const healthReady = __mods["packages/client/src/store.js"].healthReady;
+    const queryApplied = __mods["packages/client/src/store.js"].queryApplied;
     const runtimeStarted = __mods["packages/client/src/store.js"].runtimeStarted;
     const runtimePatched = __mods["packages/client/src/store.js"].runtimePatched;
     const pausedGameRecorded = __mods["packages/client/src/store.js"].pausedGameRecorded;
     const completedAcknowledged = __mods["packages/client/src/store.js"].completedAcknowledged;
     const leaveCompleted = __mods["packages/client/src/store.js"].leaveCompleted;
+    const normalizeCatalog = __mods["packages/client/src/catalog.js"].normalizeCatalog;
+    const normalizeDetailPayload = __mods["packages/client/src/catalog.js"].normalizeDetailPayload;
     const normalizeUiError = __mods["packages/client/src/ui-errors.js"].normalizeUiError;
     const uiError = __mods["packages/client/src/ui-errors.js"].uiError;
+    const errorTextKey = __mods["packages/client/src/errors-text.js"].errorTextKey;
+    const isOfflineError = __mods["packages/client/src/errors-text.js"].isOfflineError;
+    const getMarketApi = __mods["packages/client/src/api.js"].getMarketApi;
+    const getInstallManager = __mods["packages/client/src/install-manager.js"].getInstallManager;
     const reportDiagnostic = __mods["packages/client/src/diagnostics.js"].reportDiagnostic;
     /**
      * Coordinated client actions (API + store + navigation-free).
@@ -2355,30 +5022,217 @@ window.__ModuleLoader__.load({
      * keeps the important transitions unit-testable without React.
      */
 
+    let toastCounter = 0;
+    const catalogInflight = new WeakMap();
+
+    function registryOffline(registry) {
+      if (!registry || typeof registry !== 'object') return false;
+      return registry.state === 'offline' || registry.state === 'expired';
+    }
+
     /**
-     * Load the V0 game list. Errors stay on screen with a manual retry (PRD 9.3.6).
-     * Returns `{ok, error?}` so callers can keep navigation decisions local.
+     * Load the V1 catalog (falls back to `/installed` when `/games` is offline).
+     * Errors stay on screen with a manual retry (PRD 9.3.6).
      */
-    async function refreshMarket(options) {
+    function loadCatalog(options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const target = opts.store;
+      if (target && catalogInflight.has(target)) return catalogInflight.get(target);
+      const promise = loadCatalogInternal(opts);
+      if (target) {
+        catalogInflight.set(target, promise);
+        promise.then(
+          function done() {
+            catalogInflight.delete(target);
+          },
+          function failed() {
+            catalogInflight.delete(target);
+          }
+        );
+      }
+      return promise;
+    }
+
+    async function fetchCatalogPages(api) {
+      const items = [];
+      let cursor = null;
+      let first = null;
+      let pages = 0;
+      do {
+        const payload = await api.listGames({ limit: 50, cursor: cursor });
+        if (first === null) first = payload;
+        if (payload && Array.isArray(payload.items)) {
+          for (const item of payload.items) items.push(item);
+        }
+        cursor = payload && typeof payload.nextCursor === 'string' && payload.nextCursor.length > 0 ? payload.nextCursor : null;
+        pages += 1;
+      } while (cursor !== null && pages < 8);
+      return { payload: first, items: items };
+    }
+
+    async function loadCatalogInternal(options) {
       const opts = options && typeof options === 'object' ? options : {};
       const target = opts.store;
       const api = opts.api;
-      if (!target || !api || typeof api.listGames !== 'function') {
+      const now = typeof opts.now === 'number' ? opts.now : Date.now();
+      if (!target) return { ok: false, error: uiError(GM.HOST_UNAVAILABLE, { retryable: true }) };
+      if (!api || typeof api.listGames !== 'function') {
         const error = uiError(GM.HOST_UNAVAILABLE, { retryable: true });
-        if (target) target.dispatch(marketFailed(error));
+        target.dispatch(marketFailed(error));
+        target.dispatch(marketOffline(true));
         return { ok: false, error: error };
       }
       target.dispatch(marketLoading());
+      let healthPromise = Promise.resolve(null);
+      if (typeof api.health === 'function') {
+        healthPromise = Promise.resolve()
+          .then(function fetchHealth() {
+            return api.health();
+          })
+          .catch(function ignoreHealth() {
+            return null;
+          });
+      }
       try {
-        const payload = await api.listGames();
-        const items = payload && Array.isArray(payload.items) ? payload.items : [];
-        target.dispatch(marketReady(items, typeof opts.now === 'number' ? opts.now : Date.now()));
-        return { ok: true, items: items };
+        const page = await fetchCatalogPages(api);
+        const payload = page.payload;
+        const items = normalizeCatalog(page.items);
+        const health = await healthPromise;
+        if (health) target.dispatch(healthReady(health));
+        const registry = (payload && payload.registry) || (health && health.registry) || null;
+        const source = payload && typeof payload.source === 'string' ? payload.source : null;
+        const offline = (payload && payload.offline === true) || registryOffline(registry);
+        target.dispatch(marketReady(items, now, { offline: offline, registry: registry, source: source }));
+        return { ok: true, items: items, offline: offline };
       } catch (error) {
         const normalized = normalizeUiError(error, GM.HOST_UNAVAILABLE);
+        const fallback = await loadInstalledFallback(api);
+        if (fallback) {
+          target.dispatch(marketReady(fallback, now, { offline: true, registry: null, source: 'builtin' }));
+          return { ok: true, items: fallback, offline: true };
+        }
         target.dispatch(marketFailed(normalized));
+        if (isOfflineError(normalized.code)) target.dispatch(marketOffline(true));
         return { ok: false, error: normalized };
       }
+    }
+
+    async function loadInstalledFallback(api) {
+      if (!api || typeof api.listInstalled !== 'function') return null;
+      try {
+        const payload = await api.listInstalled();
+        return normalizeCatalog(payload);
+      } catch (_error) {
+        return null;
+      }
+    }
+
+    /** Back-compat alias used by the V0 panel and tests. */
+    function refreshMarket(options) {
+      return loadCatalog(options);
+    }
+
+    /** Open the detail page and fetch its payload. */
+    async function openDetail(options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const target = opts.store;
+      if (!target || typeof opts.gameId !== 'string' || opts.gameId.length === 0) {
+        return { ok: false, error: uiError(GM.INVALID_PARAM) };
+      }
+      target.dispatch(detailOpened(opts.gameId, opts.returnPage));
+      return loadDetail(opts);
+    }
+
+    /** Fetch the detail payload; failures keep the shell and show an error block. */
+    async function loadDetail(options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const target = opts.store;
+      const api = opts.api;
+      const gameId = opts.gameId;
+      if (!target || typeof gameId !== 'string') return { ok: false, error: uiError(GM.INVALID_PARAM) };
+      if (!api || typeof api.getGame !== 'function') {
+        const error = uiError(GM.HOST_UNAVAILABLE, { retryable: true });
+        target.dispatch(detailFailed(gameId, error));
+        return { ok: false, error: error };
+      }
+      try {
+        const payload = await api.getGame(gameId);
+        const view = normalizeDetailPayload(payload);
+        if (!view) {
+          const error = uiError(GM.GAME_NOT_FOUND);
+          target.dispatch(detailFailed(gameId, error));
+          return { ok: false, error: error };
+        }
+        target.dispatch(detailReady(gameId, view));
+        await loadScores(target, api, gameId, view);
+        return { ok: true, view: view };
+      } catch (error) {
+        const normalized = normalizeUiError(error, GM.HOST_UNAVAILABLE);
+        target.dispatch(detailFailed(gameId, normalized));
+        return { ok: false, error: normalized };
+      }
+    }
+
+    async function loadScores(target, api, gameId, view) {
+      if (!view || !view.game || view.game.installed !== true) return;
+      if (!api || typeof api.getScores !== 'function') return;
+      try {
+        const scores = await api.getScores(gameId);
+        target.dispatch(detailScores(scores));
+      } catch (_error) {
+        // The leaderboard preview is optional; never block the detail page on it.
+      }
+    }
+
+    /** Return from the detail page to its source list. */
+    function closeDetail(target) {
+      if (target && typeof target.dispatch === 'function') target.dispatch(detailClosed());
+    }
+
+    /** Set the applied local search term (the input debounces before calling this). */
+    function applySearchQuery(target, value) {
+      if (!target) return;
+      target.dispatch(queryApplied(typeof value === 'string' ? value : ''));
+    }
+
+    /** Push one toast; ids are stable per call for tests. */
+    function pushToast(target, toast) {
+      if (!target || !toast || typeof toast !== 'object') return null;
+      toastCounter += 1;
+      const id = typeof toast.id === 'string' && toast.id.length > 0 ? toast.id : 'toast-' + toastCounter;
+      const action = {
+        type: 'toast-push',
+        id: id,
+        kind: toast.kind || 'info',
+        textKey: toast.textKey || null,
+        params: toast.params || {},
+        action: toast.action || null,
+        at: typeof toast.at === 'number' ? toast.at : Date.now(),
+      };
+      target.dispatch(toastPushed(action));
+      return id;
+    }
+
+    /** Remove one toast by id. */
+    function dismissToast(target, id) {
+      if (!target) return;
+      target.dispatch(toastDismissed(id));
+    }
+
+    /** Create a toast from a GM code. */
+    function pushErrorToast(target, code, extras) {
+      return pushToast(target, Object.assign({ kind: 'error', textKey: errorTextKey(code) }, extras || {}));
+    }
+
+    function gameFromState(state, gameId) {
+      if (state && state.detail && state.detail.view && state.detail.view.game && state.detail.view.game.id === gameId) {
+        return state.detail.view.game;
+      }
+      if (!state || !state.market || !Array.isArray(state.market.games)) return null;
+      for (const game of state.market.games) {
+        if (game && game.id === gameId) return game;
+      }
+      return null;
     }
 
     /** Launch mode follows the Host's resumable flag (PRD D-004). */
@@ -2457,11 +5311,154 @@ window.__ModuleLoader__.load({
 
     /** Best-effort human game name for menu subtitles and runtime copy. */
     function gameNameFromState(state, gameId) {
-      if (!state || !state.market || !Array.isArray(state.market.games)) return gameId;
-      for (const game of state.market.games) {
-        if (game && game.id === gameId && typeof game.name === 'string' && game.name.length > 0) return game.name;
-      }
+      const game = gameFromState(state, gameId);
+      if (game && typeof game.name === 'string' && game.name.length > 0) return game.name;
       return gameId;
+    }
+
+    async function refreshAfterMutation(target, api, gameId, now) {
+      const catalog = await loadCatalog({ store: target, api: api, now: now });
+      let detailOk = true;
+      const state = target.getState();
+      if (state.page === PAGES.DETAIL && state.detail.gameId === gameId) {
+        const detail = await loadDetail({ store: target, api: api, gameId: gameId });
+        detailOk = detail.ok === true;
+      }
+      return { catalog: catalog, detailOk: detailOk };
+    }
+
+    /** Install (or update) one game through the serialized manager. */
+    async function startInstall(options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const target = opts.store;
+      if (!target || typeof opts.gameId !== 'string') return { ok: false, error: uiError(GM.INVALID_PARAM) };
+      const manager = opts.manager || getInstallManager();
+      const api = opts.api || getMarketApi();
+      const stateBefore = target.getState();
+      const gameBefore = gameFromState(stateBefore, opts.gameId);
+      const wasUpdate = opts.update === true || Boolean(gameBefore && gameBefore.updateAvailable);
+      const name = gameNameFromState(stateBefore, opts.gameId);
+      const result = await manager.install(opts.gameId, { version: opts.version, operationId: opts.operationId });
+      if (!target.getState) return result;
+      if (result.ok) {
+        const installedVersion = result.data && typeof result.data.version === 'string' ? result.data.version : null;
+        pushToast(target, {
+          kind: 'success',
+          textKey: wasUpdate ? 'toast.updated' : 'toast.installed',
+          params: wasUpdate ? { gameName: name, version: installedVersion || '' } : { gameName: name },
+          action: wasUpdate
+            ? null
+            : { kind: 'play', gameId: opts.gameId, mode: 'start' },
+          id: opts.toastId,
+          at: opts.now,
+        });
+        const refreshed = await refreshAfterMutation(target, api, opts.gameId, opts.now);
+        if (refreshed.catalog.ok && refreshed.detailOk) target.dispatch(installCleared(opts.gameId));
+      } else if (result.cancelled) {
+        pushToast(target, { kind: 'info', textKey: 'toast.installCancelled', id: opts.cancelToastId, at: opts.now });
+      } else if (result.error) {
+        reportDiagnostic('install-action-failed', result.error);
+      }
+      return result;
+    }
+
+    /** Cancel an in-flight install; the manager aborts the request and cleans up. */
+    function cancelInstall(gameId, options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const manager = opts.manager || getInstallManager();
+      return manager.cancel(gameId) === true;
+    }
+
+    /** Local `.html` install after the explicit confirmation dialog. */
+    async function installLocalGame(options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const target = opts.store;
+      if (!target || !opts.file) return { ok: false, error: uiError(GM.UNSUPPORTED_MEDIA_TYPE) };
+      const manager = opts.manager || getInstallManager();
+      const api = opts.api || getMarketApi();
+      const fallbackName = typeof opts.fileName === 'string' && opts.fileName.length > 0 ? opts.fileName : 'game.html';
+      const result = await manager.installLocal({ file: opts.file, fileName: fallbackName });
+      if (result.ok) {
+        const refreshed = await loadCatalog({ store: target, api: api, now: opts.now });
+        const gameId = result.data && typeof result.data.gameId === 'string' ? result.data.gameId : null;
+        const game = gameId ? gameFromState(target.getState(), gameId) : null;
+        pushToast(target, {
+          kind: 'success',
+          textKey: 'market.localInstall.done',
+          params: { gameName: game && game.name ? game.name : fallbackName },
+          action: gameId ? { kind: 'play', gameId: gameId, mode: 'start' } : null,
+          id: opts.toastId,
+          at: opts.now,
+        });
+        target.dispatch(installCleared(result.gameId));
+        if (gameId) target.dispatch(installCleared(gameId));
+        void refreshed;
+      } else if (!result.cancelled && result.error) {
+        pushErrorToast(target, result.error.code, { id: opts.errorToastId, at: opts.now });
+      }
+      return result;
+    }
+
+    /** Uninstall, with optional save/score deletion (PRD 9.4.4 / D-019). */
+    async function uninstallGame(options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const target = opts.store;
+      if (!target || typeof opts.gameId !== 'string') return { ok: false, error: uiError(GM.INVALID_PARAM) };
+      const manager = opts.manager || getInstallManager();
+      const api = opts.api || getMarketApi();
+      const deleteData = opts.deleteData === true;
+      const stateBefore = target.getState();
+      const name = gameNameFromState(stateBefore, opts.gameId);
+      const wasDetail = stateBefore.page === PAGES.DETAIL && stateBefore.detail.gameId === opts.gameId;
+      const result = await manager.uninstall(opts.gameId, { deleteData: deleteData, operationId: opts.operationId });
+      if (result.ok) {
+        pushToast(target, {
+          kind: 'success',
+          textKey: deleteData ? 'toast.uninstalledData' : 'toast.uninstalled',
+          params: { gameName: name },
+          id: opts.toastId,
+          at: opts.now,
+        });
+        await loadCatalog({ store: target, api: api, now: opts.now });
+        target.dispatch(installCleared(opts.gameId));
+        if (wasDetail) closeDetail(target);
+      } else if (!result.cancelled && result.error) {
+        pushErrorToast(target, result.error.code, { id: opts.errorToastId, at: opts.now });
+      }
+      return result;
+    }
+
+    /** Manual registry refresh (PRD 8.8.3); throttling is an informational toast. */
+    async function refreshRegistryAction(options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const target = opts.store;
+      const api = opts.api || getMarketApi();
+      if (!target) return { ok: false, error: uiError(GM.HOST_UNAVAILABLE) };
+      if (!api || typeof api.refreshRegistry !== 'function') {
+        pushErrorToast(target, GM.HOST_UNAVAILABLE, { id: opts.toastId, at: opts.now });
+        return { ok: false, error: uiError(GM.HOST_UNAVAILABLE, { retryable: true }) };
+      }
+      try {
+        const data = await api.refreshRegistry({ force: opts.force !== false });
+        if (opts.silent !== true) {
+          pushToast(target, { kind: 'success', textKey: 'toast.registryRefreshed', id: opts.toastId, at: opts.now });
+        }
+        await loadCatalog({ store: target, api: api, now: opts.now });
+        return { ok: true, data: data };
+      } catch (error) {
+        const normalized = normalizeUiError(error, GM.REGISTRY_UNAVAILABLE);
+        if (normalized.code === GM.RATE_LIMITED) {
+          if (opts.silent !== true) {
+            pushToast(target, { kind: 'info', textKey: 'toast.registryThrottled', id: opts.toastId, at: opts.now });
+          }
+          await loadCatalog({ store: target, api: api, now: opts.now });
+          return { ok: true, throttled: true };
+        }
+        if (isOfflineError(normalized.code)) target.dispatch(marketOffline(true));
+        if (opts.silent !== true) pushErrorToast(target, normalized.code, { id: opts.errorToastId, at: opts.now });
+        await loadCatalog({ store: target, api: api, now: opts.now });
+        return { ok: false, error: normalized };
+      }
     }
 
     /** Update one Runtime status field from a controller event. */
@@ -2500,77 +5497,7 @@ window.__ModuleLoader__.load({
       return page === PAGES.MARKET || page === PAGES.MY_GAMES;
     }
 
-    return { refreshMarket, launchModeFor, beginGame, finishLeave, recordPausedGame, acknowledgeCompleted, invalidateMarket, gameNameFromState, applyRuntimeEvent, isPanelPage };
-    })();
-
-    // module: packages/client/src/format.js
-    __mods["packages/client/src/format.js"] = (function () {
-    /** Locale-aware formatting helpers (no host DOM reads). */
-
-    /** Browser locale for `Intl`; zh-first fallback keeps V0 copy consistent. */
-    function preferredLocale() {
-      try {
-        const nav = globalThis.navigator;
-        if (nav && typeof nav.language === 'string' && nav.language.length > 0) {
-          return nav.language.toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en';
-        }
-      } catch (_error) {
-        // Optional browser global.
-      }
-      return 'zh';
-    }
-
-    /** Grouped score text; invalid values render as an empty string. */
-    function formatScore(value, locale) {
-      if (typeof value !== 'number' || !Number.isFinite(value)) return '';
-      try {
-        return new Intl.NumberFormat(locale || preferredLocale(), { maximumFractionDigits: 0 }).format(value);
-      } catch (_error) {
-        return String(Math.round(value));
-      }
-    }
-
-    /** Relative time used by cards and the resume menu subtitle. */
-    function formatRelativeTime(iso, now, locale) {
-      if (typeof iso !== 'string' || iso.length === 0) return '';
-      const then = Date.parse(iso);
-      if (!Number.isFinite(then)) return '';
-      const clock = typeof now === 'number' && Number.isFinite(now) ? now : Date.now();
-      const diffSeconds = Math.round((then - clock) / 1000);
-      const abs = Math.abs(diffSeconds);
-      let value = diffSeconds;
-      let unit = 'second';
-      if (abs >= 86400 * 30) {
-        value = Math.round(diffSeconds / (86400 * 30));
-        unit = 'month';
-      } else if (abs >= 86400) {
-        value = Math.round(diffSeconds / 86400);
-        unit = 'day';
-      } else if (abs >= 3600) {
-        value = Math.round(diffSeconds / 3600);
-        unit = 'hour';
-      } else if (abs >= 60) {
-        value = Math.round(diffSeconds / 60);
-        unit = 'minute';
-      }
-      try {
-        return new Intl.RelativeTimeFormat(locale || preferredLocale(), { numeric: 'auto' }).format(value, unit);
-      } catch (_error) {
-        return '';
-      }
-    }
-
-    /** First manifest category, title-cased for the compact card metadata line. */
-    function formatCategory(categories) {
-      if (!Array.isArray(categories) || categories.length === 0) return '';
-      const first = categories.find(function text(value) {
-        return typeof value === 'string' && value.length > 0;
-      });
-      if (!first) return '';
-      return first.charAt(0).toUpperCase() + first.slice(1);
-    }
-
-    return { preferredLocale, formatScore, formatRelativeTime, formatCategory };
+    return { loadCatalog, refreshMarket, openDetail, loadDetail, closeDetail, applySearchQuery, pushToast, dismissToast, pushErrorToast, launchModeFor, beginGame, finishLeave, recordPausedGame, acknowledgeCompleted, invalidateMarket, gameNameFromState, startInstall, cancelInstall, installLocalGame, uninstallGame, refreshRegistryAction, applyRuntimeEvent, isPanelPage };
     })();
 
     // module: packages/client/src/icons.js
@@ -2652,6 +5579,118 @@ window.__ModuleLoader__.load({
       );
     }
 
+    function SearchIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h(
+        'svg',
+        svgProps(size, '0 0 16 16'),
+        h('circle', { cx: 7.2, cy: 7.2, r: 4.4 }),
+        h('path', { d: 'm10.6 10.6 3.1 3.1' })
+      );
+    }
+
+    function CloseIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h('svg', svgProps(size, '0 0 16 16'), h('path', { d: 'm4 4 8 8M12 4l-8 8' }));
+    }
+
+    function CheckIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h('svg', svgProps(size, '0 0 16 16'), h('path', { d: 'm3.4 8.4 2.9 2.9 6.3-6.6' }));
+    }
+
+    function MoreIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h(
+        'svg',
+        svgProps(size, '0 0 16 16'),
+        h('circle', { cx: 3.4, cy: 8, r: 1.15, fill: 'currentColor', stroke: 'none' }),
+        h('circle', { cx: 8, cy: 8, r: 1.15, fill: 'currentColor', stroke: 'none' }),
+        h('circle', { cx: 12.6, cy: 8, r: 1.15, fill: 'currentColor', stroke: 'none' })
+      );
+    }
+
+    function TrashIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h(
+        'svg',
+        svgProps(size, '0 0 16 16'),
+        h('path', { d: 'M3.5 4.6h9M6.5 4.6V3.2h3v1.4M5 4.6l.6 8.2h4.8l.6-8.2' }),
+        h('path', { d: 'M6.9 7v3.4M9.1 7v3.4' })
+      );
+    }
+
+    function DownloadIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h(
+        'svg',
+        svgProps(size, '0 0 16 16'),
+        h('path', { d: 'M8 2.6v7.2M5.4 7.4 8 10l2.6-2.6' }),
+        h('path', { d: 'M3.4 12.4h9.2' })
+      );
+    }
+
+    function RefreshIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h(
+        'svg',
+        svgProps(size, '0 0 16 16'),
+        h('path', { d: 'M13.1 8a5.1 5.1 0 1 1-1.5-3.6' }),
+        h('path', { d: 'M13.4 2.9v3.2h-3.2' })
+      );
+    }
+
+    function ChevronRightIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h('svg', svgProps(size, '0 0 16 16'), h('path', { d: 'm6.2 3.5 4.5 4.5-4.5 4.5' }));
+    }
+
+    function ChevronLeftIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h('svg', svgProps(size, '0 0 16 16'), h('path', { d: 'M9.8 3.5 5.3 8l4.5 4.5' }));
+    }
+
+    function ClockIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h(
+        'svg',
+        svgProps(size, '0 0 16 16'),
+        h('circle', { cx: 8, cy: 8, r: 5.4 }),
+        h('path', { d: 'M8 5.1V8l2.1 1.4' })
+      );
+    }
+
+    function TrophyIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h(
+        'svg',
+        svgProps(size, '0 0 16 16'),
+        h('path', { d: 'M5.2 3.2h5.6v3.3a2.8 2.8 0 0 1-5.6 0V3.2Z' }),
+        h('path', { d: 'M5.2 4.3H3.4v1.1a2 2 0 0 0 2 2M10.8 4.3h1.8v1.1a2 2 0 0 1-2 2' }),
+        h('path', { d: 'M8 9.3v2.1M6 12.8h4' })
+      );
+    }
+
+    function FolderOpenIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h(
+        'svg',
+        svgProps(size, '0 0 16 16'),
+        h('path', { d: 'M2.4 11.9V4.4h4l1.2 1.6h5.8v1.1' }),
+        h('path', { d: 'M2.8 11.9h9.7l1.3-4.4H4.1l-1.3 4.4Z' })
+      );
+    }
+
+    function ShieldIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h(
+        'svg',
+        svgProps(size, '0 0 16 16'),
+        h('path', { d: 'M8 2.4 13 4v3.7c0 2.7-1.9 4.9-5 5.9-3.1-1-5-3.2-5-5.9V4l5-1.6Z' }),
+        h('path', { d: 'm5.9 8 1.5 1.5 2.8-2.9' })
+      );
+    }
+
     /**
      * V0 placeholder whale (D-007). Kept at `viewBox="0 0 48 48"` with the four
      * groups the final artwork must preserve: body, spout, eye, halo.
@@ -2711,7 +5750,7 @@ window.__ModuleLoader__.load({
       );
     }
 
-    return { GamepadIcon, BackIcon, PlayIcon, PauseIcon, SaveIcon, GameMarketIcon, WhaleIcon };
+    return { GamepadIcon, BackIcon, PlayIcon, PauseIcon, SaveIcon, GameMarketIcon, SearchIcon, CloseIcon, CheckIcon, MoreIcon, TrashIcon, DownloadIcon, RefreshIcon, ChevronRightIcon, ChevronLeftIcon, ClockIcon, TrophyIcon, FolderOpenIcon, ShieldIcon, WhaleIcon };
     })();
 
     // module: packages/client/src/styles.js
@@ -2734,15 +5773,22 @@ window.__ModuleLoader__.load({
       --dgm-surface: var(--dsw-alias-bg-layer-1, #f6f7f9);
       --dgm-overlay: var(--dsw-alias-bg-overlay, #ffffff);
       --dgm-hover: var(--dsw-alias-interactive-bg-hover, rgba(31, 35, 40, 0.06));
+      --dgm-active: var(--dsw-alias-interactive-bg-active, rgba(31, 35, 40, 0.1));
       --dgm-brand: var(--dsw-alias-state-business-primary, var(--dsw-alias-brand-primary, #4d6bfe));
       --dgm-danger: var(--dsw-alias-state-error-primary, #c93c37);
       --dgm-success: var(--dsw-alias-state-success-primary, #1a7f37);
-      --dgm-radius: var(--dsw-radius-md, 8px);
-      --dgm-radius-lg: var(--dsw-radius-lg, 12px);
+      --dgm-radius-sm: 6px;
+      --dgm-radius-md: 10px;
+      --dgm-radius-lg: 14px;
+      --dgm-radius-xl: 20px;
       --dgm-font: var(--dsw-font-family-base, var(--dsw-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif));
-      --dgm-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+      --dgm-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+      --dgm-shadow-soft: 0 1px 2px rgba(15, 18, 24, 0.06), 0 10px 28px rgba(15, 18, 24, 0.08);
+      --dgm-shadow-pop: 0 2px 8px rgba(15, 18, 24, 0.12), 0 18px 44px rgba(15, 18, 24, 0.18);
+      --dgm-shadow: var(--dgm-shadow-pop);
       --dgm-focus: var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary, #4d6bfe));
       --dgm-focus-width: var(--dsw-focus-ring-width, 2px);
+      --dgm-ease-out: cubic-bezier(0.2, 0, 0, 1);
     }
 
     .dgm-entry-view {
@@ -2765,12 +5811,15 @@ window.__ModuleLoader__.load({
       height: 100%;
       min-height: 0;
       overflow: hidden;
-      background: var(--dgm-bg);
+      background:
+        radial-gradient(120% 52% at 50% -12%, color-mix(in srgb, var(--dgm-brand) 6%, transparent), transparent 62%),
+        var(--dgm-bg);
       color: var(--dgm-fg);
       font-family: var(--dgm-font);
       font-size: 13px;
       line-height: 1.5;
       container-type: inline-size;
+      -webkit-font-smoothing: antialiased;
     }
 
     .dgm-root *,
@@ -2779,6 +5828,18 @@ window.__ModuleLoader__.load({
     .dgm-entry-view *,
     .dgm-entry-view *::before,
     .dgm-entry-view *::after { box-sizing: border-box; }
+
+    .dgm-root :focus-visible,
+    .dgm-entry-view :focus-visible {
+      outline: var(--dgm-focus-width) solid var(--dgm-focus);
+      outline-offset: 2px;
+    }
+
+    .dgm-root button {
+      appearance: none;
+      -webkit-appearance: none;
+      font-family: inherit;
+    }
 
     .dgm-sr-only {
       position: absolute;
@@ -2792,17 +5853,20 @@ window.__ModuleLoader__.load({
       border: 0;
     }
 
+    /* ---------- Header (control layer) ---------- */
+
     .dgm-header {
       position: relative;
-      z-index: 2;
+      z-index: 12;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
       flex: none;
-      min-height: 52px;
-      padding: calc(var(--dsh-frame-top-clearance, 0px) + 8px) 16px 8px;
-      border-bottom: 1px solid var(--dgm-border);
-      background: var(--dgm-bg);
+      min-height: calc(var(--dsh-frame-top-clearance, 0px) + 52px);
+      padding: var(--dsh-frame-top-clearance, 0px) 20px 0;
+      border-bottom: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
+      background: color-mix(in srgb, var(--dgm-bg) 92%, transparent);
+      backdrop-filter: blur(14px) saturate(1.1);
     }
 
     .dgm-title {
@@ -2810,8 +5874,11 @@ window.__ModuleLoader__.load({
       font-size: 15px;
       font-weight: 600;
       letter-spacing: 0.01em;
+      white-space: nowrap;
       outline: none;
     }
+
+    .dgm-title:focus { outline: none; }
 
     .dgm-spacer { flex: 1 1 auto; }
 
@@ -2822,62 +5889,161 @@ window.__ModuleLoader__.load({
       width: 32px;
       height: 32px;
       flex: none;
-      border: 1px solid var(--dgm-border);
-      border-radius: var(--dgm-radius);
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: 8px;
       background: transparent;
       color: var(--dgm-fg-secondary);
       cursor: pointer;
-      transition: background-color 120ms ease-out, color 120ms ease-out;
+      transition: background-color 140ms ease-out, color 140ms ease-out;
     }
     .dgm-icon-btn:hover { background: var(--dgm-hover); color: var(--dgm-fg); }
-    .dgm-icon-btn:active { background: var(--dgm-hover); }
-    .dgm-icon-btn:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 2px; }
+    .dgm-icon-btn:active { background: var(--dgm-active); }
+    .dgm-icon-btn:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 1px; }
+    .dgm-icon-btn:disabled { opacity: 0.45; cursor: default; }
 
     .dgm-tabs {
       display: inline-flex;
-      align-items: center;
-      gap: 2px;
-      padding: 2px;
-      border-radius: var(--dgm-radius);
-      background: var(--dgm-surface);
-      border: 1px solid var(--dgm-border);
+      align-items: stretch;
+      gap: 18px;
+      height: 52px;
+      margin-left: 6px;
     }
 
     .dgm-tab {
-      height: 28px;
-      padding: 0 12px;
+      position: relative;
+      height: 100%;
+      padding: 0 2px;
       border: 0;
-      border-radius: 6px;
       background: transparent;
-      color: var(--dgm-fg-secondary);
+      color: var(--dgm-fg-tertiary);
       font: inherit;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
+      letter-spacing: 0.02em;
       cursor: pointer;
-      transition: background-color 120ms ease-out, color 120ms ease-out;
+      transition: color 140ms ease-out;
     }
     .dgm-tab:hover { color: var(--dgm-fg); }
-    .dgm-tab[data-active='true'] {
-      background: var(--dgm-bg);
-      color: var(--dgm-fg);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+    .dgm-tab[data-active='true'] { color: var(--dgm-fg); }
+    .dgm-tab[data-active='true']::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 2px;
+      border-radius: 2px;
+      background: var(--dgm-fg);
     }
     .dgm-tab:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 1px; }
 
-    .dgm-content {
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow: auto;
-      padding: 20px 20px 28px;
+    .dgm-header-search {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .dgm-content-narrow { max-width: 1120px; margin: 0 auto; }
+    .dgm-search {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 200px;
+      height: 32px;
+      padding: 0 8px 0 9px;
+      border: 1px solid var(--dgm-border);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--dgm-surface) 72%, transparent);
+      color: var(--dgm-fg-tertiary);
+      transition: border-color 140ms ease-out, background-color 140ms ease-out;
+    }
+    .dgm-search:hover { border-color: var(--dgm-border-strong); }
+    .dgm-search:focus-within {
+      border-color: transparent;
+      outline: var(--dgm-focus-width) solid var(--dgm-focus);
+      outline-offset: 1px;
+      background: var(--dgm-bg);
+    }
+    .dgm-search-icon { display: inline-flex; flex: none; }
+    .dgm-search-input {
+      width: 100%;
+      min-width: 0;
+      height: 100%;
+      padding: 0 6px;
+      border: 0;
+      background: transparent;
+      color: var(--dgm-fg);
+      font: inherit;
+      font-size: 12px;
+      outline: none;
+    }
+    .dgm-search-input::placeholder { color: var(--dgm-fg-tertiary); }
+    .dgm-search-clear {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      flex: none;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: var(--dgm-hover);
+      color: var(--dgm-fg-secondary);
+      cursor: pointer;
+    }
+    .dgm-search-clear:hover { background: var(--dgm-active); color: var(--dgm-fg); }
 
-    .dgm-section-title {
-      margin: 0 0 12px;
-      font-size: 16px;
+    .dgm-search-toggle { display: none; }
+
+    .dgm-header-sync {
+      color: var(--dgm-fg-tertiary);
+      font-size: 11px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dgm-header-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex: none;
+      background: var(--dgm-fg-tertiary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--dgm-fg-tertiary) 16%, transparent);
+    }
+
+    .dgm-crumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      font-size: 12px;
+      color: var(--dgm-fg-tertiary);
+    }
+    .dgm-crumb-btn {
+      border: 0;
+      padding: 2px 0;
+      background: transparent;
+      color: var(--dgm-fg-tertiary);
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .dgm-crumb-btn:hover { color: var(--dgm-fg); }
+    .dgm-crumb-sep { opacity: 0.7; }
+    .dgm-crumb-current {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--dgm-fg);
       font-weight: 600;
     }
+
+    .dgm-header-menu-wrap { position: relative; }
+
+    /* ---------- Content shell ---------- */
 
     .dgm-banner {
       display: flex;
@@ -2886,8 +6052,8 @@ window.__ModuleLoader__.load({
       flex: none;
       min-height: 32px;
       padding: 0 20px;
-      border-bottom: 1px solid var(--dgm-border);
-      background: var(--dgm-surface);
+      border-bottom: 1px solid color-mix(in srgb, var(--dgm-fg) 7%, transparent);
+      background: color-mix(in srgb, var(--dgm-brand) 7%, var(--dgm-surface));
       color: var(--dgm-fg);
       font-size: 12px;
       animation: dgm-fade 120ms ease-out;
@@ -2905,72 +6071,575 @@ window.__ModuleLoader__.load({
       padding: 4px 6px;
       border-radius: 6px;
     }
-    .dgm-banner-action:hover { background: var(--dgm-hover); }
+    .dgm-banner-action:hover { background: color-mix(in srgb, var(--dgm-brand) 12%, transparent); }
     .dgm-banner-action:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 1px; }
+
+    .dgm-content {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    .dgm-content::-webkit-scrollbar { width: 10px; }
+    .dgm-content::-webkit-scrollbar-thumb {
+      background: color-mix(in srgb, var(--dgm-fg) 18%, transparent);
+      border-radius: 8px;
+      border: 3px solid transparent;
+      background-clip: padding-box;
+    }
+    .dgm-content::-webkit-scrollbar-track { background: transparent; }
+
+    .dgm-page {
+      width: 100%;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 24px 20px 48px;
+    }
+
+    /* ---------- Market home ---------- */
+
+    .dgm-home { display: flex; flex-direction: column; }
+
+    .dgm-hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+      align-items: center;
+      gap: 28px;
+      min-height: 248px;
+      padding: 20px;
+      border-radius: var(--dgm-radius-xl);
+      background:
+        radial-gradient(120% 120% at 0% 0%, hsl(var(--dgm-tone-h, 220) var(--dgm-tone-s, 50%) 50% / 0.12), transparent 58%),
+        color-mix(in srgb, var(--dgm-surface) 70%, transparent);
+      overflow: hidden;
+    }
+
+    .dgm-hero-art {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: var(--dgm-radius-lg);
+      overflow: hidden;
+      box-shadow: var(--dgm-shadow-soft);
+    }
+    .dgm-hero-art-fade {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 62%, color-mix(in srgb, var(--dgm-bg) 26%, transparent));
+      pointer-events: none;
+    }
+
+    .dgm-hero-copy {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      min-width: 0;
+      padding-right: 20px;
+    }
+
+    .dgm-hero-kicker {
+      margin: 0;
+      color: var(--dgm-fg-secondary);
+      font-family: var(--dgm-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .dgm-hero-title {
+      margin: 0;
+      max-width: 18ch;
+      font-size: clamp(26px, 3.4cqw, 40px);
+      font-weight: 600;
+      line-height: 1.04;
+      letter-spacing: -0.025em;
+      text-wrap: balance;
+    }
+
+    .dgm-hero-title-btn {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      letter-spacing: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .dgm-hero-title-btn:hover { color: color-mix(in srgb, var(--dgm-fg) 82%, var(--dgm-brand)); }
+
+    .dgm-hero-meta {
+      margin: 0;
+      color: var(--dgm-fg-secondary);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .dgm-hero-sep { margin: 0 7px; opacity: 0.6; }
+
+    .dgm-hero-status {
+      margin: 0;
+      color: var(--dgm-fg-tertiary);
+      font-size: 12px;
+    }
+
+    .dgm-hero-cta {
+      min-width: 132px;
+      height: 40px;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+
+    .dgm-hero-intro { grid-template-columns: minmax(0, 1fr) minmax(0, 320px); }
+    .dgm-hero-intro-copy { display: flex; flex-direction: column; gap: 10px; padding: 12px 8px 12px 12px; }
+    .dgm-hero-intro .dgm-hero-title { max-width: 22ch; }
+    .dgm-hero-body { margin: 0; color: var(--dgm-fg-secondary); font-size: 13px; max-width: 46ch; }
+    .dgm-hero-intro-art {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dgm-hero-intro-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid color-mix(in srgb, var(--dgm-brand) 28%, transparent);
+    }
+    .dgm-hero-intro-ring-a { width: 200px; height: 200px; }
+    .dgm-hero-intro-ring-b { width: 138px; height: 138px; border-color: color-mix(in srgb, var(--dgm-brand) 18%, transparent); }
+    .dgm-hero-intro-glyph {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--dgm-brand) 12%, var(--dgm-bg));
+      color: var(--dgm-brand);
+      box-shadow: var(--dgm-shadow-soft);
+    }
+
+    .dgm-section { margin-top: 44px; }
+    .dgm-section:first-child { margin-top: 0; }
+
+    .dgm-section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .dgm-section-titles { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .dgm-section-kicker {
+      margin: 0;
+      color: var(--dgm-fg-tertiary);
+      font-family: var(--dgm-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+    }
+    .dgm-section-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.012em;
+    }
+    .dgm-section-meta { color: var(--dgm-fg-tertiary); font-size: 11px; }
+
+    .dgm-section-all .dgm-section-head { align-items: center; }
 
     .dgm-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 20px;
     }
+
+    /* ---------- Game card ---------- */
 
     .dgm-card {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      padding: 14px;
-      border: 1px solid var(--dgm-border);
+      gap: 9px;
+      min-width: 0;
       border-radius: var(--dgm-radius-lg);
-      background: var(--dgm-bg);
-      transition: border-color 140ms ease-out, box-shadow 140ms ease-out;
+      cursor: pointer;
+      outline: none;
     }
-    .dgm-card:hover { border-color: var(--dgm-border-strong); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08); }
+    .dgm-card:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 3px; }
 
     .dgm-card-cover {
       position: relative;
+      aspect-ratio: 3 / 2;
+      border-radius: var(--dgm-radius-lg);
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
+      background: var(--dgm-surface);
+      transition: transform 160ms var(--dgm-ease-out), box-shadow 160ms var(--dgm-ease-out);
+      isolation: isolate;
+    }
+    .dgm-card:hover .dgm-card-cover,
+    .dgm-card:focus-visible .dgm-card-cover {
+      transform: translateY(-2px);
+      box-shadow: var(--dgm-shadow-soft);
+    }
+    .dgm-card:active .dgm-card-cover { transform: translateY(0) scale(0.995); }
+
+    .dgm-card-installed {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.92);
+      color: #101418;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
+    }
+
+    .dgm-card-update {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dgm-card-update-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--dgm-brand);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--dgm-brand) 30%, transparent);
+    }
+    .dgm-card-update-pill {
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(16, 20, 24, 0.62);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateX(-2px);
+      transition: opacity 140ms ease-out, transform 140ms ease-out;
+      backdrop-filter: blur(6px);
+      white-space: nowrap;
+    }
+    .dgm-card:hover .dgm-card-update-pill,
+    .dgm-card:focus-visible .dgm-card-update-pill { opacity: 1; transform: translateX(0); }
+
+    .dgm-card-play {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 50%;
+      background: rgba(16, 20, 24, 0.52);
+      color: #fff;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(3px);
+      transition: opacity 140ms ease-out, transform 140ms ease-out, background-color 140ms ease-out;
+      backdrop-filter: blur(8px);
+    }
+    .dgm-card:hover .dgm-card-play,
+    .dgm-card:focus-within .dgm-card-play { opacity: 1; transform: translateY(0); }
+    .dgm-card-play:hover { background: rgba(16, 20, 24, 0.72); }
+    .dgm-card-play:focus-visible { outline: 2px solid #fff; outline-offset: 1px; opacity: 1; transform: none; }
+
+    .dgm-card-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .dgm-card-title {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dgm-card-builtin {
+      color: var(--dgm-fg-tertiary);
+      font-family: var(--dgm-mono);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      flex: none;
+    }
+    .dgm-card-meta {
+      margin: 0;
+      color: var(--dgm-fg-secondary);
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ---------- Procedural cover ---------- */
+
+    .dgm-cover {
+      position: absolute;
+      inset: 0;
+      display: block;
+      overflow: hidden;
+      background:
+        radial-gradient(85% 95% at 16% 10%, hsl(var(--dgm-tone-h, 220) var(--dgm-tone-s, 50%) 62% / 0.95), transparent 62%),
+        radial-gradient(95% 85% at 88% 92%, hsl(var(--dgm-tone-h2, 260) var(--dgm-tone-s, 50%) 42% / 0.95), transparent 66%),
+        linear-gradient(155deg, hsl(var(--dgm-tone-h, 220) 36% 28%), hsl(var(--dgm-tone-h2, 260) 42% 14%));
+    }
+    .dgm-cover-art {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      aspect-ratio: 3 / 2;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--dgm-surface), var(--dgm-hover));
-      color: var(--dgm-fg-secondary);
     }
-    .dgm-card-cover-mark { opacity: 0.8; }
-    .dgm-card-source {
+    .dgm-cover-initial {
+      color: rgba(255, 255, 255, 0.9);
+      font-family: var(--dgm-font);
+      font-size: clamp(30px, 7cqw, 64px);
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.28);
+      user-select: none;
+    }
+    .dgm-cover-grain {
       position: absolute;
-      top: 8px;
-      left: 8px;
-      padding: 1px 6px;
-      border-radius: 999px;
-      background: var(--dgm-overlay);
-      border: 1px solid var(--dgm-border);
-      color: var(--dgm-fg-secondary);
-      font-size: 10px;
-      font-weight: 500;
+      inset: 0;
+      opacity: 0.16;
+      mix-blend-mode: overlay;
+      background-image: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.5) 0 1px, transparent 1px 5px);
+      pointer-events: none;
     }
+    .dgm-cover-glyph {
+      position: absolute;
+      left: 10px;
+      bottom: 10px;
+      display: inline-flex;
+      color: rgba(255, 255, 255, 0.55);
+    }
+    .dgm-cover-img {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 180ms ease-out;
+    }
+    .dgm-cover[data-loaded='true'] .dgm-cover-img { opacity: 1; }
+    .dgm-cover-row { position: absolute; }
+    .dgm-cover-row .dgm-cover-initial { font-size: 18px; }
+    .dgm-cover-row .dgm-cover-glyph { display: none; }
+    .dgm-cover-detail .dgm-cover-initial { font-size: clamp(56px, 12cqw, 132px); }
 
-    .dgm-card-title { margin: 0; font-size: 14px; font-weight: 600; }
-    .dgm-card-meta { margin: 0; color: var(--dgm-fg-secondary); font-size: 12px; }
-    .dgm-card-foot { display: flex; align-items: center; gap: 8px; margin-top: auto; }
-    .dgm-card-stats { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1 1 auto; }
-    .dgm-card-stat { color: var(--dgm-fg-tertiary); font-size: 11px; }
-    .dgm-card-stat-strong { color: var(--dgm-fg-secondary); font-size: 12px; }
-
-    .dgm-badge {
+    .dgm-game-icon {
+      position: relative;
       display: inline-flex;
       align-items: center;
-      height: 20px;
-      padding: 0 7px;
-      border-radius: 999px;
-      border: 1px solid var(--dgm-border);
-      color: var(--dgm-fg-secondary);
-      font-size: 10px;
-      font-weight: 500;
-      white-space: nowrap;
+      justify-content: center;
+      flex: none;
+      overflow: hidden;
+      border-radius: var(--dgm-radius-md);
+      background:
+        radial-gradient(90% 90% at 20% 12%, hsl(var(--dgm-tone-h, 220) var(--dgm-tone-s, 50%) 58%), transparent 70%),
+        linear-gradient(150deg, hsl(var(--dgm-tone-h, 220) 36% 30%), hsl(var(--dgm-tone-h2, 260) 42% 18%));
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 12px;
+      font-weight: 600;
     }
-    .dgm-badge-continue { border-color: transparent; background: var(--dgm-brand); color: var(--dsw-alias-label-primary-foreground, #ffffff); }
-    .dgm-badge-installed { color: var(--dgm-success); border-color: currentColor; }
+    .dgm-game-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ---------- Chips ---------- */
+
+    .dgm-chips {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .dgm-chip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 28px;
+      padding: 0 11px 0 13px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--dgm-fg-secondary);
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background-color 140ms ease-out, color 140ms ease-out;
+    }
+    .dgm-chip:hover { background: var(--dgm-hover); color: var(--dgm-fg); }
+    .dgm-chip[data-active='true'] {
+      background: color-mix(in srgb, var(--dgm-brand) 12%, transparent);
+      color: var(--dgm-fg);
+      font-weight: 600;
+    }
+    .dgm-chip-mark {
+      position: absolute;
+      left: 3px;
+      top: 50%;
+      width: 4px;
+      height: 14px;
+      border-radius: 2px;
+      transform: translateY(-50%);
+      background: var(--dgm-brand);
+    }
+    .dgm-chip:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 1px; }
+
+    /* ---------- Banners, state blocks, footer ---------- */
+
+    .dgm-inline-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      margin-bottom: 16px;
+      padding: 0 12px;
+      border-radius: var(--dgm-radius-md);
+      background: color-mix(in srgb, var(--dgm-brand) 7%, var(--dgm-surface));
+      color: var(--dgm-fg-secondary);
+      font-size: 12px;
+    }
+    .dgm-inline-banner-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex: none;
+      background: var(--dgm-fg-tertiary);
+    }
+    .dgm-inline-banner-text { flex: 1 1 auto; }
+    .dgm-inline-banner-action {
+      border: 0;
+      background: transparent;
+      padding: 3px 6px;
+      border-radius: 6px;
+      color: var(--dgm-fg);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .dgm-inline-banner-action:hover { background: var(--dgm-hover); }
+
+    .dgm-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 260px;
+      padding: 28px 24px;
+      text-align: center;
+      color: var(--dgm-fg-secondary);
+    }
+    .dgm-state-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      margin-bottom: 4px;
+      border-radius: 50%;
+      background: var(--dgm-surface);
+      color: var(--dgm-fg-secondary);
+    }
+    .dgm-state-title { margin: 0; color: var(--dgm-fg); font-size: 15px; font-weight: 600; outline: none; }
+    .dgm-state-body { margin: 0; font-size: 12px; max-width: 44ch; }
+    .dgm-state-code {
+      margin: 0;
+      color: var(--dgm-fg-tertiary);
+      font-family: var(--dgm-mono);
+      font-size: 10px;
+      letter-spacing: 0.04em;
+    }
+    .dgm-state-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 6px; }
+
+    .dgm-spinner {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--dgm-border);
+      border-top-color: var(--dgm-brand);
+      animation: dgm-spin 900ms linear infinite;
+      flex: none;
+    }
+
+    .dgm-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 44px;
+      padding-top: 14px;
+      border-top: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
+      color: var(--dgm-fg-tertiary);
+      font-size: 11px;
+    }
+    .dgm-footer-text { font-variant-numeric: tabular-nums; }
+    .dgm-footer-offline { display: inline-flex; align-items: center; gap: 6px; }
+    .dgm-footer-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 0;
+      background: transparent;
+      padding: 2px 4px;
+      border-radius: 6px;
+      color: var(--dgm-fg-tertiary);
+      font: inherit;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .dgm-footer-action:hover { color: var(--dgm-fg); background: var(--dgm-hover); }
+
+    .dgm-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      flex: none;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .dgm-dot-waiting { background: var(--dgm-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--dgm-brand) 22%, transparent); }
+
+    .dgm-sep { margin: 0 6px; opacity: 0.55; }
+
+    .dgm-results-count {
+      margin: 0 0 16px;
+      color: var(--dgm-fg-secondary);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ---------- Buttons ---------- */
 
     .dgm-btn {
       display: inline-flex;
@@ -2980,7 +6649,7 @@ window.__ModuleLoader__.load({
       min-width: 76px;
       height: 32px;
       padding: 0 14px;
-      border-radius: var(--dgm-radius);
+      border-radius: 8px;
       border: 1px solid var(--dgm-border-strong);
       background: transparent;
       color: var(--dgm-fg);
@@ -2988,66 +6657,581 @@ window.__ModuleLoader__.load({
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      transition: background-color 120ms ease-out, border-color 120ms ease-out;
+      transition: background-color 130ms ease-out, border-color 130ms ease-out, filter 130ms ease-out, opacity 130ms ease-out;
     }
     .dgm-btn:hover { background: var(--dgm-hover); }
+    .dgm-btn:active { transform: translateY(0.5px); }
     .dgm-btn:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 2px; }
-    .dgm-btn:disabled { opacity: 0.55; cursor: default; }
+    .dgm-btn:disabled { opacity: 0.48; cursor: default; }
     .dgm-btn-primary { border-color: transparent; background: var(--dgm-brand); color: var(--dsw-alias-label-primary-foreground, #ffffff); }
     .dgm-btn-primary:hover { background: var(--dgm-brand); filter: brightness(1.06); }
+    .dgm-btn-primary:active { filter: brightness(0.96); }
     .dgm-btn-danger { border-color: transparent; background: var(--dgm-danger); color: var(--dsw-alias-label-primary-foreground, #ffffff); }
+    .dgm-btn-danger:hover { background: var(--dgm-danger); filter: brightness(1.06); }
     .dgm-btn-quiet { border-color: transparent; color: var(--dgm-fg-secondary); }
-    .dgm-btn-quiet:hover { color: var(--dgm-fg); }
+    .dgm-btn-quiet:hover { color: var(--dgm-fg); background: var(--dgm-hover); }
+    .dgm-btn-ghost { border-color: transparent; background: transparent; color: var(--dgm-brand); min-width: 0; height: 28px; padding: 0 8px; }
+    .dgm-btn-ghost:hover { background: color-mix(in srgb, var(--dgm-brand) 10%, transparent); }
+    .dgm-danger-text { color: var(--dgm-danger); }
+    .dgm-link-btn {
+      align-self: flex-start;
+      border: 0;
+      background: transparent;
+      padding: 2px 0;
+      color: var(--dgm-fg-secondary);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: color-mix(in srgb, var(--dgm-fg-secondary) 40%, transparent);
+    }
+    .dgm-link-btn:hover { color: var(--dgm-fg); }
 
-    .dgm-list { display: flex; flex-direction: column; gap: 4px; }
-    .dgm-row {
+    /* ---------- Skeletons ---------- */
+
+    .dgm-skeleton-card { display: flex; flex-direction: column; gap: 9px; }
+    .dgm-skeleton-cover {
+      aspect-ratio: 3 / 2;
+      border-radius: var(--dgm-radius-lg);
+      background: var(--dgm-surface);
+      animation: dgm-shimmer 1400ms ease-in-out infinite;
+    }
+    .dgm-skeleton-line {
+      display: block;
+      height: 10px;
+      border-radius: 6px;
+      background: var(--dgm-surface);
+      animation: dgm-shimmer 1400ms ease-in-out infinite;
+    }
+    .dgm-skeleton-list { display: flex; flex-direction: column; gap: 4px; }
+    .dgm-skeleton-row {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       min-height: 72px;
-      padding: 10px 12px;
-      border-radius: var(--dgm-radius);
-      background: transparent;
-      transition: background-color 120ms ease-out;
+      padding: 12px;
     }
-    .dgm-row:hover { background: var(--dgm-hover); }
+    .dgm-skeleton-thumb { width: 64px; height: 48px; flex: none; border-radius: 10px; background: var(--dgm-surface); animation: dgm-shimmer 1400ms ease-in-out infinite; }
+    .dgm-skeleton-col { display: flex; flex-direction: column; gap: 8px; flex: 1 1 auto; }
+    .dgm-skeleton-pill { width: 76px; height: 30px; border-radius: 8px; background: var(--dgm-surface); animation: dgm-shimmer 1400ms ease-in-out infinite; }
+    .dgm-skeleton-hero {
+      display: block;
+      width: 100%;
+      height: 260px;
+      border-radius: var(--dgm-radius-xl);
+      background: var(--dgm-surface);
+      animation: dgm-shimmer 1400ms ease-in-out infinite;
+    }
+    .dgm-skeleton-detail-body { display: flex; gap: 48px; margin-top: 28px; }
+    .dgm-skeleton-detail-body .dgm-skeleton-col { gap: 12px; }
+    .dgm-skeleton-rail { width: 320px; flex: none; height: 320px; border-radius: var(--dgm-radius-lg); background: var(--dgm-surface); animation: dgm-shimmer 1400ms ease-in-out infinite; }
+    .dgm-skeleton-button { display: block; width: 100%; height: 40px; border-radius: 8px; background: var(--dgm-surface); animation: dgm-shimmer 1400ms ease-in-out infinite; }
+
+    /* ---------- My Games ---------- */
+
+    .dgm-mygames { max-width: 940px; margin: 0 auto; }
+    .dgm-list { display: flex; flex-direction: column; gap: 2px; }
+    .dgm-row {
+      position: relative;
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      min-height: 72px;
+      padding: 12px;
+      border-radius: var(--dgm-radius-md);
+      background: transparent;
+      transition: background-color 140ms ease-out;
+    }
+    .dgm-row:hover, .dgm-row:focus-within { background: var(--dgm-hover); }
     .dgm-row-cover {
+      position: relative;
+      width: 64px;
+      height: 48px;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
+      border-radius: 10px;
+      background: var(--dgm-surface);
+      cursor: pointer;
+    }
+    .dgm-row-cover:disabled { cursor: default; }
+    .dgm-row-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .dgm-row-title-line { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .dgm-row-title-btn {
+      max-width: 100%;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--dgm-fg);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+    .dgm-row-title-btn:hover { color: color-mix(in srgb, var(--dgm-fg) 78%, var(--dgm-brand)); }
+    .dgm-row-title-btn:disabled { cursor: default; color: var(--dgm-fg-secondary); }
+    .dgm-row-badge {
+      flex: none;
+      padding: 1px 6px;
+      border: 1px solid var(--dgm-border);
+      border-radius: 999px;
+      color: var(--dgm-fg-tertiary);
+      font-family: var(--dgm-mono);
+      font-size: 9px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .dgm-row-update {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex: none;
+      color: var(--dgm-brand);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .dgm-row-update .dgm-dot { background: var(--dgm-brand); }
+    .dgm-row-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 0;
+      color: var(--dgm-fg-secondary);
+      font-size: 12px;
+      min-width: 0;
+    }
+    .dgm-row-meta > span { min-width: 0; }
+    .dgm-row-best { color: var(--dgm-fg-tertiary); }
+    .dgm-row-controls { display: flex; align-items: center; gap: 8px; flex: none; }
+    .dgm-row-play { height: 32px; min-width: 76px; }
+    .dgm-row-update-btn { flex: none; }
+    .dgm-row-update-failed { color: var(--dgm-danger); font-size: 11px; font-weight: 600; }
+    .dgm-row-menu-btn { width: 28px; height: 28px; }
+    .dgm-row-progress { display: flex; flex-direction: column; gap: 5px; max-width: 340px; }
+    .dgm-row-progress-text { color: var(--dgm-fg-secondary); font-size: 11px; font-variant-numeric: tabular-nums; }
+
+    .dgm-progress-track {
+      position: relative;
+      width: 100%;
+      height: 3px;
+      overflow: hidden;
+      border-radius: 3px;
+      background: color-mix(in srgb, var(--dgm-fg) 12%, transparent);
+    }
+    .dgm-progress-fill {
+      position: absolute;
+      inset: 0;
+      transform-origin: 0 50%;
+      border-radius: 3px;
+      background: var(--dgm-brand);
+      transition: transform 200ms linear;
+    }
+    .dgm-progress-indeterminate {
+      width: 42%;
+      animation: dgm-indeterminate 1200ms var(--dgm-ease-out) infinite;
+    }
+
+    /* ---------- Menus and dialogs ---------- */
+
+    .dgm-menu {
+      position: absolute;
+      z-index: 30;
+      top: calc(100% + 6px);
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      width: 224px;
+      padding: 6px;
+      border: 1px solid var(--dgm-border);
+      border-radius: 12px;
+      background: var(--dgm-overlay);
+      box-shadow: var(--dgm-shadow-pop);
+      animation: dgm-menu-in 140ms var(--dgm-ease-out);
+    }
+    .dgm-menu-header { top: calc(100% + 8px); }
+    .dgm-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 0 9px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--dgm-fg);
+      font: inherit;
+      font-size: 12px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .dgm-menu-item:hover { background: var(--dgm-hover); }
+    .dgm-menu-item[data-danger='true'] { color: var(--dgm-danger); }
+    .dgm-menu-item:disabled { opacity: 0.45; cursor: default; }
+    .dgm-menu-item:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: -2px; }
+    .dgm-menu-label { flex: 1 1 auto; }
+    .dgm-menu-note { color: var(--dgm-fg-tertiary); font-size: 10px; }
+
+    .dgm-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 64px;
-      height: 48px;
-      flex: none;
-      border-radius: 10px;
-      background: var(--dgm-surface);
-      color: var(--dgm-fg-secondary);
+      padding: 24px;
+      background: rgba(8, 10, 14, 0.34);
+      animation: dgm-fade 160ms ease-out;
     }
-    .dgm-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto; }
-    .dgm-row-title { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .dgm-row-meta { color: var(--dgm-fg-secondary); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .dgm-row-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+    .dgm-dialog {
+      width: min(380px, 100%);
+      padding: 20px;
+      border: 1px solid var(--dgm-border);
+      border-radius: 16px;
+      background: var(--dgm-overlay);
+      color: var(--dgm-fg);
+      box-shadow: var(--dgm-shadow-pop);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      animation: dgm-dialog-in 160ms var(--dgm-ease-out);
+    }
+    .dgm-dialog-title { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+    .dgm-dialog-body { margin: 0; color: var(--dgm-fg-secondary); font-size: 13px; line-height: 1.55; }
+    .dgm-dialog-note { margin: 0; color: var(--dgm-fg-tertiary); font-size: 12px; }
+    .dgm-dialog-warning { margin: 0; color: var(--dgm-danger); font-size: 12px; font-weight: 600; }
+    .dgm-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .dgm-dialog-actions .dgm-btn { min-width: 0; }
+    .dgm-checkbox {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      color: var(--dgm-fg);
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .dgm-checkbox input { margin: 2px 0 0; accent-color: var(--dgm-danger); }
 
-    .dgm-state {
+    /* ---------- Detail ---------- */
+
+    .dgm-detail { display: flex; flex-direction: column; }
+    .dgm-detail-hero {
+      position: relative;
+      width: 100%;
+      height: clamp(200px, 30cqw, 320px);
+      border-radius: var(--dgm-radius-xl);
+      overflow: hidden;
+      box-shadow: var(--dgm-shadow-soft);
+    }
+    .dgm-detail-hero-fade {
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 96px;
+      background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--dgm-bg) 72%, transparent));
+      pointer-events: none;
+    }
+    .dgm-detail-cols {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 680px) 320px;
+      justify-content: space-between;
+      gap: 48px;
+      padding: 0 4px;
+      margin-top: 18px;
+    }
+    .dgm-detail-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding-top: 8px; }
+    .dgm-detail-title-line { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .dgm-detail-title {
+      margin: 0;
+      font-size: clamp(26px, 3cqw, 34px);
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      line-height: 1.08;
+      outline: none;
+      text-wrap: balance;
+    }
+    .dgm-detail-title:focus { outline: none; }
+    .dgm-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      border: 1px solid var(--dgm-border);
+      color: var(--dgm-fg-secondary);
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .dgm-pill-installed { color: var(--dgm-success); border-color: color-mix(in srgb, var(--dgm-success) 46%, transparent); }
+    .dgm-pill-update { color: var(--dgm-brand); border-color: color-mix(in srgb, var(--dgm-brand) 42%, transparent); }
+    .dgm-detail-subtitle { margin: 0; color: var(--dgm-fg-secondary); font-size: 12px; }
+    .dgm-detail-description {
+      position: relative;
+      color: var(--dgm-fg);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 66ch;
+    }
+    .dgm-detail-description p { margin: 0; white-space: pre-line; }
+    .dgm-detail-description.is-collapsed { max-height: calc(1.7em * 6); overflow: hidden; }
+    .dgm-detail-description.is-collapsed::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 2.4em;
+      background: linear-gradient(180deg, transparent, var(--dgm-bg));
+      pointer-events: none;
+    }
+    .dgm-detail-previews { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+    .dgm-preview-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .dgm-preview-btn {
+      padding: 0;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
+      border-radius: 12px;
+      background: var(--dgm-surface);
+      cursor: zoom-in;
+      transition: transform 160ms var(--dgm-ease-out), box-shadow 160ms var(--dgm-ease-out);
+    }
+    .dgm-preview-btn:hover { transform: translateY(-1px); box-shadow: var(--dgm-shadow-soft); }
+    .dgm-preview-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .dgm-preview-fallback {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      min-height: 220px;
-      padding: 24px;
-      text-align: center;
+      gap: 6px;
+      width: 100%;
+      height: 100%;
+      background: var(--dgm-surface);
+      color: var(--dgm-fg-tertiary);
+    }
+    .dgm-preview-fallback-initial { font-size: 24px; font-weight: 600; letter-spacing: -0.03em; }
+    .dgm-preview-fallback-text { font-size: 11px; }
+    .dgm-detail-taxonomy { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .dgm-taxonomy-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+    .dgm-taxonomy-label {
+      color: var(--dgm-fg-tertiary);
+      font-family: var(--dgm-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-right: 4px;
+    }
+    .dgm-tag {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--dgm-surface);
       color: var(--dgm-fg-secondary);
+      font-size: 11px;
     }
-    .dgm-state-title { margin: 0; color: var(--dgm-fg); font-size: 14px; font-weight: 600; }
-    .dgm-state-body { margin: 0; font-size: 12px; }
-    .dgm-spinner {
-      width: 22px;
-      height: 22px;
+
+    .dgm-detail-rail {
+      position: sticky;
+      top: 12px;
+      align-self: start;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 20px;
+      border: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--dgm-surface) 58%, transparent);
+    }
+    .dgm-primary { display: flex; flex-direction: column; gap: 8px; }
+    .dgm-primary-btn { width: 100%; height: 40px; font-size: 14px; }
+    .dgm-primary-btn[data-action='cancel-install'] { background: transparent; border-color: var(--dgm-border-strong); color: var(--dgm-fg); }
+    .dgm-primary-btn[data-action='cancel-install']:hover { background: var(--dgm-hover); }
+    .dgm-secondary-btn { width: 100%; height: 32px; }
+    .dgm-install-progress { display: flex; flex-direction: column; gap: 6px; }
+    .dgm-install-stage { margin: 0; color: var(--dgm-fg-secondary); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .dgm-install-failure {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--dgm-danger) 9%, transparent);
+    }
+    .dgm-install-failure-reason { margin: 0; color: var(--dgm-danger); font-size: 12px; font-weight: 600; }
+    .dgm-install-failure-code { margin: 0; color: var(--dgm-fg-tertiary); font-family: var(--dgm-mono); font-size: 10px; }
+    .dgm-primary-reason { margin: 0; color: var(--dgm-fg-secondary); font-size: 12px; line-height: 1.5; }
+
+    .dgm-detail-meta {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 6px 12px;
+      margin: 0;
+      font-size: 12px;
+    }
+    .dgm-detail-meta dt { color: var(--dgm-fg-tertiary); }
+    .dgm-detail-meta dd { margin: 0; text-align: right; color: var(--dgm-fg-secondary); font-variant-numeric: tabular-nums; }
+
+    .dgm-rail-block { display: flex; flex-direction: column; gap: 6px; padding-top: 14px; border-top: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent); }
+    .dgm-rail-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      color: var(--dgm-fg-tertiary);
+      font-family: var(--dgm-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .dgm-rail-body { margin: 0; color: var(--dgm-fg); font-size: 12px; }
+    .dgm-rail-note { margin: 0; color: var(--dgm-fg-tertiary); font-size: 11px; line-height: 1.5; }
+    .dgm-leaderboard-best { margin: 0; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .dgm-leaderboard-list { display: flex; flex-direction: column; gap: 4px; }
+    .dgm-leaderboard-row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-variant-numeric: tabular-nums; }
+    .dgm-leaderboard-value { color: var(--dgm-fg); }
+    .dgm-leaderboard-time { color: var(--dgm-fg-tertiary); font-size: 11px; }
+    .dgm-rail-actions { display: flex; flex-direction: column; gap: 2px; padding-top: 6px; }
+    .dgm-rail-actions .dgm-btn { justify-content: flex-start; padding-left: 0; }
+    .dgm-detail-error { min-height: 320px; justify-content: center; }
+
+    /* ---------- Lightbox ---------- */
+
+    .dgm-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 56px 72px;
+      background: rgba(8, 9, 11, 0.88);
+      animation: dgm-fade 160ms ease-out;
+    }
+    .dgm-lightbox-bar {
+      position: absolute;
+      top: 14px;
+      left: 18px;
+      right: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .dgm-lightbox-close { color: rgba(255, 255, 255, 0.82); }
+    .dgm-lightbox-close:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+    .dgm-lightbox-img {
+      max-width: min(92vw, 1280px);
+      max-height: 82vh;
+      border-radius: 14px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+      object-fit: contain;
+      background: #0b0c0e;
+    }
+    .dgm-lightbox-fallback {
+      padding: 40px 56px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 13px;
+    }
+    .dgm-lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 50%;
-      border: 2px solid var(--dgm-border);
-      border-top-color: var(--dgm-brand);
-      animation: dgm-spin 900ms linear infinite;
+      background: rgba(18, 21, 26, 0.6);
+      color: #fff;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
     }
+    .dgm-lightbox-prev { left: 18px; }
+    .dgm-lightbox-next { right: 18px; }
+    .dgm-lightbox-nav:hover { background: rgba(18, 21, 26, 0.82); }
+
+    /* ---------- Toasts ---------- */
+
+    .dgm-toasts {
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .dgm-toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 38px;
+      max-width: min(420px, calc(100vw - 40px));
+      padding: 7px 10px 7px 12px;
+      border: 1px solid var(--dgm-border);
+      border-left: 3px solid var(--dgm-fg-tertiary);
+      border-radius: 10px;
+      background: var(--dgm-overlay);
+      color: var(--dgm-fg);
+      box-shadow: var(--dgm-shadow-pop);
+      font-size: 12px;
+      pointer-events: auto;
+      animation: dgm-toast-in 180ms var(--dgm-ease-out);
+    }
+    .dgm-toast[data-kind='success'] { border-left-color: var(--dgm-success); }
+    .dgm-toast[data-kind='error'] { border-left-color: var(--dgm-danger); }
+    .dgm-toast[data-kind='info'] { border-left-color: var(--dgm-brand); }
+    .dgm-toast-text { flex: 1 1 auto; }
+    .dgm-toast-action {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 0;
+      border-radius: 6px;
+      padding: 3px 8px;
+      background: color-mix(in srgb, var(--dgm-brand) 12%, transparent);
+      color: var(--dgm-brand);
+      font: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .dgm-toast-action:hover { background: color-mix(in srgb, var(--dgm-brand) 20%, transparent); }
+    .dgm-toast-close {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--dgm-fg-tertiary);
+      cursor: pointer;
+    }
+    .dgm-toast-close:hover { background: var(--dgm-hover); color: var(--dgm-fg); }
+
+    /* ---------- Runtime (kept from V0) ---------- */
 
     .dgm-runtime { position: relative; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; background: #0b0c0e; }
     .dgm-runtime-stage-wrap {
@@ -3178,17 +7362,6 @@ window.__ModuleLoader__.load({
     .dgm-diagnostic { display: flex; align-items: center; gap: 8px; margin-top: 4px; color: var(--dgm-fg-tertiary); font-size: 11px; }
     .dgm-diagnostic-copy { border: 0; background: transparent; color: var(--dgm-fg-secondary); font: inherit; cursor: pointer; text-decoration: underline; }
 
-    .dgm-overlay {
-      position: absolute;
-      inset: 0;
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background: rgba(0, 0, 0, 0.24);
-      animation: dgm-fade 160ms ease-out;
-    }
     .dgm-modal {
       width: min(340px, 100%);
       padding: 18px;
@@ -3205,6 +7378,8 @@ window.__ModuleLoader__.load({
     .dgm-modal-body { margin: 0; color: var(--dgm-fg-secondary); font-size: 12px; }
     .dgm-modal-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 6px; }
     .dgm-modal-actions .dgm-btn { min-width: 0; }
+
+    /* ---------- Agent Presence (kept from V0) ---------- */
 
     .dgm-presence {
       position: absolute;
@@ -3298,8 +7473,18 @@ window.__ModuleLoader__.load({
     .dgm-sidebar-status { pointer-events: none; }
     .dgm-sidebar-dot { stroke: var(--dgm-bg, var(--dsw-alias-bg-base, #ffffff)); }
 
+    /* ---------- Keyframes ---------- */
+
     @keyframes dgm-menu-in {
       from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes dgm-dialog-in {
+      from { opacity: 0; transform: translateY(6px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes dgm-toast-in {
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
     @keyframes dgm-fade {
@@ -3308,6 +7493,14 @@ window.__ModuleLoader__.load({
     }
     @keyframes dgm-spin {
       to { transform: rotate(360deg); }
+    }
+    @keyframes dgm-shimmer {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.55; }
+    }
+    @keyframes dgm-indeterminate {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(240%); }
     }
     @keyframes dgm-breathe {
       0%, 100% { transform: scale(1); }
@@ -3334,13 +7527,85 @@ window.__ModuleLoader__.load({
       to { transform: translateY(0); }
     }
 
+    /* ---------- Responsive (container width, PRD 9.3.2) ---------- */
+
+    @container (max-width: 1079px) {
+      .dgm-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .dgm-detail-cols { grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; }
+    }
+
+    @container (max-width: 899px) {
+      .dgm-detail-cols { grid-template-columns: minmax(0, 1fr); gap: 20px; margin-top: -18px; }
+      .dgm-detail-rail { position: static; order: -1; backdrop-filter: none; background: transparent; border: 0; border-bottom: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent); border-radius: 0; padding: 0 0 18px; }
+      .dgm-detail-main { padding-top: 0; }
+      .dgm-primary-btn { max-width: 480px; }
+      .dgm-rail-block { padding-top: 0; border-top: 0; }
+      .dgm-detail-rail .dgm-detail-meta,
+      .dgm-detail-rail .dgm-leaderboard,
+      .dgm-detail-rail .dgm-rail-actions { display: none; }
+    }
+
+    @container (max-width: 839px) {
+      .dgm-header { padding-left: 12px; padding-right: 12px; gap: 8px; }
+      .dgm-header-sync { display: none; }
+      .dgm-search { display: none; }
+      .dgm-search-toggle { display: inline-flex; }
+      .dgm-root[data-search-open='true'] .dgm-search {
+        display: flex;
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 6;
+        width: auto;
+        background: var(--dgm-bg);
+        border-color: transparent;
+        box-shadow: var(--dgm-shadow-soft);
+      }
+      .dgm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      .dgm-hero { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px; }
+      .dgm-hero-art { aspect-ratio: 16 / 9; }
+      .dgm-hero-copy { padding-right: 0; }
+      .dgm-hero-intro-art { display: none; }
+      .dgm-hero-intro { grid-template-columns: minmax(0, 1fr); }
+      .dgm-section { margin-top: 34px; }
+      .dgm-section-head { align-items: flex-start; }
+      .dgm-page { padding: 18px 16px 40px; }
+      .dgm-detail-hero { height: clamp(180px, 34cqw, 260px); }
+      .dgm-preview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .dgm-toasts { right: 12px; bottom: 12px; }
+      .dgm-lightbox { padding: 52px 12px; }
+      .dgm-lightbox-nav { width: 38px; height: 38px; }
+    }
+
     @container (max-width: 599px) {
-      .dgm-header { padding-inline: 12px; gap: 6px; }
-      .dgm-content { padding: 14px 12px 20px; }
-      .dgm-grid { grid-template-columns: 1fr; }
+      .dgm-header { gap: 6px; min-height: calc(var(--dsh-frame-top-clearance, 0px) + 48px); }
+      .dgm-title { font-size: 14px; }
+      .dgm-tabs { gap: 12px; margin-left: 0; height: 48px; }
+      .dgm-tab { font-size: 11px; }
+      .dgm-page { padding: 14px 12px 32px; }
+      .dgm-grid { grid-template-columns: minmax(0, 1fr); }
+      .dgm-card-cover { aspect-ratio: 16 / 9; }
+      .dgm-hero { border-radius: 16px; }
+      .dgm-hero-title { font-size: 26px; }
+      .dgm-section { margin-top: 28px; }
+      .dgm-section-title { font-size: 16px; }
+      .dgm-row { grid-template-columns: 56px minmax(0, 1fr) auto; gap: 10px; min-height: 80px; padding: 10px 8px; }
+      .dgm-row-cover { width: 56px; height: 42px; }
+      .dgm-row-update { display: none; }
+      .dgm-row-update-btn { display: none; }
+      .dgm-row-meta { font-size: 11px; }
+      .dgm-detail-title { font-size: 26px; }
+      .dgm-preview-grid { grid-template-columns: minmax(0, 1fr); }
+      .dgm-detail-cols { padding: 0; }
+      .dgm-detail-description { font-size: 14px; }
+      .dgm-toast { max-width: calc(100vw - 24px); }
+      .dgm-dialog { padding: 16px; }
       .dgm-runtime-controls { left: 12px; right: 12px; }
       .dgm-presence { right: 16px; bottom: 16px; }
-      .dgm-tab { padding: 0 8px; }
+      .dgm-detail-meta,
+      .dgm-detail-rail .dgm-permissions { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -3355,6 +7620,18 @@ window.__ModuleLoader__.load({
       .dgm-whale-btn[data-state='waiting-user'] .dgm-whale-halo { animation: none !important; }
       .dgm-whale-btn[data-state='waiting-user'] .dgm-whale-halo { opacity: 1; }
       .dgm-whale-bubble { animation: none !important; }
+      .dgm-skeleton-cover,
+      .dgm-skeleton-line,
+      .dgm-skeleton-thumb,
+      .dgm-skeleton-pill,
+      .dgm-skeleton-hero,
+      .dgm-skeleton-rail,
+      .dgm-skeleton-button,
+      .dgm-progress-indeterminate { animation: none !important; }
+      .dgm-progress-indeterminate { width: 100%; opacity: 0.55; transform: none; }
+      .dgm-card:hover .dgm-card-cover,
+      .dgm-card:focus-visible .dgm-card-cover,
+      .dgm-preview-btn:hover { transform: none !important; }
     }
     `;
 
@@ -3478,6 +7755,46 @@ window.__ModuleLoader__.load({
     }
 
     /**
+     * True only after `active` has been true for `delayMs` (PRD 9.3.6: skeletons
+     * appear after 300ms so a fast response never flashes a placeholder).
+     */
+    function useDelayedFlag(active, delayMs) {
+      const [visible, setVisible] = React.useState(active === true && delayMs <= 0);
+      React.useEffect(
+        function schedule() {
+          if (active !== true) {
+            setVisible(false);
+            return undefined;
+          }
+          if (delayMs <= 0) {
+            setVisible(true);
+            return undefined;
+          }
+          const timer = setTimeout(function reveal() {
+            setVisible(true);
+          }, delayMs);
+          return function cleanup() {
+            clearTimeout(timer);
+          };
+        },
+        [active, delayMs]
+      );
+      return visible;
+    }
+
+    /** Latest-value ref for event handlers that should not re-subscribe. */
+    function useLatest(value) {
+      const ref = React.useRef(value);
+      React.useEffect(
+        function keepLatest() {
+          ref.current = value;
+        },
+        [value]
+      );
+      return ref;
+    }
+
+    /**
      * Resolve the current DSH Session id from the slot's standard hooks.
      * Any hook failure degrades to null and records one diagnostic; it never throws
      * out of render. The hook call order is fixed by the registration kit.
@@ -3547,7 +7864,164 @@ window.__ModuleLoader__.load({
       return store.getState();
     }
 
-    return { useStoreState, useClock, useSessionBinding, useActivePanel, dispatch, readStore };
+    return { useStoreState, useClock, useDelayedFlag, useLatest, useSessionBinding, useActivePanel, dispatch, readStore };
+    })();
+
+    // module: packages/client/src/keyboard.js
+    __mods["packages/client/src/keyboard.js"] = (function () {
+    /**
+     * Keyboard navigation helpers shared by the Market grid, category chips, menus
+     * and dialogs (PRD 9.3.7 / 9.4.4 / 9.5.6 / 9.10).
+     *
+     * Pure index math so every path is unit-testable without a DOM.
+     */
+
+    function isTypingTarget(target) {
+      if (!target || typeof target !== 'object') return false;
+      if (target.isContentEditable === true) return true;
+      const tag = typeof target.tagName === 'string' ? target.tagName.toUpperCase() : '';
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+    }
+
+    /** IME composition must never trigger navigation/close shortcuts (PRD 9.10.3). */
+    function isImeComposing(event) {
+      if (!event || typeof event !== 'object') return false;
+      return event.isComposing === true || event.keyCode === 229;
+    }
+
+    /** `/` focuses search only outside text inputs and without modifiers. */
+    function isSearchShortcut(event) {
+      if (!event || event.key !== '/') return false;
+      if (event.metaKey || event.ctrlKey || event.altKey) return false;
+      return !isTypingTarget(event.target);
+    }
+
+    function clampIndex(index, total) {
+      if (total <= 0) return -1;
+      if (index < 0) return 0;
+      if (index >= total) return total - 1;
+      return index;
+    }
+
+    /**
+     * Four-way grid movement. `columns` is the measured column count of the grid.
+     * Home/End move to the first/last cell of the current row.
+     */
+    function nextGridIndex(index, key, columns, total) {
+      if (total <= 0) return -1;
+      const current = clampIndex(index, total);
+      const cols = Math.max(1, Math.floor(columns) || 1);
+      switch (key) {
+        case 'ArrowRight':
+          return Math.min(current + 1, total - 1);
+        case 'ArrowLeft':
+          return Math.max(current - 1, 0);
+        case 'ArrowDown':
+          return Math.min(current + cols, total - 1);
+        case 'ArrowUp':
+          return Math.max(current - cols, 0);
+        case 'Home': {
+          const rowStart = Math.floor(current / cols) * cols;
+          return rowStart;
+        }
+        case 'End': {
+          const rowStart = Math.floor(current / cols) * cols;
+          return Math.min(rowStart + cols - 1, total - 1);
+        }
+        default:
+          return current;
+      }
+    }
+
+    /** Category chip roving focus: left/right, Home/End. */
+    function nextChipIndex(index, key, total) {
+      if (total <= 0) return -1;
+      const current = clampIndex(index, total);
+      switch (key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          return (current + 1) % total;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          return (current - 1 + total) % total;
+        case 'Home':
+          return 0;
+        case 'End':
+          return total - 1;
+        default:
+          return current;
+      }
+    }
+
+    /** Menu roving focus: Up/Down with wraparound, Home/End. */
+    function nextMenuIndex(index, key, total) {
+      if (total <= 0) return -1;
+      const current = clampIndex(index, total);
+      switch (key) {
+        case 'ArrowDown':
+          return (current + 1) % total;
+        case 'ArrowUp':
+          return (current - 1 + total) % total;
+        case 'Home':
+          return 0;
+        case 'End':
+          return total - 1;
+        default:
+          return current;
+      }
+    }
+
+    /** Tab/Shift+Tab loop used by the modal focus trap. */
+    function trapTabIndex(index, shift, total) {
+      if (total <= 0) return -1;
+      const current = clampIndex(index, total);
+      if (shift) return current <= 0 ? total - 1 : current - 1;
+      return current >= total - 1 ? 0 : current + 1;
+    }
+
+    /**
+     * Esc priority table (PRD 9.10.3): the innermost surface closes first.
+     * Returns a stable action id so components can dispatch in one place.
+     */
+    function resolveEscapeAction(scope) {
+      const input = scope && typeof scope === 'object' ? scope : {};
+      if (input.lightbox === true) return 'close-lightbox';
+      if (input.dialog === true) return 'close-dialog';
+      if (input.menu === true) return 'close-menu';
+      if (input.searchOpen === true) return 'close-search';
+      if (input.searchFocused === true) {
+        return input.searchHasValue === true ? 'clear-search' : 'blur-search';
+      }
+      if (input.detail === true) return 'back-detail';
+      return 'none';
+    }
+
+    /** Row menu opener: Shift+F10 or ArrowRight on the more button (PRD 9.4.4). */
+    function isMenuOpenKey(event) {
+      if (!event) return false;
+      if (event.key === 'F10' && event.shiftKey) return true;
+      return event.key === 'ArrowRight' && !event.metaKey && !event.ctrlKey && !event.altKey;
+    }
+
+    /** Enter/Space activation helper for role="link"/"button" nodes. */
+    function isActivationKey(event) {
+      if (!event) return false;
+      return event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar';
+    }
+
+    /** Number of cards in the first grid row, measured from DOM offsets. */
+    function countColumns(offsets) {
+      if (!Array.isArray(offsets) || offsets.length === 0) return 1;
+      const first = offsets[0];
+      let columns = 0;
+      for (const offset of offsets) {
+        if (offset === first) columns += 1;
+        else break;
+      }
+      return Math.max(1, columns);
+    }
+
+    return { isTypingTarget, isImeComposing, isSearchShortcut, nextGridIndex, nextChipIndex, nextMenuIndex, trapTabIndex, resolveEscapeAction, isMenuOpenKey, isActivationKey, countColumns };
     })();
 
     // module: packages/client/src/runtime-utils.js
@@ -6809,6 +11283,2654 @@ window.__ModuleLoader__.load({
     return { RuntimeView };
     })();
 
+    // module: packages/client/src/components/state-views.js
+    __mods["packages/client/src/components/state-views.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    const CloseIcon = __mods["packages/client/src/icons.js"].CloseIcon;
+    const GamepadIcon = __mods["packages/client/src/icons.js"].GamepadIcon;
+    const RefreshIcon = __mods["packages/client/src/icons.js"].RefreshIcon;
+    /** Shared loading / empty / error / skeleton blocks for the Market surfaces. */
+
+    const h = React.createElement;
+
+    function SkeletonLine(props) {
+      return h('span', { className: 'dgm-skeleton-line', style: props.width ? { width: props.width } : undefined });
+    }
+
+    function SkeletonCards(props) {
+      const count = typeof props.count === 'number' ? props.count : 8;
+      const items = [];
+      for (let index = 0; index < count; index += 1) {
+        items.push(
+          h(
+            'div',
+            { className: 'dgm-skeleton-card', key: 'skeleton-' + index, 'aria-hidden': 'true' },
+            h('span', { className: 'dgm-skeleton-cover' }),
+            h(SkeletonLine, { width: '64%' }),
+            h(SkeletonLine, { width: '42%' })
+          )
+        );
+      }
+      return h('div', { className: 'dgm-grid dgm-grid-skeleton', 'aria-hidden': 'true' }, items);
+    }
+
+    function SkeletonRows(props) {
+      const count = typeof props.count === 'number' ? props.count : 6;
+      const items = [];
+      for (let index = 0; index < count; index += 1) {
+        items.push(
+          h(
+            'div',
+            { className: 'dgm-skeleton-row', key: 'skeleton-row-' + index, 'aria-hidden': 'true' },
+            h('span', { className: 'dgm-skeleton-thumb' }),
+            h('span', { className: 'dgm-skeleton-col' }, h(SkeletonLine, { width: '36%' }), h(SkeletonLine, { width: '58%' })),
+            h('span', { className: 'dgm-skeleton-pill' })
+          )
+        );
+      }
+      return h('div', { className: 'dgm-skeleton-list', 'aria-hidden': 'true' }, items);
+    }
+
+    function SkeletonDetail() {
+      return h(
+        'div',
+        { className: 'dgm-skeleton-detail', 'aria-hidden': 'true' },
+        h('span', { className: 'dgm-skeleton-hero' }),
+        h(
+          'div',
+          { className: 'dgm-skeleton-detail-body' },
+          h('span', { className: 'dgm-skeleton-col' }, h(SkeletonLine, { width: '46%' }), h(SkeletonLine, { width: '72%' }), h(SkeletonLine, { width: '88%' }), h(SkeletonLine, { width: '80%' })),
+          h('span', { className: 'dgm-skeleton-rail' })
+        )
+      );
+    }
+
+    function LoadingBlock(props) {
+      return h(
+        'div',
+        { className: 'dgm-state', role: 'status', 'aria-live': 'polite' },
+        h('span', { className: 'dgm-spinner', 'aria-hidden': 'true' }),
+        h('p', { className: 'dgm-state-body' }, props.label)
+      );
+    }
+
+    function ErrorBlock(props) {
+      const t = props.t;
+      return h(
+        'div',
+        { className: 'dgm-state dgm-state-error', role: 'alert' },
+        h('span', { className: 'dgm-state-icon', 'aria-hidden': 'true' }, h(GamepadIcon, { size: 26 })),
+        h('p', { className: 'dgm-state-title', tabIndex: -1, ref: props.titleRef }, props.title),
+        props.body ? h('p', { className: 'dgm-state-body' }, props.body) : null,
+        props.code ? h('p', { className: 'dgm-state-code' }, props.code) : null,
+        h(
+          'div',
+          { className: 'dgm-state-actions' },
+          props.onRetry
+            ? h(
+                'button',
+                { type: 'button', className: 'dgm-btn dgm-btn-primary', onClick: props.onRetry },
+                h(RefreshIcon, { size: 13 }),
+                props.retryLabel || t('market.retry')
+              )
+            : null,
+          props.actionLabel && props.onAction
+            ? h('button', { type: 'button', className: 'dgm-btn dgm-btn-quiet', onClick: props.onAction }, props.actionLabel)
+            : null
+        )
+      );
+    }
+
+    function EmptyBlock(props) {
+      const t = props.t;
+      return h(
+        'div',
+        { className: 'dgm-state' },
+        h('span', { className: 'dgm-state-icon', 'aria-hidden': 'true' }, h(GamepadIcon, { size: 28 })),
+        h('p', { className: 'dgm-state-title', tabIndex: -1, ref: props.titleRef }, props.title),
+        props.body ? h('p', { className: 'dgm-state-body' }, props.body) : null,
+        props.actionLabel && props.onAction
+          ? h(
+              'div',
+              { className: 'dgm-state-actions' },
+              h('button', { type: 'button', className: 'dgm-btn dgm-btn-primary', onClick: props.onAction }, props.actionLabel)
+            )
+          : null,
+        props.onClear
+          ? h(
+              'div',
+              { className: 'dgm-state-actions' },
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'dgm-btn dgm-btn-quiet',
+                  onClick: props.onClear,
+                },
+                h(CloseIcon, { size: 12 }),
+                t('market.search.clear')
+              )
+            )
+          : null
+      );
+    }
+
+    /** Inline banner used for offline / stale-cache notices (scrolls with content). */
+    function InlineBanner(props) {
+      return h(
+        'div',
+        { className: 'dgm-inline-banner', role: props.role || 'status' },
+        h('span', { className: 'dgm-inline-banner-dot', 'aria-hidden': 'true' }),
+        h('span', { className: 'dgm-inline-banner-text' }, props.text),
+        props.actionLabel && props.onAction
+          ? h('button', { type: 'button', className: 'dgm-inline-banner-action', onClick: props.onAction }, props.actionLabel)
+          : null
+      );
+    }
+
+    /** Section heading: quiet kicker + title, no enclosing card (PRD 9.3.2). */
+    function SectionHeader(props) {
+      return h(
+        'div',
+        { className: 'dgm-section-head' },
+        h(
+          'div',
+          { className: 'dgm-section-titles' },
+          props.kicker ? h('p', { className: 'dgm-section-kicker' }, props.kicker) : null,
+          h('h2', { className: 'dgm-section-title', id: props.id }, props.title)
+        ),
+        props.meta ? h('span', { className: 'dgm-section-meta' }, props.meta) : null,
+        props.children || null
+      );
+    }
+
+    return { SkeletonCards, SkeletonRows, SkeletonDetail, LoadingBlock, ErrorBlock, EmptyBlock, InlineBanner, SectionHeader };
+    })();
+
+    // module: packages/client/src/components/cover.js
+    __mods["packages/client/src/components/cover.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    const coverTone = __mods["packages/client/src/catalog.js"].coverTone;
+    const initialFor = __mods["packages/client/src/catalog.js"].initialFor;
+    const GamepadIcon = __mods["packages/client/src/icons.js"].GamepadIcon;
+    /**
+     * Game artwork with a deterministic, asset-free fallback.
+     *
+     * Registry covers reach the Client through the same-origin `/preview` route; a
+     * failed or missing image degrades to a procedural "poster" built from the game
+     * id, so the Market always has a visual anchor without external assets.
+     */
+
+    const h = React.createElement;
+
+    function toneStyle(game) {
+      const tone = coverTone(game);
+      return {
+        '--dgm-tone-h': String(tone.hue),
+        '--dgm-tone-h2': String(tone.hue2),
+        '--dgm-tone-s': String(tone.saturation) + '%',
+      };
+    }
+
+    /**
+     * @param {{game: object, variant?: 'card'|'hero'|'row'|'banner', className?: string}} props
+     */
+    function GameCover(props) {
+      const game = props.game || {};
+      const variant = props.variant || 'card';
+      const source = game.cover || game.icon || null;
+      const [failed, setFailed] = React.useState(false);
+      const [loaded, setLoaded] = React.useState(false);
+
+      React.useEffect(
+        function resetOnSourceChange() {
+          setFailed(false);
+          setLoaded(false);
+        },
+        [source]
+      );
+
+      const showImage = typeof source === 'string' && source.length > 0 && !failed;
+      const className = ['dgm-cover', 'dgm-cover-' + variant, props.className || ''].filter(Boolean).join(' ');
+      return h(
+        'span',
+        {
+          className: className,
+          style: toneStyle(game),
+          'data-loaded': showImage && loaded ? 'true' : 'false',
+          'aria-hidden': 'true',
+        },
+        h(
+          'span',
+          { className: 'dgm-cover-art' },
+          h('span', { className: 'dgm-cover-initial' }, initialFor(game.name || game.id))
+        ),
+        showImage
+          ? h('img', {
+              className: 'dgm-cover-img',
+              src: source,
+              alt: '',
+              draggable: false,
+              decoding: 'async',
+              loading: variant === 'card' ? 'lazy' : 'eager',
+              onLoad: function onLoad() {
+                setLoaded(true);
+              },
+              onError: function onError() {
+                setFailed(true);
+                setLoaded(false);
+              },
+            })
+          : null,
+        h('span', { className: 'dgm-cover-grain' }),
+        variant === 'row' ? null : h('span', { className: 'dgm-cover-glyph' }, h(GamepadIcon, { size: variant === 'hero' ? 22 : 16 }))
+      );
+    }
+
+    /** Small square icon used in lists; degrades to the same procedural art. */
+    function GameIcon(props) {
+      const game = props.game || {};
+      const size = typeof props.size === 'number' ? props.size : 32;
+      const source = game.icon || game.cover || null;
+      const [failed, setFailed] = React.useState(false);
+      React.useEffect(
+        function resetOnSourceChange() {
+          setFailed(false);
+        },
+        [source]
+      );
+      const showImage = typeof source === 'string' && source.length > 0 && !failed;
+      return h(
+        'span',
+        { className: 'dgm-game-icon', style: Object.assign(toneStyle(game), { width: size, height: size }), 'aria-hidden': 'true' },
+        showImage
+          ? h('img', {
+              src: source,
+              alt: '',
+              draggable: false,
+              onError: function onError() {
+                setFailed(true);
+              },
+            })
+          : h('span', { className: 'dgm-game-icon-initial' }, initialFor(game.name || game.id))
+      );
+    }
+
+    return { GameCover, GameIcon };
+    })();
+
+    // module: packages/client/src/components/game-card.js
+    __mods["packages/client/src/components/game-card.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    const authorName = __mods["packages/client/src/catalog.js"].authorName;
+    const categoryLabel = __mods["packages/client/src/catalog.js"].categoryLabel;
+    const hasUpdate = __mods["packages/client/src/catalog.js"].hasUpdate;
+    const isBuiltin = __mods["packages/client/src/catalog.js"].isBuiltin;
+    const isInstalled = __mods["packages/client/src/catalog.js"].isInstalled;
+    const primaryCategory = __mods["packages/client/src/catalog.js"].primaryCategory;
+    const isActivationKey = __mods["packages/client/src/keyboard.js"].isActivationKey;
+    const CheckIcon = __mods["packages/client/src/icons.js"].CheckIcon;
+    const PlayIcon = __mods["packages/client/src/icons.js"].PlayIcon;
+    const GameCover = __mods["packages/client/src/components/cover.js"].GameCover;
+    /** Market game card (PRD 9.3.4): cover-led, at most two text lines. */
+
+    const h = React.createElement;
+
+    function cardAriaLabel(game, t, locale) {
+      const category = primaryCategory(game);
+      return t('market.card.a11y', {
+        name: game.name || game.id,
+        author: authorName(game) || t('market.card.noAuthor'),
+        category: category ? categoryLabel(category, locale) : t('market.category.unknown'),
+        installed: isInstalled(game) ? t('market.card.a11y.installed') : '',
+        update: hasUpdate(game) ? t('market.card.a11y.update') : '',
+      });
+    }
+
+    function GameCard(props) {
+      const game = props.game;
+      const t = props.t;
+      const locale = props.locale;
+      const installed = isInstalled(game);
+      const update = hasUpdate(game);
+      const author = authorName(game) || t('market.card.noAuthor');
+      const category = primaryCategory(game);
+      const meta = category ? t('market.card.authorMeta', { author: author, category: categoryLabel(category, locale) }) : author;
+
+      function open() {
+        if (props.onOpen) props.onOpen(game.id);
+      }
+
+      return h(
+        'div',
+        {
+          className: 'dgm-card',
+          role: 'link',
+          tabIndex: 0,
+          'data-card-id': game.id,
+          'data-card-index': props.index,
+          'aria-label': cardAriaLabel(game, t, locale),
+          onClick: open,
+          onKeyDown: function keyDown(event) {
+            if (isActivationKey(event)) {
+              event.preventDefault();
+              open();
+            }
+          },
+        },
+        h(
+          'div',
+          { className: 'dgm-card-cover' },
+          h(GameCover, { game: game, variant: 'card' }),
+          installed
+            ? h(
+                'span',
+                { className: 'dgm-card-installed', title: t('market.card.installed') },
+                h(CheckIcon, { size: 11 }),
+                h('span', { className: 'dgm-sr-only' }, t('market.card.installed'))
+              )
+            : null,
+          update
+            ? h(
+                'span',
+                { className: 'dgm-card-update' },
+                h('span', { className: 'dgm-card-update-dot', 'aria-hidden': 'true' }),
+                h('span', { className: 'dgm-card-update-pill' }, t('market.card.update'))
+              )
+            : null,
+          installed
+            ? h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'dgm-card-play',
+                  'aria-label': game.canContinue ? t('market.card.continue') : t('market.card.play'),
+                  title: game.canContinue ? t('market.card.continue') : t('market.card.play'),
+                  onClick: function play(event) {
+                    event.stopPropagation();
+                    if (props.onPlay) props.onPlay(game);
+                  },
+                  onKeyDown: function stopActivation(event) {
+                    if (isActivationKey(event)) event.stopPropagation();
+                  },
+                },
+                h(PlayIcon, { size: 13 })
+              )
+            : null
+        ),
+        h(
+          'div',
+          { className: 'dgm-card-text' },
+          h(
+            'h3',
+            { className: 'dgm-card-title' },
+            game.name || game.id,
+            isBuiltin(game) ? h('span', { className: 'dgm-card-builtin' }, t('market.source.builtin')) : null
+          ),
+          h('p', { className: 'dgm-card-meta' }, meta)
+        )
+      );
+    }
+
+    return { cardAriaLabel, GameCard };
+    })();
+
+    // module: packages/client/src/components/filter-chips.js
+    __mods["packages/client/src/components/filter-chips.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    const CATEGORY_FILTERS = __mods["packages/client/src/constants.js"].CATEGORY_FILTERS;
+    const categoryLabelKey = __mods["packages/client/src/catalog.js"].categoryLabelKey;
+    const nextChipIndex = __mods["packages/client/src/keyboard.js"].nextChipIndex;
+    /** Single-select category chips (PRD 9.3.5) with roving focus. */
+
+    const h = React.createElement;
+
+    function FilterChips(props) {
+      const t = props.t;
+      const value = props.value;
+      const buttons = React.useRef([]);
+      const selectedIndex = Math.max(0, CATEGORY_FILTERS.indexOf(value));
+
+      function handleKeyDown(event, index) {
+        if (!event) return;
+        const key = event.key;
+        if (key === 'Enter' || key === ' ' || key === 'Spacebar') {
+          event.preventDefault();
+          if (props.onChange) props.onChange(CATEGORY_FILTERS[index]);
+          return;
+        }
+        const next = nextChipIndex(index, key, CATEGORY_FILTERS.length);
+        if (next !== index) {
+          event.preventDefault();
+          const target = buttons.current[next];
+          if (target && typeof target.focus === 'function') target.focus();
+        }
+      }
+
+      return h(
+        'div',
+        { className: 'dgm-chips', role: 'group', 'aria-label': t('market.filter.a11y') },
+        CATEGORY_FILTERS.map(function renderChip(category, index) {
+          const active = category === value;
+          const label = category === 'all' ? t('market.filter.all') : t(categoryLabelKey(category));
+          return h(
+            'button',
+            {
+              key: category,
+              type: 'button',
+              ref: function keep(button) {
+                buttons.current[index] = button;
+              },
+              className: 'dgm-chip',
+              'data-active': active ? 'true' : 'false',
+              'aria-pressed': active ? 'true' : 'false',
+              tabIndex: index === selectedIndex ? 0 : -1,
+              onClick: function select() {
+                if (props.onChange) props.onChange(category);
+              },
+              onKeyDown: function keydown(event) {
+                handleKeyDown(event, index);
+              },
+            },
+            active ? h('span', { className: 'dgm-chip-mark', 'aria-hidden': 'true' }) : null,
+            h('span', { className: 'dgm-chip-label' }, label)
+          );
+        })
+      );
+    }
+
+    return { FilterChips };
+    })();
+
+    // module: packages/client/src/components/market-home.js
+    __mods["packages/client/src/components/market-home.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    const authorName = __mods["packages/client/src/catalog.js"].authorName;
+    const categoryLabel = __mods["packages/client/src/catalog.js"].categoryLabel;
+    const filterCatalog = __mods["packages/client/src/catalog.js"].filterCatalog;
+    const installedGames = __mods["packages/client/src/catalog.js"].installedGames;
+    const primaryCategory = __mods["packages/client/src/catalog.js"].primaryCategory;
+    const selectHero = __mods["packages/client/src/catalog.js"].selectHero;
+    const selectSections = __mods["packages/client/src/catalog.js"].selectSections;
+    const countColumns = __mods["packages/client/src/keyboard.js"].countColumns;
+    const nextGridIndex = __mods["packages/client/src/keyboard.js"].nextGridIndex;
+    const formatCount = __mods["packages/client/src/format.js"].formatCount;
+    const formatRelativeTime = __mods["packages/client/src/format.js"].formatRelativeTime;
+    const formatScore = __mods["packages/client/src/format.js"].formatScore;
+    const PlayIcon = __mods["packages/client/src/icons.js"].PlayIcon;
+    const EmptyBlock = __mods["packages/client/src/components/state-views.js"].EmptyBlock;
+    const ErrorBlock = __mods["packages/client/src/components/state-views.js"].ErrorBlock;
+    const InlineBanner = __mods["packages/client/src/components/state-views.js"].InlineBanner;
+    const LoadingBlock = __mods["packages/client/src/components/state-views.js"].LoadingBlock;
+    const SectionHeader = __mods["packages/client/src/components/state-views.js"].SectionHeader;
+    const SkeletonCards = __mods["packages/client/src/components/state-views.js"].SkeletonCards;
+    const GameCard = __mods["packages/client/src/components/game-card.js"].GameCard;
+    const GameCover = __mods["packages/client/src/components/cover.js"].GameCover;
+    const FilterChips = __mods["packages/client/src/components/filter-chips.js"].FilterChips;
+    const SKELETON_DELAY_MS = __mods["packages/client/src/constants.js"].SKELETON_DELAY_MS;
+    const SLOW_LOAD_MS = __mods["packages/client/src/constants.js"].SLOW_LOAD_MS;
+    const useDelayedFlag = __mods["packages/client/src/hooks.js"].useDelayedFlag;
+    /** Market home: Hero / Quick Play / Popular / New / All games (PRD 9.3). */
+
+    const h = React.createElement;
+
+    function heroLastPlayed(game, t, locale, now) {
+      const relative = game.lastPlayedAt ? formatRelativeTime(game.lastPlayedAt, now, locale) : '';
+      return relative ? t('market.hero.lastPlayed', { relativeTime: relative }) : '';
+    }
+
+    function Hero(props) {
+      const game = props.hero;
+      const t = props.t;
+      const locale = props.locale;
+      const now = props.now;
+      if (!game) {
+        return h(
+          'section',
+          { className: 'dgm-hero dgm-hero-intro', 'aria-labelledby': 'dgm-hero-title' },
+          h(
+            'div',
+            { className: 'dgm-hero-intro-copy' },
+            h('p', { className: 'dgm-hero-kicker' }, t('market.section.continue')),
+            h('h2', { className: 'dgm-hero-title', id: 'dgm-hero-title' }, t('market.hero.empty.title')),
+            h('p', { className: 'dgm-hero-body' }, t('market.hero.empty.body')),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dgm-btn dgm-btn-primary dgm-hero-cta',
+                onClick: props.onBrowse,
+              },
+              h(PlayIcon, { size: 13 }),
+              t('market.hero.empty.action')
+            )
+          ),
+          h(
+            'div',
+            { className: 'dgm-hero-intro-art', 'aria-hidden': 'true' },
+            h('span', { className: 'dgm-hero-intro-ring dgm-hero-intro-ring-a' }),
+            h('span', { className: 'dgm-hero-intro-ring dgm-hero-intro-ring-b' }),
+            h('span', { className: 'dgm-hero-intro-glyph' }, h(PlayIcon, { size: 28 }))
+          )
+        );
+      }
+      const meta = heroLastPlayed(game, t, locale, now);
+      const best = typeof game.bestScore === 'number' ? t('market.hero.best', { score: formatScore(game.bestScore, locale) }) : '';
+      const tone = coverTone(game);
+      return h(
+        'section',
+        {
+          className: 'dgm-hero',
+          'aria-labelledby': 'dgm-hero-title',
+          style: { '--dgm-tone-h': String(tone.hue), '--dgm-tone-h2': String(tone.hue2), '--dgm-tone-s': String(tone.saturation) + '%' },
+        },
+        h(
+          'div',
+          { className: 'dgm-hero-art' },
+          h(GameCover, { game: game, variant: 'hero' }),
+          h('span', { className: 'dgm-hero-art-fade', 'aria-hidden': 'true' })
+        ),
+        h(
+          'div',
+          { className: 'dgm-hero-copy' },
+          h('p', { className: 'dgm-hero-kicker' }, t('market.section.continue')),
+          h(
+            'h2',
+            { className: 'dgm-hero-title', id: 'dgm-hero-title' },
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dgm-hero-title-btn',
+                onClick: function open() {
+                  if (props.onOpen) props.onOpen(game.id);
+                },
+              },
+              game.name || game.id
+            )
+          ),
+          h(
+            'p',
+            { className: 'dgm-hero-meta' },
+            meta,
+            meta && best ? h('span', { className: 'dgm-hero-sep', 'aria-hidden': 'true' }, '·') : null,
+            best
+          ),
+          game.canContinue
+            ? h('p', { className: 'dgm-hero-status' }, t('market.hero.paused'))
+            : null,
+          h(
+            'button',
+            {
+              type: 'button',
+              className: 'dgm-btn dgm-btn-primary dgm-hero-cta',
+              onClick: function play() {
+                if (props.onPlay) props.onPlay(game);
+              },
+              'aria-label': t('market.hero.a11y', {
+                gameName: game.name || game.id,
+                relativeTime: game.lastPlayedAt ? formatRelativeTime(game.lastPlayedAt, now, locale) : '',
+              }),
+            },
+            h(PlayIcon, { size: 13 }),
+            t('market.hero.continue')
+          )
+        )
+      );
+    }
+
+    function GameGrid(props) {
+      const gridRef = React.useRef(null);
+      const games = props.games;
+      const emptyLabel = props.emptyLabel;
+
+      function handleKeyDown(event) {
+        if (!event || !gridRef.current) return;
+        const key = event.key;
+        if (key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'ArrowUp' && key !== 'ArrowDown' && key !== 'Home' && key !== 'End') {
+          return;
+        }
+        const target = event.target;
+        const card = target && typeof target.closest === 'function' ? target.closest('[data-card-id]') : null;
+        if (!card) return;
+        const cards = Array.prototype.slice.call(gridRef.current.querySelectorAll('[data-card-id]'));
+        const index = cards.indexOf(card);
+        if (index === -1) return;
+        const offsets = cards.map(function offset(node) {
+          return node.offsetTop;
+        });
+        const columns = countColumns(offsets);
+        const next = nextGridIndex(index, key, columns, cards.length);
+        if (next !== index) {
+          event.preventDefault();
+          cards[next].focus();
+        }
+      }
+
+      if (games.length === 0) return emptyLabel || null;
+
+      return h(
+        'div',
+        { className: 'dgm-grid', ref: gridRef, onKeyDown: handleKeyDown },
+        games.map(function render(game, index) {
+          return h(GameCard, {
+            key: game.id,
+            game: game,
+            index: index,
+            t: props.t,
+            locale: props.locale,
+            onOpen: props.onOpen,
+            onPlay: props.onPlay,
+          });
+        })
+      );
+    }
+
+    function Section(props) {
+      return h(
+        'section',
+        { className: 'dgm-section', 'aria-labelledby': props.id },
+        h(SectionHeader, {
+          id: props.id,
+          kicker: h('span', { 'aria-hidden': 'true' }, props.index),
+          title: props.title,
+          meta: props.meta,
+        }),
+        props.children
+      );
+    }
+
+    /** Home page. */
+    function MarketHome(props) {
+      const state = props.state;
+      const t = props.t;
+      const locale = props.locale;
+      const now = props.now;
+      const ui = state.ui;
+      const market = state.market;
+      const games = Array.isArray(market.games) ? market.games : [];
+      const loading = market.status === 'loading' || market.status === 'idle';
+      const showSkeleton = useDelayedFlag(loading && games.length === 0, SKELETON_DELAY_MS);
+      const slow = useDelayedFlag(loading && games.length === 0, SLOW_LOAD_MS);
+      const query = ui.query.trim();
+      const searching = query.length > 0;
+      const sections = selectSections(games, {
+        now: now,
+        locale: locale,
+        offline: market.offline === true,
+        query: ui.query,
+        category: ui.category,
+      });
+      const installedCount = installedGames(games).length;
+      const allFiltered = searching
+        ? filterCatalog(games, { query: ui.query, category: ui.category, offline: market.offline === true, locale: locale })
+        : sections.all;
+      const hasCatalog = games.length > 0;
+
+      function browseAll() {
+        if (props.onBrowseAll) props.onBrowseAll();
+      }
+
+      if (!hasCatalog) {
+        if (market.status === 'error') {
+          return h(
+            'div',
+            { className: 'dgm-home' },
+            h(ErrorBlock, {
+              t: t,
+              title: t('market.error.title'),
+              body: t('market.error.installedOnly'),
+              code: market.error ? market.error.code : null,
+              onRetry: props.onRetry,
+              retryLabel: t('market.retry'),
+            })
+          );
+        }
+        if (showSkeleton) {
+          return h(
+            'div',
+            { className: 'dgm-home' },
+            h('span', { className: 'dgm-sr-only', role: 'status' }, t('market.loading')),
+            h(SkeletonCards, { count: 8 }),
+            slow ? h(LoadingBlock, { label: t('market.loading') }) : null
+          );
+        }
+        return h(
+          'div',
+          { className: 'dgm-home' },
+          h(EmptyBlock, {
+            t: t,
+            title: market.offline ? t('market.empty.offline') : t('market.empty.all'),
+            body: market.offline ? t('market.empty.offline.body') : null,
+            actionLabel: t('market.retry'),
+            onAction: props.onRetry,
+          })
+        );
+      }
+
+      return h(
+        'div',
+        { className: 'dgm-home' },
+        market.offline
+          ? h(InlineBanner, {
+              text: t('market.offline'),
+              actionLabel: t('market.offline.retry'),
+              onAction: props.onRetry,
+            })
+          : null,
+        market.status === 'error'
+          ? h(InlineBanner, {
+              text: t('market.error.title'),
+              actionLabel: t('market.retry'),
+              onAction: props.onRetry,
+              role: 'alert',
+            })
+          : null,
+        searching
+          ? h(
+              'div',
+              { className: 'dgm-home-results' },
+              h(
+                'p',
+                { className: 'dgm-results-count', role: 'status', 'aria-live': 'polite' },
+                t('market.search.results', { count: formatCount(allFiltered.length, locale) })
+              ),
+              allFiltered.length === 0
+                ? h(EmptyBlock, {
+                    t: t,
+                    title: t('market.search.empty'),
+                    onClear: props.onClearSearch,
+                  })
+                : h(GameGrid, {
+                    games: allFiltered,
+                    t: t,
+                    locale: locale,
+                    onOpen: props.onOpenGame,
+                    onPlay: props.onPlay,
+                  })
+            )
+          : h(
+              React.Fragment,
+              null,
+              h(Hero, {
+                hero: sections.hero,
+                t: t,
+                locale: locale,
+                now: now,
+                onPlay: props.onPlay,
+                onOpen: props.onOpenGame,
+                onBrowse: browseAll,
+              }),
+              sections.quick.length > 0
+                ? h(
+                    Section,
+                    { index: '01', id: 'dgm-quick-title', title: t('market.section.quick'), meta: null },
+                    h(GameGrid, {
+                      games: sections.quick,
+                      t: t,
+                      locale: locale,
+                      onOpen: props.onOpenGame,
+                      onPlay: props.onPlay,
+                    })
+                  )
+                : null,
+              sections.popular.length > 0
+                ? h(
+                    Section,
+                    { index: '02', id: 'dgm-popular-title', title: t('market.section.popular'), meta: null },
+                    h(GameGrid, {
+                      games: sections.popular,
+                      t: t,
+                      locale: locale,
+                      onOpen: props.onOpenGame,
+                      onPlay: props.onPlay,
+                    })
+                  )
+                : null,
+              sections.newGames.length > 0
+                ? h(
+                    Section,
+                    { index: '03', id: 'dgm-new-title', title: t('market.section.new'), meta: null },
+                    h(GameGrid, {
+                      games: sections.newGames,
+                      t: t,
+                      locale: locale,
+                      onOpen: props.onOpenGame,
+                      onPlay: props.onPlay,
+                    })
+                  )
+                : null,
+              h(
+                'section',
+                { className: 'dgm-section dgm-section-all', 'aria-labelledby': 'dgm-all-title' },
+                h(
+                  'div',
+                  { className: 'dgm-section-head' },
+                  h(
+                    'div',
+                    { className: 'dgm-section-titles' },
+                    h('p', { className: 'dgm-section-kicker', 'aria-hidden': 'true' }, '04'),
+                    h('h2', { className: 'dgm-section-title', id: 'dgm-all-title' }, t('market.section.all'))
+                  ),
+                  h(FilterChips, {
+                    value: ui.category,
+                    onChange: props.onCategory,
+                    t: t,
+                  })
+                ),
+                sections.all.length === 0
+                  ? h(EmptyBlock, {
+                      t: t,
+                      title: market.offline && installedCount === 0 ? t('market.empty.offline') : t('market.empty.all'),
+                      body: market.offline && installedCount === 0 ? t('market.empty.offline.body') : null,
+                      actionLabel: t('market.retry'),
+                      onAction: props.onRetry,
+                    })
+                  : h(GameGrid, {
+                      games: sections.all,
+                      t: t,
+                      locale: locale,
+                      onOpen: props.onOpenGame,
+                      onPlay: props.onPlay,
+                    })
+              )
+            ),
+        h(
+          'footer',
+          { className: 'dgm-footer' },
+          market.refreshedAt > 0
+            ? h(
+                'span',
+                { className: 'dgm-footer-text' },
+                t('market.footer.synced', {
+                  relativeTime: formatRelativeTime(new Date(market.refreshedAt).toISOString(), now, locale),
+                })
+              )
+            : null,
+          market.offline
+            ? h(
+                'span',
+                { className: 'dgm-footer-offline' },
+                h('span', { className: 'dgm-dot', 'aria-hidden': 'true' }),
+                t('market.footer.offline')
+              )
+            : null
+        )
+      );
+    }
+
+    /** Small helper reused by My Games/Detail for the author/category line. */
+    function gameSubtitle(game, t, locale) {
+      const author = authorName(game);
+      const category = primaryCategory(game);
+      const parts = [];
+      if (author) parts.push(author);
+      if (category) parts.push(categoryLabel(category, locale));
+      if (parts.length === 0) return t('market.card.noAuthor');
+      return parts.join(' · ');
+    }
+
+    return { MarketHome, gameSubtitle };
+    })();
+
+    // module: packages/client/src/components/my-games.js
+    __mods["packages/client/src/components/my-games.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    const hasUpdate = __mods["packages/client/src/catalog.js"].hasUpdate;
+    const isBuiltin = __mods["packages/client/src/catalog.js"].isBuiltin;
+    const progressSummary = __mods["packages/client/src/catalog.js"].progressSummary;
+    const sortMyGames = __mods["packages/client/src/catalog.js"].sortMyGames;
+    const formatRelativeTime = __mods["packages/client/src/format.js"].formatRelativeTime;
+    const formatScore = __mods["packages/client/src/format.js"].formatScore;
+    const isMenuOpenKey = __mods["packages/client/src/keyboard.js"].isMenuOpenKey;
+    const MoreIcon = __mods["packages/client/src/icons.js"].MoreIcon;
+    const TrashIcon = __mods["packages/client/src/icons.js"].TrashIcon;
+    const EmptyBlock = __mods["packages/client/src/components/state-views.js"].EmptyBlock;
+    const ErrorBlock = __mods["packages/client/src/components/state-views.js"].ErrorBlock;
+    const InlineBanner = __mods["packages/client/src/components/state-views.js"].InlineBanner;
+    const SkeletonRows = __mods["packages/client/src/components/state-views.js"].SkeletonRows;
+    const GameCover = __mods["packages/client/src/components/cover.js"].GameCover;
+    const useDelayedFlag = __mods["packages/client/src/hooks.js"].useDelayedFlag;
+    const INSTALL_ACTIVE_STAGES = __mods["packages/client/src/constants.js"].INSTALL_ACTIVE_STAGES;
+    /** My Games library (PRD 9.4): ordered rows, update/uninstall/delete entry points. */
+
+    const h = React.createElement;
+
+    function activeJob(job) {
+      return job && INSTALL_ACTIVE_STAGES.indexOf(job.stage) !== -1 ? job : null;
+    }
+
+    function rowProgress(game, t, locale) {
+      const summary = progressSummary(game);
+      if (summary.key === 'mygames.progress.score') {
+        return t(summary.key, { score: formatScore(summary.params.score, locale) });
+      }
+      return t(summary.key);
+    }
+
+    function RowMenu(props) {
+      const t = props.t;
+      const game = props.game;
+      const onClose = props.onClose;
+      const menuRef = React.useRef(null);
+      const itemsRef = React.useRef([]);
+      const builtin = isBuiltin(game);
+      const items = [];
+      if (hasUpdate(game) && !builtin) {
+        items.push({
+          id: 'update',
+          label: t('mygames.action.update'),
+          onSelect: function update() {
+            if (props.onUpdate) props.onUpdate(game);
+          },
+        });
+      }
+      items.push({
+        id: 'uninstall',
+        label: t('mygames.menu.uninstall'),
+        danger: true,
+        disabled: builtin,
+        note: builtin ? t('mygames.menu.builtinNote') : null,
+        onSelect: function uninstall() {
+          if (props.onUninstall) props.onUninstall(game);
+        },
+      });
+      items.push({
+        id: 'delete-data',
+        label: t('mygames.menu.deleteData'),
+        danger: true,
+        disabled: builtin,
+        onSelect: function deleteData() {
+          if (props.onDeleteData) props.onDeleteData(game);
+        },
+      });
+
+      React.useEffect(
+        function focusFirst() {
+          const first = itemsRef.current.find(function usable(button) {
+            return button && button.disabled !== true && typeof button.focus === 'function';
+          });
+          if (first) first.focus();
+        },
+        []
+      );
+
+      React.useEffect(
+        function closeOnOutside() {
+          function onPointerDown(event) {
+            if (menuRef.current && !menuRef.current.contains(event.target)) onClose();
+          }
+          document.addEventListener('mousedown', onPointerDown, true);
+          return function cleanup() {
+            document.removeEventListener('mousedown', onPointerDown, true);
+          };
+        },
+        [onClose]
+      );
+
+      function focusItem(index) {
+        const enabled = [];
+        for (let i = 0; i < items.length; i += 1) {
+          if (!items[i].disabled) enabled.push(i);
+        }
+        if (enabled.length === 0) return;
+        const position = enabled.indexOf(index);
+        const next = enabled[(position + 1) % enabled.length];
+        const target = itemsRef.current[next];
+        if (target) target.focus();
+      }
+
+      function handleKeyDown(event, index) {
+        if (!event) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          onClose(true);
+          return;
+        }
+        if (event.key === 'Tab') {
+          onClose(false);
+          return;
+        }
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          focusItem(index);
+          return;
+        }
+        if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          const enabled = [];
+          for (let i = 0; i < items.length; i += 1) if (!items[i].disabled) enabled.push(i);
+          const position = enabled.indexOf(index);
+          const next = enabled[(position - 1 + enabled.length) % enabled.length];
+          const target = itemsRef.current[next];
+          if (target) target.focus();
+        }
+      }
+
+      return h(
+        'div',
+        {
+          className: 'dgm-menu',
+          role: 'menu',
+          ref: menuRef,
+          'aria-label': t('mygames.menu'),
+        },
+        items.map(function renderItem(item, index) {
+          return h(
+            'button',
+            {
+              key: item.id,
+              ref: function keep(button) {
+                itemsRef.current[index] = button;
+              },
+              type: 'button',
+              role: 'menuitem',
+              className: 'dgm-menu-item',
+              'data-danger': item.danger ? 'true' : 'false',
+              disabled: item.disabled === true,
+              title: item.note || undefined,
+              onClick: function select() {
+                if (item.disabled) return;
+                onClose(false);
+                item.onSelect();
+              },
+              onKeyDown: function keydown(event) {
+                handleKeyDown(event, index);
+              },
+            },
+            item.danger ? h(TrashIcon, { size: 13 }) : null,
+            h('span', { className: 'dgm-menu-label' }, item.label),
+            item.note ? h('span', { className: 'dgm-menu-note' }, item.note) : null
+          );
+        })
+      );
+    }
+
+    function MyGameRow(props) {
+      const game = props.game;
+      const t = props.t;
+      const locale = props.locale;
+      const now = props.now;
+      const job = activeJob(props.job);
+      const builtin = isBuiltin(game);
+      const update = hasUpdate(game);
+      const percent = job && typeof job.percent === 'number' ? job.percent : null;
+      const [menuOpen, setMenuOpen] = React.useState(false);
+      const menuButtonRef = React.useRef(null);
+      const listRef = props.listRef;
+      const progressText = rowProgress(game, t, locale);
+      const lastPlayed = game.lastPlayedAt
+        ? t('mygames.lastPlayed', { relativeTime: formatRelativeTime(game.lastPlayedAt, now, locale) })
+        : t('mygames.neverPlayed');
+      const best = typeof game.bestScore === 'number' ? t('mygames.best', { score: formatScore(game.bestScore, locale) }) : null;
+      const status = job
+        ? t('mygames.row.status.updating')
+        : game.canContinue
+          ? t('mygames.row.status.continue')
+          : t('mygames.row.status.play');
+      const progress = job
+        ? percent === null
+          ? t('mygames.row.installingUnknown')
+          : t('mygames.row.installing', { percent: percent + '%' })
+        : progressText;
+
+      function closeMenu(returnFocus) {
+        setMenuOpen(false);
+        if (returnFocus && menuButtonRef.current) menuButtonRef.current.focus();
+      }
+
+      function handlePrimaryKeyDown(event) {
+        if (!event || !listRef || !listRef.current) return;
+        if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+        const buttons = Array.prototype.slice.call(listRef.current.querySelectorAll('[data-row-primary]'));
+        const index = buttons.indexOf(event.currentTarget);
+        if (index === -1) return;
+        const next = event.key === 'ArrowDown' ? Math.min(index + 1, buttons.length - 1) : Math.max(index - 1, 0);
+        if (next !== index) {
+          event.preventDefault();
+          buttons[next].focus();
+        }
+      }
+
+      return h(
+        'div',
+        {
+          className: 'dgm-row',
+          role: 'listitem',
+          'data-row-id': game.id,
+          'data-installing': job ? 'true' : 'false',
+        },
+        h(
+          'button',
+          {
+            type: 'button',
+            className: 'dgm-row-cover',
+            onClick: function open() {
+              if (!job && props.onOpen) props.onOpen(game.id);
+            },
+            disabled: Boolean(job),
+            'aria-label': t('market.card.open'),
+            tabIndex: -1,
+          },
+          h(GameCover, { game: game, variant: 'row' })
+        ),
+        h(
+          'div',
+          { className: 'dgm-row-main' },
+          h(
+            'div',
+            { className: 'dgm-row-title-line' },
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dgm-row-title-btn',
+                'data-row-primary': true,
+                disabled: Boolean(job),
+                onClick: function open() {
+                  if (!job && props.onOpen) props.onOpen(game.id);
+                },
+                onKeyDown: handlePrimaryKeyDown,
+                'aria-label': t('mygames.row.a11y', {
+                  name: game.name || game.id,
+                  status: status,
+                  progress: progress,
+                }),
+              },
+              game.name || game.id
+            ),
+            builtin ? h('span', { className: 'dgm-row-badge' }, t('market.source.builtin')) : null,
+            update && !job
+              ? h(
+                  'span',
+                  { className: 'dgm-row-update' },
+                  h('span', { className: 'dgm-dot', 'aria-hidden': 'true' }),
+                  t('mygames.update.available', { version: game.updateVersion || '' })
+                )
+              : null
+          ),
+          job
+            ? h(
+                'div',
+                { className: 'dgm-row-progress' },
+                h(
+                  'div',
+                  {
+                    className: 'dgm-progress-track',
+                    role: 'progressbar',
+                    'aria-valuemin': 0,
+                    'aria-valuemax': 100,
+                    'aria-valuenow': percent === null ? undefined : percent,
+                    'aria-valuetext': progress,
+                  },
+                  percent === null
+                    ? h('span', { className: 'dgm-progress-fill dgm-progress-indeterminate' })
+                    : h('span', { className: 'dgm-progress-fill', style: { transform: 'scaleX(' + percent / 100 + ')' } })
+                ),
+                h('span', { className: 'dgm-row-progress-text' }, progress)
+              )
+            : h(
+                'p',
+                { className: 'dgm-row-meta' },
+                progressText,
+                h('span', { className: 'dgm-sep', 'aria-hidden': 'true' }, '·'),
+                lastPlayed,
+                best
+                  ? h(
+                      React.Fragment,
+                      null,
+                      h('span', { className: 'dgm-sep', 'aria-hidden': 'true' }, '·'),
+                      h('span', { className: 'dgm-row-best' }, best)
+                    )
+                  : null
+              )
+        ),
+        h(
+          'div',
+          { className: 'dgm-row-controls' },
+          props.job && props.job.stage === 'failed' && props.job.kind === 'install'
+            ? h('span', { className: 'dgm-row-update-failed', role: 'alert' }, t('mygames.action.updateFailed'))
+            : null,
+          update && !job
+            ? h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'dgm-btn dgm-btn-ghost dgm-row-update-btn',
+                  onClick: function updateNow() {
+                    if (props.onUpdate) props.onUpdate(game);
+                  },
+                  disabled: game.updateReason === 'incompatible',
+                  title: game.updateReason === 'incompatible' ? t('mygames.update.incompatible') : undefined,
+                },
+                t('mygames.action.update')
+              )
+            : null,
+          job
+            ? null
+            : h(
+                'button',
+                {
+                  type: 'button',
+                  className: game.canContinue ? 'dgm-btn dgm-btn-primary dgm-row-play' : 'dgm-btn dgm-row-play',
+                  'data-row-primary': true,
+                  onClick: function play() {
+                    if (job) return;
+                    if (game.missing === true && props.onReinstall) props.onReinstall(game);
+                    else if (props.onPlay) props.onPlay(game);
+                  },
+                  onKeyDown: handlePrimaryKeyDown,
+                },
+                game.canContinue ? t('mygames.action.continue') : game.missing === true ? t('mygames.action.reinstall') : t('mygames.action.play')
+              ),
+          h(
+            'button',
+            {
+              type: 'button',
+              ref: menuButtonRef,
+              className: 'dgm-icon-btn dgm-row-menu-btn',
+              'data-row-menu': true,
+              'aria-label': t('mygames.menu'),
+              title: t('mygames.menu'),
+              'aria-haspopup': 'menu',
+              'aria-expanded': menuOpen ? 'true' : 'false',
+              onClick: function toggle() {
+                setMenuOpen(!menuOpen);
+              },
+              onKeyDown: function keydown(event) {
+                if (isMenuOpenKey(event)) {
+                  event.preventDefault();
+                  setMenuOpen(true);
+                }
+              },
+            },
+            h(MoreIcon, { size: 14 })
+          ),
+          menuOpen
+            ? h(RowMenu, {
+                t: t,
+                game: game,
+                onUpdate: props.onUpdate,
+                onUninstall: props.onUninstall,
+                onDeleteData: props.onDeleteData,
+                onClose: closeMenu,
+              })
+            : null
+        )
+      );
+    }
+
+    function MyGamesPage(props) {
+      const state = props.state;
+      const t = props.t;
+      const locale = props.locale;
+      const now = props.now;
+      const market = state.market;
+      const installed = sortMyGames(Array.isArray(market.games) ? market.games : [], locale);
+      const loading = market.status === 'loading' || market.status === 'idle';
+      const showSkeleton = useDelayedFlag(loading && installed.length === 0, 250);
+      const listRef = React.useRef(null);
+
+      if (installed.length === 0) {
+        if (showSkeleton) {
+          return h(
+            'div',
+            { className: 'dgm-mygames' },
+            h('span', { className: 'dgm-sr-only', role: 'status' }, t('mygames.loading')),
+            h(SkeletonRows, { count: 6 })
+          );
+        }
+        if (market.status === 'error') {
+          return h(
+            'div',
+            { className: 'dgm-mygames' },
+            h(ErrorBlock, {
+              t: t,
+              title: t('mygames.error.load'),
+              code: market.error ? market.error.code : null,
+              onRetry: props.onRetry,
+              retryLabel: t('market.retry'),
+            })
+          );
+        }
+        return h(
+          'div',
+          { className: 'dgm-mygames' },
+          h(EmptyBlock, {
+            t: t,
+            title: t('mygames.empty.title'),
+            body: t('mygames.empty.body'),
+            actionLabel: t('mygames.empty.action'),
+            onAction: props.onBrowse,
+          })
+        );
+      }
+
+      return h(
+        'div',
+        { className: 'dgm-mygames' },
+        market.offline
+          ? h(InlineBanner, {
+              text: t('market.offline'),
+              actionLabel: t('market.offline.retry'),
+              onAction: props.onRetry,
+            })
+          : null,
+        market.status === 'error'
+          ? h(InlineBanner, {
+              text: t('mygames.error.load'),
+              actionLabel: t('market.retry'),
+              onAction: props.onRetry,
+              role: 'alert',
+            })
+          : null,
+        h(
+          'div',
+          { className: 'dgm-list', role: 'list', ref: listRef },
+          installed.map(function renderRow(game) {
+            return h(MyGameRow, {
+              key: game.id,
+              game: game,
+              job: state.installJobs ? state.installJobs[game.id] || null : null,
+              t: t,
+              locale: locale,
+              now: now,
+              listRef: listRef,
+              onOpen: props.onOpen,
+              onPlay: props.onPlay,
+              onReinstall: props.onReinstall,
+              onUpdate: props.onUpdate,
+              onUninstall: props.onUninstall,
+              onDeleteData: props.onDeleteData,
+            });
+          })
+        ),
+        h(
+          'footer',
+          { className: 'dgm-footer' },
+          market.refreshedAt > 0
+            ? h(
+                'span',
+                { className: 'dgm-footer-text' },
+                t('market.footer.synced', {
+                  relativeTime: formatRelativeTime(new Date(market.refreshedAt).toISOString(), now, locale),
+                })
+              )
+            : null,
+          market.offline
+            ? h(
+                'span',
+                { className: 'dgm-footer-offline' },
+                h('span', { className: 'dgm-dot', 'aria-hidden': 'true' }),
+                t('market.footer.offline')
+              )
+            : null
+        )
+      );
+    }
+
+    return { MyGamesPage };
+    })();
+
+    // module: packages/client/src/components/detail.js
+    __mods["packages/client/src/components/detail.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    const authorName = __mods["packages/client/src/catalog.js"].authorName;
+    const categoryLabel = __mods["packages/client/src/catalog.js"].categoryLabel;
+    const detailActionReasonKey = __mods["packages/client/src/catalog.js"].detailActionReasonKey;
+    const resolveDetailAction = __mods["packages/client/src/catalog.js"].resolveDetailAction;
+    const screenshotsFor = __mods["packages/client/src/catalog.js"].screenshotsFor;
+    const formatAbsoluteTime = __mods["packages/client/src/format.js"].formatAbsoluteTime;
+    const formatBytes = __mods["packages/client/src/format.js"].formatBytes;
+    const formatRelativeTime = __mods["packages/client/src/format.js"].formatRelativeTime;
+    const formatScore = __mods["packages/client/src/format.js"].formatScore;
+    const installStageTextKey = __mods["packages/client/src/errors-text.js"].installStageTextKey;
+    const MAX_SCREENSHOTS = __mods["packages/client/src/constants.js"].MAX_SCREENSHOTS;
+    const CheckIcon = __mods["packages/client/src/icons.js"].CheckIcon;
+    const PlayIcon = __mods["packages/client/src/icons.js"].PlayIcon;
+    const ShieldIcon = __mods["packages/client/src/icons.js"].ShieldIcon;
+    const TrophyIcon = __mods["packages/client/src/icons.js"].TrophyIcon;
+    const ErrorBlock = __mods["packages/client/src/components/state-views.js"].ErrorBlock;
+    const SectionHeader = __mods["packages/client/src/components/state-views.js"].SectionHeader;
+    const SkeletonDetail = __mods["packages/client/src/components/state-views.js"].SkeletonDetail;
+    const GameCover = __mods["packages/client/src/components/cover.js"].GameCover;
+    /** Game detail page: hero, two columns, the single primary action (PRD 9.5). */
+
+    const h = React.createElement;
+
+    function primaryLabel(action, t) {
+      switch (action.kind) {
+        case 'install':
+          return t('detail.action.install');
+        case 'reinstall':
+          return t('detail.action.reinstall');
+        case 'retry-install':
+          return t('detail.action.retry');
+        case 'cancel-install':
+          return t(action.cleanup ? 'detail.install.cancelCleanup' : 'detail.action.cancelInstall');
+        case 'update':
+          return t('detail.action.update');
+        case 'play':
+          return t('detail.action.play');
+        case 'continue':
+          return t('detail.action.continue');
+        case 'resume':
+          return t('detail.action.resume');
+        case 'incompatible':
+          return t('detail.action.incompatible');
+        case 'uninstalling':
+          return t('mygames.remove.busy');
+        default:
+          return t('detail.action.install');
+      }
+    }
+
+    function PrimaryAction(props) {
+      const action = props.action;
+      const t = props.t;
+      const job = props.job;
+      const percent = job && typeof job.percent === 'number' ? job.percent : null;
+      const stageKey = job ? installStageTextKey(job.stage, percent) : null;
+      const stageText = stageKey ? t(stageKey, { percent: percent === null ? '' : percent }) : '';
+      const reason = detailActionReasonKey(action);
+      const reasonText = reason ? t(reason, action.reasonParams || {}) : '';
+      const busy = action.kind === 'cancel-install';
+
+      function handleClick() {
+        if (action.disabled) return;
+        switch (action.kind) {
+          case 'install':
+          case 'reinstall':
+          case 'retry-install':
+            if (props.onInstall) props.onInstall();
+            break;
+          case 'cancel-install':
+            if (props.onCancelInstall) props.onCancelInstall();
+            break;
+          case 'update':
+            if (props.onUpdate) props.onUpdate();
+            break;
+          case 'play':
+          case 'continue':
+          case 'resume':
+            if (props.onPlay) props.onPlay(action.kind);
+            break;
+          default:
+            break;
+        }
+      }
+
+      if (action.kind === 'loading') {
+        return h('span', { className: 'dgm-skeleton-button', 'aria-hidden': 'true' });
+      }
+      if (action.kind === 'unavailable') return null;
+
+      return h(
+        'div',
+        { className: 'dgm-primary' },
+        h(
+          'button',
+          {
+            type: 'button',
+            className: 'dgm-btn dgm-btn-primary dgm-primary-btn',
+            'data-action': action.kind,
+            disabled: action.disabled === true,
+            'aria-disabled': action.disabled === true ? 'true' : undefined,
+            onClick: handleClick,
+          },
+          action.kind === 'retry-install' ? h(PlayIcon, { size: 13 }) : null,
+          primaryLabel(action, t)
+        ),
+        busy
+          ? h(
+              'div',
+              { className: 'dgm-install-progress' },
+              h(
+                'div',
+                {
+                  className: 'dgm-progress-track',
+                  role: 'progressbar',
+                  'aria-valuemin': 0,
+                  'aria-valuemax': 100,
+                  'aria-valuenow': percent === null ? undefined : percent,
+                  'aria-valuetext': stageText,
+                },
+                percent === null
+                  ? h('span', { className: 'dgm-progress-fill dgm-progress-indeterminate' })
+                  : h('span', { className: 'dgm-progress-fill', style: { transform: 'scaleX(' + percent / 100 + ')' } })
+              ),
+              h('p', { className: 'dgm-install-stage' }, stageText)
+            )
+          : null,
+        action.kind === 'retry-install' && job
+          ? h(
+              'div',
+              { className: 'dgm-install-failure', role: 'alert' },
+              h('p', { className: 'dgm-install-failure-reason' }, t(job.reasonKey || 'detail.install.failed.unknown')),
+              job.error && job.error.code
+                ? h('p', { className: 'dgm-install-failure-code' }, t('runtime.diagnostic', { code: job.error.code }))
+                : null
+            )
+          : null,
+        reasonText && action.disabled
+          ? h('p', { className: 'dgm-primary-reason' }, reasonText)
+          : null
+      );
+    }
+
+    function SecondaryAction(props) {
+      const secondary = props.secondary;
+      const t = props.t;
+      if (!secondary) return null;
+      if (secondary.kind === 'restart') return null;
+      let label = secondary.labelKey ? t(secondary.labelKey, secondary.reasonParams || {}) : '';
+      if (secondary.kind === 'update-unavailable') {
+        label = t('detail.action.updateUnavailable');
+      }
+      function handleClick() {
+        if (secondary.disabled) return;
+        if (props.onClick) props.onClick(secondary);
+      }
+      return h(
+        'button',
+        {
+          type: 'button',
+          className: 'dgm-btn dgm-btn-quiet dgm-secondary-btn',
+          'data-action': secondary.kind,
+          disabled: secondary.disabled === true,
+          onClick: handleClick,
+          title: secondary.reasonKey ? t(secondary.reasonKey, secondary.reasonParams || {}) : undefined,
+        },
+        label
+      );
+    }
+
+    function PermissionBlock(props) {
+      const t = props.t;
+      const permissions = resolvePermissions(props.game);
+      return h(
+        'section',
+        { className: 'dgm-rail-block dgm-permissions' },
+        h(
+          'h3',
+          { className: 'dgm-rail-title' },
+          h(ShieldIcon, { size: 13 }),
+          t('detail.permissions.title')
+        ),
+        h('p', { className: 'dgm-rail-body' }, t(permissions.key)),
+        permissions.noteKey ? h('p', { className: 'dgm-rail-note' }, t(permissions.noteKey)) : null
+      );
+    }
+
+    function LeaderboardBlock(props) {
+      const t = props.t;
+      const locale = props.locale;
+      const now = props.now;
+      const scores = props.scores;
+      const bestValue =
+        typeof props.bestScore === 'number'
+          ? props.bestScore
+          : scores && scores.best && typeof scores.best.value === 'number'
+            ? scores.best.value
+            : null;
+      const history = scores && Array.isArray(scores.history) ? scores.history.slice(-3).reverse() : [];
+      if (bestValue === null && history.length === 0) return null;
+      return h(
+        'section',
+        { className: 'dgm-rail-block dgm-leaderboard' },
+        h(
+          'h3',
+          { className: 'dgm-rail-title' },
+          h(TrophyIcon, { size: 13 }),
+          t('detail.leaderboard.title')
+        ),
+        bestValue !== null
+          ? h('p', { className: 'dgm-leaderboard-best' }, t('detail.leaderboard.best', { score: formatScore(bestValue, locale) }))
+          : null,
+        history.length > 0
+          ? h(
+              'div',
+              { className: 'dgm-leaderboard-list' },
+              h('p', { className: 'dgm-rail-note' }, t('detail.leaderboard.recent')),
+              history.map(function row(entry, index) {
+                const value = entry && typeof entry.value === 'number' ? entry.value : entry && typeof entry.score === 'number' ? entry.score : null;
+                const at = entry && typeof entry.achievedAt === 'string' ? entry.achievedAt : null;
+                return h(
+                  'div',
+                  { className: 'dgm-leaderboard-row', key: 'score-' + index },
+                  h('span', { className: 'dgm-leaderboard-value' }, value === null ? '—' : formatScore(value, locale)),
+                  at ? h('span', { className: 'dgm-leaderboard-time' }, formatRelativeTime(at, now, locale)) : null
+                );
+              })
+            )
+          : null
+      );
+    }
+
+    function PreviewThumb(props) {
+      const [failed, setFailed] = React.useState(false);
+      React.useEffect(
+        function reset() {
+          setFailed(false);
+        },
+        [props.url]
+      );
+      return h(
+        'button',
+        {
+          type: 'button',
+          className: 'dgm-preview-btn',
+          onClick: props.onOpen,
+          'aria-label': props.t('detail.screenshot.open'),
+          'data-screenshot-index': props.index,
+        },
+        failed
+          ? h(
+              'span',
+              { className: 'dgm-preview-fallback' },
+              h('span', { className: 'dgm-preview-fallback-initial', 'aria-hidden': 'true' }, initialFor(props.gameName)),
+              h('span', { className: 'dgm-preview-fallback-text' }, props.t('detail.screenshot.failed'))
+            )
+          : h('img', {
+              src: props.url,
+              alt: '',
+              loading: 'lazy',
+              draggable: false,
+              onError: function onError() {
+                setFailed(true);
+              },
+            })
+      );
+    }
+
+    function DetailHero(props) {
+      const game = props.game;
+      return h(
+        'div',
+        { className: 'dgm-detail-hero' },
+        h(GameCover, { game: game, variant: 'detail' }),
+        h('span', { className: 'dgm-detail-hero-fade', 'aria-hidden': 'true' })
+      );
+    }
+
+    /** Detail page body. */
+    function GameDetail(props) {
+      const state = props.state;
+      const t = props.t;
+      const locale = props.locale;
+      const now = props.now;
+      const detail = state.detail;
+      const view = detail.view;
+      const game = view ? view.game : null;
+      const job = game && state.installJobs ? state.installJobs[game.id] || null : null;
+      const paused = Boolean(game && state.pausedGame && state.pausedGame.gameId === game.id);
+      const offline = state.market.offline === true;
+      const action = resolveDetailAction({
+        game: game,
+        detailStatus: detail.status,
+        detailError: detail.error,
+        job: job,
+        paused: paused,
+        offline: offline,
+        canContinue: view ? view.canContinue === true : false,
+      });
+      const [expanded, setExpanded] = React.useState(false);
+
+      React.useEffect(
+        function resetExpanded() {
+          setExpanded(false);
+        },
+        [detail.gameId]
+      );
+
+      if (detail.status === 'loading') {
+        return h(
+          'div',
+          { className: 'dgm-detail' },
+          h('span', { className: 'dgm-sr-only', role: 'status' }, t('detail.loading')),
+          h(SkeletonDetail)
+        );
+      }
+
+      if (detail.status === 'error' || !game) {
+        const code = detail.error ? detail.error.code : 'GM-4042';
+        const notFound = code === 'GM-4042' || code === 'GM-4044';
+        const offlineError = code === 'GM-5031' || code === 'GM-5032';
+        return h(
+          'div',
+          { className: 'dgm-detail dgm-detail-error' },
+          h(ErrorBlock, {
+            t: t,
+            title: notFound ? t('detail.error.missing') : offlineError ? t('detail.error.offline') : t('detail.error.load'),
+            code: code,
+            onRetry: offlineError ? props.onRetry : notFound ? null : props.onRetry,
+            retryLabel: offlineError ? t('detail.error.offline.action') : t('detail.error.retry'),
+            actionLabel: notFound ? t('detail.error.missing.action') : null,
+            onAction: notFound ? props.onBack : null,
+          })
+        );
+      }
+
+      const description = game.description || '';
+      const longDescription = description.length > 220;
+      const screenshots = screenshotsFor(game, MAX_SCREENSHOTS);
+      const categories = Array.isArray(game.categories) ? game.categories : [];
+      const tags = Array.isArray(game.tags) ? game.tags : [];
+      const updated = game.updatedAt || game.publishedAt;
+      const author = authorName(game);
+      const subtitleParts = [];
+      if (author) subtitleParts.push(t('detail.meta.by', { author: author }));
+      if (categories.length > 0) subtitleParts.push(categories.map(function label(category) {
+        return categoryLabel(category, locale);
+      }).join(' / '));
+
+      function handleSecondary(secondary) {
+        if (secondary.kind === 'play-current') {
+          if (props.onPlayCurrent) props.onPlayCurrent();
+        } else if (secondary.kind === 'check-update') {
+          if (props.onCheckUpdate) props.onCheckUpdate();
+        } else if (secondary.kind === 'uninstall') {
+          if (props.onUninstall) props.onUninstall();
+        }
+      }
+
+      return h(
+        'div',
+        { className: 'dgm-detail' },
+        h(DetailHero, { game: game }),
+        h(
+          'div',
+          { className: 'dgm-detail-cols' },
+          h(
+            'div',
+            { className: 'dgm-detail-main' },
+            h(
+              'div',
+              { className: 'dgm-detail-title-line' },
+              h('h1', { className: 'dgm-detail-title', tabIndex: -1, 'data-page-heading': true }, game.name || game.id),
+              game.updateAvailable && game.updateVersion
+                ? h('span', { className: 'dgm-pill dgm-pill-update' }, t('detail.update.available', { version: game.updateVersion }))
+                : null,
+              game.installed
+                ? h(
+                    'span',
+                    { className: 'dgm-pill dgm-pill-installed' },
+                    h(CheckIcon, { size: 11 }),
+                    t('market.card.installed')
+                  )
+                : null
+            ),
+            subtitleParts.length > 0 ? h('p', { className: 'dgm-detail-subtitle' }, subtitleParts.join(' · ')) : null,
+            h(
+              'div',
+              { className: `dgm-detail-description${longDescription && !expanded ? ' is-collapsed' : ''}` },
+              h('p', null, description)
+            ),
+            longDescription
+              ? h(
+                  'button',
+                  {
+                    type: 'button',
+                    className: 'dgm-link-btn',
+                    onClick: function toggle() {
+                      setExpanded(!expanded);
+                    },
+                    'aria-expanded': expanded ? 'true' : 'false',
+                  },
+                  t(expanded ? 'detail.collapse' : 'detail.expand')
+                )
+              : null,
+            screenshots.length > 0
+              ? h(
+                  'section',
+                  { className: 'dgm-detail-previews' },
+                  h(SectionHeader, { title: t('detail.preview') }),
+                  h(
+                    'div',
+                    { className: 'dgm-preview-grid' },
+                    screenshots.map(function preview(url, index) {
+                      return h(PreviewThumb, {
+                        key: 'preview-' + index,
+                        url: url,
+                        index: index,
+                        gameName: game.name || game.id,
+                        t: t,
+                        onOpen: function open() {
+                          if (props.onOpenLightbox) props.onOpenLightbox(index);
+                        },
+                      });
+                    })
+                  )
+                )
+              : null,
+            h(
+              'div',
+              { className: 'dgm-detail-taxonomy' },
+              categories.length > 0
+                ? h(
+                    'div',
+                    { className: 'dgm-taxonomy-row' },
+                    h('span', { className: 'dgm-taxonomy-label' }, t('detail.meta.categories')),
+                    categories.map(function category(categoryId) {
+                      return h('span', { className: 'dgm-tag', key: categoryId }, categoryLabel(categoryId, locale));
+                    })
+                  )
+                : null,
+              tags.length > 0
+                ? h(
+                    'div',
+                    { className: 'dgm-taxonomy-row' },
+                    h('span', { className: 'dgm-taxonomy-label' }, t('detail.meta.tags')),
+                    tags.map(function tag(value) {
+                      return h('span', { className: 'dgm-tag', key: value }, value);
+                    })
+                  )
+                : null
+            )
+          ),
+          h(
+            'aside',
+            { className: 'dgm-detail-rail', 'aria-label': t('market.title') },
+            h(PrimaryAction, {
+              action: action,
+              job: job,
+              t: t,
+              onInstall: props.onInstall,
+              onCancelInstall: props.onCancelInstall,
+              onUpdate: props.onUpdate,
+              onPlay: props.onPlay,
+            }),
+            action.secondary ? h(SecondaryAction, { secondary: action.secondary, t: t, onClick: handleSecondary }) : null,
+            h(
+              'dl',
+              { className: 'dgm-detail-meta' },
+              game.version ? h('dt', null, t('detail.meta.versionLabel')) : null,
+              game.version ? h('dd', null, game.version) : null,
+              typeof game.sizeBytes === 'number' ? h('dt', null, t('detail.meta.sizeLabel')) : null,
+              typeof game.sizeBytes === 'number' ? h('dd', null, formatBytes(game.sizeBytes, locale)) : null,
+              updated ? h('dt', null, t('detail.meta.updatedLabel')) : null,
+              updated
+                ? h('dd', { title: formatAbsoluteTime(updated, locale) }, formatRelativeTime(updated, now, locale))
+                : null
+            ),
+            h(PermissionBlock, { t: t, game: game }),
+            h(LeaderboardBlock, {
+              t: t,
+              locale: locale,
+              now: now,
+              scores: detail.scores,
+              bestScore: view.bestScore,
+            }),
+            game.installed && game.source !== 'builtin'
+              ? h(
+                  'div',
+                  { className: 'dgm-rail-actions' },
+                  h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'dgm-btn dgm-btn-quiet dgm-danger-text',
+                      onClick: props.onUninstall,
+                    },
+                    t('detail.action.uninstall')
+                  ),
+                  h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'dgm-btn dgm-btn-quiet dgm-danger-text',
+                      onClick: props.onDeleteData,
+                    },
+                    t('mygames.menu.deleteData')
+                  )
+                )
+              : null
+          )
+        ),
+        h(
+          'p',
+          { className: 'dgm-sr-only', 'aria-live': 'polite' },
+          job ? t(installStageTextKey(job.stage, job.percent), { percent: job.percent === null ? '' : job.percent }) : ''
+        )
+      );
+    }
+
+    return { GameDetail };
+    })();
+
+    // module: packages/client/src/components/dialogs.js
+    __mods["packages/client/src/components/dialogs.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    const CloseIcon = __mods["packages/client/src/icons.js"].CloseIcon;
+    const ChevronLeftIcon = __mods["packages/client/src/icons.js"].ChevronLeftIcon;
+    const ChevronRightIcon = __mods["packages/client/src/icons.js"].ChevronRightIcon;
+    const TrashIcon = __mods["packages/client/src/icons.js"].TrashIcon;
+    const trapTabIndex = __mods["packages/client/src/keyboard.js"].trapTabIndex;
+    /** Confirmation dialogs and the screenshot lightbox (PRD 9.4.4 / 9.5.1 / 9.10). */
+
+    const h = React.createElement;
+
+    function focusables(root) {
+      if (!root || typeof root.querySelectorAll !== 'function') return [];
+      return Array.prototype.slice
+        .call(root.querySelectorAll('button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'))
+        .filter(function visible(node) {
+          return node.offsetParent !== null || node === document.activeElement;
+        });
+    }
+
+    function useFocusTrap(rootRef, onEscape, active) {
+      const escapeRef = React.useRef(onEscape);
+      escapeRef.current = onEscape;
+      React.useEffect(
+        function trap() {
+          if (!active) return undefined;
+          const root = rootRef.current;
+          const nodes = focusables(root);
+          const initial = root && root.querySelector('[data-autofocus="true"]');
+          const first = initial || nodes[0];
+          if (first && typeof first.focus === 'function') {
+            try {
+              first.focus({ preventScroll: true });
+            } catch (_error) {
+              first.focus();
+            }
+          }
+          function handleKeyDown(event) {
+            if (!event) return;
+            if (event.key === 'Escape') {
+              event.preventDefault();
+              event.stopPropagation();
+              if (escapeRef.current) escapeRef.current();
+              return;
+            }
+            if (event.key !== 'Tab') return;
+            const current = focusables(root);
+            if (current.length === 0) return;
+            const index = current.indexOf(document.activeElement);
+            const next = trapTabIndex(index, event.shiftKey, current.length);
+            const target = current[next];
+            if (target) {
+              event.preventDefault();
+              target.focus();
+            }
+          }
+          if (typeof document !== 'undefined') document.addEventListener('keydown', handleKeyDown, true);
+          return function cleanup() {
+            if (typeof document !== 'undefined') document.removeEventListener('keydown', handleKeyDown, true);
+          };
+        },
+        [active, rootRef]
+      );
+    }
+
+    function ConfirmDialog(props) {
+      const dialog = props.dialog;
+      const t = props.t;
+      const game = props.game || {};
+      const gameName = game.name || game.id || '';
+      const rootRef = React.useRef(null);
+      const busy = dialog.busy === true;
+      useFocusTrap(rootRef, function escape() {
+        if (!busy) props.onClose();
+      }, true);
+
+      if (!dialog) return null;
+
+      let title = '';
+      let body = '';
+      let primaryLabel = t('common.confirm');
+      let danger = false;
+      let showCheckbox = false;
+      let showDeleteWarning = false;
+      let noteKey = null;
+      let twoClick = false;
+      let confirmAgain = false;
+
+      if (dialog.kind === 'uninstall') {
+        title = t('mygames.uninstall.title', { gameName: gameName });
+        body = t('mygames.uninstall.body');
+        showCheckbox = true;
+        showDeleteWarning = dialog.deleteData === true;
+        primaryLabel = dialog.deleteData ? t('mygames.uninstall.confirmDelete') : t('mygames.uninstall.confirm');
+        danger = true;
+      } else if (dialog.kind === 'delete-data') {
+        title = t('mygames.deleteData.title', { gameName: gameName });
+        body = t('mygames.deleteData.body');
+        primaryLabel = dialog.confirmAgain ? t('mygames.deleteData.confirmAgain') : t('mygames.deleteData.confirm');
+        danger = true;
+        noteKey = 'mygames.deleteData.uninstallNote';
+        twoClick = true;
+        confirmAgain = dialog.confirmAgain === true;
+      } else if (dialog.kind === 'restart') {
+        title = t('mygames.restart.title', { gameName: gameName });
+        body = t('mygames.restart.body');
+        primaryLabel = t('mygames.restart.confirm');
+        danger = true;
+      } else if (dialog.kind === 'install-local') {
+        title = t('dialog.installLocal.title', { fileName: dialog.fileName || '' });
+        body = t('dialog.installLocal.body');
+        primaryLabel = t('dialog.installLocal.confirm');
+      }
+
+      function handlePrimary() {
+        if (busy) return;
+        if (twoClick && !confirmAgain) {
+          props.onConfirmAgain();
+          return;
+        }
+        props.onConfirm();
+      }
+
+      return h(
+        'div',
+        {
+          className: 'dgm-overlay dgm-dialog-overlay',
+          role: 'presentation',
+          onMouseDown: function backdrop(event) {
+            if (event.target === event.currentTarget && !busy) props.onClose();
+          },
+        },
+        h(
+          'div',
+          {
+            className: 'dgm-dialog',
+            role: danger ? 'alertdialog' : 'dialog',
+            'aria-modal': 'true',
+            'aria-labelledby': 'dgm-dialog-title',
+            'aria-describedby': 'dgm-dialog-body',
+            ref: rootRef,
+          },
+          h('h2', { className: 'dgm-dialog-title', id: 'dgm-dialog-title' }, title),
+          h('p', { className: 'dgm-dialog-body', id: 'dgm-dialog-body' }, body),
+          noteKey ? h('p', { className: 'dgm-dialog-note' }, t(noteKey)) : null,
+          dialog.kind === 'install-local' ? h('p', { className: 'dgm-dialog-warning' }, t('market.localInstall.warning')) : null,
+          showCheckbox
+            ? h(
+                'label',
+                { className: 'dgm-checkbox' },
+                h('input', {
+                  type: 'checkbox',
+                  checked: dialog.deleteData === true,
+                  disabled: busy,
+                  onChange: function toggle(event) {
+                    props.onToggleDeleteData(event.target.checked);
+                  },
+                }),
+                h('span', null, t('mygames.uninstall.deleteData'))
+              )
+            : null,
+          showDeleteWarning ? h('p', { className: 'dgm-dialog-warning' }, t('mygames.uninstall.warning')) : null,
+          h(
+            'div',
+            { className: 'dgm-dialog-actions' },
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dgm-btn dgm-btn-quiet',
+                'data-autofocus': 'true',
+                disabled: busy,
+                onClick: function cancel() {
+                  if (!busy) props.onClose();
+                },
+              },
+              t('common.cancel')
+            ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: danger ? 'dgm-btn dgm-btn-danger' : 'dgm-btn dgm-btn-primary',
+                disabled: busy,
+                onClick: handlePrimary,
+              },
+              danger && dialog.kind !== 'install-local' ? h(TrashIcon, { size: 13 }) : null,
+              busy ? t('dialog.pending') : primaryLabel
+            )
+          )
+        )
+      );
+    }
+
+    function Lightbox(props) {
+      const images = Array.isArray(props.images) ? props.images : [];
+      const index = typeof props.index === 'number' ? props.index : 0;
+      const t = props.t;
+      const [failed, setFailed] = React.useState(false);
+      React.useEffect(
+        function resetFailure() {
+          setFailed(false);
+        },
+        [index]
+      );
+      const rootRef = React.useRef(null);
+      const returnFocusRef = React.useRef(null);
+
+      React.useEffect(
+        function rememberFocus() {
+          returnFocusRef.current = document.activeElement;
+          return function restore() {
+            const node = returnFocusRef.current;
+            if (node && typeof node.focus === 'function') {
+              try {
+                node.focus({ preventScroll: true });
+              } catch (_error) {
+                node.focus();
+              }
+            }
+          };
+        },
+        []
+      );
+
+      useFocusTrap(rootRef, function escape() {
+        props.onClose();
+      }, true);
+
+      const changeRef = React.useRef(props.onChange);
+      changeRef.current = props.onChange;
+      React.useEffect(
+        function arrowKeys() {
+          function onKeyDown(event) {
+            if (!event) return;
+            if (event.key === 'ArrowLeft') {
+              event.preventDefault();
+              if (changeRef.current) changeRef.current((index - 1 + images.length) % images.length);
+            } else if (event.key === 'ArrowRight') {
+              event.preventDefault();
+              if (changeRef.current) changeRef.current((index + 1) % images.length);
+            }
+          }
+          document.addEventListener('keydown', onKeyDown);
+          return function cleanup() {
+            document.removeEventListener('keydown', onKeyDown);
+          };
+        },
+        [index, images.length]
+      );
+
+      if (images.length === 0) return null;
+      const current = images[Math.min(Math.max(index, 0), images.length - 1)];
+
+      return h(
+        'div',
+        {
+          className: 'dgm-lightbox',
+          role: 'dialog',
+          'aria-modal': 'true',
+          'aria-label': t('detail.preview'),
+          ref: rootRef,
+          onMouseDown: function backdrop(event) {
+            if (event.target === event.currentTarget) props.onClose();
+          },
+        },
+        h(
+          'div',
+          { className: 'dgm-lightbox-bar' },
+          h(
+            'span',
+            { className: 'dgm-lightbox-count' },
+            String(index + 1) + ' / ' + String(images.length)
+          ),
+          h(
+            'button',
+            {
+              type: 'button',
+              className: 'dgm-icon-btn dgm-lightbox-close',
+              'data-autofocus': 'true',
+              onClick: props.onClose,
+              'aria-label': t('detail.screenshot.close'),
+              title: t('detail.screenshot.close'),
+            },
+            h(CloseIcon, { size: 15 })
+          )
+        ),
+        failed
+          ? h('div', { className: 'dgm-lightbox-fallback' }, t('detail.screenshot.failed'))
+          : h('img', {
+              className: 'dgm-lightbox-img',
+              src: current,
+              alt: '',
+              draggable: false,
+              onError: function onError() {
+                setFailed(true);
+              },
+            }),
+        images.length > 1
+          ? h(
+              React.Fragment,
+              null,
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'dgm-lightbox-nav dgm-lightbox-prev',
+                  onClick: function prev() {
+                    props.onChange((index - 1 + images.length) % images.length);
+                  },
+                  'aria-label': t('detail.screenshot.prev'),
+                  title: t('detail.screenshot.prev'),
+                },
+                h(ChevronLeftIcon, { size: 18 })
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'dgm-lightbox-nav dgm-lightbox-next',
+                  onClick: function next() {
+                    props.onChange((index + 1) % images.length);
+                  },
+                  'aria-label': t('detail.screenshot.next'),
+                  title: t('detail.screenshot.next'),
+                },
+                h(ChevronRightIcon, { size: 18 })
+              )
+            )
+          : null
+      );
+    }
+
+    return { ConfirmDialog, Lightbox };
+    })();
+
+    // module: packages/client/src/components/toast.js
+    __mods["packages/client/src/components/toast.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    const CloseIcon = __mods["packages/client/src/icons.js"].CloseIcon;
+    const PlayIcon = __mods["packages/client/src/icons.js"].PlayIcon;
+    const TOAST_MS = __mods["packages/client/src/constants.js"].TOAST_MS;
+    /** In-app toasts anchored to the content area, not the screen edge (PRD 9.9.5). */
+
+    const h = React.createElement;
+
+    function ToastItem(props) {
+      const toast = props.toast;
+      const t = props.t;
+      const dismissRef = React.useRef(props.onDismiss);
+      dismissRef.current = props.onDismiss;
+      React.useEffect(
+        function autoDismiss() {
+          const duration = typeof toast.duration === 'number' ? toast.duration : TOAST_MS;
+          const timer = setTimeout(function dismiss() {
+            if (dismissRef.current) dismissRef.current(toast.id);
+          }, duration);
+          return function cleanup() {
+            clearTimeout(timer);
+          };
+        },
+        [toast.id, toast.duration]
+      );
+
+      const text = toast.textKey ? t(toast.textKey, toast.params) : '';
+      return h(
+        'div',
+        { className: 'dgm-toast', 'data-kind': toast.kind || 'info', role: 'status' },
+        h('span', { className: 'dgm-toast-text' }, text),
+        toast.action
+          ? h(
+              'button',
+              {
+                type: 'button',
+                className: 'dgm-toast-action',
+                onClick: function act() {
+                  props.onAction(toast);
+                },
+              },
+              toast.action.kind === 'play' ? h(PlayIcon, { size: 11 }) : null,
+              toast.action.kind === 'play' ? t('toast.installed.action') : t('common.done')
+            )
+          : null,
+        h(
+          'button',
+          {
+            type: 'button',
+            className: 'dgm-toast-close',
+            onClick: function dismiss() {
+              props.onDismiss(toast.id);
+            },
+            'aria-label': t('toast.dismiss'),
+            title: t('toast.dismiss'),
+          },
+          h(CloseIcon, { size: 11 })
+        )
+      );
+    }
+
+    function ToastViewport(props) {
+      const toasts = Array.isArray(props.toasts) ? props.toasts : [];
+      if (toasts.length === 0) return null;
+      return h(
+        'div',
+        { className: 'dgm-toasts', 'aria-live': 'polite', 'aria-atomic': 'false' },
+        toasts.map(function render(toast) {
+          return h(ToastItem, {
+            key: toast.id,
+            toast: toast,
+            t: props.t,
+            onDismiss: props.onDismiss,
+            onAction: props.onAction,
+          });
+        })
+      );
+    }
+
+    return { ToastViewport };
+    })();
+
+    // module: packages/client/src/components/menu.js
+    __mods["packages/client/src/components/menu.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    /** Small anchored popover menu for the detail header (PRD 9.4.4 / 9.10). */
+
+    const h = React.createElement;
+
+    function PopoverMenu(props) {
+      const t = props.t;
+      const items = Array.isArray(props.items) ? props.items : [];
+      const menuRef = React.useRef(null);
+      const buttons = React.useRef([]);
+      const closeRef = React.useRef(props.onClose);
+      closeRef.current = props.onClose;
+
+      React.useEffect(
+        function mount() {
+          const first = buttons.current.find(function usable(button) {
+            return button && !button.disabled;
+          });
+          if (first) first.focus();
+          function onPointerDown(event) {
+            if (menuRef.current && !menuRef.current.contains(event.target) && !menuRef.current.parentNode.contains(event.target)) {
+              if (closeRef.current) closeRef.current(false);
+            }
+          }
+          document.addEventListener('mousedown', onPointerDown, true);
+          return function cleanup() {
+            document.removeEventListener('mousedown', onPointerDown, true);
+          };
+        },
+        []
+      );
+
+      function move(index, delta) {
+        const enabled = [];
+        for (let i = 0; i < items.length; i += 1) if (!items[i].disabled) enabled.push(i);
+        if (enabled.length === 0) return;
+        const position = enabled.indexOf(index);
+        const next = enabled[(position + delta + enabled.length) % enabled.length];
+        const target = buttons.current[next];
+        if (target) target.focus();
+      }
+
+      function handleKeyDown(event, index) {
+        if (!event) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          if (closeRef.current) closeRef.current(true);
+          return;
+        }
+        if (event.key === 'Tab') {
+          if (closeRef.current) closeRef.current(false);
+          return;
+        }
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          move(index, 1);
+        } else if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          move(index, -1);
+        } else if (event.key === 'Home') {
+          event.preventDefault();
+          move(index, -index);
+        } else if (event.key === 'End') {
+          event.preventDefault();
+          move(index, items.length - 1 - index);
+        }
+      }
+
+      return h(
+        'div',
+        { className: 'dgm-menu dgm-menu-header', role: 'menu', ref: menuRef, 'aria-label': t('detail.more') },
+        items.map(function render(item, index) {
+          return h(
+            'button',
+            {
+              key: item.id,
+              type: 'button',
+              role: 'menuitem',
+              ref: function keep(node) {
+                buttons.current[index] = node;
+              },
+              className: 'dgm-menu-item',
+              'data-danger': item.danger ? 'true' : 'false',
+              disabled: item.disabled === true,
+              title: item.note || undefined,
+              onClick: function select() {
+                if (item.disabled) return;
+                if (closeRef.current) closeRef.current(false);
+                if (item.onSelect) item.onSelect();
+              },
+              onKeyDown: function keydown(event) {
+                handleKeyDown(event, index);
+              },
+            },
+            h('span', { className: 'dgm-menu-label' }, item.label),
+            item.note ? h('span', { className: 'dgm-menu-note' }, item.note) : null
+          );
+        })
+      );
+    }
+
+    return { PopoverMenu };
+    })();
+
+    // module: packages/client/src/debounce.js
+    __mods["packages/client/src/debounce.js"] = (function () {
+    /**
+     * Query debouncer for the local search box (PRD 9.3.5: input debounce 150ms).
+     * Scheduler is injectable so the timing is testable without fake globals.
+     */
+
+    function createQueryDebouncer(options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const delayMs = typeof opts.delayMs === 'number' && opts.delayMs >= 0 ? opts.delayMs : 150;
+      const scheduler = opts.scheduler && typeof opts.scheduler.setTimeout === 'function' ? opts.scheduler : {
+        setTimeout: function schedule(callback, delay) {
+          return setTimeout(callback, delay);
+        },
+        clearTimeout: function clear(handle) {
+          clearTimeout(handle);
+        },
+      };
+      const apply = typeof opts.apply === 'function' ? opts.apply : function noop() {};
+      let timer = null;
+      let pending = null;
+
+      function fire() {
+        timer = null;
+        if (pending === null) return;
+        const value = pending;
+        pending = null;
+        apply(value);
+      }
+
+      return {
+        push: function push(value) {
+          pending = value;
+          if (timer !== null) scheduler.clearTimeout(timer);
+          timer = scheduler.setTimeout(fire, delayMs);
+        },
+        flush: function flush() {
+          if (timer !== null) {
+            scheduler.clearTimeout(timer);
+            timer = null;
+          }
+          fire();
+        },
+        cancel: function cancel() {
+          if (timer !== null) scheduler.clearTimeout(timer);
+          timer = null;
+          pending = null;
+        },
+        isScheduled: function isScheduled() {
+          return timer !== null;
+        },
+        pendingValue: function pendingValue() {
+          return pending;
+        },
+      };
+    }
+
+    return { createQueryDebouncer };
+    })();
+
+    // module: packages/client/src/components/search-box.js
+    __mods["packages/client/src/components/search-box.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    const SEARCH_DEBOUNCE_MS = __mods["packages/client/src/constants.js"].SEARCH_DEBOUNCE_MS;
+    const createQueryDebouncer = __mods["packages/client/src/debounce.js"].createQueryDebouncer;
+    const CloseIcon = __mods["packages/client/src/icons.js"].CloseIcon;
+    const SearchIcon = __mods["packages/client/src/icons.js"].SearchIcon;
+    /** Resizable header search with a 150ms local debounce (PRD 9.3.5). */
+
+    const h = React.createElement;
+
+    function SearchBox(props) {
+      const t = props.t;
+      const inputRef = props.inputRef;
+      const [open, setOpen] = React.useState(false);
+      const draft = props.draft || '';
+      const onApplyRef = React.useRef(props.onApply);
+      const setOpenRef = React.useRef(props.onOpenChange);
+      onApplyRef.current = props.onApply;
+      setOpenRef.current = props.onOpenChange;
+
+      const debouncerRef = React.useRef(null);
+      if (debouncerRef.current === null) {
+        debouncerRef.current = createQueryDebouncer({
+          delayMs: SEARCH_DEBOUNCE_MS,
+          apply: function apply(value) {
+            if (onApplyRef.current) onApplyRef.current(value);
+          },
+        });
+      }
+
+      React.useEffect(
+        function cleanupDebouncer() {
+          return function cancel() {
+            if (debouncerRef.current) debouncerRef.current.cancel();
+          };
+        },
+        []
+      );
+
+      function handleChange(event) {
+        const value = event && event.target ? event.target.value : '';
+        if (props.onDraft) props.onDraft(value);
+        debouncerRef.current.push(value);
+      }
+
+      function handleKeyDown(event) {
+        if (!event) return;
+        if (event.key === 'Enter') {
+          debouncerRef.current.flush();
+          return;
+        }
+        if (event.key === 'Escape') {
+          debouncerRef.current.cancel();
+        }
+      }
+
+      function handleFocus() {
+        if (!open) {
+          setOpen(true);
+          if (setOpenRef.current) setOpenRef.current(true);
+        }
+      }
+
+      function handleBlur() {
+        if (draft.length === 0) {
+          setOpen(false);
+          if (setOpenRef.current) setOpenRef.current(false);
+        }
+      }
+
+      function clear() {
+        debouncerRef.current.cancel();
+        if (props.onDraft) props.onDraft('');
+        debouncerRef.current.push('');
+        if (inputRef && inputRef.current) inputRef.current.focus();
+      }
+
+      return h(
+        'div',
+        { className: 'dgm-search', 'data-open': open || draft.length > 0 ? 'true' : 'false' },
+        h('span', { className: 'dgm-search-icon', 'aria-hidden': 'true' }, h(SearchIcon, { size: 15 })),
+        h('input', {
+          ref: inputRef,
+          className: 'dgm-search-input',
+          type: 'text',
+          role: 'searchbox',
+          value: draft,
+          placeholder: t('market.search.placeholder'),
+          'aria-label': t('market.search.a11y'),
+          autoComplete: 'off',
+          spellCheck: false,
+          onChange: handleChange,
+          onKeyDown: handleKeyDown,
+          onFocus: handleFocus,
+          onBlur: handleBlur,
+        }),
+        draft.length > 0
+          ? h(
+              'button',
+              {
+                type: 'button',
+                className: 'dgm-search-clear',
+                onClick: clear,
+                'aria-label': t('market.search.clear'),
+                title: t('market.search.clear'),
+              },
+              h(CloseIcon, { size: 12 })
+            )
+          : null
+      );
+    }
+
+    /** Narrow-window icon that opens the overlay search field. */
+    function SearchToggle(props) {
+      const t = props.t;
+      return h(
+        'button',
+        {
+          type: 'button',
+          className: 'dgm-icon-btn dgm-search-toggle',
+          onClick: props.onClick,
+          'aria-label': t('market.search.open'),
+          title: t('market.search.open'),
+          'aria-expanded': props.expanded === true ? 'true' : 'false',
+        },
+        h(SearchIcon, { size: 16 })
+      );
+    }
+
+    return { SearchBox, SearchToggle };
+    })();
+
     // module: packages/client/src/components/panel.js
     __mods["packages/client/src/components/panel.js"] = (function () {
     const __react = require('react');
@@ -6817,23 +13939,48 @@ window.__ModuleLoader__.load({
     const pageChanged = __mods["packages/client/src/store.js"].pageChanged;
     const sessionBound = __mods["packages/client/src/store.js"].sessionBound;
     const surfaceChanged = __mods["packages/client/src/store.js"].surfaceChanged;
+    const queryDraftChanged = __mods["packages/client/src/store.js"].queryDraftChanged;
+    const queryApplied = __mods["packages/client/src/store.js"].queryApplied;
+    const categoryChanged = __mods["packages/client/src/store.js"].categoryChanged;
+    const filtersCleared = __mods["packages/client/src/store.js"].filtersCleared;
+    const searchOpenChanged = __mods["packages/client/src/store.js"].searchOpenChanged;
+    const scrollSaved = __mods["packages/client/src/store.js"].scrollSaved;
+    const lightboxChanged = __mods["packages/client/src/store.js"].lightboxChanged;
+    const dialogOpened = __mods["packages/client/src/store.js"].dialogOpened;
+    const dialogDeleteDataChanged = __mods["packages/client/src/store.js"].dialogDeleteDataChanged;
+    const dialogConfirmAgain = __mods["packages/client/src/store.js"].dialogConfirmAgain;
+    const dialogBusyChanged = __mods["packages/client/src/store.js"].dialogBusyChanged;
+    const dialogClosed = __mods["packages/client/src/store.js"].dialogClosed;
+    const toastDismissed = __mods["packages/client/src/store.js"].toastDismissed;
+    const focusConsumed = __mods["packages/client/src/store.js"].focusConsumed;
     const PAGES = __mods["packages/client/src/constants.js"].PAGES;
     const MAIN_PANEL_KEY = __mods["packages/client/src/constants.js"].MAIN_PANEL_KEY;
+    const MAX_SCREENSHOTS = __mods["packages/client/src/constants.js"].MAX_SCREENSHOTS;
     const agentMatchesSession = __mods["packages/client/src/chip-state.js"].agentMatchesSession;
     const isAgentFresh = __mods["packages/client/src/chip-state.js"].isAgentFresh;
+    const isBuiltin = __mods["packages/client/src/catalog.js"].isBuiltin;
+    const screenshotsFor = __mods["packages/client/src/catalog.js"].screenshotsFor;
     const acknowledgeCompleted = __mods["packages/client/src/actions.js"].acknowledgeCompleted;
     const beginGame = __mods["packages/client/src/actions.js"].beginGame;
+    const cancelInstall = __mods["packages/client/src/actions.js"].cancelInstall;
+    const closeDetail = __mods["packages/client/src/actions.js"].closeDetail;
+    const installLocalGame = __mods["packages/client/src/actions.js"].installLocalGame;
     const launchModeFor = __mods["packages/client/src/actions.js"].launchModeFor;
-    const refreshMarket = __mods["packages/client/src/actions.js"].refreshMarket;
+    const loadCatalog = __mods["packages/client/src/actions.js"].loadCatalog;
+    const loadDetail = __mods["packages/client/src/actions.js"].loadDetail;
+    const openDetail = __mods["packages/client/src/actions.js"].openDetail;
+    const pushToast = __mods["packages/client/src/actions.js"].pushToast;
+    const refreshRegistryAction = __mods["packages/client/src/actions.js"].refreshRegistryAction;
+    const startInstall = __mods["packages/client/src/actions.js"].startInstall;
+    const uninstallGame = __mods["packages/client/src/actions.js"].uninstallGame;
     const getApiClient = __mods["packages/client/src/api.js"].getApiClient;
+    const getMarketApi = __mods["packages/client/src/api.js"].getMarketApi;
     const makeT = __mods["packages/client/src/locale.js"].makeT;
     const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
-    const formatCategory = __mods["packages/client/src/format.js"].formatCategory;
     const formatRelativeTime = __mods["packages/client/src/format.js"].formatRelativeTime;
-    const formatScore = __mods["packages/client/src/format.js"].formatScore;
     const BackIcon = __mods["packages/client/src/icons.js"].BackIcon;
-    const GamepadIcon = __mods["packages/client/src/icons.js"].GamepadIcon;
-    const PlayIcon = __mods["packages/client/src/icons.js"].PlayIcon;
+    const FolderOpenIcon = __mods["packages/client/src/icons.js"].FolderOpenIcon;
+    const MoreIcon = __mods["packages/client/src/icons.js"].MoreIcon;
     const StyleTag = __mods["packages/client/src/styles.js"].StyleTag;
     const backToConversation = __mods["packages/client/src/navigation.js"].backToConversation;
     const openGameMarket = __mods["packages/client/src/navigation.js"].openGameMarket;
@@ -6841,10 +13988,27 @@ window.__ModuleLoader__.load({
     const useClock = __mods["packages/client/src/hooks.js"].useClock;
     const useSessionBinding = __mods["packages/client/src/hooks.js"].useSessionBinding;
     const useStoreState = __mods["packages/client/src/hooks.js"].useStoreState;
+    const isImeComposing = __mods["packages/client/src/keyboard.js"].isImeComposing;
+    const isSearchShortcut = __mods["packages/client/src/keyboard.js"].isSearchShortcut;
+    const resolveEscapeAction = __mods["packages/client/src/keyboard.js"].resolveEscapeAction;
     const RuntimeView = __mods["packages/client/src/components/runtime.js"].RuntimeView;
-    /** Game Market main panel: header, Market / My Games, and the Runtime switch. */
+    const MarketHome = __mods["packages/client/src/components/market-home.js"].MarketHome;
+    const MyGamesPage = __mods["packages/client/src/components/my-games.js"].MyGamesPage;
+    const GameDetail = __mods["packages/client/src/components/detail.js"].GameDetail;
+    const ConfirmDialog = __mods["packages/client/src/components/dialogs.js"].ConfirmDialog;
+    const Lightbox = __mods["packages/client/src/components/dialogs.js"].Lightbox;
+    const ToastViewport = __mods["packages/client/src/components/toast.js"].ToastViewport;
+    const PopoverMenu = __mods["packages/client/src/components/menu.js"].PopoverMenu;
+    const SearchBox = __mods["packages/client/src/components/search-box.js"].SearchBox;
+    const SearchToggle = __mods["packages/client/src/components/search-box.js"].SearchToggle;
+    /** Game Market main panel: header, Market / My Games / Detail, and the Runtime switch. */
 
     const h = React.createElement;
+    const MAX_LOCAL_BYTES = 20 * 1024 * 1024;
+
+    function pageScrollKey(page) {
+      return page === PAGES.MY_GAMES ? 'my-games' : 'market';
+    }
 
     function headerBack() {
       const current = store.getState();
@@ -6864,215 +14028,6 @@ window.__ModuleLoader__.load({
       openGameMarket();
     }
 
-    function metaLine(game, t) {
-      const author = game && typeof game.author === 'string' && game.author.length > 0 ? game.author : t('market.source.builtin');
-      const category = formatCategory(game && game.categories);
-      if (!category) return author;
-      return t('market.card.authorMeta', { author: author, category: category });
-    }
-
-    function bestText(value, t, locale) {
-      if (typeof value !== 'number' || !Number.isFinite(value)) return t('market.card.noBest');
-      return t('market.card.best', { score: formatScore(value, locale) });
-    }
-
-    function lastPlayedText(value, now, t, locale) {
-      if (typeof value !== 'string' || value.length === 0) return t('market.card.neverPlayed');
-      const relative = formatRelativeTime(value, now, locale);
-      return relative ? t('market.card.lastPlayed', { relativeTime: relative }) : t('market.card.neverPlayed');
-    }
-
-    function LoadingState(props) {
-      return h(
-        'div',
-        { className: 'dgm-state', role: 'status' },
-        h('span', { className: 'dgm-spinner', 'aria-hidden': 'true' }),
-        h('p', { className: 'dgm-state-body' }, props.label)
-      );
-    }
-
-    function ErrorState(props) {
-      return h(
-        'div',
-        { className: 'dgm-state', role: 'alert' },
-        h('p', { className: 'dgm-state-title' }, props.title),
-        h(
-          'button',
-          { type: 'button', className: 'dgm-btn dgm-btn-quiet', onClick: props.onRetry },
-          props.retryLabel
-        )
-      );
-    }
-
-    function EmptyState(props) {
-      return h(
-        'div',
-        { className: 'dgm-state' },
-        h(GamepadIcon, { size: 30 }),
-        h('p', { className: 'dgm-state-title' }, props.title),
-        props.actionLabel
-          ? h('button', { type: 'button', className: 'dgm-btn', onClick: props.onAction }, props.actionLabel)
-          : null
-      );
-    }
-
-    function launchGame(game) {
-      if (!game || typeof game.id !== 'string') return;
-      beginGame(store, { gameId: game.id, mode: launchModeFor(game) });
-    }
-
-    function GameCard(props) {
-      const game = props.game;
-      const t = props.t;
-      const locale = props.locale;
-      const now = props.now;
-      const continueAvailable = game.canContinue === true;
-      return h(
-        'article',
-        { className: 'dgm-card', 'data-game-id': game.id },
-        h(
-          'div',
-          { className: 'dgm-card-cover' },
-          h('span', { className: 'dgm-card-cover-mark' }, h(GamepadIcon, { size: 34 })),
-          game.builtin ? h('span', { className: 'dgm-card-source' }, t('market.source.builtin')) : null
-        ),
-        h('h3', { className: 'dgm-card-title' }, game.name || game.id),
-        h('p', { className: 'dgm-card-meta' }, metaLine(game, t)),
-        h(
-          'div',
-          { className: 'dgm-card-foot' },
-          h(
-            'div',
-            { className: 'dgm-card-stats' },
-            h('span', { className: 'dgm-card-stat-strong' }, bestText(game.bestScore, t, locale)),
-            h('span', { className: 'dgm-card-stat' }, lastPlayedText(game.lastPlayedAt, now, t, locale))
-          ),
-          continueAvailable
-            ? h('span', { className: 'dgm-badge dgm-badge-continue' }, t('market.card.continueAvailable'))
-            : game.installed
-              ? h('span', { className: 'dgm-badge dgm-badge-installed' }, t('market.card.installed'))
-              : null
-        ),
-        h(
-          'button',
-          {
-            type: 'button',
-            className: 'dgm-btn dgm-btn-primary',
-            onClick: function play() {
-              launchGame(game);
-            },
-          },
-          h(PlayIcon),
-          continueAvailable ? t('market.card.continue') : t('market.card.play')
-        )
-      );
-    }
-
-    function MarketPage(props) {
-      const state = props.state;
-      const t = props.t;
-      const locale = props.locale;
-      const now = props.now;
-      const games = Array.isArray(state.market.games) ? state.market.games : [];
-
-      if (games.length === 0) {
-        if (state.market.status === 'loading') return h(LoadingState, { label: t('market.loading') });
-        if (state.market.status === 'error') {
-          return h(ErrorState, {
-            title: t('market.error.title'),
-            retryLabel: t('market.error.retry'),
-            onRetry: props.onRetry,
-          });
-        }
-        return h(EmptyState, { title: t('market.empty.all') });
-      }
-
-      return h(
-        React.Fragment,
-        null,
-        state.market.status === 'error'
-          ? h(
-              'div',
-              { className: 'dgm-banner', role: 'alert' },
-              h('span', { className: 'dgm-banner-text' }, t('market.error.title')),
-              h('button', { type: 'button', className: 'dgm-banner-action', onClick: props.onRetry }, t('market.error.retry'))
-            )
-          : null,
-        h('h2', { className: 'dgm-section-title' }, t('market.section.all')),
-        h(
-          'div',
-          { className: 'dgm-grid' },
-          games.map(function renderCard(game) {
-            return h(GameCard, { key: game.id, game: game, t: t, locale: locale, now: now });
-          })
-        )
-      );
-    }
-
-    function MyGamesPage(props) {
-      const state = props.state;
-      const t = props.t;
-      const locale = props.locale;
-      const now = props.now;
-      const installed = (Array.isArray(state.market.games) ? state.market.games : []).filter(function isInstalled(game) {
-        return game && game.installed !== false;
-      });
-
-      if (installed.length === 0) {
-        if (state.market.status === 'loading') return h(LoadingState, { label: t('mygames.loading') });
-        if (state.market.status === 'error') {
-          return h(ErrorState, {
-            title: t('mygames.error.load'),
-            retryLabel: t('market.error.retry'),
-            onRetry: props.onRetry,
-          });
-        }
-        return h(EmptyState, {
-          title: t('mygames.empty.title'),
-          actionLabel: t('mygames.empty.action'),
-          onAction: function goMarket() {
-            store.dispatch(pageChanged(PAGES.MARKET));
-          },
-        });
-      }
-
-      return h(
-        'div',
-        { className: 'dgm-list', role: 'list' },
-        installed.map(function renderRow(game) {
-          const continueAvailable = game.canContinue === true;
-          return h(
-            'div',
-            { key: game.id, className: 'dgm-row', role: 'listitem', 'data-game-id': game.id },
-            h('span', { className: 'dgm-row-cover' }, h(GamepadIcon, { size: 24 })),
-            h(
-              'span',
-              { className: 'dgm-row-main' },
-              h('span', { className: 'dgm-row-title' }, game.name || game.id),
-              h('span', { className: 'dgm-row-meta' }, bestText(game.bestScore, t, locale)),
-              h('span', { className: 'dgm-row-meta' }, lastPlayedText(game.lastPlayedAt, now, t, locale))
-            ),
-            h(
-              'span',
-              { className: 'dgm-row-actions' },
-              continueAvailable ? h('span', { className: 'dgm-badge dgm-badge-continue' }, t('market.card.continueAvailable')) : null,
-              h(
-                'button',
-                {
-                  type: 'button',
-                  className: continueAvailable ? 'dgm-btn dgm-btn-primary' : 'dgm-btn',
-                  onClick: function play() {
-                    launchGame(game);
-                  },
-                },
-                continueAvailable ? t('mygames.action.continue') : t('mygames.action.play')
-              )
-            )
-          );
-        })
-      );
-    }
-
     function GameMarketPanel(props) {
       const state = useStoreState();
       const now = useClock(1000);
@@ -7081,9 +14036,20 @@ window.__ModuleLoader__.load({
       const binding = useSessionBinding(props, diagnosticRef);
       const locale = detectLocale();
       const t = makeT(props && props.t, locale);
-      const headingRef = React.useRef(null);
+      const rootRef = React.useRef(null);
+      const scrollRef = React.useRef(null);
+      const searchRef = React.useRef(null);
+      const fileInputRef = React.useRef(null);
+      const menuButtonRef = React.useRef(null);
+      const prevPageRef = React.useRef(null);
+      const staleRefreshRef = React.useRef(false);
+      const [headerMenuOpen, setHeaderMenuOpen] = React.useState(false);
 
       const sessionId = binding.sessionId || state.bindingSessionId;
+      const api = getMarketApi();
+      const detailGame = state.detail.view ? state.detail.view.game : null;
+      const detailScreenshots = detailGame ? screenshotsFor(detailGame, MAX_SCREENSHOTS) : [];
+      const scrollKey = pageScrollKey(state.page);
 
       React.useEffect(
         function bindPanelSession() {
@@ -7108,24 +14074,171 @@ window.__ModuleLoader__.load({
         function loadMarketWhenNeeded() {
           if (state.page === PAGES.RUNTIME) return;
           if (state.market.status !== 'idle') return;
-          void refreshMarket({ store: store, api: getApiClient(), now: Date.now() });
+          void loadCatalog({ store: store, api: getMarketApi(), now: Date.now() });
         },
         [state.page, state.market.status]
       );
 
       React.useEffect(
-        function focusHeadingOnMount() {
-          if (state.page === PAGES.RUNTIME) return;
-          const heading = headingRef.current;
-          if (heading && typeof heading.focus === 'function') {
-            try {
-              heading.focus({ preventScroll: true });
-            } catch (_error) {
-              heading.focus();
-            }
-          }
+        function closeHeaderMenuOnPageChange() {
+          setHeaderMenuOpen(false);
         },
         [state.page]
+      );
+
+      React.useEffect(
+        function refreshStaleRegistryOnce() {
+          if (state.page === PAGES.RUNTIME) return;
+          if (staleRefreshRef.current) return;
+          const registry = state.market.registry;
+          if (!registry || registry.state !== 'stale') return;
+          staleRefreshRef.current = true;
+          void refreshRegistryAction({ store: store, api: getMarketApi(), force: false, silent: true });
+        },
+        [state.page, state.market.registry]
+      );
+
+      React.useEffect(
+        function refreshWhenBackOnline() {
+          if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
+          function onOnline() {
+            void loadCatalog({ store: store, api: getMarketApi(), now: Date.now() });
+          }
+          window.addEventListener('online', onOnline);
+          return function cleanup() {
+            window.removeEventListener('online', onOnline);
+          };
+        },
+        []
+      );
+
+      React.useEffect(
+        function restoreScrollAndFocus() {
+          const previous = prevPageRef.current;
+          const scrollNode = scrollRef.current;
+          if (scrollNode && previous !== null && previous !== state.page) {
+            if (state.page === PAGES.DETAIL) {
+              if (previous === PAGES.MARKET || previous === PAGES.MY_GAMES) {
+                store.dispatch(scrollSaved(pageScrollKey(previous), scrollNode.scrollTop));
+              }
+              scrollNode.scrollTop = 0;
+            } else if (previous === PAGES.DETAIL) {
+              const top = state.scroll[pageScrollKey(state.page)] || 0;
+              requestAnimationFrame(function restore() {
+                if (scrollRef.current) scrollRef.current.scrollTop = top;
+              });
+            }
+          }
+          prevPageRef.current = state.page;
+
+          const pageChangedSince = previous !== state.page;
+          const intent = state.focus;
+          const frame = requestAnimationFrame(function applyFocus() {
+            const root = rootRef.current;
+            if (!root) {
+              if (intent) store.dispatch(focusConsumed());
+              return;
+            }
+            function focusHeading() {
+              const node = root.querySelector('[data-page-heading]');
+              if (node && typeof node.focus === 'function') node.focus();
+            }
+            if (intent && intent.kind === 'card' && intent.gameId) {
+              const card = root.querySelector('[data-card-id="' + intent.gameId + '"]');
+              if (card && typeof card.focus === 'function') card.focus();
+              else focusHeading();
+              store.dispatch(focusConsumed());
+              return;
+            }
+            if (intent && intent.kind === 'row' && intent.gameId) {
+              const rowButton = root.querySelector('[data-row-id="' + intent.gameId + '"] [data-row-primary]');
+              if (rowButton && typeof rowButton.focus === 'function') rowButton.focus();
+              else focusHeading();
+              store.dispatch(focusConsumed());
+              return;
+            }
+            if (intent && intent.kind === 'menu' && intent.gameId) {
+              const button = root.querySelector('[data-row-id="' + intent.gameId + '"] [data-row-menu]');
+              if (button && typeof button.focus === 'function') button.focus();
+              else focusHeading();
+              store.dispatch(focusConsumed());
+              return;
+            }
+            if (intent && intent.kind === 'heading') {
+              const headingNode = root.querySelector('[data-page-heading]');
+              if (headingNode && typeof headingNode.focus === 'function') headingNode.focus();
+              store.dispatch(focusConsumed());
+              return;
+            }
+            if (intent && intent.kind === 'local-install') {
+              const localButton = root.querySelector('.dgm-local-install');
+              if (localButton && typeof localButton.focus === 'function') localButton.focus();
+              store.dispatch(focusConsumed());
+              return;
+            }
+            if (intent) {
+              store.dispatch(focusConsumed());
+              return;
+            }
+            if (pageChangedSince) {
+              const heading = root.querySelector('[data-page-heading]');
+              if (heading && typeof heading.focus === 'function') {
+                try {
+                  heading.focus({ preventScroll: true });
+                } catch (_error) {
+                  heading.focus();
+                }
+              }
+            }
+          });
+          return function cancelFrame() {
+            cancelAnimationFrame(frame);
+          };
+        },
+        [state.page, state.focus, state.scroll]
+      );
+
+      React.useEffect(
+        function globalKeys() {
+          function onKeyDown(event) {
+            if (isImeComposing(event)) return;
+            if (state.dialog || state.ui.lightbox !== null) return;
+            if (isSearchShortcut(event)) {
+              event.preventDefault();
+              focusSearch();
+              return;
+            }
+            if (event.key !== 'Escape') return;
+            const active = typeof document !== 'undefined' ? document.activeElement : null;
+            const searchFocused = Boolean(searchRef.current && active === searchRef.current);
+            const action = resolveEscapeAction({
+              searchOpen: state.ui.searchOpen,
+              searchFocused: searchFocused,
+              searchHasValue: state.ui.draftQuery.length > 0,
+              detail: state.page === PAGES.DETAIL,
+              menu: headerMenuOpen,
+            });
+            if (action === 'none') return;
+            event.preventDefault();
+            if (action === 'close-menu') {
+              setHeaderMenuOpen(false);
+              if (menuButtonRef.current) menuButtonRef.current.focus();
+            } else if (action === 'close-search') {
+              store.dispatch(searchOpenChanged(false));
+            } else if (action === 'clear-search') {
+              clearSearch();
+            } else if (action === 'blur-search' && searchRef.current) {
+              searchRef.current.blur();
+            } else if (action === 'back-detail') {
+              closeDetail(store);
+            }
+          }
+          document.addEventListener('keydown', onKeyDown);
+          return function cleanup() {
+            document.removeEventListener('keydown', onKeyDown);
+          };
+        },
+        [state.dialog, state.ui.lightbox, state.ui.searchOpen, state.ui.draftQuery, state.page, headerMenuOpen]
       );
 
       const waiting =
@@ -7133,6 +14246,196 @@ window.__ModuleLoader__.load({
         state.agent &&
         state.agent.state === 'waiting-user' &&
         agentMatchesSession(state.agent, sessionId);
+
+      function focusSearch() {
+        store.dispatch(searchOpenChanged(true));
+        requestAnimationFrame(function focusInput() {
+          const input = searchRef.current;
+          if (input && typeof input.focus === 'function') input.focus();
+        });
+      }
+
+      function clearSearch() {
+        store.dispatch(queryDraftChanged(''));
+        store.dispatch(queryApplied(''));
+        if (searchRef.current) searchRef.current.focus();
+      }
+
+      function switchPage(next) {
+        if (state.page === next) return;
+        const node = scrollRef.current;
+        if (node && (state.page === PAGES.MARKET || state.page === PAGES.MY_GAMES)) {
+          store.dispatch(scrollSaved(pageScrollKey(state.page), node.scrollTop));
+        }
+        store.dispatch(pageChanged(next));
+        const top = store.getState().scroll[pageScrollKey(next)] || 0;
+        requestAnimationFrame(function restore() {
+          if (scrollRef.current) scrollRef.current.scrollTop = top;
+        });
+      }
+
+      function openGame(gameId) {
+        if (typeof gameId !== 'string' || gameId.length === 0) return;
+        const node = scrollRef.current;
+        if (node && (state.page === PAGES.MARKET || state.page === PAGES.MY_GAMES)) {
+          store.dispatch(scrollSaved(pageScrollKey(state.page), node.scrollTop));
+        }
+        void openDetail({
+          store: store,
+          api: api,
+          gameId: gameId,
+          returnPage: state.page === PAGES.MY_GAMES ? PAGES.MY_GAMES : PAGES.MARKET,
+        });
+      }
+
+      function retryCatalog() {
+        if (state.market.offline) {
+          void refreshRegistryAction({ store: store, api: api });
+          return;
+        }
+        void loadCatalog({ store: store, api: api, now: Date.now() });
+      }
+
+      function browseAll() {
+        store.dispatch(filtersCleared());
+        store.dispatch(searchOpenChanged(false));
+        requestAnimationFrame(function focusFirst() {
+          const root = rootRef.current;
+          const card = root ? root.querySelector('.dgm-section-all [data-card-id]') : null;
+          if (card && typeof card.focus === 'function') card.focus();
+          else focusSearch();
+        });
+      }
+
+      function launchGame(game) {
+        if (!game || typeof game.id !== 'string') return;
+        beginGame(store, { gameId: game.id, mode: launchModeFor(game) });
+      }
+
+      function installGame(game, update) {
+        if (!game || typeof game.id !== 'string') return;
+        void startInstall({
+          store: store,
+          api: api,
+          gameId: game.id,
+          version: game.registryVersion || undefined,
+          update: update === true,
+        });
+      }
+
+      function handleDetailPlay(kind) {
+        if (!detailGame) return;
+        const mode = kind === 'play' ? 'start' : 'resume-paused';
+        beginGame(store, { gameId: detailGame.id, mode: mode });
+      }
+
+      function handlePlayCurrent() {
+        if (detailGame) launchGame(detailGame);
+      }
+
+      function openUninstallDialog(gameId, returnFocus) {
+        store.dispatch(dialogOpened('uninstall', gameId, { returnFocus: returnFocus }));
+      }
+
+      function openDeleteDataDialog(gameId, returnFocus) {
+        store.dispatch(dialogOpened('delete-data', gameId, { returnFocus: returnFocus }));
+      }
+
+      function handleDetailUninstall() {
+        if (detailGame) openUninstallDialog(detailGame.id, { kind: 'heading', page: PAGES.DETAIL });
+      }
+
+      function handleDetailDeleteData() {
+        if (detailGame) openDeleteDataDialog(detailGame.id, { kind: 'heading', page: PAGES.DETAIL });
+      }
+
+      async function confirmDialogAction() {
+        const dialog = store.getState().dialog;
+        if (!dialog) return;
+        if (dialog.kind === 'install-local') {
+          store.dispatch(dialogBusyChanged(true));
+          await installLocalGame({
+            store: store,
+            api: api,
+            file: dialog.file,
+            fileName: dialog.fileName,
+          });
+          store.dispatch(dialogBusyChanged(false));
+          store.dispatch(dialogClosed());
+          return;
+        }
+        if (dialog.kind === 'restart') {
+          store.dispatch(dialogClosed());
+          return;
+        }
+        const deleteData = dialog.kind === 'delete-data' ? true : dialog.deleteData === true;
+        store.dispatch(dialogBusyChanged(true));
+        await uninstallGame({
+          store: store,
+          api: api,
+          gameId: dialog.gameId,
+          deleteData: deleteData,
+        });
+        store.dispatch(dialogBusyChanged(false));
+        store.dispatch(dialogClosed());
+      }
+
+      function handlePickFile() {
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+          fileInputRef.current.click();
+        }
+      }
+
+      function handleFileSelected(event) {
+        const input = event && event.target ? event.target : null;
+        const file = input && input.files && input.files[0] ? input.files[0] : null;
+        if (input) input.value = '';
+        if (!file) return;
+        const name = typeof file.name === 'string' && file.name.length > 0 ? file.name : 'game.html';
+        const type = typeof file.type === 'string' ? file.type : '';
+        if (!/\.html?$/i.test(name) && type !== 'text/html') {
+          pushToast(store, { kind: 'error', textKey: 'market.localInstall.unsupported' });
+          return;
+        }
+        if (typeof file.size === 'number' && file.size > MAX_LOCAL_BYTES) {
+          pushToast(store, { kind: 'error', textKey: 'market.localInstall.tooLarge' });
+          return;
+        }
+        store.dispatch(
+          dialogOpened('install-local', null, {
+            fileName: name,
+            file: file,
+            returnFocus: { kind: 'local-install' },
+          })
+        );
+      }
+
+      function handleToastAction(toast) {
+        if (!toast || !toast.action) return;
+        if (toast.action.kind === 'play' && typeof toast.action.gameId === 'string') {
+          beginGame(store, { gameId: toast.action.gameId, mode: toast.action.mode || 'start' });
+        }
+        store.dispatch(toastDismissed(toast.id));
+      }
+
+      const headerMenuItems =
+        detailGame && detailGame.installed && !isBuiltin(detailGame)
+          ? [
+              {
+                id: 'uninstall',
+                label: t('detail.action.uninstall'),
+                danger: true,
+                onSelect: handleDetailUninstall,
+              },
+              {
+                id: 'delete-data',
+                label: t('mygames.menu.deleteData'),
+                danger: true,
+                onSelect: handleDetailDeleteData,
+              },
+            ]
+          : [];
 
       if (state.page === PAGES.RUNTIME) {
         return h(
@@ -7143,73 +14446,219 @@ window.__ModuleLoader__.load({
         );
       }
 
-      return h(
-        'div',
-        { className: 'dgm-root', 'data-page': state.page, 'data-panel': MAIN_PANEL_KEY },
-        h(StyleTag),
-        h(
-          'header',
-          { className: 'dgm-header' },
-          h(
-            'button',
-            {
-              type: 'button',
-              className: 'dgm-icon-btn',
-              onClick: headerBack,
-              'aria-label': t('panel.backToConversation'),
-              title: t('panel.backToConversation'),
-            },
-            h(BackIcon)
-          ),
-          h('h1', { className: 'dgm-title', ref: headingRef, tabIndex: -1 }, t('panel.title')),
-          h(
-            'div',
-            { className: 'dgm-tabs', role: 'tablist', 'aria-label': t('panel.title') },
+      const isDetail = state.page === PAGES.DETAIL;
+      const isMyGames = state.page === PAGES.MY_GAMES;
+
+      const headerContent = isDetail
+        ? [
             h(
               'button',
               {
+                key: 'back',
                 type: 'button',
-                role: 'tab',
-                className: 'dgm-tab',
-                'data-active': state.page === PAGES.MARKET ? 'true' : 'false',
-                'aria-selected': state.page === PAGES.MARKET ? 'true' : 'false',
-                onClick: function marketTab() {
-                  store.dispatch(pageChanged(PAGES.MARKET));
+                className: 'dgm-icon-btn',
+                onClick: function back() {
+                  closeDetail(store);
                 },
+                'aria-label': t('detail.back'),
+                title: t('detail.back'),
               },
-              t('panel.tab.market')
+              h(BackIcon)
             ),
             h(
+              'nav',
+              { className: 'dgm-crumbs', key: 'crumbs', 'aria-label': t('detail.breadcrumb', { page: t('market.tab.market'), gameName: detailGame ? detailGame.name : '' }) },
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'dgm-crumb-btn',
+                  onClick: function toMarket() {
+                    closeDetail(store);
+                  },
+                },
+                t('market.tab.market')
+              ),
+              h('span', { className: 'dgm-crumb-sep', 'aria-hidden': 'true' }, '/'),
+              h('span', { className: 'dgm-crumb-current' }, detailGame ? detailGame.name : '')
+            ),
+            h('span', { className: 'dgm-spacer', key: 'spacer' }),
+            headerMenuItems.length > 0
+              ? h(
+                  'div',
+                  { className: 'dgm-header-menu-wrap', key: 'menu' },
+                  h(
+                    'button',
+                    {
+                      type: 'button',
+                      ref: menuButtonRef,
+                      className: 'dgm-icon-btn',
+                      'aria-label': t('detail.more'),
+                      title: t('detail.more'),
+                      'aria-haspopup': 'menu',
+                      'aria-expanded': headerMenuOpen ? 'true' : 'false',
+                      onClick: function toggle() {
+                        setHeaderMenuOpen(!headerMenuOpen);
+                      },
+                    },
+                    h(MoreIcon, { size: 15 })
+                  ),
+                  headerMenuOpen
+                    ? h(PopoverMenu, {
+                        t: t,
+                        items: headerMenuItems,
+                        onClose: function close(returnFocus) {
+                          setHeaderMenuOpen(false);
+                          if (returnFocus && menuButtonRef.current) menuButtonRef.current.focus();
+                        },
+                      })
+                    : null
+                )
+              : null,
+          ]
+        : [
+            h(
               'button',
               {
+                key: 'back',
                 type: 'button',
-                role: 'tab',
-                className: 'dgm-tab',
-                'data-active': state.page === PAGES.MY_GAMES ? 'true' : 'false',
-                'aria-selected': state.page === PAGES.MY_GAMES ? 'true' : 'false',
-                onClick: function myGamesTab() {
-                  store.dispatch(pageChanged(PAGES.MY_GAMES));
-                },
+                className: 'dgm-icon-btn',
+                onClick: headerBack,
+                'aria-label': t('panel.backToConversation'),
+                title: t('panel.backToConversation'),
               },
-              t('panel.tab.mygames')
-            )
-          ),
-          h('span', { className: 'dgm-spacer' }),
-          state.market.refreshedAt > 0
-            ? h(
-                'span',
-                { className: 'dgm-card-stat' },
-                t('panel.synced', {
-                  relativeTime: formatRelativeTime(new Date(state.market.refreshedAt).toISOString(), now, locale),
-                })
+              h(BackIcon)
+            ),
+            h(
+              'h1',
+              {
+                key: 'title',
+                className: 'dgm-title',
+                tabIndex: -1,
+                'data-page-heading': true,
+              },
+              isMyGames ? t('mygames.title') : t('market.title')
+            ),
+            h(
+              'div',
+              { key: 'tabs', className: 'dgm-tabs', role: 'tablist', 'aria-label': t('market.title') },
+              h(
+                'button',
+                {
+                  type: 'button',
+                  role: 'tab',
+                  id: 'dgm-tab-market',
+                  className: 'dgm-tab',
+                  'data-active': state.page === PAGES.MARKET ? 'true' : 'false',
+                  'aria-selected': state.page === PAGES.MARKET ? 'true' : 'false',
+                  'aria-controls': 'dgm-tabpanel',
+                  onClick: function marketTab() {
+                    switchPage(PAGES.MARKET);
+                  },
+                },
+                t('market.tab.market')
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  role: 'tab',
+                  id: 'dgm-tab-mygames',
+                  className: 'dgm-tab',
+                  'data-active': state.page === PAGES.MY_GAMES ? 'true' : 'false',
+                  'aria-selected': state.page === PAGES.MY_GAMES ? 'true' : 'false',
+                  'aria-controls': 'dgm-tabpanel',
+                  onClick: function myGamesTab() {
+                    switchPage(PAGES.MY_GAMES);
+                  },
+                },
+                t('market.tab.mygames')
               )
-            : null
-        ),
+            ),
+            h('span', { key: 'spacer', className: 'dgm-spacer' }),
+            state.page === PAGES.MARKET
+              ? h(
+                  'div',
+                  { key: 'search', className: 'dgm-header-search' },
+                  h(SearchBox, {
+                    t: t,
+                    inputRef: searchRef,
+                    draft: state.ui.draftQuery,
+                    onDraft: function draft(value) {
+                      store.dispatch(queryDraftChanged(value));
+                    },
+                    onApply: function apply(value) {
+                      store.dispatch(queryApplied(value));
+                    },
+                    onOpenChange: function open(open) {
+                      store.dispatch(searchOpenChanged(open));
+                    },
+                  }),
+                  h(SearchToggle, {
+                    t: t,
+                    expanded: state.ui.searchOpen,
+                    onClick: focusSearch,
+                  })
+                )
+              : null,
+            state.market.refreshedAt > 0
+              ? h(
+                  'span',
+                  { key: 'sync', className: 'dgm-header-sync' },
+                  t('panel.synced', {
+                    relativeTime: formatRelativeTime(new Date(state.market.refreshedAt).toISOString(), now, locale),
+                  })
+                )
+              : null,
+            state.market.offline
+              ? h('span', {
+                  key: 'offline',
+                  className: 'dgm-header-dot',
+                  title: t('market.offline'),
+                  'aria-label': t('a11y.offline'),
+                  role: 'img',
+                })
+              : null,
+            state.page === PAGES.MARKET
+              ? h(
+                  'button',
+                  {
+                    key: 'local',
+                    type: 'button',
+                    className: 'dgm-icon-btn dgm-local-install',
+                    onClick: handlePickFile,
+                    'aria-label': t('market.localInstall'),
+                    title: t('market.localInstall'),
+                  },
+                  h(FolderOpenIcon, { size: 15 })
+                )
+              : null,
+          ];
+
+      return h(
+        'div',
+        {
+          className: 'dgm-root',
+          'data-page': state.page,
+          'data-panel': MAIN_PANEL_KEY,
+          'data-search-open': state.ui.searchOpen ? 'true' : 'false',
+          ref: rootRef,
+        },
+        h(StyleTag),
+        h('header', { className: 'dgm-header' }, headerContent),
+        h('input', {
+          type: 'file',
+          className: 'dgm-sr-only',
+          accept: '.html,text/html',
+          tabIndex: -1,
+          ref: fileInputRef,
+          onChange: handleFileSelected,
+        }),
         waiting
           ? h(
               'div',
               { className: 'dgm-banner', 'aria-live': 'polite' },
-              h('span', { className: 'dgm-banner-icon' }, h(GamepadIcon, { size: 14 })),
+              h('span', { className: 'dgm-banner-icon', 'aria-hidden': 'true' }, h('span', { className: 'dgm-dot dgm-dot-waiting' })),
               h('span', { className: 'dgm-banner-text' }, t('market.waiting.banner')),
               h(
                 'button',
@@ -7220,32 +14669,141 @@ window.__ModuleLoader__.load({
           : null,
         h(
           'main',
-          { className: 'dgm-content' },
+          { className: 'dgm-content', ref: scrollRef },
           h(
             'div',
-            { className: 'dgm-content-narrow' },
-            state.page === PAGES.MY_GAMES
-              ? h(MyGamesPage, {
+            {
+              className: 'dgm-page',
+              id: isDetail ? undefined : 'dgm-tabpanel',
+              role: isDetail ? undefined : 'tabpanel',
+              'aria-labelledby': isDetail ? undefined : state.page === PAGES.MY_GAMES ? 'dgm-tab-mygames' : 'dgm-tab-market',
+            },
+            isDetail
+              ? h(GameDetail, {
                   state: state,
                   t: t,
                   locale: locale,
                   now: now,
-                  onRetry: function retry() {
-                    void refreshMarket({ store: store, api: getApiClient(), now: Date.now() });
+                  onBack: function back() {
+                    closeDetail(store);
+                  },
+                  onRetry: function retryDetail() {
+                    if (state.detail.gameId) void loadDetail({ store: store, api: api, gameId: state.detail.gameId });
+                  },
+                  onInstall: function installNow() {
+                    if (detailGame) installGame(detailGame);
+                  },
+                  onUpdate: function updateNow() {
+                    if (detailGame) installGame(detailGame, true);
+                  },
+                  onCancelInstall: function cancelNow() {
+                    if (detailGame) cancelInstall(detailGame.id);
+                  },
+                  onPlay: handleDetailPlay,
+                  onPlayCurrent: handlePlayCurrent,
+                  onCheckUpdate: function checkUpdate() {
+                    void refreshRegistryAction({ store: store, api: api });
+                  },
+                  onUninstall: handleDetailUninstall,
+                  onDeleteData: handleDetailDeleteData,
+                  onOpenLightbox: function openLightbox(index) {
+                    store.dispatch(lightboxChanged(index));
                   },
                 })
-              : h(MarketPage, {
-                  state: state,
-                  t: t,
-                  locale: locale,
-                  now: now,
-                  onRetry: function retry() {
-                    void refreshMarket({ store: store, api: getApiClient(), now: Date.now() });
-                  },
-                })
+              : isMyGames
+                ? h(MyGamesPage, {
+                    state: state,
+                    t: t,
+                    locale: locale,
+                    now: now,
+                    onOpen: openGame,
+                    onPlay: launchGame,
+                    onReinstall: function reinstall(game) {
+                      installGame(game);
+                    },
+                    onUpdate: function update(game) {
+                      installGame(game, true);
+                    },
+                    onUninstall: function uninstall(game) {
+                      openUninstallDialog(game.id, { kind: 'menu', gameId: game.id });
+                    },
+                    onDeleteData: function deleteData(game) {
+                      openDeleteDataDialog(game.id, { kind: 'menu', gameId: game.id });
+                    },
+                    onRetry: retryCatalog,
+                    onBrowse: function browse() {
+                      switchPage(PAGES.MARKET);
+                    },
+                    onRefreshRegistry: function refresh() {
+                      void refreshRegistryAction({ store: store, api: api });
+                    },
+                  })
+                : h(MarketHome, {
+                    state: state,
+                    t: t,
+                    locale: locale,
+                    now: now,
+                    onOpenGame: openGame,
+                    onPlay: launchGame,
+                    onRetry: retryCatalog,
+                    onBrowseAll: browseAll,
+                    onClearSearch: clearSearch,
+                    onCategory: function category(value) {
+                      store.dispatch(categoryChanged(value));
+                    },
+                    onRefreshRegistry: function refresh() {
+                      void refreshRegistryAction({ store: store, api: api });
+                    },
+                  })
           )
-        )
+        ),
+        state.ui.lightbox !== null && detailScreenshots.length > 0
+          ? h(Lightbox, {
+              t: t,
+              images: detailScreenshots,
+              index: Math.min(state.ui.lightbox, detailScreenshots.length - 1),
+              onClose: function close() {
+                store.dispatch(lightboxChanged(null));
+              },
+              onChange: function change(index) {
+                store.dispatch(lightboxChanged(index));
+              },
+            })
+          : null,
+        state.dialog
+          ? h(ConfirmDialog, {
+              dialog: state.dialog,
+              t: t,
+              game: state.dialog.gameId ? detailGame && detailGame.id === state.dialog.gameId ? detailGame : findGame(state, state.dialog.gameId) : null,
+              onClose: function close() {
+                store.dispatch(dialogClosed());
+              },
+              onToggleDeleteData: function toggle(value) {
+                store.dispatch(dialogDeleteDataChanged(value));
+              },
+              onConfirmAgain: function again() {
+                store.dispatch(dialogConfirmAgain());
+              },
+              onConfirm: confirmDialogAction,
+            })
+          : null,
+        h(ToastViewport, {
+          toasts: state.toasts,
+          t: t,
+          onDismiss: function dismiss(id) {
+            store.dispatch(toastDismissed(id));
+          },
+          onAction: handleToastAction,
+        })
       );
+    }
+
+    function findGame(state, gameId) {
+      if (!state || !state.market || !Array.isArray(state.market.games)) return null;
+      for (const game of state.market.games) {
+        if (game && game.id === gameId) return game;
+      }
+      return null;
     }
 
     return { GameMarketPanel };
