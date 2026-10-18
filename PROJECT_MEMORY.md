@@ -194,6 +194,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · **V0.1 反馈修复**：等待提示移至会话头标题右侧并本地化「游戏/Game」+ 可爱动效；弹层居中/翻转；修复继续游戏后 ready 状态静止棋盘 + 键盘焦点丢失（新增 `resume.js` 策略与 3 个测试）；dev-enable 兼容空数组 `[]` profile patch；全量 315 tests 通过。
 - 2026-10-18 · **V0.1 已发布**：`main` merge `55bc9f8`，tag `v0.0.1`；等待提示位置/动效/弹层对齐与 resume 卡住问题已修复，验证证据更新在 `docs/V0-VERIFICATION.md`。
 - 2026-10-18 · **V0.2 反馈修复**：入口改为会话 tab 行常驻「游戏 / Game」（conversation.view），点击进 Market；删除 chip 组件；恢复游戏只保留平台一次确认并直接开玩；轮询改为绑定 session 即可工作；全量 314 tests 通过。
+- 2026-10-18 · **V0.2 已发布**：`main` merge `3bfea76`，tag `v0.0.2`；验证见 `docs/V0-VERIFICATION.md`。
 - （待续）
 
 **当前状态 / 待用户确认**：
