@@ -750,12 +750,12 @@
   const SAVE_REASONS = Object.freeze(['interval', 'pause', 'hidden', 'leave', 'agent-complete']);
   const SESSION_OUTCOMES = Object.freeze(['completed', 'lost', 'abandoned', 'quit']);
 
-  /** V0 built-in games. Paths are relative to the bundle root. */
+  /** V0/V1 built-in games. Paths are relative to the bundle root. */
   const BUILTIN_GAMES = Object.freeze([
     Object.freeze({
       id: 'snake',
       name: 'Snake',
-      version: '0.1.0',
+      version: '1.0.0',
       dir: 'games/snake',
       manifestFile: 'game.json',
       entryFile: 'dist/index.html',
@@ -801,6 +801,26 @@
     VALUE_NOT_SERIALIZABLE: 'GM-4134',
     UNSUPPORTED_MEDIA_TYPE: 'GM-4150',
     MANIFEST_INVALID: 'GM-4221',
+    // Manifest field-level errors (PRD §8.13.2)
+    MANIFEST_JSON: 'GM-4228',
+    MANIFEST_VERSION: 'GM-4230',
+    FIELD_MISSING: 'GM-4231',
+    FIELD_TYPE: 'GM-4232',
+    FIELD_RANGE: 'GM-4233',
+    ID_INVALID: 'GM-4234',
+    ID_RESERVED: 'GM-4235',
+    VERSION_INVALID: 'GM-4236',
+    LEGACY_FIELD: 'GM-4237',
+    CATEGORY_UNKNOWN: 'GM-4238',
+    CAPABILITY_UNKNOWN: 'GM-4239',
+    CAPABILITY_UNSUPPORTED: 'GM-4240',
+    CAPABILITY_DUPLICATE: 'GM-4241',
+    PERMISSION_UNSUPPORTED: 'GM-4242',
+    SCORE_RANGE: 'GM-4243',
+    SAVE_SCHEMA: 'GM-4244',
+    RANGE_SYNTAX: 'GM-4245',
+    ICON_FORMAT: 'GM-4247',
+    ICON_TOO_LARGE: 'GM-4248',
     RUNTIME_INCOMPATIBLE: 'GM-4260',
     SDK_INCOMPATIBLE: 'GM-4261',
     RATE_LIMITED: 'GM-4290',
@@ -828,6 +848,7 @@
     MANIFEST_TOO_LARGE: 'GM-4229',
     PACKAGE_TOO_LARGE: 'GM-4135',
     INSTALL_URL_REJECTED: 'GM-4034',
+    REGISTRY_URL: 'GM-4035',
     MARKET_DISABLED: 'GM-4036',
     STORE_PATH_ESCAPE: 'GM-4037',
     UNINSTALL_BUILTIN: 'GM-4038',
@@ -868,6 +889,25 @@
     [GM.VALUE_NOT_SERIALIZABLE]: 'Value is not JSON-serializable',
     [GM.UNSUPPORTED_MEDIA_TYPE]: 'Unsupported media type',
     [GM.MANIFEST_INVALID]: 'Invalid game manifest',
+    [GM.MANIFEST_JSON]: 'Inline manifest JSON is invalid',
+    [GM.MANIFEST_VERSION]: 'Unsupported manifestVersion',
+    [GM.FIELD_MISSING]: 'A required manifest field is missing',
+    [GM.FIELD_TYPE]: 'A manifest field has the wrong type',
+    [GM.FIELD_RANGE]: 'A manifest field is out of range',
+    [GM.ID_INVALID]: 'Invalid game id',
+    [GM.ID_RESERVED]: 'Game id is reserved',
+    [GM.VERSION_INVALID]: 'Invalid game version',
+    [GM.LEGACY_FIELD]: 'Manifest uses a legacy field',
+    [GM.CATEGORY_UNKNOWN]: 'Unknown category',
+    [GM.CAPABILITY_UNKNOWN]: 'Unknown capability',
+    [GM.CAPABILITY_UNSUPPORTED]: 'Capability is not supported in V1',
+    [GM.CAPABILITY_DUPLICATE]: 'Duplicate capability',
+    [GM.PERMISSION_UNSUPPORTED]: 'Permissions are not supported in V1',
+    [GM.SCORE_RANGE]: 'Invalid score range',
+    [GM.SAVE_SCHEMA]: 'Invalid save schemaVersion',
+    [GM.RANGE_SYNTAX]: 'Unsupported version range syntax',
+    [GM.ICON_FORMAT]: 'Icon data URI format is not supported',
+    [GM.ICON_TOO_LARGE]: 'Icon exceeds the size limit',
     [GM.RUNTIME_INCOMPATIBLE]: 'Game requires a different Runtime version',
     [GM.SDK_INCOMPATIBLE]: 'Game requires a different SDK version',
     [GM.RATE_LIMITED]: 'Too many requests',
@@ -915,7 +955,9 @@
     const num = Number(String(gmCode).slice(3));
     if (!Number.isFinite(num)) return 500;
     if (gmCode === GM.INTERNAL) return 500;
-    if (gmCode === GM.MANIFEST_INVALID) return 422;
+    // Package/manifest semantics (GM-422x–424x) are 422, size/quota (413x–414x) are 413.
+    if (num >= 4220 && num <= 4249) return 422;
+    if (num >= 4130 && num <= 4149) return 413;
     if (num >= 5000 && num < 6000) return num >= 5030 ? 503 : 500;
     if (num >= 4000 && num < 5000) return Math.floor(num / 10);
     return 500;
@@ -936,31 +978,31 @@
     E_PKG_HTML_INVALID: GM.PACKAGE_INVALID,
     E_PKG_MANIFEST_MISSING: GM.MANIFEST_INVALID,
     E_PKG_MANIFEST_DUPLICATE: GM.MANIFEST_INVALID,
-    E_PKG_MANIFEST_JSON: 'GM-4228',
+    E_PKG_MANIFEST_JSON: GM.MANIFEST_JSON,
     E_PKG_MANIFEST_TOO_LARGE: GM.MANIFEST_TOO_LARGE,
-    E_PKG_MANIFEST_VERSION: 'GM-4230',
-    E_PKG_FIELD_MISSING: 'GM-4231',
-    E_PKG_FIELD_TYPE: 'GM-4232',
-    E_PKG_FIELD_RANGE: 'GM-4233',
-    E_PKG_ID_INVALID: 'GM-4234',
-    E_PKG_ID_RESERVED: 'GM-4235',
-    E_PKG_VERSION_INVALID: 'GM-4236',
-    E_PKG_LEGACY_FIELD: 'GM-4237',
-    E_PKG_CATEGORY_UNKNOWN: 'GM-4238',
-    E_PKG_CAPABILITY_UNKNOWN: 'GM-4239',
-    E_PKG_CAPABILITY_UNSUPPORTED: 'GM-4240',
-    E_PKG_CAPABILITY_DUPLICATE: 'GM-4241',
-    E_PKG_PERMISSION_UNSUPPORTED: 'GM-4242',
-    E_PKG_SCORE_RANGE: 'GM-4243',
-    E_PKG_SAVE_SCHEMA: 'GM-4244',
-    E_PKG_RANGE_SYNTAX: 'GM-4245',
-    E_PKG_ICON_FORMAT: 'GM-4247',
-    E_PKG_ICON_TOO_LARGE: 'GM-4248',
+    E_PKG_MANIFEST_VERSION: GM.MANIFEST_VERSION,
+    E_PKG_FIELD_MISSING: GM.FIELD_MISSING,
+    E_PKG_FIELD_TYPE: GM.FIELD_TYPE,
+    E_PKG_FIELD_RANGE: GM.FIELD_RANGE,
+    E_PKG_ID_INVALID: GM.ID_INVALID,
+    E_PKG_ID_RESERVED: GM.ID_RESERVED,
+    E_PKG_VERSION_INVALID: GM.VERSION_INVALID,
+    E_PKG_LEGACY_FIELD: GM.LEGACY_FIELD,
+    E_PKG_CATEGORY_UNKNOWN: GM.CATEGORY_UNKNOWN,
+    E_PKG_CAPABILITY_UNKNOWN: GM.CAPABILITY_UNKNOWN,
+    E_PKG_CAPABILITY_UNSUPPORTED: GM.CAPABILITY_UNSUPPORTED,
+    E_PKG_CAPABILITY_DUPLICATE: GM.CAPABILITY_DUPLICATE,
+    E_PKG_PERMISSION_UNSUPPORTED: GM.PERMISSION_UNSUPPORTED,
+    E_PKG_SCORE_RANGE: GM.SCORE_RANGE,
+    E_PKG_SAVE_SCHEMA: GM.SAVE_SCHEMA,
+    E_PKG_RANGE_SYNTAX: GM.RANGE_SYNTAX,
+    E_PKG_ICON_FORMAT: GM.ICON_FORMAT,
+    E_PKG_ICON_TOO_LARGE: GM.ICON_TOO_LARGE,
     E_PKG_ENTRY_NOT_SELF_CONTAINED: GM.ENTRY_NOT_SELF_CONTAINED,
     E_PKG_TOO_LARGE: GM.PACKAGE_TOO_LARGE,
     // Registry / install (PRD §8.13.3)
     E_REGISTRY_INVALID: GM.REGISTRY_UNAVAILABLE,
-    E_REGISTRY_URL: 'GM-4035',
+    E_REGISTRY_URL: GM.REGISTRY_URL,
     E_MARKET_DISABLED: GM.MARKET_DISABLED,
     E_NOT_IN_REGISTRY: GM.NOT_IN_REGISTRY,
     E_UNINSTALL_BUILTIN: GM.UNINSTALL_BUILTIN,
@@ -976,9 +1018,11 @@
     E_INSTALL_IO: GM.INSTALL_IO,
     E_INSTALL_CORRUPT: GM.INSTALL_CORRUPT,
     // Storage / compatibility (PRD §8.13.4)
-    E_STORE_SCHEMA: 'GM-4098',
-    E_STORE_SCHEMA_NEWER: 'GM-4098',
+    E_STORE_SCHEMA: GM.SCHEMA_READ_TOO_NEW,
+    E_STORE_SCHEMA_NEWER: GM.SCHEMA_READ_TOO_NEW,
     E_STORE_PATH_ESCAPE: GM.STORE_PATH_ESCAPE,
+    E_COMPAT_SDK: GM.SDK_INCOMPATIBLE,
+    E_COMPAT_RUNTIME: GM.RUNTIME_INCOMPATIBLE,
   });
 
   /** Translate an internal `E_*` code to its public `GM-*` code (fallback: GM-5000). */

@@ -12,6 +12,5 @@
   "preferredTheme": "game-defined",
   "viewport": { "width": 960, "height": 540, "fit": "contain" },
   "score": { "direction": "higher-better", "min": 0, "max": 1000000, "integer": true },
-  "save": { "schemaVersion": 1 },
-  "entry": "dist/index.html"
+  "save": { "schemaVersion": 1 }
 }
