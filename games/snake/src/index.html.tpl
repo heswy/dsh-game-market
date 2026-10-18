@@ -342,7 +342,7 @@
       </div>
 
       <div class="stage">
-        <canvas id="board" width="960" height="540" aria-label="贪吃蛇棋盘"></canvas>
+        <canvas id="board" width="960" height="540" tabindex="0" aria-label="贪吃蛇棋盘"></canvas>
       </div>
 
       <div id="overlay" class="overlay hidden" role="status" aria-live="polite">

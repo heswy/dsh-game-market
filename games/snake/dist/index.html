@@ -342,7 +342,7 @@
       </div>
 
       <div class="stage">
-        <canvas id="board" width="960" height="540" aria-label="贪吃蛇棋盘"></canvas>
+        <canvas id="board" width="960" height="540" tabindex="0" aria-label="贪吃蛇棋盘"></canvas>
       </div>
 
       <div id="overlay" class="overlay hidden" role="status" aria-live="polite">
@@ -2202,6 +2202,32 @@
   return { BOARD_COLS, BOARD_ROWS, CELL_SIZE, START_LENGTH, SCORE_PER_FOOD, SAVE_SCHEMA_VERSION, MIN_TICK_MS, BASE_TICK_MS, DIRECTIONS, cellKey, sameCell, isOpposite, cloneDirection, normalizeDirection, tickMsFor, createGame, startGame, restartGame, setDirection, advance, setFood, serialize, deserialize };
   })();
 
+  // module: games/snake/src/resume.js
+  __mods["games/snake/src/resume.js"] = (function () {
+  /**
+   * Resume policy for the platform's `resume-paused` handshake.
+   *
+   * The Runtime may deliver `resume` while Boot is still loading best/save, so the
+   * game must remember it. Once the board is restored there are exactly two
+   * sensible outcomes:
+   * - the saved board was already running: hand control back and keep moving;
+   * - the saved board never left its prompt: keep the game's own prompt visible
+   *   (an explicit affordance), instead of hiding it under a static board.
+   */
+  const RESUME_PLAN = Object.freeze({
+    IGNORE: 'ignore',
+    PLAY: 'play',
+    PROMPT: 'prompt',
+  });
+
+  function planResume(mode, savedStatus) {
+    if (mode === 'over' || mode === 'error') return RESUME_PLAN.IGNORE;
+    return savedStatus === 'playing' ? RESUME_PLAN.PLAY : RESUME_PLAN.PROMPT;
+  }
+
+  return { RESUME_PLAN, planResume };
+  })();
+
   // module: games/snake/src/game.js
   __mods["games/snake/src/game.js"] = (function () {
   const BOARD_COLS = __mods["games/snake/src/logic.js"].BOARD_COLS;
@@ -2216,6 +2242,8 @@
   const serialize = __mods["games/snake/src/logic.js"].serialize;
   const setDirection = __mods["games/snake/src/logic.js"].setDirection;
   const tickMsFor = __mods["games/snake/src/logic.js"].tickMsFor;
+  const RESUME_PLAN = __mods["games/snake/src/resume.js"].RESUME_PLAN;
+  const planResume = __mods["games/snake/src/resume.js"].planResume;
   /**
    * Snake game entry. Runs inside the sandbox iframe and talks to the platform
    * only through the inlined SDK global (`DSH_GAME_SDK`).
@@ -2253,6 +2281,7 @@
   let moving = false;
   let wasMovingBeforePause = false;
   let restoredSave = false;
+  let resumeRequested = false;
   let best = 0;
   let loopRunning = false;
   let rafId = null;
@@ -2413,6 +2442,48 @@
     loopRunning = false;
     if (rafId !== null && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(rafId);
     rafId = null;
+  }
+
+  // The Runtime may deliver `resume` while boot() is still loading best/save
+  // (the platform overlay appears as soon as the pause handshake lands). Remember
+  // it and start playing once the restored board is ready instead of leaving the
+  // game in its `ready` overlay.
+  function focusBoard() {
+    // After the platform overlay is dismissed, keyboard focus stays on the parent
+    // document; hand it back to the game so arrow keys work immediately.
+    try {
+      if (typeof window !== 'undefined' && typeof window.focus === 'function') window.focus();
+    } catch (_error) {
+      // focus is best-effort
+    }
+    try {
+      if (canvas && typeof canvas.focus === 'function') canvas.focus({ preventScroll: true });
+    } catch (_error) {
+      // focus is best-effort
+    }
+  }
+
+  function beginPlayingFromResume() {
+    wasMovingBeforePause = false;
+    runtimePaused = false;
+    resumeRequested = false;
+    const plan = planResume(mode, state.status);
+    if (plan === RESUME_PLAN.IGNORE) return;
+    if (plan === RESUME_PLAN.PLAY) {
+      hideOverlay();
+      mode = 'playing';
+      moving = true;
+      startLoop();
+      focusBoard();
+      return;
+    }
+    // The board was saved before the first direction key (or the game was paused
+    // on its own prompt). Keep an explicit affordance instead of a static board.
+    mode = 'ready';
+    if (restoredSave) showContinueOverlay();
+    else showStartOverlay();
+    startLoop();
+    focusBoard();
   }
 
   function onGameOver() {
@@ -2650,6 +2721,7 @@
   function onRuntimePause() {
     if (mode === 'over' || mode === 'error') return;
     runtimePaused = true;
+    resumeRequested = false;
     stopLoop();
     if (mode === 'playing' || mode === 'ready') {
       const wasPlaying = mode === 'playing';
@@ -2663,12 +2735,8 @@
 
   function onRuntimeResume() {
     runtimePaused = false;
-    if (mode !== 'paused' && mode !== 'ready') return;
-    hideOverlay();
-    mode = 'playing';
-    moving = restoredSave || wasMovingBeforePause;
-    wasMovingBeforePause = false;
-    startLoop();
+    resumeRequested = true;
+    if (mode === 'paused' || mode === 'ready') beginPlayingFromResume();
   }
 
   function onBeforeSave() {
@@ -2749,7 +2817,8 @@
       }
       updateScores();
       render();
-      if (!runtimePaused && mode === 'ready') startLoop();
+      if (resumeRequested && mode === 'ready') beginPlayingFromResume();
+      else if (!runtimePaused && mode === 'ready') startLoop();
       if (mode === 'over') render();
       if (!sessionActive && mode !== 'over') {
         sessionActive = true;
@@ -2758,6 +2827,23 @@
     } catch (error) {
       showFatal(error);
     }
+  }
+
+  // Small read-only diagnostic hook used by the V0 live-verification harness.
+  // It exposes only the game's own transient lifecycle state, no user data.
+  if (typeof window !== 'undefined') {
+    window.__dshSnakeDebug = function __dshSnakeDebug() {
+      return {
+        mode: mode,
+        runtimePaused: runtimePaused,
+        resumeRequested: resumeRequested,
+        restoredSave: restoredSave,
+        moving: moving,
+        loopRunning: loopRunning,
+        status: state && state.status,
+        score: state && state.score,
+      };
+    };
   }
 
   boot();
