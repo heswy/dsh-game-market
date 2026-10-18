@@ -113,7 +113,7 @@ test('apply registers locale, main panel, sidebar row and header chip inside eff
   assert.equal(localeCall.ns, 'dshGameMarket');
   assert.ok(localeCall.zh['entry.chip.waiting']);
   assert.ok(localeCall.en['entry.chip.waiting']);
-  assert.deepEqual(injected, ['main', 'sidebar.panellist', 'conversation.header.leading']);
+  assert.deepEqual(injected, ['main', 'sidebar.panellist', 'conversation.session.header.actions']);
   assert.equal(registered.length, 3);
   assert.equal(registered[0].options.name, 'main');
   assert.equal(registered[0].options.key, 'dsh-game-market');
@@ -121,7 +121,8 @@ test('apply registers locale, main panel, sidebar row and header chip inside eff
   assert.equal(registered[1].options.name, 'sidebar.panellist');
   assert.equal(registered[1].options.id, 'dsh-game-market');
   assert.equal(registered[1].options.order, 40);
-  assert.equal(registered[2].options.name, 'conversation.header.leading');
+  assert.equal(registered[2].options.name, 'conversation.session.header.actions');
+  assert.equal(registered[2].options.id, 'dsh-game-market-entry');
   assert.equal(typeof registered[1].options.label, 'function');
   assert.equal(registered[1].options.label(), 'Game Market');
   assert.ok(effects.length >= 3);
