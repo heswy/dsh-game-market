@@ -71,6 +71,9 @@ export function prepareStorageValue(data) {
 /** `meta` is optional; `undefined`/`null` become `null`, never `undefined`. */
 export function prepareScoreMeta(meta) {
   if (meta === undefined || meta === null) return null;
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) {
+    throw createGameError(GM.INVALID_PARAM, 'Score meta must be a JSON object');
+  }
   const value = cloneValue(meta);
   assertJsonShape(value, 0);
   const bytes = jsonByteLength(value);
