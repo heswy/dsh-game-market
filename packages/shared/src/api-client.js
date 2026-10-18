@@ -41,6 +41,7 @@ const DEFAULT_TIMEOUTS = Object.freeze({
   'agent-state': 3000,
   'agent-ack': 2000,
   launch: 8000,
+  'runtime-release': 2000,
   'dev-agent-state': 2000,
 });
 
@@ -217,6 +218,8 @@ export function createApiClient(options = {}) {
         },
         retry: false,
       }),
+    /** Tell the Host this runtime instance was left (unlocks update/uninstall). */
+    releaseRuntime: ({ gameId }) => call('runtime-release', { method: 'POST', body: { gameId }, retry: false }),
     /** Dev-only: requires Host config.devMode. */
     devSetAgentState: ({ sessionId, state, label, labelKey, turnId }) =>
       call('dev/agent-state', {

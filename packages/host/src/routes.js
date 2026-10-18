@@ -160,6 +160,16 @@ export function createRouteTable({ services, devMode = false }) {
       handler: async ({ body }) => entry.launch(requireObjectBody(body)),
     },
     {
+      path: ROUTES.RUNTIME_RELEASE,
+      methods: ['POST'],
+      handler: async ({ body }) => {
+        const request = requireObjectBody(body);
+        const gameId = typeof request.gameId === 'string' ? request.gameId : null;
+        if (gameId === null) throw hostError(GM.INVALID_PARAM, 'gameId is required');
+        return { gameId, released: entry.releaseGame(gameId) };
+      },
+    },
+    {
       path: ROUTES.ENTRY,
       methods: ['GET', 'HEAD'],
       handler: async ({ request, url }) => entry.serveEntry(request, url),

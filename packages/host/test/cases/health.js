@@ -137,6 +137,7 @@ export function register() {
       ROUTES.AGENT_STATE,
       ROUTES.AGENT_ACK,
       ROUTES.LAUNCH,
+      ROUTES.RUNTIME_RELEASE,
       ROUTES.ENTRY,
       ROUTES.PREVIEW,
     ];

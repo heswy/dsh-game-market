@@ -816,7 +816,7 @@ Host 内部 job 状态机：`queued → downloading → verifying → installing
 | 1 | 请求校验 | `gameId`/`operationId`/可选 `version`；JSON ≤1 MiB | `GM-4001/4002/4005` |
 | 2 | 幂等/锁 | 同 operationId 已完成 → 返回缓存结果；全局安装锁忙 → 排队最多 10s（`installLockWaitMs`），仍忙 → `GM-4091` | `GM-4091` |
 | 3 | 解析条目 | 从缓存/Registry 解析目标条目与版本；不存在 → `GM-4044`；版本策略冲突 → `GM-4094` | `GM-4044/4094` |
-| 4 | 预检 | 已安装同版本同 sha256 → 幂等成功（`changed:false`）；游戏运行中更新 → `GM-4096`；兼容性检查 | `GM-4096/4260/4261` |
+| 4 | 预检 | 已安装同版本同 sha256 → 幂等成功（`changed:false`）；**活跃 Runtime 实例**存在时更新 → `GM-4096`（未结束 Session 不算）；兼容性检查 | `GM-4096/4260/4261` |
 | 5 | URL 准入 | §5.2 全表；创建 `staging/<jobId>/` | `GM-4034/4035/5032` |
 | 6 | 下载 | 连接 10s / 无数据 20s / 整体 120s；写入 `entry.html.part`，边下边算 sha256；≤20 MiB；重定向 ≤5 | `GM-5034/5035/4135/4034` |
 | 7 | 暂存 rename | `entry.html.part` → `staging/<jobId>/entry.html`（同目录 rename） | `GM-5036` |
@@ -848,7 +848,7 @@ Host 内部 job 状态机：`queued → downloading → verifying → installing
 | 规则 | 内容 |
 |---|---|
 | 内置游戏 | 不可卸载（`E_UNINSTALL_BUILTIN` → `GM-4038`，`reason:'builtin'`） |
-| 运行中 | 有 running Session 或活跃实例 → `GM-4096`；其他安装/卸载进行中 → `GM-4097` |
+| 运行中 | **活跃 Runtime 实例**（`/launch` 后未收到 `/runtime-release`）→ `GM-4096`；**未结束的 Play Session 不算运行中**（它是 Continue 的依据，不阻塞更新/卸载）；其他安装/卸载进行中 → `GM-4097` |
 | 默认行为 | 删除安装目录与安装记录；**保留** `saves/`、`scores/`、`sessions/` 与 `preferences` 历史；重新安装后可 Continue |
 | `deleteData:true` | 需二次确认：请求必须带 `confirmDataDeletion:true`；否则 `GM-4002`；确认后删除该游戏存档/成绩/Session/预览缓存 |
 | 软删除 | 目录先移动到 `trash/<id>-<ts>/`，`installations.json` 原子更新后再清理 trash；清理失败保留 trash，下次启动清理超过 7 天的 trash |
@@ -942,6 +942,7 @@ Host 内部 job 状态机：`queued → downloading → verifying → installing
 | `GET /agent-state` | `sessionId`(必填) | `AgentSnapshot`（§9.1），支持 ETag/304 | 是 | 3s | GM-4002 |
 | `POST /agent-ack` | body `{sessionId, seq}` | `{state, seq}` | 是（seq 幂等） | 3s | GM-4002 |
 | `POST /launch` | body `{gameId, version?, dshSessionId?, mode?: 'start' 或 'resume-paused'}` | `LaunchInfo`（§7.3） | 否（每次新 instance） | 5s | GM-4042/4043/4260/4261/4093 |
+| `POST /runtime-release` | body `{gameId}` | `{gameId, released}` | 是（重复 release 幂等） | 2s | GM-4002 |
 | `GET /entry`（HEAD 同） | `gameId` `version` `instance` `nonce` | raw HTML + 安全头（§7.4） | 是（只读；绑定校验） | 20s | GM-4002/4042/4043/4221/4225/5015 |
 | `GET /preview`（HEAD 同） | `gameId` `version?` `file`（icon/cover/screenshot-N） | 图片字节（png/webp/jpeg）+ 头 | 是 | 10s | GM-4043/4002 |
 | `POST /dev/agent-state`（仅 devMode） | body `{sessionId, state, label?, labelKey?, turnId?}` | `AgentSnapshot` | 否（状态写入） | 3s | GM-4002/GM-4042（非 devMode 路由不存在） |
@@ -1059,6 +1060,12 @@ interface LaunchInfo {
   entrySha256: string;             // 启动前计算的包摘要
 }
 ```
+
+### 7.3.1 `/runtime-release`（运行态归属）
+
+- Client 在 Runtime 卸载/离开（返回工作、返回市场、面板被替换、插件停用）时调用 `POST /runtime-release {gameId}`，Host 删除该游戏的 live instance 绑定。
+- 语义：`/launch` 产生的实例在 release 前视为“运行中”，阻止更新/卸载；未结束的 Play Session 只是 Continue 依据，**不再**阻止更新/卸载。
+- 幂等：重复 release 返回 `released: 0`；Host 重启后实例表为空。
 
 ### 7.4 资源路由：`/entry` 与 `/preview`
 

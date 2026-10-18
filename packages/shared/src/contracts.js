@@ -115,6 +115,7 @@ export const ROUTES = Object.freeze({
   AGENT_STATE: `${API_BASE}/agent-state`,
   AGENT_ACK: `${API_BASE}/agent-ack`,
   LAUNCH: `${API_BASE}/launch`,
+  RUNTIME_RELEASE: `${API_BASE}/runtime-release`,
   ENTRY: `${API_BASE}/entry`,
   PREVIEW: `${API_BASE}/preview`,
   /** Registered only when config.devMode === true. */

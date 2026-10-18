@@ -321,6 +321,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - V1-17：内置游戏**不写** `installations.json`，由 `games/snake` 直接服务并在 Market 列表合成 `source:'builtin'`；不可安装/更新/卸载。
 - V1-18：`/entry` 实例绑定 TTL = 10 分钟（`TIMING.entryBindingTtlMs`），退出/卸载/超时即失效；Host 仅在内存维护 launch 绑定。
 - V1-19：会话 tab 游戏入口按 **Session** 记忆：首次点击 → Market；在该 Session 玩过游戏并返回工作后，再点 tab → 恢复该游戏（`resume-paused` 确认）。记忆在 module store（`sessionGames`，随页面生命周期）；是否跨刷新持久化留 M3 再定。Market 浏览入口保留在 Sidebar 与游戏内「返回市场」。
+- V1-20：**“游戏运行中” = 活跃 Runtime 实例**（`/launch` 后未 release），不是未结束的 Play Session。Host `isRunning` 不再用 `sessions.findRunning`；新增 `POST /runtime-release {gameId}`，Client 在 Runtime 卸载/离开时调用。未结束 Session 保留（Continue + 卸载重装继承），但不再阻止更新/卸载。原因：用户本地安装 breakout 后想卸载重装，被历史未结束 Session 判为“运行中”卡死，且 UI 无结束入口（2026-10-18）。
 
 ---
 
@@ -345,6 +346,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · **用户验收发现 Market 白屏 → 已修复（`b933fe4`）**：用户在桌面端验收时打开 Market 白屏。用隔离 DSH 0.2.1-rc.2 宿主 + 复制用户真实 storage（V0 saves/scores/sessions）复现：Market Hero 的“继续游戏”分支调用 `coverTone()` 但 `market-home.js` 未 import（空 Hero 路径的单测覆盖不到），React 抛 `ReferenceError` 卸载整个 main slot → 白屏；同批还发现 `detail.js` 缺 `initialFor`/`resolvePermissions` import。已修复并新增 `packages/client/test/component-imports.test.js` 源码级回归（组件不能直接渲染测试：零依赖测试环境无 react）。修复后 `npm run verify` **754/754**，隔离宿主 + 真实数据 headless 流程复测 Market 首页/详情正常、0 console error；client.js 已重建并推送 main。
 - 2026-10-18 · **Game tab 会话内行为调整（`a6885fd`）**：用户要求“同一 session 首次点游戏去 Market，玩过并返回工作后再点游戏应回到该游戏”。已实现 per-session `sessionGames` 记忆 + `selectGameEntry` 决策 + `entryGameSpace` 纯逻辑（新增 `entry-flow.js` 与 5 个单测）；`npm run verify` **765/765**。待用户在桌面端点验：刷新后新 session 首次进 Market → 玩一局 → 保存并返回工作 → 再点游戏应直接回该游戏。
 - 2026-10-18 · **恢复游戏双重提示修复（`4e70958`）**：用户截图发现“返回工作→再返回游戏”时平台弹「已恢复上一局」、breakout 又弹自己的 Continue/New run。根因：平台 resume-paused 启动会给游戏发 pause → 等确认 → resume（snake/2048/jump 已按此实现），breakout 启动时无条件 `showStartOverlay()`。修复：resume-paused 启动时丢弃自身开始菜单、恢复棋盘并只显示暂停态（平台弹窗为唯一确认），确认后直接开玩；pause 竞态也会替换开始界面。重建 `games/breakout/dist`；`npm run verify` **765/765**；已推送 main。此外 V1-19 会话 tab 行为同日落地（`a6885fd`）。
+- 2026-10-18 · **“游戏正在运行”卡死卸载修复**：根因 Host 把“未结束 Play Session”当运行中，但 Session 为 Continue 长期保留且无结束入口。改为 live Runtime 实例判定 + 新增 `/runtime-release`（Client Runtime 卸载时释放）；Host 测试覆盖 launch→4096→release→成功、以及“未结束 Session 不阻止卸载”；`npm run verify` **766/766**；契约文档同步；需重启 DSH 生效。
 - （待续）
 
 **当前状态 / 待用户确认**：

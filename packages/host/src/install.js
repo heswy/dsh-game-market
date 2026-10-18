@@ -203,12 +203,14 @@ export function createInstallService({
     return Array.isArray(catalog?.entries) && catalog.entries.some((item) => item && item.id === gameId);
   }
 
+  /**
+   * "Running" means a live Runtime instance, not an unfinished Play Session: an
+   * unfinished session is what enables Continue and may stay open for days, so
+   * it must not block update/uninstall (user-reported 2026-10-18). The Client
+   * releases the instance when the user leaves the Runtime.
+   */
   async function isRunning(gameId) {
-    if (entry && typeof entry.hasActiveInstance === 'function' && entry.hasActiveInstance(gameId)) {
-      return true;
-    }
-    const running = await sessions.findRunning(gameId).catch(() => null);
-    return Boolean(running);
+    return Boolean(entry && typeof entry.hasActiveInstance === 'function' && entry.hasActiveInstance(gameId));
   }
 
   function compatibilityCode(compatibility) {

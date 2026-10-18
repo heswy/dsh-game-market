@@ -2632,6 +2632,7 @@ window.__ModuleLoader__.load({
       'agent-state': 3000,
       'agent-ack': 2000,
       launch: 8000,
+      'runtime-release': 2000,
       'dev-agent-state': 2000,
     });
 
@@ -2808,6 +2809,8 @@ window.__ModuleLoader__.load({
             },
             retry: false,
           }),
+        /** Tell the Host this runtime instance was left (unlocks update/uninstall). */
+        releaseRuntime: ({ gameId }) => call('runtime-release', { method: 'POST', body: { gameId }, retry: false }),
         /** Dev-only: requires Host config.devMode. */
         devSetAgentState: ({ sessionId, state, label, labelKey, turnId }) =>
           call('dev/agent-state', {
@@ -10965,10 +10968,21 @@ window.__ModuleLoader__.load({
       const saveStatus = runtime.saveStatus;
       const showSavePill = saveStatus !== 'idle' || runtime.lastSaveAt > 0;
 
+      function releaseHostInstance(gameId) {
+        if (typeof gameId !== 'string' || gameId.length === 0) return;
+        const api = getApiClient();
+        if (!api || typeof api.releaseRuntime !== 'function') return;
+        Promise.resolve(api.releaseRuntime({ gameId })).catch(function ignore() {});
+      }
+
       function destroyCurrent() {
+        const gameId = store.getState().runtime.gameId;
         const controller = controllerRef.current;
         controllerRef.current = null;
         destroyRuntime(controller);
+        // Leaving the Runtime unlocks update/uninstall while keeping the Play
+        // Session (and therefore Continue) intact.
+        releaseHostInstance(gameId);
       }
 
       function completeLeave(target, reason, saveStale) {

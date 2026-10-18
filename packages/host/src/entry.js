@@ -573,12 +573,25 @@ export function createEntryService({
     }
   }
 
+  /** Client left the Runtime: drop this game's live launch bindings. */
+  function releaseGame(gameId) {
+    let released = 0;
+    for (const [instanceId, binding] of instanceBindings) {
+      if (binding.gameId === gameId) {
+        instanceBindings.delete(instanceId);
+        released += 1;
+      }
+    }
+    return released;
+  }
+
   return {
     launch,
     serveEntry,
     servePreview,
     hasActiveInstance,
     invalidateGame,
+    releaseGame,
     instanceBindings,
     bindingTtlMs,
     isBuiltin,

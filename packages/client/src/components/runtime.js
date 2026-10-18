@@ -396,10 +396,21 @@ export function RuntimeView(props) {
   const saveStatus = runtime.saveStatus;
   const showSavePill = saveStatus !== 'idle' || runtime.lastSaveAt > 0;
 
+  function releaseHostInstance(gameId) {
+    if (typeof gameId !== 'string' || gameId.length === 0) return;
+    const api = getApiClient();
+    if (!api || typeof api.releaseRuntime !== 'function') return;
+    Promise.resolve(api.releaseRuntime({ gameId })).catch(function ignore() {});
+  }
+
   function destroyCurrent() {
+    const gameId = store.getState().runtime.gameId;
     const controller = controllerRef.current;
     controllerRef.current = null;
     destroyRuntime(controller);
+    // Leaving the Runtime unlocks update/uninstall while keeping the Play
+    // Session (and therefore Continue) intact.
+    releaseHostInstance(gameId);
   }
 
   function completeLeave(target, reason, saveStale) {

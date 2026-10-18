@@ -326,9 +326,7 @@ export function register() {
   test('updating while the game is running is refused with GM-4096', async (t) => {
     const { fixture, host } = await setup(t, [{ manifest: { id: 'jump', version: '1.0.0' } }]);
     await install(host, 'jump');
-    await host.data(ROUTES.SESSION, {
-      body: { gameId: 'jump', action: 'start', operationId: nextOp('session') },
-    });
+    await host.data(ROUTES.LAUNCH, { body: { gameId: 'jump' } });
     fixture.remove('jump');
     await fixture.add({ manifest: { id: 'jump', version: '1.1.0' } });
     await rewriteRegistry(host, fixture);
@@ -337,6 +335,12 @@ export function register() {
     });
     assert.equal(response.status, 409);
     assertError(payload, GM.UPDATE_GAME_RUNNING);
+    // Releasing the Runtime unlocks the update.
+    await host.data(ROUTES.RUNTIME_RELEASE, { body: { gameId: 'jump' } });
+    const retry = await host.requestJson(ROUTES.INSTALL, {
+      body: { gameId: 'jump', operationId: nextOp('running-released') },
+    });
+    assert.equal(retry.response.status, 200, JSON.stringify(retry.payload));
   });
 
   test('uninstall keeps saves/scores/sessions by default and is idempotent', async (t) => {
@@ -424,14 +428,32 @@ export function register() {
   test('uninstalling a running game is refused (GM-4096)', async (t) => {
     const { host } = await setup(t, [{ manifest: { id: 'jump' } }]);
     await install(host, 'jump');
-    await host.data(ROUTES.SESSION, {
-      body: { gameId: 'jump', action: 'start', operationId: nextOp('session') },
-    });
+    await host.data(ROUTES.LAUNCH, { body: { gameId: 'jump' } });
     const { response, payload } = await host.requestJson(ROUTES.UNINSTALL, {
       body: { gameId: 'jump', operationId: nextOp('running-uninstall') },
     });
     assert.equal(response.status, 409);
     assertError(payload, GM.UPDATE_GAME_RUNNING);
+    // Client released the Runtime -> uninstall is allowed and keeps the session.
+    await host.data(ROUTES.RUNTIME_RELEASE, { body: { gameId: 'jump' } });
+    const retry = await host.requestJson(ROUTES.UNINSTALL, {
+      body: { gameId: 'jump', operationId: nextOp('running-uninstall-2') },
+    });
+    assert.equal(retry.response.status, 200, JSON.stringify(retry.payload));
+    assert.equal(retry.payload.data.removed, true);
+  });
+
+  test('an unfinished Play Session alone does not block uninstall (Continue is not running)', async (t) => {
+    const { host } = await setup(t, [{ manifest: { id: 'jump' } }]);
+    await install(host, 'jump');
+    await host.data(ROUTES.SESSION, {
+      body: { gameId: 'jump', action: 'start', operationId: nextOp('session-running') },
+    });
+    const { response, payload } = await host.requestJson(ROUTES.UNINSTALL, {
+      body: { gameId: 'jump', operationId: nextOp('session-uninstall') },
+    });
+    assert.equal(response.status, 200, JSON.stringify(payload));
+    assert.equal(payload.data.removed, true);
   });
 
   test('POST /install-local accepts raw text/html and records source local', async (t) => {
