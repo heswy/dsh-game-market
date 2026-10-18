@@ -7211,6 +7211,7 @@ window.__ModuleLoader__.load({
     const deriveChipState = __mods["packages/client/src/chip-state.js"].deriveChipState;
     const beginGame = __mods["packages/client/src/actions.js"].beginGame;
     const gameNameFromState = __mods["packages/client/src/actions.js"].gameNameFromState;
+    const refreshMarket = __mods["packages/client/src/actions.js"].refreshMarket;
     const makeT = __mods["packages/client/src/locale.js"].makeT;
     const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
     const formatRelativeTime = __mods["packages/client/src/format.js"].formatRelativeTime;
@@ -7219,6 +7220,7 @@ window.__ModuleLoader__.load({
     const StyleTag = __mods["packages/client/src/styles.js"].StyleTag;
     const backToConversation = __mods["packages/client/src/navigation.js"].backToConversation;
     const openGameMarket = __mods["packages/client/src/navigation.js"].openGameMarket;
+    const getApiClient = __mods["packages/client/src/api.js"].getApiClient;
     const useActivePanel = __mods["packages/client/src/hooks.js"].useActivePanel;
     const useClock = __mods["packages/client/src/hooks.js"].useClock;
     const useSessionBinding = __mods["packages/client/src/hooks.js"].useSessionBinding;
@@ -7287,6 +7289,18 @@ window.__ModuleLoader__.load({
           if (chip.status !== CHIP_STATUS.WAITING) setWaitingOpen(false);
         },
         [chip.status]
+      );
+
+      React.useEffect(
+        function ensureMarketCache() {
+          // The chip needs canContinue/lastPlayedAt to label the resume action even
+          // when the user has not opened the Market panel in this page session.
+          if (state.market.status === 'ready' || state.market.status === 'loading') return;
+          const api = getApiClient();
+          if (!api) return;
+          void refreshMarket({ store: store, api: api });
+        },
+        [state.market.status]
       );
 
       React.useEffect(

@@ -2,7 +2,7 @@
 
 在 DeepSeek Harness（DSH）里，把 Agent 执行长任务时的等待时间变成一局小游戏：游戏占满主工作区，右下角的小鲸鱼负责维持 Agent 的存在感，任务完成时提醒但不打断。
 
-当前仓库正在实现 **V0（核心体验验证版）**，验证游戏是 **贪吃蛇（snake）**。
+**V0（核心体验验证版）已完成**，验证游戏是 **贪吃蛇（snake）**；下一步进入 V1（Market/安装/开发者体系，见 PRD §7.2）。
 
 - 权威规格：[`PRD｜DSH Game Market.md`](./PRD｜DSH%20Game%20Market.md)（第 8–12 章为实现权威来源）
 - 项目记忆与协作/分支/验证规则：[`PROJECT_MEMORY.md`](./PROJECT_MEMORY.md)（**唯一项目记忆文件**）
@@ -12,14 +12,20 @@
 
 | 能力 | 状态 |
 |---|---|
-| Bundle 安装形态（Host 半 + `dsh.client` 半） | 开发中 |
-| `main` 面板 + Sidebar 入口；进入/返回不丢会话草稿 | 开发中 |
-| Agent 运行 ≥5s 的会话头等待入口（chip） | 开发中 |
-| Agent Presence 小鲸鱼（running / waiting-user / completed / error） | 开发中 |
-| sandbox iframe Runtime + 自动保存 + Continue | 开发中 |
-| 需要用户：暂停存档 → 切回处理 → 一键回游戏 | 开发中 |
-| 内置贪吃蛇（键盘、分数、Personal Best、Continue） | 开发中 |
+| Bundle 安装形态（Host 半 + `dsh.client` 半） | ✅ 已完成（可用/可停用清理） |
+| `main` 面板 + Sidebar 入口；进入/返回不丢会话草稿 | ✅ 已完成 |
+| Agent 运行 ≥5s 的会话头等待入口（chip） | ✅ 已完成 |
+| Agent Presence 小鲸鱼（running / waiting-user / completed / error） | ✅ 已完成 |
+| sandbox iframe Runtime + 自动保存 + Continue | ✅ 已完成 |
+| 需要用户：暂停存档 → 切回处理 → 一键回游戏 | ✅ 已完成 |
+| 内置贪吃蛇（键盘、分数、Personal Best、Continue） | ✅ 已完成 |
 | 真实安装 / Registry / Developer CLI / 排行榜 UI | **V0 不做** |
+
+### V0 验证
+
+- 自动化：`npm run build && npm run check && npm test` → **312 tests / 312 pass**，严格检查 13 项通过。
+- 真机（同一版本 DSH 0.2.1-rc.2 的隔离 Web 宿主 + headless Chrome）：市场/等待入口/游戏运行/等待用户/完成提醒/继续游戏/跨重启恢复/多 Session/停用清理全部通过。
+- 完整清单、截图与未覆盖项见 [`docs/V0-VERIFICATION.md`](./docs/V0-VERIFICATION.md)。
 
 ## 目录结构
 
@@ -55,8 +61,14 @@ npm test           # node --test（Host/Client/Runtime/SDK/游戏逻辑 + 集成
 ```bash
 npm run build
 npm run dev:enable -- --dry-run     # 预览将要写入的 patch
-npm run dev:enable -- --yes         # 备份后写入托管块
+npm run dev:enable -- --yes         # 备份后写入托管块（默认 desktop profile）
 # 重启 DSH（或停用/启用插件行），然后刷新 DSH 页面
+```
+
+隔离验证环境（可选，避免改动日常 profile）：
+
+```bash
+npm run dev:enable -- --profile-dir=/tmp/dsh-verify-home/profiles/web --yes
 ```
 
 卸载开发行：
@@ -89,8 +101,9 @@ curl -s -X POST http://127.0.0.1:56891/api/game-market/dev/agent-state \
 
 ## 已知限制（V0）
 
-- 没有第三方游戏安装、Registry、开发者 CLI。
+- 没有第三方游戏安装、Registry、开发者 CLI（V1 范围）。
 - 贪吃蛇是自包含单文件；多文件游戏资源要等 V1.5。
 - 平台提示音/静音、长期“少提醒”设置不在 V0。
-- Agent 等待态依赖 DSH `approval/asked` 等持久事件；提问投影仍需真机 Spike（PRD S-14）。
-- UI 视觉验收需在 DSH 内人工完成；仓库提供自动化逻辑测试与检查。
+- Agent 等待态依赖 DSH `approval/asked` 等持久事件（Host 单测覆盖）；**真实 Agent 事件链路与提问（question）等待仍需真机 Spike（S-14/S-15）**；V0 验证用 dev-only 状态接口驱动 UI。
+- 保存失败重试退避、saveGap 提示、Windows/深色主题完整视觉复测列入 V1 前清单。
+- UI 自动化验证使用同版本 Web 宿主 + headless Chrome；桌面窗口视觉细节需在桌面端人工确认。

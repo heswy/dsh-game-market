@@ -9,12 +9,13 @@ import React from 'react';
 import { store, pageChanged, sessionBound, turnIgnored, surfaceChanged } from '../store.js';
 import { PAGES } from '../constants.js';
 import { CHIP_STATUS, deriveChipState } from '../chip-state.js';
-import { beginGame, gameNameFromState } from '../actions.js';
+import { beginGame, gameNameFromState, refreshMarket } from '../actions.js';
 import { makeT, detectLocale } from '../locale.js';
 import { formatRelativeTime } from '../format.js';
 import { GamepadIcon, PlayIcon } from '../icons.js';
 import { StyleTag } from '../styles.js';
 import { backToConversation, openGameMarket } from '../navigation.js';
+import { getApiClient } from '../api.js';
 import { useActivePanel, useClock, useSessionBinding, useStoreState } from '../hooks.js';
 
 const h = React.createElement;
@@ -73,6 +74,18 @@ export function WaitEntryChip(props) {
       if (chip.status !== CHIP_STATUS.WAITING) setWaitingOpen(false);
     },
     [chip.status]
+  );
+
+  React.useEffect(
+    function ensureMarketCache() {
+      // The chip needs canContinue/lastPlayedAt to label the resume action even
+      // when the user has not opened the Market panel in this page session.
+      if (state.market.status === 'ready' || state.market.status === 'loading') return;
+      const api = getApiClient();
+      if (!api) return;
+      void refreshMarket({ store: store, api: api });
+    },
+    [state.market.status]
   );
 
   React.useEffect(
