@@ -1324,6 +1324,7 @@ window.__ModuleLoader__.load({
         toasts: [],
         dialog: null,
         installJobs: {},
+        sessionGames: {},
         focus: null,
         health: null,
         surface: { chip: false, runtime: false, activePanelId: null },
@@ -1340,6 +1341,7 @@ window.__ModuleLoader__.load({
         scroll: { ...base.scroll, ...(overrides.scroll || {}) },
         toasts: Array.isArray(overrides.toasts) ? overrides.toasts : base.toasts,
         installJobs: overrides.installJobs && typeof overrides.installJobs === 'object' ? overrides.installJobs : base.installJobs,
+        sessionGames: overrides.sessionGames && typeof overrides.sessionGames === 'object' ? overrides.sessionGames : base.sessionGames,
         surface: { ...base.surface, ...(overrides.surface || {}) },
       };
     }
@@ -1354,6 +1356,30 @@ window.__ModuleLoader__.load({
 
     function isGameId(value) {
       return typeof value === 'string' && value.length > 0 && value.length <= 64;
+    }
+
+    /**
+     * Decide what the per-session Game tab should do.
+     *
+     * - First time in a Session (no game started yet) -> `{ kind: 'market' }`.
+     * - After the user has played a game in this Session and returned to work ->
+     *   `{ kind: 'resume', gameId }`, so the tab goes back to that game instead of
+     *   re-opening the Market. Browsing the Market again stays available through
+     *   the sidebar / the game's own back-to-market action.
+     */
+    function selectGameEntry(state, sessionId) {
+      if (!state || !isSessionId(sessionId)) return { kind: 'market' };
+      const record = state.sessionGames && state.sessionGames[sessionId];
+      if (!record || !isGameId(record.gameId)) return { kind: 'market' };
+      const games = state.market && Array.isArray(state.market.games) ? state.market.games : null;
+      // Only fall back when the catalog is loaded; an empty list must not block a
+      // resume the runtime can still validate.
+      if (games && games.length > 0) {
+        const game = games.find((item) => item && item.id === record.gameId);
+        const available = Boolean(game) && (game.installed === true || game.source === 'builtin' || game.source === 'dev');
+        if (!available) return { kind: 'market', staleGameId: record.gameId };
+      }
+      return { kind: 'resume', gameId: record.gameId };
     }
 
     function normalizeError(error) {
@@ -1796,6 +1822,7 @@ window.__ModuleLoader__.load({
         case 'runtime-start': {
           if (!isGameId(action.gameId)) return state;
           if (action.mode !== 'start' && action.mode !== 'resume-paused') return state;
+          const sessionId = isSessionId(action.sessionId) ? action.sessionId : state.bindingSessionId;
           return {
             ...state,
             page: PAGES.RUNTIME,
@@ -1803,10 +1830,14 @@ window.__ModuleLoader__.load({
               ...initialRuntime(),
               gameId: action.gameId,
               mode: action.mode,
-              bindingSessionId: isSessionId(action.sessionId) ? action.sessionId : state.bindingSessionId,
+              bindingSessionId: sessionId,
               state: 'launching',
               attempt: 0,
             },
+            // Remember the last game per Session so the Game tab can return to it.
+            sessionGames: isSessionId(sessionId)
+              ? { ...state.sessionGames, [sessionId]: { gameId: action.gameId } }
+              : state.sessionGames,
             ui: { ...state.ui, lightbox: null },
           };
         }
@@ -2166,7 +2197,7 @@ window.__ModuleLoader__.load({
       return state && state.dialog ? state.dialog : null;
     }
 
-    return { createInitialState, reduce, pageChanged, sessionBound, agentSnapshotReceived, agentFresh, agentPollFailed, pausedGameRecorded, pausedGameCleared, turnIgnored, completedAcknowledged, marketLoading, marketReady, marketFailed, marketInvalidated, marketOffline, detailOpened, detailReady, detailFailed, detailScores, detailClosed, queryDraftChanged, queryApplied, categoryChanged, searchOpenChanged, filtersCleared, lightboxChanged, scrollSaved, dialogOpened, dialogDeleteDataChanged, dialogConfirmAgain, dialogBusyChanged, dialogClosed, toastPushed, toastDismissed, installStageChanged, installPercentChanged, installCleared, focusSet, focusConsumed, healthReady, runtimeStarted, runtimeLaunchInfo, runtimePatched, runtimeFailed, runtimeExited, runtimeRetried, runtimeReset, leaveCompleted, surfaceChanged, createStore, store, selectGame, selectResumableGames, selectInstalledGames, selectInstallJob, selectDialog };
+    return { createInitialState, selectGameEntry, reduce, pageChanged, sessionBound, agentSnapshotReceived, agentFresh, agentPollFailed, pausedGameRecorded, pausedGameCleared, turnIgnored, completedAcknowledged, marketLoading, marketReady, marketFailed, marketInvalidated, marketOffline, detailOpened, detailReady, detailFailed, detailScores, detailClosed, queryDraftChanged, queryApplied, categoryChanged, searchOpenChanged, filtersCleared, lightboxChanged, scrollSaved, dialogOpened, dialogDeleteDataChanged, dialogConfirmAgain, dialogBusyChanged, dialogClosed, toastPushed, toastDismissed, installStageChanged, installPercentChanged, installCleared, focusSet, focusConsumed, healthReady, runtimeStarted, runtimeLaunchInfo, runtimePatched, runtimeFailed, runtimeExited, runtimeRetried, runtimeReset, leaveCompleted, surfaceChanged, createStore, store, selectGame, selectResumableGames, selectInstalledGames, selectInstallJob, selectDialog };
     })();
 
     // module: packages/client/src/diagnostics.js
@@ -14856,6 +14887,42 @@ window.__ModuleLoader__.load({
     return { GameMarketPanel };
     })();
 
+    // module: packages/client/src/entry-flow.js
+    __mods["packages/client/src/entry-flow.js"] = (function () {
+    const selectGameEntry = __mods["packages/client/src/store.js"].selectGameEntry;
+    /**
+     * Game-tab entry flow (no React): decides Market vs resume and performs the
+     * side effects through injected callbacks so it is unit-testable without a
+     * browser. See components/game-entry-view.js for the React binding.
+     *
+     * Behaviour (user request, 2026-10-18):
+     *   - first time in a Session (no game started yet) -> open the Market;
+     *   - after the user played a game in this Session and returned to work ->
+     *     resume that game instead.
+     */
+
+    /**
+     * @param {{store: {getState: Function}, sessionId: string|null,
+     *   openView?: (view: string) => void, openMarket?: () => void,
+     *   startGame?: (options: object) => void}} options
+     * @returns {{kind: 'market'|'resume', gameId?: string}}
+     */
+    function enterGameSpace(options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      const store = opts.store;
+      if (!store || typeof store.getState !== 'function') throw new Error('enterGameSpace requires a store');
+      if (typeof opts.openView === 'function') opts.openView('chat');
+      const entry = selectGameEntry(store.getState(), opts.sessionId);
+      if (typeof opts.openMarket === 'function') opts.openMarket();
+      if (entry.kind === 'resume' && typeof opts.startGame === 'function') {
+        opts.startGame({ gameId: entry.gameId, mode: 'resume-paused', sessionId: opts.sessionId });
+      }
+      return entry;
+    }
+
+    return { enterGameSpace };
+    })();
+
     // module: packages/client/src/components/game-entry-view.js
     __mods["packages/client/src/components/game-entry-view.js"] = (function () {
     const __react = require('react');
@@ -14864,12 +14931,19 @@ window.__ModuleLoader__.load({
     const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
     const openGameMarket = __mods["packages/client/src/navigation.js"].openGameMarket;
     const StyleTag = __mods["packages/client/src/styles.js"].StyleTag;
+    const store = __mods["packages/client/src/store.js"].store;
+    const beginGame = __mods["packages/client/src/actions.js"].beginGame;
+    const enterGameSpace = __mods["packages/client/src/entry-flow.js"].enterGameSpace;
+    const useSessionBinding = __mods["packages/client/src/hooks.js"].useSessionBinding;
+    const useStoreState = __mods["packages/client/src/hooks.js"].useStoreState;
     /**
      * Persistent Game tab in the conversation tab strip.
      *
-     * The tab is the user's everyday entry into the game. Selecting it opens the
-     * Game Market main panel and resets the conversation view back to Chat, so the
-     * Back action from the market returns to the normal conversation.
+     * First selection in a Session opens the Game Market; after the user has
+     * played a game and returned to work, the next selection resumes that game.
+     * Browsing the Market again stays available from the sidebar / the game's own
+     * back-to-market action. The decision + side effects live in `entry-flow.js`
+     * so they can be unit-tested without React.
      */
 
     const h = React.createElement;
@@ -14877,13 +14951,28 @@ window.__ModuleLoader__.load({
     function GameEntryView(props) {
       const t = makeT(props && props.t, detectLocale());
       const openView = props && typeof props.openView === 'function' ? props.openView : null;
+      const diagnosticRef = React.useRef(false);
+      const state = useStoreState();
+      const binding = useSessionBinding(props, diagnosticRef);
+      const sessionId = binding.sessionId || state.bindingSessionId;
+      const handledRef = React.useRef(null);
 
       React.useEffect(
-        function enterGameMarket() {
-          if (openView) openView('chat');
-          openGameMarket();
+        function enterTab() {
+          const key = typeof sessionId === 'string' ? sessionId : '';
+          if (handledRef.current === key) return;
+          handledRef.current = key;
+          enterGameSpace({
+            store: store,
+            sessionId: typeof sessionId === 'string' ? sessionId : null,
+            openView: openView,
+            openMarket: openGameMarket,
+            startGame: function startGame(options) {
+              beginGame(store, options);
+            },
+          });
         },
-        [openView]
+        [openView, sessionId]
       );
 
       return h(

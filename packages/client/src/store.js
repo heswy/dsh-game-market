@@ -77,6 +77,7 @@ export function createInitialState(overrides) {
     toasts: [],
     dialog: null,
     installJobs: {},
+    sessionGames: {},
     focus: null,
     health: null,
     surface: { chip: false, runtime: false, activePanelId: null },
@@ -93,6 +94,7 @@ export function createInitialState(overrides) {
     scroll: { ...base.scroll, ...(overrides.scroll || {}) },
     toasts: Array.isArray(overrides.toasts) ? overrides.toasts : base.toasts,
     installJobs: overrides.installJobs && typeof overrides.installJobs === 'object' ? overrides.installJobs : base.installJobs,
+    sessionGames: overrides.sessionGames && typeof overrides.sessionGames === 'object' ? overrides.sessionGames : base.sessionGames,
     surface: { ...base.surface, ...(overrides.surface || {}) },
   };
 }
@@ -107,6 +109,30 @@ function isRuntimeState(value) {
 
 function isGameId(value) {
   return typeof value === 'string' && value.length > 0 && value.length <= 64;
+}
+
+/**
+ * Decide what the per-session Game tab should do.
+ *
+ * - First time in a Session (no game started yet) -> `{ kind: 'market' }`.
+ * - After the user has played a game in this Session and returned to work ->
+ *   `{ kind: 'resume', gameId }`, so the tab goes back to that game instead of
+ *   re-opening the Market. Browsing the Market again stays available through
+ *   the sidebar / the game's own back-to-market action.
+ */
+export function selectGameEntry(state, sessionId) {
+  if (!state || !isSessionId(sessionId)) return { kind: 'market' };
+  const record = state.sessionGames && state.sessionGames[sessionId];
+  if (!record || !isGameId(record.gameId)) return { kind: 'market' };
+  const games = state.market && Array.isArray(state.market.games) ? state.market.games : null;
+  // Only fall back when the catalog is loaded; an empty list must not block a
+  // resume the runtime can still validate.
+  if (games && games.length > 0) {
+    const game = games.find((item) => item && item.id === record.gameId);
+    const available = Boolean(game) && (game.installed === true || game.source === 'builtin' || game.source === 'dev');
+    if (!available) return { kind: 'market', staleGameId: record.gameId };
+  }
+  return { kind: 'resume', gameId: record.gameId };
 }
 
 function normalizeError(error) {
@@ -549,6 +575,7 @@ export function reduce(state, action) {
     case 'runtime-start': {
       if (!isGameId(action.gameId)) return state;
       if (action.mode !== 'start' && action.mode !== 'resume-paused') return state;
+      const sessionId = isSessionId(action.sessionId) ? action.sessionId : state.bindingSessionId;
       return {
         ...state,
         page: PAGES.RUNTIME,
@@ -556,10 +583,14 @@ export function reduce(state, action) {
           ...initialRuntime(),
           gameId: action.gameId,
           mode: action.mode,
-          bindingSessionId: isSessionId(action.sessionId) ? action.sessionId : state.bindingSessionId,
+          bindingSessionId: sessionId,
           state: 'launching',
           attempt: 0,
         },
+        // Remember the last game per Session so the Game tab can return to it.
+        sessionGames: isSessionId(sessionId)
+          ? { ...state.sessionGames, [sessionId]: { gameId: action.gameId } }
+          : state.sessionGames,
         ui: { ...state.ui, lightbox: null },
       };
     }

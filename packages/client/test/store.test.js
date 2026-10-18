@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createStore, createInitialState, reduce, selectGame, selectResumableGames } from '../src/store.js';
+import { createStore, createInitialState, reduce, selectGame, selectGameEntry, selectResumableGames } from '../src/store.js';
 import { PAGES } from '../src/constants.js';
 
 const SESSION = 'session-A';
@@ -141,4 +141,51 @@ test('reduce is pure: unchanged actions return the same object', function () {
   assert.equal(reduce(state, { type: 'nope' }), state);
   assert.equal(reduce(state, { type: 'page', page: PAGES.MARKET }), state);
   assert.equal(reduce(state, { type: 'surface', name: 'chip', value: false }), state);
+});
+
+test('the Game tab resumes the last game played in the same Session', function () {
+  const store = createStore();
+  assert.deepEqual(store.getState().sessionGames, {});
+  assert.deepEqual(selectGameEntry(store.getState(), SESSION), { kind: 'market' });
+
+  store.dispatch({ type: 'market-ready', items: [{ id: 'snake', installed: true, source: 'builtin' }], refreshedAt: NOW });
+  store.dispatch({ type: 'runtime-start', gameId: 'snake', mode: 'start', sessionId: SESSION });
+  assert.deepEqual(store.getState().sessionGames[SESSION], { gameId: 'snake' });
+  assert.deepEqual(selectGameEntry(store.getState(), SESSION), { kind: 'resume', gameId: 'snake' });
+
+  // Returning to work keeps the per-Session memory.
+  store.dispatch({ type: 'leave-complete' });
+  assert.equal(store.getState().page, PAGES.MARKET);
+  assert.deepEqual(selectGameEntry(store.getState(), SESSION), { kind: 'resume', gameId: 'snake' });
+
+  // A different Session starts from the Market.
+  assert.deepEqual(selectGameEntry(store.getState(), 'session-B'), { kind: 'market' });
+  assert.deepEqual(selectGameEntry(store.getState(), null), { kind: 'market' });
+});
+
+test('the Game tab falls back to the Market when the remembered game is gone', function () {
+  const store = createStore({
+    sessionGames: { [SESSION]: { gameId: 'jump' } },
+    market: { status: 'ready', games: [{ id: 'jump', installed: false, source: 'registry' }] },
+  });
+  const entry = selectGameEntry(store.getState(), SESSION);
+  assert.equal(entry.kind, 'market');
+  assert.equal(entry.staleGameId, 'jump');
+
+  // A loaded but empty catalog must not block a resume (runtime still validates).
+  store.dispatch({ type: 'market-ready', items: [], refreshedAt: NOW });
+  const withEmptyCatalog = createStore({ sessionGames: { [SESSION]: { gameId: 'jump' } } });
+  assert.deepEqual(selectGameEntry(withEmptyCatalog.getState(), SESSION), { kind: 'resume', gameId: 'jump' });
+
+  // Local/builtin/dev games are resumable; uninstalled registry games are not.
+  store.dispatch({ type: 'market-ready', items: [{ id: 'jump', installed: true, source: 'local' }], refreshedAt: NOW });
+  assert.deepEqual(selectGameEntry(store.getState(), SESSION), { kind: 'resume', gameId: 'jump' });
+});
+
+test('runtime-start without a Session does not record a Game-tab target', function () {
+  const store = createStore();
+  store.dispatch({ type: 'runtime-start', gameId: 'snake', mode: 'start', sessionId: null });
+  assert.deepEqual(store.getState().sessionGames, {});
+  store.dispatch({ type: 'runtime-start', gameId: 'snake', mode: 'start', sessionId: SESSION });
+  assert.deepEqual(store.getState().sessionGames[SESSION], { gameId: 'snake' });
 });
