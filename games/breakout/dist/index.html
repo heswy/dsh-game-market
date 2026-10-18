@@ -1,0 +1,4560 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="description" content="经典打砖块：移动挡板反弹球，击碎普通与坚硬砖块，闯过 5 个关卡。鼠标或键盘都能玩，支持暂停、自动保存与 Continue。" />
+    <title>Breakout</title>
+    <script type="application/json" id="dsh-game-manifest">{
+  "manifestVersion": 1,
+  "id": "breakout",
+  "name": "Breakout",
+  "version": "1.0.0",
+  "author": {
+    "name": "DSH Game Market"
+  },
+  "description": "经典打砖块：移动挡板反弹球，击碎普通与坚硬砖块，闯过 5 个关卡。鼠标或键盘都能玩，支持暂停、自动保存与 Continue。",
+  "categories": [
+    "arcade"
+  ],
+  "tags": [
+    "arcade",
+    "breakout",
+    "keyboard",
+    "mouse",
+    "short-run"
+  ],
+  "capabilities": [
+    "storage",
+    "score"
+  ],
+  "sdkVersion": "^1.0.0",
+  "runtimeVersion": "^1.0.0",
+  "preferredTheme": "game-defined",
+  "viewport": {
+    "width": 960,
+    "height": 540,
+    "fit": "contain"
+  },
+  "score": {
+    "direction": "higher-better",
+    "min": 0,
+    "max": 10000000,
+    "integer": true
+  },
+  "save": {
+    "schemaVersion": 1
+  },
+  "license": "MIT"
+}</script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #05080f;
+        --panel: rgba(11, 20, 34, 0.92);
+        --panel-solid: #0b1422;
+        --panel-border: rgba(148, 197, 255, 0.16);
+        --text: #eaf2ff;
+        --muted: #9fb1c9;
+        --faint: rgba(159, 177, 201, 0.5);
+        --accent: #22d3ee;
+        --accent-2: #a78bfa;
+        --on-accent: #04121a;
+        --success: #34d399;
+        --warn: #fbbf24;
+        --danger: #fb7185;
+        --focus: #fbbf24;
+        --focus-soft: rgba(34, 211, 238, 0.5);
+        --shadow: rgba(0, 0, 0, 0.6);
+        --backdrop: rgba(3, 7, 13, 0.56);
+        --scrim-line: rgba(148, 197, 255, 0.12);
+      }
+
+      html[data-theme='light'] {
+        color-scheme: light;
+        --bg: #eef4fb;
+        --panel: rgba(255, 255, 255, 0.94);
+        --panel-solid: #ffffff;
+        --panel-border: rgba(15, 23, 42, 0.12);
+        --text: #0b1220;
+        --muted: #4c5f78;
+        --faint: rgba(76, 95, 120, 0.48);
+        --accent: #0e7490;
+        --accent-2: #6d28d9;
+        --on-accent: #ffffff;
+        --success: #047857;
+        --warn: #b45309;
+        --danger: #be123c;
+        --focus: #b45309;
+        --focus-soft: rgba(14, 116, 144, 0.45);
+        --shadow: rgba(15, 23, 42, 0.2);
+        --backdrop: rgba(226, 236, 247, 0.62);
+        --scrim-line: rgba(15, 23, 42, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+          'Microsoft YaHei', sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      #app {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        min-height: 100dvh;
+        background:
+          radial-gradient(120% 90% at 18% 0%, rgba(34, 211, 238, 0.07), transparent 58%),
+          radial-gradient(100% 90% at 82% 100%, rgba(167, 139, 250, 0.07), transparent 60%),
+          var(--bg);
+      }
+
+      .stage {
+        position: relative;
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #board {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        outline: none;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      #board:focus,
+      #board:focus-visible {
+        outline: none;
+        box-shadow: inset 0 0 0 2px var(--focus-soft);
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(16px, 4vw, 40px);
+        background: var(--backdrop);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+      }
+
+      .overlay-card {
+        position: relative;
+        width: min(460px, 100%);
+        padding: clamp(22px, 3.4vw, 34px);
+        border-radius: 22px;
+        border: 1px solid var(--panel-border);
+        background: var(--panel);
+        box-shadow: 0 26px 80px var(--shadow);
+        text-align: center;
+        overflow: hidden;
+        animation: card-in 190ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .overlay-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
+        opacity: 0.9;
+      }
+
+      .overlay-card:focus {
+        outline: none;
+      }
+
+      .overlay-kicker {
+        margin: 0 0 10px;
+        color: var(--accent);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+      }
+
+      .overlay-title {
+        margin: 0 0 10px;
+        font-size: clamp(26px, 4.2vw, 36px);
+        line-height: 1.1;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: var(--text);
+      }
+
+      .overlay-hint {
+        margin: 0 auto 22px;
+        max-width: 40ch;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.65;
+        white-space: pre-line;
+      }
+
+      .overlay-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .btn {
+        appearance: none;
+        min-height: 44px;
+        padding: 0 22px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          transform 120ms ease,
+          filter 120ms ease,
+          background-color 120ms ease;
+        touch-action: manipulation;
+      }
+
+      .btn:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 3px;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: var(--on-accent);
+        box-shadow: 0 10px 26px rgba(34, 211, 238, 0.22);
+      }
+
+      .btn-primary:hover {
+        filter: brightness(1.07);
+      }
+
+      .btn-primary:active {
+        transform: translateY(1px);
+      }
+
+      .btn-quiet {
+        background: transparent;
+        color: var(--muted);
+        border-color: var(--panel-border);
+      }
+
+      .btn-quiet:hover {
+        background: rgba(148, 197, 255, 0.08);
+        color: var(--text);
+      }
+
+      .btn-quiet:active {
+        transform: translateY(1px);
+      }
+
+      .statusbar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 6;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 20px calc(10px + env(safe-area-inset-bottom));
+        pointer-events: none;
+        font-size: 10.5px;
+        line-height: 1.4;
+        color: var(--muted);
+      }
+
+      .status-left {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+      }
+
+      .save-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        color: var(--muted);
+      }
+
+      .save-status::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--faint);
+      }
+
+      .save-status[data-state='saved'] {
+        color: var(--success);
+      }
+
+      .save-status[data-state='saved']::before {
+        background: var(--success);
+        box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.14);
+      }
+
+      .save-status[data-state='failed'] {
+        color: var(--danger);
+      }
+
+      .save-status[data-state='failed']::before {
+        background: var(--danger);
+      }
+
+      .agent-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        max-width: 34vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 180ms ease;
+      }
+
+      .agent-hint.visible {
+        opacity: 1;
+      }
+
+      .agent-hint::before {
+        content: '';
+        flex: 0 0 auto;
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--warn);
+      }
+
+      .agent-hint[data-state='completed']::before {
+        background: var(--success);
+      }
+
+      .agent-hint[data-state='error']::before {
+        background: var(--danger);
+      }
+
+      .controls-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      kbd {
+        display: inline-block;
+        min-width: 18px;
+        padding: 1px 5px;
+        border-radius: 5px;
+        border: 1px solid var(--panel-border);
+        border-bottom-width: 2px;
+        background: rgba(148, 197, 255, 0.08);
+        color: var(--text);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 9.5px;
+        line-height: 1.5;
+      }
+
+      .toast {
+        position: absolute;
+        left: 50%;
+        bottom: calc(42px + env(safe-area-inset-bottom));
+        z-index: 20;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: max-content;
+        max-width: min(560px, calc(100vw - 32px));
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--panel-border);
+        background: var(--panel);
+        color: var(--text);
+        box-shadow: 0 16px 40px var(--shadow);
+        font-size: 12px;
+        line-height: 1.5;
+        animation: toast-in 160ms ease-out;
+      }
+
+      .toast[data-tone='error'] {
+        border-color: var(--danger);
+      }
+
+      .toast[data-tone='warn'] {
+        border-color: var(--warn);
+      }
+
+      .toast-action {
+        appearance: none;
+        flex: 0 0 auto;
+        min-height: 30px;
+        padding: 0 10px;
+        border-radius: 8px;
+        border: 1px solid var(--panel-border);
+        background: rgba(148, 197, 255, 0.08);
+        color: var(--text);
+        font: inherit;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .toast-action:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      @keyframes card-in {
+        from {
+          opacity: 0;
+          transform: translateY(8px) scale(0.985);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes toast-in {
+        from {
+          opacity: 0;
+          transform: translate(-50%, 6px);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+      }
+
+      @media (max-width: 720px) {
+        .statusbar {
+          padding: 0 12px calc(8px + env(safe-area-inset-bottom));
+        }
+        .controls-hint {
+          display: none;
+        }
+        .agent-hint {
+          max-width: 52vw;
+        }
+        .overlay-hint {
+          font-size: 12.5px;
+        }
+      }
+
+      @media (max-height: 520px) {
+        .statusbar {
+          display: none;
+        }
+        .overlay-card {
+          padding: 18px 20px;
+        }
+        .overlay-title {
+          font-size: 24px;
+        }
+        .overlay-hint {
+          margin-bottom: 16px;
+        }
+        .toast {
+          bottom: 14px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .overlay-card,
+        .toast {
+          animation: none;
+        }
+        .btn,
+        .agent-hint {
+          transition: none;
+        }
+      }
+
+      html.reduced .overlay-card,
+      html.reduced .toast {
+        animation: none;
+      }
+
+      html.reduced .btn,
+      html.reduced .agent-hint {
+        transition: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="stage">
+        <canvas
+          id="board"
+          width="960"
+          height="540"
+          tabindex="0"
+          role="img"
+          aria-label="打砖块游戏画面：移动挡板反弹球，击碎砖块，共 5 个关卡"
+        ></canvas>
+      </div>
+
+      <div id="overlay" class="overlay" hidden>
+        <div
+          id="overlay-card"
+          class="overlay-card"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="overlay-title"
+          aria-describedby="overlay-hint"
+          tabindex="-1"
+        >
+          <p id="overlay-kicker" class="overlay-kicker"></p>
+          <h1 id="overlay-title" class="overlay-title"></h1>
+          <p id="overlay-hint" class="overlay-hint"></p>
+          <div id="overlay-actions" class="overlay-actions">
+            <button id="primary" class="btn btn-primary" type="button"></button>
+            <button id="secondary" class="btn btn-quiet" type="button" hidden></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="statusbar" aria-hidden="true">
+        <div class="status-left">
+          <span id="save-status" class="save-status" data-state="idle">等待保存</span>
+          <span id="agent-hint" class="agent-hint" data-state="idle"></span>
+        </div>
+        <span class="controls-hint">
+          <kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd> 移动 · <kbd>SPACE</kbd> 发射 · <kbd>P</kbd> 暂停
+        </span>
+      </div>
+
+      <div id="toast" class="toast" hidden role="status" aria-live="polite">
+        <span id="toast-message"></span>
+        <button id="toast-action" class="toast-action" type="button" hidden></button>
+      </div>
+
+      <p id="live" class="sr-only" aria-live="polite"></p>
+    </div>
+
+    <script>
+      var DSH_GAME_SDK = (function () {
+  'use strict';
+  // Generated by scripts/bundle-lib.mjs — do not edit by hand.
+  const __mods = Object.create(null);
+
+  // module: packages/shared/src/constants.js
+  __mods["packages/shared/src/constants.js"] = (function () {
+  /**
+   * Shared constants for dsh-game-market.
+   *
+   * Pure JS: no Node built-ins, no browser globals at import time.
+   * Kept dependency-free so Host (Node ESM), Client (bundled browser), Runtime,
+   * SDK (inlined into games) and tests can all import this file.
+   */
+
+  const BUNDLE_ID = 'dsh-game-market';
+  const CLIENT_MODULE_ID = BUNDLE_ID;
+  const MAIN_PANEL_KEY = BUNDLE_ID;
+  const API_BASE = '/api/game-market';
+  const LOG_PREFIX = '[game-market]';
+
+  /** Bumped together when the Runtime/SDK contract changes. */
+  const RUNTIME_VERSION = '1.0.0';
+  const SDK_VERSION = '1.0.0';
+  const PROTOCOL_VERSION = 1;
+
+  /**
+   * V0 games stay runnable on V1 (V1-07). Their manifests declare 0.1.x ranges;
+   * 0.1.x majors are accepted as the legacy compatibility window.
+   */
+  const LEGACY_V0_VERSION = '0.1.0';
+
+  const LIMITS = Object.freeze({
+    /** Total bytes of one game's save (envelope included). PRD D-005. */
+    saveTotalBytes: 1024 * 1024,
+    /** Max UTF-8 bytes for a single key value. */
+    saveValueBytes: 256 * 1024,
+    /** Max number of keys per game. */
+    saveKeys: 32,
+    /** Max JSON request body accepted by Host API. */
+    jsonBodyBytes: 1024 * 1024,
+    /** Max bytes for one score `meta` object. */
+    scoreMetaBytes: 2048,
+    /** Max score history entries per game. */
+    scoreHistory: 200,
+    /** Max session records per game. */
+    sessionRecords: 100,
+    /** Max entry HTML bytes served to the sandbox iframe. */
+    entryBytes: 20 * 1024 * 1024,
+    /** Max bytes of one single-file game package (PRD §8.2.2). */
+    packageBytes: 20 * 1024 * 1024,
+    /** Max bytes of the inline manifest script (PRD §8.2.2). */
+    manifestBytes: 64 * 1024,
+    /** Max bytes of the static Registry index. */
+    registryBytes: 2 * 1024 * 1024,
+    /** Max games accepted from one Registry index. */
+    registryGames: 500,
+    /** Max decoded bytes of a manifest `icon` data URI. */
+    iconBytes: 256 * 1024,
+    /** Max preview image bytes served to Market UI. */
+    previewBytes: 2 * 1024 * 1024,
+  });
+
+  const TIMING = Object.freeze({
+    /** Waiting-entry appears after the Agent has run this long. PRD D-001. */
+    waitEntryThresholdMs: 5000,
+    /** Client polls the Host agent snapshot at this interval while visible. */
+    agentPollMs: 1000,
+    /** Autosave cadence while playing. PRD D-005. */
+    autosaveMs: 30000,
+    /** How long Runtime waits for a game to answer `before-save`. */
+    saveTimeoutMs: 1500,
+    /** Bridge handshake deadline. */
+    handshakeTimeoutMs: 10000,
+    /** Slow-load notice threshold. */
+    loadSlowMs: 10000,
+    /** Hard load failure threshold. */
+    loadErrorMs: 20000,
+    /** Runtime pings the iframe at this interval. */
+    iframePingMs: 5000,
+    /** Agent snapshot older than this is considered stale. */
+    agentStaleMs: 5000,
+    /** Runtime polling backoff cap. */
+    pollBackoffMaxMs: 8000,
+    /** Registry index cache TTL (PRD §8.8.3). */
+    registryTtlMs: 6 * 60 * 60 * 1000,
+    /** Stale Registry cache hard limit (PRD §8.8.3). */
+    registryStaleMs: 14 * 24 * 60 * 60 * 1000,
+    /** Minimum interval between user-triggered Registry refreshes. */
+    registryRefreshThrottleMs: 5 * 60 * 1000,
+    /** Install download: connect / total / idle-no-data budgets (PRD §8.7.2). */
+    downloadConnectMs: 10000,
+    downloadTotalMs: 120000,
+    downloadIdleMs: 20000,
+    /** Install verification + atomic move budget. */
+    installVerifyMs: 15000,
+    installMoveMs: 30000,
+    /** How long the install lock queues before returning INSTALL_IN_PROGRESS. */
+    installLockWaitMs: 10000,
+    /** How long a /entry launcher binding stays valid (TBD-10). */
+    entryBindingTtlMs: 10 * 60 * 1000,
+    /** UI animation durations (ms). */
+    motion: Object.freeze({
+      panel: 240,
+      chipIn: 160,
+      chipOut: 120,
+      bubble: 220,
+      whaleState: 240,
+      overlay: 160,
+    }),
+  });
+
+  const AGENT_STATES = Object.freeze(['idle', 'running', 'waiting-user', 'completed', 'error']);
+  const AGENT_SOURCES = Object.freeze(['turn', 'tool', 'approval', 'question', 'lifecycle', 'restore']);
+  const AGENT_PRIORITY = Object.freeze({ 'waiting-user': 100, error: 80, completed: 60, running: 30, idle: 10 });
+
+  /**
+   * V0 label templates (zh-first). V1 moves these to locale files + labelKey.
+   * The Host resolves the final string; games must not parse it.
+   */
+  const AGENT_LABELS_ZH = Object.freeze({
+    idle: 'Agent 空闲',
+    running: '正在工作…',
+    test: '正在运行测试…',
+    build: '正在构建…',
+    search: '正在查找资料…',
+    read: '正在查看文件…',
+    write: '正在修改文件…',
+    command: '正在执行命令…',
+    'waiting-approval': '需要你确认一项操作',
+    'waiting-question': '需要你回答一个问题',
+    'waiting-generic': 'Agent 在等你',
+    completed: '任务完成啦',
+    error: '遇到了一点问题',
+  });
+
+  /** Stable label keys (mirror PRD §9.8); Host only emits keys, Client localizes in V1. */
+  const AGENT_LABEL_KEYS = Object.freeze({
+    idle: 'agent.state.idle',
+    running: 'agent.state.running',
+    test: 'agent.state.test',
+    build: 'agent.state.build',
+    search: 'agent.state.search',
+    read: 'agent.state.read',
+    write: 'agent.state.write',
+    command: 'agent.state.command',
+    'waiting-approval': 'agent.state.waiting.approval',
+    'waiting-question': 'agent.state.waiting.question',
+    'waiting-generic': 'agent.state.waiting.generic',
+    completed: 'agent.state.completed',
+    error: 'agent.state.error',
+  });
+
+  const GAME_ID_PATTERN = Object.freeze(/^[a-z0-9][a-z0-9-]{1,46}[a-z0-9]$/);
+  const PLAY_SESSION_ID_PATTERN = Object.freeze(/^ps_[a-z0-9]{16,32}$/);
+  const INSTANCE_ID_PATTERN = Object.freeze(/^[a-f0-9]{32}$/);
+  const NONCE_PATTERN = Object.freeze(/^[a-f0-9]{32}$/);
+  /** DSH Session ids are opaque; keep a conservative printable bound. */
+  const DSH_SESSION_ID_PATTERN = Object.freeze(/^[A-Za-z0-9._:-]{1,128}$/);
+
+  const LAUNCH_MODES = Object.freeze(['start', 'resume-paused']);
+  const PAUSE_REASONS = Object.freeze(['user', 'hidden', 'leave', 'waiting-user']);
+  const SAVE_REASONS = Object.freeze(['interval', 'pause', 'hidden', 'leave', 'agent-complete']);
+  const SESSION_OUTCOMES = Object.freeze(['completed', 'lost', 'abandoned', 'quit']);
+
+  /** V0 built-in games. Paths are relative to the bundle root. */
+  const BUILTIN_GAMES = Object.freeze([
+    Object.freeze({
+      id: 'snake',
+      name: 'Snake',
+      version: '0.1.0',
+      dir: 'games/snake',
+      manifestFile: 'game.json',
+      entryFile: 'dist/index.html',
+      viewport: Object.freeze({ width: 960, height: 540, fit: 'contain' }),
+    }),
+  ]);
+
+  const AGENT_ACK_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+  return { BUNDLE_ID, CLIENT_MODULE_ID, MAIN_PANEL_KEY, API_BASE, LOG_PREFIX, RUNTIME_VERSION, SDK_VERSION, PROTOCOL_VERSION, LEGACY_V0_VERSION, LIMITS, TIMING, AGENT_STATES, AGENT_SOURCES, AGENT_PRIORITY, AGENT_LABELS_ZH, AGENT_LABEL_KEYS, GAME_ID_PATTERN, PLAY_SESSION_ID_PATTERN, INSTANCE_ID_PATTERN, NONCE_PATTERN, DSH_SESSION_ID_PATTERN, LAUNCH_MODES, PAUSE_REASONS, SAVE_REASONS, SESSION_OUTCOMES, BUILTIN_GAMES, AGENT_ACK_MAX_AGE_MS };
+  })();
+
+  // module: packages/shared/src/errors.js
+  __mods["packages/shared/src/errors.js"] = (function () {
+  /**
+   * Error codes shared by Host API, Runtime bridge and Client UI.
+   *
+   * External contract (PRD §8.13 / D-030): only `GM-*` codes cross the
+   * API/bridge boundary. Internal `E_*` names never reach the Client.
+   */
+
+  const GM = Object.freeze({
+    INTERNAL: 'GM-5000',
+    INVALID_JSON: 'GM-4001',
+    INVALID_PARAM: 'GM-4002',
+    UNKNOWN_METHOD: 'GM-4004',
+    BAD_GAME_ID: 'GM-4005',
+    SCORE_OUT_OF_RANGE: 'GM-4006',
+    NOT_READY: 'GM-4031',
+    CAPABILITY_DENIED: 'GM-4032',
+    SESSION_NOT_BOUND: 'GM-4033',
+    SAVE_NOT_FOUND: 'GM-4041',
+    GAME_NOT_FOUND: 'GM-4042',
+    ASSET_NOT_FOUND: 'GM-4043',
+    INSTALL_IN_PROGRESS: 'GM-4091',
+    STORAGE_CONFLICT: 'GM-4092',
+    SESSION_STATE_CONFLICT: 'GM-4093',
+    SCHEMA_READ_TOO_NEW: 'GM-4098',
+    SAVE_SCHEMA_TOO_NEW: 'GM-4099',
+    SAVE_TOO_LARGE: 'GM-4131',
+    STORAGE_QUOTA: 'GM-4132',
+    STORAGE_KEY_INVALID: 'GM-4133',
+    VALUE_NOT_SERIALIZABLE: 'GM-4134',
+    UNSUPPORTED_MEDIA_TYPE: 'GM-4150',
+    MANIFEST_INVALID: 'GM-4221',
+    RUNTIME_INCOMPATIBLE: 'GM-4260',
+    SDK_INCOMPATIBLE: 'GM-4261',
+    RATE_LIMITED: 'GM-4290',
+    BACKPRESSURE: 'GM-4291',
+    HANDSHAKE_TIMEOUT: 'GM-5001',
+    PROTOCOL_MISMATCH: 'GM-5002',
+    NO_RUNTIME: 'GM-5003',
+    MESSAGE_INVALID: 'GM-5004',
+    BRIDGE_TIMEOUT: 'GM-5005',
+    LOAD_TIMEOUT: 'GM-5011',
+    IFRAME_UNRESPONSIVE: 'GM-5012',
+    IFRAME_CRASHED: 'GM-5013',
+    ASSET_INTEGRITY: 'GM-5014',
+    SAVE_WRITE_FAILED: 'GM-5021',
+    SAVE_CORRUPT: 'GM-5022',
+    HOST_EPOCH_STALE: 'GM-5023',
+    STORE_IO: 'GM-5024',
+    STORE_READONLY: 'GM-5025',
+    HOST_UNAVAILABLE: 'GM-5031',
+    REGISTRY_UNAVAILABLE: 'GM-5032',
+    INSTALL_FAILED: 'GM-5033',
+    // V1 package / registry / install (PRD §8.13.2 / §8.13.3)
+    PACKAGE_INVALID: 'GM-4222',
+    ENTRY_NOT_SELF_CONTAINED: 'GM-4225',
+    MANIFEST_TOO_LARGE: 'GM-4229',
+    PACKAGE_TOO_LARGE: 'GM-4135',
+    INSTALL_URL_REJECTED: 'GM-4034',
+    MARKET_DISABLED: 'GM-4036',
+    STORE_PATH_ESCAPE: 'GM-4037',
+    UNINSTALL_BUILTIN: 'GM-4038',
+    NOT_IN_REGISTRY: 'GM-4044',
+    INSTALL_VERSION_CONFLICT: 'GM-4094',
+    INSTALL_VERSION_MISMATCH: 'GM-4095',
+    UPDATE_GAME_RUNNING: 'GM-4096',
+    UNINSTALL_BUSY: 'GM-4097',
+    INSTALL_DISK_FULL: 'GM-4142',
+    INSTALL_HASH_MISMATCH: 'GM-5015',
+    INSTALL_DOWNLOAD_FAILED: 'GM-5034',
+    INSTALL_DOWNLOAD_TIMEOUT: 'GM-5035',
+    INSTALL_IO: 'GM-5036',
+    INSTALL_CORRUPT: 'GM-5037',
+  });
+
+  const DEFAULT_MESSAGES = Object.freeze({
+    [GM.INTERNAL]: 'Internal error',
+    [GM.INVALID_JSON]: 'Request body must be valid JSON',
+    [GM.INVALID_PARAM]: 'Invalid parameter',
+    [GM.UNKNOWN_METHOD]: 'Unknown method',
+    [GM.BAD_GAME_ID]: 'Invalid game id',
+    [GM.SCORE_OUT_OF_RANGE]: 'Score is outside the declared range',
+    [GM.NOT_READY]: 'Game is not ready',
+    [GM.CAPABILITY_DENIED]: 'Capability not declared',
+    [GM.SESSION_NOT_BOUND]: 'No Agent Session is bound',
+    [GM.SAVE_NOT_FOUND]: 'Save not found',
+    [GM.GAME_NOT_FOUND]: 'Game not found',
+    [GM.ASSET_NOT_FOUND]: 'Asset not found',
+    [GM.INSTALL_IN_PROGRESS]: 'Another install is in progress',
+    [GM.STORAGE_CONFLICT]: 'Storage revision conflict',
+    [GM.SESSION_STATE_CONFLICT]: 'Session state conflict',
+    [GM.SCHEMA_READ_TOO_NEW]: 'Stored data needs a newer Game Market',
+    [GM.SAVE_SCHEMA_TOO_NEW]: 'Save needs a newer game version',
+    [GM.SAVE_TOO_LARGE]: 'Save exceeds the 1 MiB limit',
+    [GM.STORAGE_QUOTA]: 'Storage quota exceeded',
+    [GM.STORAGE_KEY_INVALID]: 'Invalid storage key',
+    [GM.VALUE_NOT_SERIALIZABLE]: 'Value is not JSON-serializable',
+    [GM.UNSUPPORTED_MEDIA_TYPE]: 'Unsupported media type',
+    [GM.MANIFEST_INVALID]: 'Invalid game manifest',
+    [GM.RUNTIME_INCOMPATIBLE]: 'Game requires a different Runtime version',
+    [GM.SDK_INCOMPATIBLE]: 'Game requires a different SDK version',
+    [GM.RATE_LIMITED]: 'Too many requests',
+    [GM.BACKPRESSURE]: 'Too many in-flight requests',
+    [GM.HANDSHAKE_TIMEOUT]: 'Game handshake timed out',
+    [GM.PROTOCOL_MISMATCH]: 'Game protocol version mismatch',
+    [GM.NO_RUNTIME]: 'Game Runtime is not available',
+    [GM.MESSAGE_INVALID]: 'Invalid bridge message',
+    [GM.BRIDGE_TIMEOUT]: 'Bridge request timed out',
+    [GM.LOAD_TIMEOUT]: 'Game failed to load in time',
+    [GM.IFRAME_UNRESPONSIVE]: 'Game is not responding',
+    [GM.IFRAME_CRASHED]: 'Game crashed',
+    [GM.ASSET_INTEGRITY]: 'Game files failed integrity check',
+    [GM.SAVE_WRITE_FAILED]: 'Could not write save',
+    [GM.SAVE_CORRUPT]: 'Save file is corrupt',
+    [GM.HOST_EPOCH_STALE]: 'Host restarted; refresh state',
+    [GM.STORE_IO]: 'Storage read/write failed',
+    [GM.STORE_READONLY]: 'Storage is read-only',
+    [GM.HOST_UNAVAILABLE]: 'Game Market Host is unavailable',
+    [GM.REGISTRY_UNAVAILABLE]: 'Game registry is unavailable',
+    [GM.INSTALL_FAILED]: 'Install failed',
+    [GM.PACKAGE_INVALID]: 'Package file is not valid UTF-8 HTML',
+    [GM.ENTRY_NOT_SELF_CONTAINED]: 'Game entry must be a self-contained single file',
+    [GM.MANIFEST_TOO_LARGE]: 'Inline manifest is too large',
+    [GM.PACKAGE_TOO_LARGE]: 'Game package exceeds the size limit',
+    [GM.INSTALL_URL_REJECTED]: 'Package URL is not allowed',
+    [GM.MARKET_DISABLED]: 'Game Market is disabled',
+    [GM.STORE_PATH_ESCAPE]: 'Path escapes the managed storage root',
+    [GM.UNINSTALL_BUILTIN]: 'Built-in games cannot be uninstalled',
+    [GM.NOT_IN_REGISTRY]: 'Game is not in the registry',
+    [GM.INSTALL_VERSION_CONFLICT]: 'Installed version conflicts with this install',
+    [GM.INSTALL_VERSION_MISMATCH]: 'Package version does not match the registry entry',
+    [GM.UPDATE_GAME_RUNNING]: 'Exit the game before updating',
+    [GM.UNINSTALL_BUSY]: 'Another install or uninstall is in progress',
+    [GM.INSTALL_DISK_FULL]: 'Not enough disk space for this install',
+    [GM.INSTALL_HASH_MISMATCH]: 'Package SHA-256 does not match the registry',
+    [GM.INSTALL_DOWNLOAD_FAILED]: 'Package download failed',
+    [GM.INSTALL_DOWNLOAD_TIMEOUT]: 'Package download timed out',
+    [GM.INSTALL_IO]: 'Install write failed',
+    [GM.INSTALL_CORRUPT]: 'Installed package is incomplete',
+  });
+
+  /** HTTP status for a GM code (PRD §8.5 mapping). */
+  function httpStatusFor(gmCode) {
+    const num = Number(String(gmCode).slice(3));
+    if (!Number.isFinite(num)) return 500;
+    if (gmCode === GM.INTERNAL) return 500;
+    if (gmCode === GM.MANIFEST_INVALID) return 422;
+    if (num >= 5000 && num < 6000) return num >= 5030 ? 503 : 500;
+    if (num >= 4000 && num < 5000) return Math.floor(num / 10);
+    return 500;
+  }
+
+  function isGmCode(value) {
+    return typeof value === 'string' && /^GM-\d{4}$/.test(value);
+  }
+
+  /**
+   * Internal `E_*` -> public `GM-*` map (PRD §8.13.2 / §8.13.3 / D-030).
+   * Shared validators (manifest/registry/installation) emit `E_*`; the Host and
+   * CLI must translate before crossing an API/bridge/user-visible boundary.
+   * Retired V1 codes (zip archive rules) are intentionally absent.
+   */
+  const INTERNAL_TO_GM = Object.freeze({
+    // Package / manifest (PRD §8.13.2) — names follow PRD v2.2 (single-file).
+    E_PKG_HTML_INVALID: GM.PACKAGE_INVALID,
+    E_PKG_MANIFEST_MISSING: GM.MANIFEST_INVALID,
+    E_PKG_MANIFEST_DUPLICATE: GM.MANIFEST_INVALID,
+    E_PKG_MANIFEST_JSON: 'GM-4228',
+    E_PKG_MANIFEST_TOO_LARGE: GM.MANIFEST_TOO_LARGE,
+    E_PKG_MANIFEST_VERSION: 'GM-4230',
+    E_PKG_FIELD_MISSING: 'GM-4231',
+    E_PKG_FIELD_TYPE: 'GM-4232',
+    E_PKG_FIELD_RANGE: 'GM-4233',
+    E_PKG_ID_INVALID: 'GM-4234',
+    E_PKG_ID_RESERVED: 'GM-4235',
+    E_PKG_VERSION_INVALID: 'GM-4236',
+    E_PKG_LEGACY_FIELD: 'GM-4237',
+    E_PKG_CATEGORY_UNKNOWN: 'GM-4238',
+    E_PKG_CAPABILITY_UNKNOWN: 'GM-4239',
+    E_PKG_CAPABILITY_UNSUPPORTED: 'GM-4240',
+    E_PKG_CAPABILITY_DUPLICATE: 'GM-4241',
+    E_PKG_PERMISSION_UNSUPPORTED: 'GM-4242',
+    E_PKG_SCORE_RANGE: 'GM-4243',
+    E_PKG_SAVE_SCHEMA: 'GM-4244',
+    E_PKG_RANGE_SYNTAX: 'GM-4245',
+    E_PKG_ICON_FORMAT: 'GM-4247',
+    E_PKG_ICON_TOO_LARGE: 'GM-4248',
+    E_PKG_ENTRY_NOT_SELF_CONTAINED: GM.ENTRY_NOT_SELF_CONTAINED,
+    E_PKG_TOO_LARGE: GM.PACKAGE_TOO_LARGE,
+    // Registry / install (PRD §8.13.3)
+    E_REGISTRY_INVALID: GM.REGISTRY_UNAVAILABLE,
+    E_REGISTRY_URL: 'GM-4035',
+    E_MARKET_DISABLED: GM.MARKET_DISABLED,
+    E_NOT_IN_REGISTRY: GM.NOT_IN_REGISTRY,
+    E_UNINSTALL_BUILTIN: GM.UNINSTALL_BUILTIN,
+    E_INSTALL_URL_REJECTED: GM.INSTALL_URL_REJECTED,
+    E_INSTALL_DISK_FULL: GM.INSTALL_DISK_FULL,
+    E_INSTALL_VERSION_CONFLICT: GM.INSTALL_VERSION_CONFLICT,
+    E_INSTALL_VERSION_MISMATCH: GM.INSTALL_VERSION_MISMATCH,
+    E_UPDATE_GAME_RUNNING: GM.UPDATE_GAME_RUNNING,
+    E_UNINSTALL_BUSY: GM.UNINSTALL_BUSY,
+    E_INSTALL_HASH_MISMATCH: GM.INSTALL_HASH_MISMATCH,
+    E_INSTALL_DOWNLOAD_FAILED: GM.INSTALL_DOWNLOAD_FAILED,
+    E_INSTALL_DOWNLOAD_TIMEOUT: GM.INSTALL_DOWNLOAD_TIMEOUT,
+    E_INSTALL_IO: GM.INSTALL_IO,
+    E_INSTALL_CORRUPT: GM.INSTALL_CORRUPT,
+    // Storage / compatibility (PRD §8.13.4)
+    E_STORE_SCHEMA: 'GM-4098',
+    E_STORE_SCHEMA_NEWER: 'GM-4098',
+    E_STORE_PATH_ESCAPE: GM.STORE_PATH_ESCAPE,
+  });
+
+  /** Translate an internal `E_*` code to its public `GM-*` code (fallback: GM-5000). */
+  function gmForInternal(code) {
+    if (isGmCode(code)) return code;
+    return INTERNAL_TO_GM[code] || GM.INTERNAL;
+  }
+
+  /**
+   * Create a plain error object for Host responses and bridge failures.
+   * Never include paths, stack traces or user content in `details`.
+   */
+  function makeGameError(code, message, options = {}) {
+    const gmCode = isGmCode(code) ? code : GM.INTERNAL;
+    return {
+      code: gmCode,
+      message: message || DEFAULT_MESSAGES[gmCode] || DEFAULT_MESSAGES[GM.INTERNAL],
+      retryable: options.retryable === true,
+      ...(options.details === undefined ? {} : { details: options.details }),
+    };
+  }
+
+  function errorResponseBody(code, message, options = {}) {
+    return { ok: false, error: makeGameError(code, message, options) };
+  }
+
+  function defaultMessageFor(code) {
+    return DEFAULT_MESSAGES[code] || DEFAULT_MESSAGES[GM.INTERNAL];
+  }
+
+  /** SDK/bridge error codes are the same GM codes; aliases keep call sites readable. */
+  const SDK_ERROR_CODES = Object.freeze(Object.values(GM));
+
+  return { GM, httpStatusFor, isGmCode, INTERNAL_TO_GM, gmForInternal, makeGameError, errorResponseBody, defaultMessageFor, SDK_ERROR_CODES };
+  })();
+
+  // module: packages/shared/src/protocol.js
+  __mods["packages/shared/src/protocol.js"] = (function () {
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+  const PROTOCOL_VERSION = __mods["packages/shared/src/constants.js"].PROTOCOL_VERSION;
+  /**
+   * postMessage bridge protocol helpers shared by Runtime and SDK (PRD §8.4).
+   *
+   * Runtime is the trusted side; SDK is the iframe-side client. Both must accept
+   * only the exact envelope shapes below and reject everything else.
+   */
+
+
+  const BRIDGE_VERSION = PROTOCOL_VERSION;
+  const MAX_BRIDGE_MESSAGE_BYTES = LIMITS.saveTotalBytes + 64 * 1024;
+  const MAX_BRIDGE_DEPTH = 32;
+  const MAX_INFLIGHT_REQUESTS = 32;
+  const MAX_INVALID_MESSAGES_PER_10S = 50;
+  const MAX_MESSAGES_PER_SECOND = 200;
+
+  const METHODS = Object.freeze({
+    READY: 'ready',
+    PING: 'ping',
+    STORAGE_SAVE: 'storage.save',
+    STORAGE_LOAD: 'storage.load',
+    STORAGE_REMOVE: 'storage.remove',
+    SESSION_START: 'session.start',
+    SESSION_END: 'session.end',
+    SCORE_SUBMIT: 'score.submit',
+    SCORE_GET_BEST: 'score.getBest',
+    AGENT_GET_STATUS: 'agent.getStatus',
+  });
+
+  const EVENTS = Object.freeze({
+    HELLO: 'hello',
+    INIT: 'init',
+    PAUSE: 'pause',
+    RESUME: 'resume',
+    HIDDEN: 'hidden',
+    VISIBLE: 'visible',
+    BEFORE_SAVE: 'before-save',
+    AGENT_STATUS: 'agent-status',
+    THEME: 'theme',
+    VIEWPORT: 'viewport',
+  });
+
+  /** Runtime → game methods list (SDK side handles these). */
+  const RUNTIME_TO_GAME_METHODS = Object.freeze(['ping']);
+  /** Game → Runtime methods list (Runtime side handles these). */
+  const GAME_TO_RUNTIME_METHODS = Object.freeze([
+    METHODS.READY,
+    METHODS.STORAGE_SAVE,
+    METHODS.STORAGE_LOAD,
+    METHODS.STORAGE_REMOVE,
+    METHODS.SESSION_START,
+    METHODS.SESSION_END,
+    METHODS.SCORE_SUBMIT,
+    METHODS.SCORE_GET_BEST,
+    METHODS.AGENT_GET_STATUS,
+  ]);
+
+  const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+  function isPlainObject(value) {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+    const proto = Object.getPrototypeOf(value);
+    return proto === Object.prototype || proto === null;
+  }
+
+  /** 32 lowercase hex chars from the platform CSPRNG; works in browser + Node. */
+  function randomHex32() {
+    const bytes = new Uint8Array(16);
+    const cryptoApi = globalThis.crypto;
+    if (!cryptoApi || typeof cryptoApi.getRandomValues !== 'function') {
+      throw new Error('crypto.getRandomValues is unavailable');
+    }
+    cryptoApi.getRandomValues(bytes);
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function createInstanceId() {
+    return randomHex32();
+  }
+
+  function createNonce() {
+    return randomHex32();
+  }
+
+  /** UTF-8 byte length of the JSON serialization; throws on non-JSON values. */
+  function jsonByteLength(value) {
+    return byteLength(JSON.stringify(value));
+  }
+
+  function byteLength(text) {
+    return new TextEncoder().encode(text).length;
+  }
+
+  /**
+   * Validate a JSON value: finite numbers, plain objects/arrays, depth-bounded,
+   * no prototype-pollution keys. Returns a cloned plain value.
+   */
+  function cloneJsonValue(value, depth = 0) {
+    if (depth > MAX_BRIDGE_DEPTH) {
+      throw protocolError(GM.VALUE_NOT_SERIALIZABLE, 'Value nesting is too deep');
+    }
+    if (value === null || typeof value === 'string' || typeof value === 'boolean') return value;
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value)) throw protocolError(GM.VALUE_NOT_SERIALIZABLE, 'Number must be finite');
+      return value;
+    }
+    if (Array.isArray(value)) return value.map((item) => cloneJsonValue(item, depth + 1));
+    if (isPlainObject(value)) {
+      const out = {};
+      for (const key of Object.keys(value)) {
+        if (FORBIDDEN_KEYS.has(key)) {
+          throw protocolError(GM.VALUE_NOT_SERIALIZABLE, `Forbidden key: ${key}`);
+        }
+        out[key] = cloneJsonValue(value[key], depth + 1);
+      }
+      return out;
+    }
+    throw protocolError(GM.VALUE_NOT_SERIALIZABLE, `Unsupported value type: ${typeof value}`);
+  }
+
+  function isValidStorageKey(key) {
+    return typeof key === 'string' && /^[a-z0-9][a-z0-9._-]{0,63}$/.test(key) && !FORBIDDEN_KEYS.has(key);
+  }
+
+  function protocolError(code, message) {
+    return { code, message, retryable: false };
+  }
+
+  function createRequest(id, method, params) {
+    return { v: BRIDGE_VERSION, id, kind: 'req', method, params: params === undefined ? {} : params };
+  }
+
+  function createResponse(id, result) {
+    return { v: BRIDGE_VERSION, id, kind: 'res', ok: true, result };
+  }
+
+  function createErrorResponse(id, error) {
+    return { v: BRIDGE_VERSION, id, kind: 'res', ok: false, error };
+  }
+
+  function createEvent(event, data) {
+    return { v: BRIDGE_VERSION, kind: 'evt', event, ...(data === undefined ? {} : { data }) };
+  }
+
+  function envelopeByteSize(message) {
+    try {
+      return jsonByteLength(message);
+    } catch (_error) {
+      return Infinity;
+    }
+  }
+
+  /**
+   * Structural validation. Sender/source identity and nonce matching stay with
+   * the caller because they are transport-specific.
+   *
+   * @returns {{ok: true, message: object} | {ok: false, code: string, message: string}}
+   */
+  function validateBridgeMessage(raw) {
+    if (!isPlainObject(raw)) return invalid('Message must be a plain object');
+    if (raw.v !== BRIDGE_VERSION) return invalid(`Unsupported protocol version: ${String(raw.v)}`, GM.PROTOCOL_MISMATCH);
+    if (raw.kind === 'req') {
+      if (typeof raw.id !== 'string' || raw.id.length === 0 || raw.id.length > 64) return invalid('Invalid request id');
+      if (typeof raw.method !== 'string' || raw.method.length === 0 || raw.method.length > 64) return invalid('Invalid method');
+      if (raw.params !== undefined && !isPlainObject(raw.params)) return invalid('params must be an object');
+      if (envelopeByteSize(raw) > MAX_BRIDGE_MESSAGE_BYTES) return invalid('Message too large');
+      return { ok: true, message: raw };
+    }
+    if (raw.kind === 'res') {
+      if (typeof raw.id !== 'string' || raw.id.length === 0 || raw.id.length > 64) return invalid('Invalid response id');
+      if (raw.ok === true) return { ok: true, message: raw };
+      if (raw.ok === false && isPlainObject(raw.error) && typeof raw.error.code === 'string') {
+        return { ok: true, message: raw };
+      }
+      return invalid('Invalid error response');
+    }
+    if (raw.kind === 'evt') {
+      if (typeof raw.event !== 'string' || raw.event.length === 0 || raw.event.length > 64) return invalid('Invalid event name');
+      if (envelopeByteSize(raw) > MAX_BRIDGE_MESSAGE_BYTES) return invalid('Message too large');
+      return { ok: true, message: raw };
+    }
+    return invalid(`Unknown message kind: ${String(raw.kind)}`);
+  }
+
+  function invalid(message, code = GM.MESSAGE_INVALID) {
+    return { ok: false, code, message };
+  }
+
+  /**
+   * SDK handshake inputs come from the URL query. Runtime puts them there.
+   * @returns {{instanceId: string, nonce: string} | null}
+   */
+  function parseLaunchQuery(search) {
+    try {
+      const params = new URLSearchParams(search || '');
+      const instanceId = params.get('instance') || '';
+      const nonce = params.get('nonce') || '';
+      if (!/^[a-f0-9]{32}$/.test(instanceId) || !/^[a-f0-9]{32}$/.test(nonce)) return null;
+      return { instanceId, nonce };
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  /** Narrow runtime info handed to the game in `init`. */
+  function createRuntimeInfo(fields) {
+    return {
+      sdkVersion: fields.sdkVersion,
+      protocolVersion: BRIDGE_VERSION,
+      runtimeVersion: fields.runtimeVersion,
+      gameId: fields.gameId,
+      gameVersion: fields.gameVersion,
+      locale: fields.locale || 'zh',
+      theme: fields.theme === 'dark' ? 'dark' : 'light',
+      reducedMotion: fields.reducedMotion === true,
+      capabilities: Array.isArray(fields.capabilities) ? fields.capabilities.slice() : [],
+      viewport: {
+        width: Number(fields.viewport?.width) || 0,
+        height: Number(fields.viewport?.height) || 0,
+        dpr: Number(fields.viewport?.dpr) || 1,
+      },
+      ready: fields.ready === true,
+    };
+  }
+
+  return { BRIDGE_VERSION, MAX_BRIDGE_MESSAGE_BYTES, MAX_BRIDGE_DEPTH, MAX_INFLIGHT_REQUESTS, MAX_INVALID_MESSAGES_PER_10S, MAX_MESSAGES_PER_SECOND, METHODS, EVENTS, RUNTIME_TO_GAME_METHODS, GAME_TO_RUNTIME_METHODS, isPlainObject, randomHex32, createInstanceId, createNonce, jsonByteLength, byteLength, cloneJsonValue, isValidStorageKey, protocolError, createRequest, createResponse, createErrorResponse, createEvent, envelopeByteSize, validateBridgeMessage, parseLaunchQuery, createRuntimeInfo };
+  })();
+
+  // module: packages/sdk/src/errors.js
+  __mods["packages/sdk/src/errors.js"] = (function () {
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const defaultMessageFor = __mods["packages/shared/src/errors.js"].defaultMessageFor;
+  const isGmCode = __mods["packages/shared/src/errors.js"].isGmCode;
+  /**
+   * SDK-side error type. Every error crossing the bridge uses a `GM-*` code so
+   * games can branch on a stable, documented surface (PRD §8.3 / D-030).
+   */
+
+
+  class GameError extends Error {
+    /**
+     * @param {string} code GM code
+     * @param {string} [message]
+     * @param {{retryable?: boolean, details?: object}} [options]
+     */
+    constructor(code, message, options = {}) {
+      const gmCode = isGmCode(code) ? code : GM.INTERNAL;
+      super(message || defaultMessageFor(gmCode));
+      this.name = 'GameError';
+      this.code = gmCode;
+      this.retryable = options.retryable === true;
+      if (options.details !== undefined) this.details = options.details;
+    }
+  }
+
+  function createGameError(code, message, options = {}) {
+    return new GameError(code, message, options);
+  }
+
+  function isGameError(error) {
+    if (error instanceof GameError) return true;
+    return Boolean(error) && typeof error === 'object' && isGmCode(error.code) && typeof error.message === 'string';
+  }
+
+  /** Never leak a non-GM error object across the public SDK surface. */
+  function toGameError(error) {
+    if (isGameError(error)) {
+      if (error instanceof GameError) return error;
+      return new GameError(error.code, error.message, { retryable: error.retryable === true });
+    }
+    return new GameError(GM.INTERNAL, defaultMessageFor(GM.INTERNAL), { retryable: false });
+  }
+
+  return { GameError, createGameError, isGameError, toGameError };
+  })();
+
+  // module: packages/sdk/src/bridge-client.js
+  __mods["packages/sdk/src/bridge-client.js"] = (function () {
+  const PROTOCOL_VERSION = __mods["packages/shared/src/constants.js"].PROTOCOL_VERSION;
+  const SDK_VERSION = __mods["packages/shared/src/constants.js"].SDK_VERSION;
+  const TIMING = __mods["packages/shared/src/constants.js"].TIMING;
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const EVENTS = __mods["packages/shared/src/protocol.js"].EVENTS;
+  const MAX_INFLIGHT_REQUESTS = __mods["packages/shared/src/protocol.js"].MAX_INFLIGHT_REQUESTS;
+  const METHODS = __mods["packages/shared/src/protocol.js"].METHODS;
+  const createErrorResponse = __mods["packages/shared/src/protocol.js"].createErrorResponse;
+  const createEvent = __mods["packages/shared/src/protocol.js"].createEvent;
+  const createRequest = __mods["packages/shared/src/protocol.js"].createRequest;
+  const createResponse = __mods["packages/shared/src/protocol.js"].createResponse;
+  const isPlainObject = __mods["packages/shared/src/protocol.js"].isPlainObject;
+  const parseLaunchQuery = __mods["packages/shared/src/protocol.js"].parseLaunchQuery;
+  const validateBridgeMessage = __mods["packages/shared/src/protocol.js"].validateBridgeMessage;
+  const createGameError = __mods["packages/sdk/src/errors.js"].createGameError;
+  const toGameError = __mods["packages/sdk/src/errors.js"].toGameError;
+  /**
+   * iframe-side bridge client (PRD §8.4 postMessage protocol).
+   *
+   * Runs inside the sandboxed game iframe. It only knows `window.parent` and
+   * `location.search`; it never touches host DOM, storage or network.
+   *
+   * Handshake:
+   *   hello (every 250ms, at most 30 times) -> init -> ready request -> ready.
+   */
+
+
+  const SDK_METHOD_TIMEOUTS = Object.freeze({
+    ready: 10000,
+    ping: 2000,
+    'storage.save': 6000,
+    'storage.load': 3000,
+    'storage.remove': 3000,
+    'session.start': 4000,
+    'session.end': 6000,
+    'score.submit': 4000,
+    'score.getBest': 3000,
+    'agent.getStatus': 2000,
+  });
+
+  const HELLO_INTERVAL_MS = 250;
+  const MAX_HELLO_COUNT = 30;
+  const READY_EVENT_NAMES = Object.freeze([EVENTS.PAUSE, EVENTS.RESUME, EVENTS.HIDDEN, EVENTS.VISIBLE, EVENTS.BEFORE_SAVE]);
+
+  function createBridgeClient(options = {}) {
+    const win = options.window || null;
+    const parent = options.parent || null;
+    const location = options.location || null;
+    const timers = options.timers || globalThis;
+    const now = typeof options.now === 'function' ? options.now : Date.now;
+    const cryptoApi = options.crypto || (win && win.crypto) || null;
+    const onEvent = typeof options.onEvent === 'function' ? options.onEvent : function noop() {};
+    const onInit = typeof options.onInit === 'function' ? options.onInit : function noop() {};
+    const onFatal = typeof options.onFatal === 'function' ? options.onFatal : function noop() {};
+
+    const launchQuery = parseLaunchQuery(location && location.search);
+    const available = Boolean(
+      win &&
+        parent &&
+        parent !== win &&
+        typeof parent.postMessage === 'function' &&
+        launchQuery
+    );
+
+    let started = false;
+    let disposed = false;
+    let readySettled = false;
+    let ready = false;
+    let fatalError = null;
+    let helloCount = 0;
+    let helloTimer = null;
+    let deadlineTimer = null;
+    let listenerAttached = false;
+    let initData = null;
+    let readyResult = null;
+    let requestSeq = 0;
+    let invalidMessages = 0;
+    let readyTimeoutMs = TIMING.handshakeTimeoutMs;
+    const pending = new Map();
+
+    let resolveReady = null;
+    let rejectReady = null;
+    const readyPromise = new Promise(function executor(resolve, reject) {
+      resolveReady = resolve;
+      rejectReady = reject;
+    });
+    // The promise may be observed later (or never); keep the rejection handled.
+    readyPromise.then(undefined, function ignore() {});
+
+    function isAvailable() {
+      return available;
+    }
+
+    function attachListener() {
+      if (listenerAttached || !win || typeof win.addEventListener !== 'function') return;
+      win.addEventListener('message', handleMessage);
+      listenerAttached = true;
+    }
+
+    function detachListener() {
+      if (!listenerAttached || !win || typeof win.removeEventListener !== 'function') return;
+      win.removeEventListener('message', handleMessage);
+      listenerAttached = false;
+    }
+
+    function nextId() {
+      requestSeq += 1;
+      if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
+        try {
+          return cryptoApi.randomUUID();
+        } catch (_error) {
+          // fall through
+        }
+      }
+      return `m-${requestSeq}-${Math.random().toString(36).slice(2, 10)}`;
+    }
+
+    function post(message) {
+      if (disposed || !parent) return;
+      try {
+        parent.postMessage(message, '*');
+      } catch (_error) {
+        fail(createGameError(GM.NO_RUNTIME, 'Cannot reach the Game Runtime'));
+      }
+    }
+
+    function clearHandshakeTimers() {
+      if (helloTimer !== null) {
+        timers.clearTimeout(helloTimer);
+        helloTimer = null;
+      }
+      if (deadlineTimer !== null) {
+        timers.clearTimeout(deadlineTimer);
+        deadlineTimer = null;
+      }
+    }
+
+    function clearPending(error) {
+      for (const entry of pending.values()) {
+        timers.clearTimeout(entry.timer);
+        entry.reject(error);
+      }
+      pending.clear();
+    }
+
+    function settleResolve(value) {
+      if (readySettled) return;
+      readySettled = true;
+      clearHandshakeTimers();
+      resolveReady(value);
+    }
+
+    function fail(error) {
+      const gameError = toGameError(error);
+      if (disposed) return;
+      fatalError = gameError;
+      if (!readySettled) {
+        readySettled = true;
+        clearHandshakeTimers();
+        clearPending(gameError);
+        rejectReady(gameError);
+      }
+      onFatal(gameError);
+    }
+
+    function start() {
+      if (started || disposed) return;
+      started = true;
+      if (!available) {
+        fail(createGameError(GM.NO_RUNTIME, 'Game Runtime is not available (not running inside a sandbox iframe)'));
+        return;
+      }
+      attachListener();
+      deadlineTimer = timers.setTimeout(function onDeadline() {
+        deadlineTimer = null;
+        fail(createGameError(GM.HANDSHAKE_TIMEOUT, 'Game handshake timed out'));
+      }, readyTimeoutMs);
+      sendHello();
+    }
+
+    function sendHello() {
+      if (disposed || readySettled || ready) return;
+      if (!available) return;
+      if (helloCount >= MAX_HELLO_COUNT) {
+        fail(createGameError(GM.HANDSHAKE_TIMEOUT, 'Game handshake timed out'));
+        return;
+      }
+      helloCount += 1;
+      post(
+        createEvent(EVENTS.HELLO, {
+          instanceId: launchQuery.instanceId,
+          nonce: launchQuery.nonce,
+          sdkVersion: SDK_VERSION,
+          protocolVersion: PROTOCOL_VERSION,
+        })
+      );
+      helloTimer = timers.setTimeout(sendHello, HELLO_INTERVAL_MS);
+    }
+
+    function handleInit(data) {
+      if (!isPlainObject(data)) {
+        invalidMessages += 1;
+        return;
+      }
+      if (data.instanceId !== launchQuery.instanceId || data.nonce !== launchQuery.nonce) {
+        invalidMessages += 1;
+        return;
+      }
+      if (data.protocolVersion !== PROTOCOL_VERSION) {
+        fail(createGameError(GM.PROTOCOL_MISMATCH, 'Unsupported bridge protocol version'));
+        return;
+      }
+      if (initData) return;
+      initData = data;
+      if (helloTimer !== null) {
+        timers.clearTimeout(helloTimer);
+        helloTimer = null;
+      }
+      onInit(data);
+      dispatchRequest(METHODS.READY, { sdkVersion: SDK_VERSION, protocolVersion: PROTOCOL_VERSION }, readyTimeoutMs).then(
+        function onReady(result) {
+          if (readySettled || disposed) return;
+          if (result !== null && result !== undefined && !isPlainObject(result)) {
+            fail(createGameError(GM.PROTOCOL_MISMATCH, 'Invalid ready result'));
+            return;
+          }
+          if (result && result.protocolVersion !== undefined && result.protocolVersion !== PROTOCOL_VERSION) {
+            fail(createGameError(GM.PROTOCOL_MISMATCH, 'Unsupported runtime protocol version'));
+            return;
+          }
+          ready = true;
+          readyResult = result || {};
+          settleResolve({ init: initData, result: readyResult });
+        },
+        function onReadyError(error) {
+          fail(error);
+        }
+      );
+    }
+
+    function handleResponse(message) {
+      const entry = pending.get(message.id);
+      if (!entry) {
+        invalidMessages += 1;
+        return;
+      }
+      pending.delete(message.id);
+      timers.clearTimeout(entry.timer);
+      if (message.ok === true) {
+        entry.resolve(message.result === undefined ? null : message.result);
+        return;
+      }
+      const errorPayload = message.error || {};
+      entry.reject(
+        createGameError(errorPayload.code || GM.INTERNAL, errorPayload.message, {
+          retryable: errorPayload.retryable === true,
+        })
+      );
+    }
+
+    function handleEvent(message) {
+      if (message.event === EVENTS.INIT) {
+        handleInit(message.data);
+        return;
+      }
+      if (!initData) return;
+      if (message.event === EVENTS.AGENT_STATUS) {
+        onEvent('agent-status', message.data);
+        return;
+      }
+      if (message.event === EVENTS.THEME) {
+        onEvent('theme', message.data);
+        return;
+      }
+      if (message.event === EVENTS.VIEWPORT) {
+        onEvent('viewport', message.data);
+        return;
+      }
+      if (READY_EVENT_NAMES.includes(message.event)) {
+        onEvent(message.event, message.data || {});
+        return;
+      }
+      // Unknown events are ignored by contract (forward compatibility).
+    }
+
+    function handleRequest(message) {
+      if (message.method === METHODS.PING) {
+        const requestAt = message.params && Number.isFinite(message.params.at) ? message.params.at : now();
+        post(createResponse(message.id, { at: requestAt }));
+        return;
+      }
+      post(createErrorResponse(message.id, { code: GM.UNKNOWN_METHOD, message: 'Unknown game method', retryable: false }));
+    }
+
+    function handleMessage(event) {
+      if (disposed || !event) return;
+      if (event.source !== parent) {
+        invalidMessages += 1;
+        return;
+      }
+      const checked = validateBridgeMessage(event.data);
+      if (!checked.ok) {
+        invalidMessages += 1;
+        return;
+      }
+      const message = checked.message;
+      try {
+        if (message.kind === 'evt') handleEvent(message);
+        else if (message.kind === 'req') handleRequest(message);
+        else if (message.kind === 'res') handleResponse(message);
+      } catch (_error) {
+        invalidMessages += 1;
+      }
+    }
+
+    function dispatchRequest(method, params, timeoutMs) {
+      if (disposed) return Promise.reject(createGameError(GM.NO_RUNTIME, 'Game Runtime is not available'));
+      if (fatalError) return Promise.reject(fatalError);
+      if (pending.size >= MAX_INFLIGHT_REQUESTS) {
+        return Promise.reject(createGameError(GM.BACKPRESSURE, 'Too many in-flight bridge requests'));
+      }
+      const ms = typeof timeoutMs === 'number' && timeoutMs > 0 ? timeoutMs : SDK_METHOD_TIMEOUTS[method] || 5000;
+      return new Promise(function executor(resolve, reject) {
+        const id = nextId();
+        const timer = timers.setTimeout(function onTimeout() {
+          const entry = pending.get(id);
+          if (!entry) return;
+          pending.delete(id);
+          reject(createGameError(GM.BRIDGE_TIMEOUT, `Bridge request timed out: ${method}`, { retryable: true }));
+        }, ms);
+        pending.set(id, { resolve, reject, timer });
+        post(createRequest(id, method, params));
+      });
+    }
+
+    function readyWithTimeout(timeoutMs) {
+      if (!started && typeof timeoutMs === 'number' && timeoutMs > 0 && timeoutMs < readyTimeoutMs) {
+        readyTimeoutMs = timeoutMs;
+      }
+      start();
+      return readyPromise;
+    }
+
+    function request(method, params, timeoutMs) {
+      if (fatalError) return Promise.reject(fatalError);
+      if (!ready) return Promise.reject(createGameError(GM.NOT_READY, 'Game is not ready'));
+      return dispatchRequest(method, params, timeoutMs);
+    }
+
+    function dispose() {
+      if (disposed) return;
+      disposed = true;
+      clearHandshakeTimers();
+      detachListener();
+      const error = createGameError(GM.NO_RUNTIME, 'Game Runtime was closed');
+      clearPending(error);
+      if (!readySettled) {
+        readySettled = true;
+        rejectReady(error);
+      }
+    }
+
+    return Object.freeze({
+      isAvailable,
+      isReady: function isReady() {
+        return ready;
+      },
+      getFatalError: function getFatalError() {
+        return fatalError;
+      },
+      getInfo: function getInfo() {
+        return { init: initData, result: readyResult };
+      },
+      getDiagnostics: function getDiagnostics() {
+        return { helloCount, invalidMessages, pending: pending.size };
+      },
+      start,
+      ready: readyWithTimeout,
+      request,
+      dispose,
+    });
+  }
+
+  return { SDK_METHOD_TIMEOUTS, createBridgeClient };
+  })();
+
+  // module: packages/sdk/src/event-hub.js
+  __mods["packages/sdk/src/event-hub.js"] = (function () {
+  /**
+   * Tiny event hub used for lifecycle / agent subscriptions.
+   *
+   * - Handlers run in registration order and are isolated: a throwing handler
+   *   never breaks the bridge (PRD §8.3 lifecycle semantics).
+   * - Lifecycle events that arrive before `ready` are buffered and replayed once
+   *   the game becomes ready, so "subscribe first, event later" and "event first,
+   *   subscribe later" both work for the handshake window.
+   */
+
+  const LIFECYCLE_EVENTS = Object.freeze(['pause', 'resume', 'hidden', 'visible', 'before-save']);
+
+  function isLifecycleEvent(name) {
+    return LIFECYCLE_EVENTS.includes(name);
+  }
+
+  function createEventHub() {
+    const handlers = new Map();
+    const buffered = [];
+    let open = false;
+
+    function on(name, handler) {
+      if (typeof handler !== 'function') return function off() {};
+      let set = handlers.get(name);
+      if (!set) {
+        set = new Set();
+        handlers.set(name, set);
+      }
+      set.add(handler);
+      return function off() {
+        const current = handlers.get(name);
+        if (!current) return;
+        current.delete(handler);
+        if (current.size === 0) handlers.delete(name);
+      };
+    }
+
+    function dispatch(name, payload) {
+      const set = handlers.get(name);
+      if (!set || set.size === 0) return;
+      for (const handler of Array.from(set)) {
+        try {
+          const result = handler(payload);
+          if (result && typeof result.then === 'function') {
+            result.then(undefined, function ignore() {});
+          }
+        } catch (_error) {
+          // Game callbacks must never break the bridge.
+        }
+      }
+    }
+
+    function emit(name, payload, options) {
+      const shouldBuffer = options ? options.buffer !== false : true;
+      if (!open && shouldBuffer) {
+        buffered.push([name, payload]);
+        if (buffered.length > 64) buffered.shift();
+        return;
+      }
+      dispatch(name, payload);
+    }
+
+    function openBuffer() {
+      if (open) return;
+      open = true;
+      const queued = buffered.splice(0, buffered.length);
+      for (const entry of queued) dispatch(entry[0], entry[1]);
+    }
+
+    function has(name) {
+      const set = handlers.get(name);
+      return Boolean(set && set.size > 0);
+    }
+
+    return { on, emit, open: openBuffer, has, isOpen: function isOpen() { return open; } };
+  }
+
+  return { isLifecycleEvent, createEventHub };
+  })();
+
+  // module: packages/sdk/src/validate.js
+  __mods["packages/sdk/src/validate.js"] = (function () {
+  const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+  const SESSION_OUTCOMES = __mods["packages/shared/src/constants.js"].SESSION_OUTCOMES;
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const MAX_BRIDGE_DEPTH = __mods["packages/shared/src/protocol.js"].MAX_BRIDGE_DEPTH;
+  const cloneJsonValue = __mods["packages/shared/src/protocol.js"].cloneJsonValue;
+  const isValidStorageKey = __mods["packages/shared/src/protocol.js"].isValidStorageKey;
+  const jsonByteLength = __mods["packages/shared/src/protocol.js"].jsonByteLength;
+  const createGameError = __mods["packages/sdk/src/errors.js"].createGameError;
+  /**
+   * Client-side pre-flight checks. The Host is authoritative; the SDK runs the
+   * same cheap checks locally so obvious mistakes fail with a precise GM code
+   * before a message is posted (PRD §8.3).
+   */
+
+
+  const MAX_OBJECT_KEYS = 1000;
+  const MAX_KEY_LENGTH = 128;
+  const MAX_SCORE_ABS = 1e12;
+
+  function assertStorageKey(key) {
+    if (!isValidStorageKey(key)) {
+      throw createGameError(GM.STORAGE_KEY_INVALID, `Invalid storage key: ${String(key).slice(0, 64)}`);
+    }
+  }
+
+  function cloneValue(value) {
+    try {
+      return cloneJsonValue(value);
+    } catch (error) {
+      throw createGameError(GM.VALUE_NOT_SERIALIZABLE, error && error.message ? error.message : 'Value is not JSON-serializable');
+    }
+  }
+
+  /** Extra shape rules from PRD §8.3 (depth / object size) that cloneJsonValue does not cover. */
+  function assertJsonShape(value, depth) {
+    if (depth > MAX_BRIDGE_DEPTH) {
+      throw createGameError(GM.VALUE_NOT_SERIALIZABLE, 'Value nesting is too deep');
+    }
+    if (value === null || typeof value === 'string' || typeof value === 'boolean') return;
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value)) throw createGameError(GM.VALUE_NOT_SERIALIZABLE, 'Number must be finite');
+      return;
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) assertJsonShape(item, depth + 1);
+      return;
+    }
+    if (typeof value === 'object') {
+      const keys = Object.keys(value);
+      if (keys.length > MAX_OBJECT_KEYS) {
+        throw createGameError(GM.VALUE_NOT_SERIALIZABLE, 'Object has too many keys');
+      }
+      for (const key of keys) {
+        if (key.length > MAX_KEY_LENGTH) throw createGameError(GM.VALUE_NOT_SERIALIZABLE, 'Object key is too long');
+        assertJsonShape(value[key], depth + 1);
+      }
+      return;
+    }
+    throw createGameError(GM.VALUE_NOT_SERIALIZABLE, `Unsupported value type: ${typeof value}`);
+  }
+
+  /**
+   * @returns {{value: unknown, bytes: number}}
+   */
+  function prepareStorageValue(data) {
+    const value = cloneValue(data);
+    assertJsonShape(value, 0);
+    const bytes = jsonByteLength(value);
+    if (bytes > LIMITS.saveValueBytes) {
+      throw createGameError(GM.SAVE_TOO_LARGE, `Value exceeds ${LIMITS.saveValueBytes} bytes`);
+    }
+    return { value, bytes };
+  }
+
+  /** `meta` is optional; `undefined`/`null` become `null`, never `undefined`. */
+  function prepareScoreMeta(meta) {
+    if (meta === undefined || meta === null) return null;
+    const value = cloneValue(meta);
+    assertJsonShape(value, 0);
+    const bytes = jsonByteLength(value);
+    if (bytes > LIMITS.scoreMetaBytes) {
+      throw createGameError(GM.INVALID_PARAM, `Score meta exceeds ${LIMITS.scoreMetaBytes} bytes`);
+    }
+    return value;
+  }
+
+  function assertScoreValue(score) {
+    if (typeof score !== 'number' || !Number.isFinite(score) || Math.abs(score) > MAX_SCORE_ABS) {
+      throw createGameError(GM.INVALID_PARAM, 'Score must be a finite number within ±1e12');
+    }
+  }
+
+  function assertSessionOutcome(outcome) {
+    if (!SESSION_OUTCOMES.includes(outcome)) {
+      throw createGameError(GM.INVALID_PARAM, `Invalid session outcome: ${String(outcome)}`);
+    }
+  }
+
+  return { assertStorageKey, prepareStorageValue, prepareScoreMeta, assertScoreValue, assertSessionOutcome };
+  })();
+
+  // module: packages/sdk/src/sdk.js
+  __mods["packages/sdk/src/sdk.js"] = (function () {
+  const PROTOCOL_VERSION = __mods["packages/shared/src/constants.js"].PROTOCOL_VERSION;
+  const SDK_VERSION = __mods["packages/shared/src/constants.js"].SDK_VERSION;
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const METHODS = __mods["packages/shared/src/protocol.js"].METHODS;
+  const createBridgeClient = __mods["packages/sdk/src/bridge-client.js"].createBridgeClient;
+  const SDK_METHOD_TIMEOUTS = __mods["packages/sdk/src/bridge-client.js"].SDK_METHOD_TIMEOUTS;
+  const GameErrorImpl = __mods["packages/sdk/src/errors.js"].GameError;
+  const createGameError = __mods["packages/sdk/src/errors.js"].createGameError;
+  const isGameErrorImpl = __mods["packages/sdk/src/errors.js"].isGameError;
+  const createEventHub = __mods["packages/sdk/src/event-hub.js"].createEventHub;
+  const isLifecycleEvent = __mods["packages/sdk/src/event-hub.js"].isLifecycleEvent;
+  const assertScoreValue = __mods["packages/sdk/src/validate.js"].assertScoreValue;
+  const assertSessionOutcome = __mods["packages/sdk/src/validate.js"].assertSessionOutcome;
+  const assertStorageKey = __mods["packages/sdk/src/validate.js"].assertStorageKey;
+  const prepareScoreMeta = __mods["packages/sdk/src/validate.js"].prepareScoreMeta;
+  const prepareStorageValue = __mods["packages/sdk/src/validate.js"].prepareStorageValue;
+  /**
+   * Public game SDK (PRD §8.3 / D-011).
+   *
+   *   const game = DSH_GAME_SDK.createGameSDK();
+   *   const info = await game.ready();
+   *   await game.storage.save('current', state);
+   *
+   * The API surface is intentionally tiny: ready / storage / session / score /
+   * lifecycle / agent / runtime. Anything else is out of scope by contract.
+   */
+
+
+  /** Re-export the error class as a const (the repo bundler only supports named declarations). */
+  const GameError = GameErrorImpl;
+
+  function isGameError(error) {
+    return isGameErrorImpl(error);
+  }
+
+  function createRuntimeState() {
+    return {
+      sdkVersion: SDK_VERSION,
+      protocolVersion: PROTOCOL_VERSION,
+      runtimeVersion: null,
+      gameId: '',
+      gameVersion: '',
+      locale: 'zh',
+      theme: 'light',
+      reducedMotion: false,
+      capabilities: Object.freeze([]),
+      viewport: Object.freeze({ width: 0, height: 0, dpr: 1 }),
+      ready: false,
+    };
+  }
+
+  function createRuntimeView(state) {
+    const view = {};
+    for (const key of Object.keys(state)) {
+      Object.defineProperty(view, key, {
+        enumerable: true,
+        get: function get() {
+          return state[key];
+        },
+      });
+    }
+    return Object.freeze(view);
+  }
+
+  function normalizeAgentState(value) {
+    if (!value || typeof value !== 'object') return null;
+    return {
+      state: value.state,
+      label: typeof value.label === 'string' ? value.label : '',
+      sessionId: value.sessionId === undefined ? null : value.sessionId,
+      updatedAt: value.updatedAt,
+      source: value.source,
+      seq: value.seq,
+      since: value.since,
+      turnId: value.turnId === undefined ? null : value.turnId,
+    };
+  }
+
+  function normalizeViewport(value) {
+    const source = value && typeof value === 'object' ? value : {};
+    const width = Number.isFinite(source.width) ? source.width : 0;
+    const height = Number.isFinite(source.height) ? source.height : 0;
+    const dpr = Number.isFinite(source.dpr) && source.dpr > 0 ? source.dpr : 1;
+    return Object.freeze({ width, height, dpr });
+  }
+
+  function createGameSDK(options = {}) {
+    const win = options.window || (typeof window !== 'undefined' ? window : null);
+    const parent = options.parent || (win && win.parent) || null;
+    const location = options.location || (win && win.location) || null;
+    const timers = options.timers || globalThis;
+    const now = typeof options.now === 'function' ? options.now : Date.now;
+
+    const hub = createEventHub();
+    const runtimeState = createRuntimeState();
+    const runtimeView = createRuntimeView(runtimeState);
+
+    let readyPromise = null;
+    let backfillPromise = null;
+    let lastAgent = null;
+
+    function applyViewport(value) {
+      runtimeState.viewport = normalizeViewport(value);
+    }
+
+    function applyInit(init) {
+      if (!init || typeof init !== 'object') return;
+      if (typeof init.gameId === 'string') runtimeState.gameId = init.gameId;
+      if (typeof init.gameVersion === 'string') runtimeState.gameVersion = init.gameVersion;
+      if (typeof init.runtimeVersion === 'string') runtimeState.runtimeVersion = init.runtimeVersion;
+      if (typeof init.sdkVersion === 'string') runtimeState.sdkVersion = init.sdkVersion;
+      if (typeof init.locale === 'string') runtimeState.locale = init.locale;
+      if (init.theme === 'dark' || init.theme === 'light') runtimeState.theme = init.theme;
+      if (typeof init.reducedMotion === 'boolean') runtimeState.reducedMotion = init.reducedMotion;
+      if (Array.isArray(init.capabilities)) runtimeState.capabilities = Object.freeze(init.capabilities.slice());
+      if (init.viewport) applyViewport(init.viewport);
+    }
+
+    function applyReadyResult(result) {
+      if (!result || typeof result !== 'object') return;
+      if (typeof result.runtimeVersion === 'string') runtimeState.runtimeVersion = result.runtimeVersion;
+      if (typeof result.gameId === 'string') runtimeState.gameId = result.gameId;
+      if (typeof result.gameVersion === 'string') runtimeState.gameVersion = result.gameVersion;
+      if (typeof result.sdkVersion === 'string') runtimeState.sdkVersion = result.sdkVersion;
+      if (typeof result.locale === 'string') runtimeState.locale = result.locale;
+      if (result.theme === 'dark' || result.theme === 'light') runtimeState.theme = result.theme;
+      if (typeof result.reducedMotion === 'boolean') runtimeState.reducedMotion = result.reducedMotion;
+      if (Array.isArray(result.capabilities)) runtimeState.capabilities = Object.freeze(result.capabilities.slice());
+      if (result.viewport) applyViewport(result.viewport);
+      if (typeof result.protocolVersion === 'number') runtimeState.protocolVersion = result.protocolVersion;
+      runtimeState.ready = true;
+    }
+
+    function handleRuntimeEvent(name, data) {
+      if (name === 'theme') {
+        if (!data || typeof data !== 'object') return;
+        if (data.theme === 'dark' || data.theme === 'light') runtimeState.theme = data.theme;
+        if (typeof data.reducedMotion === 'boolean') runtimeState.reducedMotion = data.reducedMotion;
+        return;
+      }
+      if (name === 'viewport') {
+        applyViewport(data);
+        return;
+      }
+      if (name === 'agent-status') {
+        const snapshot = normalizeAgentState(data);
+        if (!snapshot) return;
+        lastAgent = snapshot;
+        hub.emit('agent-status', snapshot, { buffer: false });
+        return;
+      }
+      if (isLifecycleEvent(name)) {
+        hub.emit(name, data && typeof data === 'object' ? data : {});
+      }
+    }
+
+    function handleFatal(error) {
+      hub.emit('fatal', error, { buffer: false });
+    }
+
+    const bridge = createBridgeClient({
+      window: win,
+      parent,
+      location,
+      timers,
+      now,
+      crypto: options.crypto,
+      onInit: applyInit,
+      onEvent: handleRuntimeEvent,
+      onFatal: handleFatal,
+    });
+
+    function requireReady() {
+      const fatal = bridge.getFatalError();
+      if (fatal) throw fatal;
+      if (!bridge.isReady()) {
+        throw createGameError(GM.NOT_READY, 'Game is not ready yet');
+      }
+    }
+
+    function ready(timeoutMs) {
+      if (!readyPromise) {
+        readyPromise = bridge.ready(timeoutMs).then(function onReady(info) {
+          const payload = info && typeof info === 'object' ? info : {};
+          applyInit(payload.init);
+          applyReadyResult(payload.result);
+          runtimeState.ready = true;
+          hub.open();
+          ensureAgentBackfill();
+          return runtimeView;
+        });
+        // A game may register listeners without ever awaiting ready().
+        readyPromise.then(undefined, function ignore() {});
+      }
+      return readyPromise;
+    }
+
+    function ensureAgentBackfill() {
+      if (backfillPromise) return backfillPromise;
+      if (!hub.has('agent-status')) return null;
+      backfillPromise = bridge.ready().then(function onReady() {
+        return bridge.request(METHODS.AGENT_GET_STATUS, {}, SDK_METHOD_TIMEOUTS['agent.getStatus']);
+      }).then(function onStatus(snapshot) {
+        const normalized = normalizeAgentState(snapshot);
+        if (!normalized) return;
+        lastAgent = normalized;
+        hub.emit('agent-status', normalized, { buffer: false });
+      }).then(undefined, function ignore() {});
+      return backfillPromise;
+    }
+
+    async function storageSave(key, data) {
+      requireReady();
+      assertStorageKey(key);
+      const prepared = prepareStorageValue(data);
+      return bridge.request(METHODS.STORAGE_SAVE, { key, data: prepared.value }, SDK_METHOD_TIMEOUTS['storage.save']);
+    }
+
+    async function storageLoad(key) {
+      requireReady();
+      assertStorageKey(key);
+      return bridge.request(METHODS.STORAGE_LOAD, { key }, SDK_METHOD_TIMEOUTS['storage.load']).then(function onLoaded(
+        result
+      ) {
+        return result === undefined ? null : result;
+      });
+    }
+
+    async function storageRemove(key) {
+      requireReady();
+      assertStorageKey(key);
+      return bridge.request(METHODS.STORAGE_REMOVE, { key }, SDK_METHOD_TIMEOUTS['storage.remove']);
+    }
+
+    async function sessionStart() {
+      requireReady();
+      return bridge.request(METHODS.SESSION_START, {}, SDK_METHOD_TIMEOUTS['session.start']);
+    }
+
+    async function sessionEnd(endOptions) {
+      requireReady();
+      const input = endOptions && typeof endOptions === 'object' ? endOptions : {};
+      const outcome = input.outcome === undefined ? 'completed' : input.outcome;
+      assertSessionOutcome(outcome);
+      let score = null;
+      if (input.score !== undefined && input.score !== null) {
+        assertScoreValue(input.score);
+        score = input.score;
+      }
+      return bridge.request(METHODS.SESSION_END, { outcome, score }, SDK_METHOD_TIMEOUTS['session.end']);
+    }
+
+    async function scoreSubmit(score, meta) {
+      requireReady();
+      assertScoreValue(score);
+      const preparedMeta = prepareScoreMeta(meta);
+      return bridge.request(
+        METHODS.SCORE_SUBMIT,
+        { score, meta: preparedMeta },
+        SDK_METHOD_TIMEOUTS['score.submit']
+      );
+    }
+
+    async function scoreGetBest() {
+      requireReady();
+      return bridge.request(METHODS.SCORE_GET_BEST, {}, SDK_METHOD_TIMEOUTS['score.getBest']).then(function onBest(
+        result
+      ) {
+        return result === undefined ? null : result;
+      });
+    }
+
+    async function agentGetStatus() {
+      requireReady();
+      return bridge.request(METHODS.AGENT_GET_STATUS, {}, SDK_METHOD_TIMEOUTS['agent.getStatus']).then(function onStatus(
+        snapshot
+      ) {
+        const normalized = normalizeAgentState(snapshot);
+        if (normalized) lastAgent = normalized;
+        return normalized || snapshot;
+      });
+    }
+
+    function agentOn(event, handler) {
+      if (event !== 'status') throw createGameError(GM.INVALID_PARAM, `Unknown agent event: ${String(event)}`);
+      const off = hub.on('agent-status', handler);
+      bridge.start();
+      if (bridge.isReady()) ensureAgentBackfill();
+      else bridge.ready().then(ensureAgentBackfill, function ignore() {});
+      return off;
+    }
+
+    function lifecycleOn(event, handler) {
+      if (!isLifecycleEvent(event)) {
+        throw createGameError(GM.INVALID_PARAM, `Unknown lifecycle event: ${String(event)}`);
+      }
+      const off = hub.on(event, handler);
+      bridge.start();
+      return off;
+    }
+
+    const storage = Object.freeze({
+      save: storageSave,
+      load: storageLoad,
+      remove: storageRemove,
+    });
+
+    const session = Object.freeze({
+      start: sessionStart,
+      end: sessionEnd,
+    });
+
+    const score = Object.freeze({
+      submit: scoreSubmit,
+      getBest: scoreGetBest,
+    });
+
+    const lifecycle = Object.freeze({
+      on: lifecycleOn,
+    });
+
+    const agent = Object.freeze({
+      getStatus: agentGetStatus,
+      on: agentOn,
+    });
+
+    const game = {
+      runtime: runtimeView,
+      ready,
+      storage,
+      session,
+      score,
+      lifecycle,
+      agent,
+      onError: function onError(handler) {
+        return hub.on('fatal', handler);
+      },
+      isGameError,
+    };
+
+    return Object.freeze(game);
+  }
+
+  return { GameError, isGameError, createGameSDK };
+  })();
+
+  const __entry = __mods["packages/sdk/src/sdk.js"];
+
+  return __entry;
+})();
+
+(function () {
+  'use strict';
+  // Generated by scripts/bundle-lib.mjs — do not edit by hand.
+  const __mods = Object.create(null);
+
+  // module: games/breakout/src/logic.js
+  __mods["games/breakout/src/logic.js"] = (function () {
+  /**
+   * Pure Breakout rules: paddle/ball/brick collisions, brick durability, scoring,
+   * lives, level layouts, level progression and save encoding.
+   *
+   * This module is deliberately free of DOM, timers and wall-clock reads so the
+   * whole rule set can be replayed by `node --test` (V1-GAME-ACCEPTANCE §5.6).
+   * The game loop feeds fixed `STEP_MS` slices; `step()` mutates the state and
+   * returns the events the UI/SDK layer cares about.
+   */
+
+  const LOGICAL_WIDTH = 960;
+  const LOGICAL_HEIGHT = 540;
+  const SAVE_SCHEMA_VERSION = 1;
+  const SAVE_KEY = 'current';
+  const SCORE_MAX = 10000000;
+  const START_LIVES = 3;
+  const LEVEL_CLEAR_MS = 1200;
+  const STEP_MS = 1000 / 120;
+
+  const FIELD = Object.freeze({ left: 44, right: 916, top: 92, bottom: 520 });
+  const PADDLE = Object.freeze({ width: 108, height: 14, y: 496, speed: 640 });
+  const BALL = Object.freeze({
+    radius: 7,
+    baseSpeed: 360,
+    maxSpeed: 760,
+    maxBounceAngle: Math.PI / 3,
+  });
+  const BRICK = Object.freeze({ cols: 12, height: 22, gapX: 5, gapY: 6, top: 128 });
+  const BRICK_WIDTH = (FIELD.right - FIELD.left - BRICK.gapX * (BRICK.cols - 1)) / BRICK.cols;
+
+  const BRICK_TYPES = Object.freeze({ normal: 'normal', hard: 'hard', solid: 'solid' });
+
+  /** Five hand-tuned layouts. `1` normal, `2` hard (2 HP), `X` indestructible. */
+  const LEVELS = Object.freeze([
+    Object.freeze({
+      number: 1,
+      nameZh: '初次接触',
+      nameEn: 'First Contact',
+      speed: 1,
+      layout: Object.freeze([
+        '111111111111',
+        '111122111111',
+        '111111111111',
+        '111111111111',
+      ]),
+    }),
+    Object.freeze({
+      number: 2,
+      nameZh: '双塔',
+      nameEn: 'Twin Towers',
+      speed: 1.08,
+      layout: Object.freeze([
+        '22........22',
+        '22..1111..22',
+        '22..1111..22',
+        '22..1111..22',
+        '22........22',
+      ]),
+    }),
+    Object.freeze({
+      number: 3,
+      nameZh: '蜂巢',
+      nameEn: 'Honeycomb',
+      speed: 1.16,
+      layout: Object.freeze([
+        '1.1.1.1.1.1.',
+        '.2.2.2.2.2.2',
+        '1.1.1.1.1.1.',
+        '.2.2.2.2.2.2',
+        '1.1.X.1.1.1.',
+      ]),
+    }),
+    Object.freeze({
+      number: 4,
+      nameZh: '要塞',
+      nameEn: 'Fortress',
+      speed: 1.24,
+      layout: Object.freeze([
+        'XX11111111XX',
+        'X.22222222.X',
+        'X.22XXXX22.X',
+        'X.22222222.X',
+        'XX11111111XX',
+      ]),
+    }),
+    Object.freeze({
+      number: 5,
+      nameZh: '终局',
+      nameEn: 'Last Stand',
+      speed: 1.32,
+      layout: Object.freeze([
+        '2X2X2X2X2X2X',
+        'X2X2X2X2X2X2',
+        '222222222222',
+        'X1111111111X',
+        'X.22222222.X',
+        'XX22222222XX',
+      ]),
+    }),
+  ]);
+
+  const TYPE_BY_CHAR = Object.freeze({ 1: BRICK_TYPES.normal, 2: BRICK_TYPES.hard, X: BRICK_TYPES.solid });
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function clampInt(value, min, max, fallback) {
+    if (!Number.isFinite(value)) return fallback;
+    return Math.min(max, Math.max(min, Math.floor(value)));
+  }
+
+  function round3(value) {
+    return Math.round(value * 1000) / 1000;
+  }
+
+  function nextRandom(seed) {
+    let a = seed >>> 0;
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    const value = ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    return { state: a, value };
+  }
+
+  /** Durability for a brick type. `solid` uses -1 so saves stay JSON-safe. */
+  function maxHpForType(type) {
+    if (type === BRICK_TYPES.hard) return 2;
+    if (type === BRICK_TYPES.solid) return -1;
+    return 1;
+  }
+
+  /** Points for one brick impact. Solid bricks never score. */
+  function pointsForHit(type, destroyed) {
+    if (type === BRICK_TYPES.normal) return 10;
+    if (type === BRICK_TYPES.hard) return destroyed ? 30 : 10;
+    return 0;
+  }
+
+  /** Level-clear reward is monotonic and reproducible (acceptance §5.4). */
+  function levelClearBonus(level) {
+    return 100 * clampInt(level, 1, LEVELS.length, 1);
+  }
+
+  function levelDefinition(levelNumber) {
+    return LEVELS[clampInt(levelNumber, 1, LEVELS.length, 1) - 1];
+  }
+
+  function brickRect(brick) {
+    return {
+      x: FIELD.left + brick.col * (BRICK_WIDTH + BRICK.gapX),
+      y: BRICK.top + brick.row * (BRICK.height + BRICK.gapY),
+      width: BRICK_WIDTH,
+      height: BRICK.height,
+    };
+  }
+
+  /** Build the alive-brick list for a level. Pure and deterministic. */
+  function createBricks(levelNumber) {
+    const level = levelDefinition(levelNumber);
+    const bricks = [];
+    for (let row = 0; row < level.layout.length; row += 1) {
+      const line = level.layout[row];
+      for (let col = 0; col < line.length; col += 1) {
+        const type = TYPE_BY_CHAR[line[col]];
+        if (!type) continue;
+        bricks.push({ row, col, type, hp: maxHpForType(type) });
+      }
+    }
+    return bricks;
+  }
+
+  /** Speed grows with the level, brick impacts and time spent in the level. */
+  function currentSpeed(state) {
+    const level = levelDefinition(state.level);
+    const hitBonus = Math.min(160, Math.max(0, state.levelHits || 0) * 4);
+    const timeBonus = Math.min(90, Math.floor(Math.max(0, state.elapsedMs || 0) / 10000) * 10);
+    return Math.min(BALL.maxSpeed, BALL.baseSpeed * level.speed + hitBonus + timeBonus);
+  }
+
+  function destructibleCount(state) {
+    let count = 0;
+    for (const brick of state.bricks) {
+      if (brick.type !== BRICK_TYPES.solid) count += 1;
+    }
+    return count;
+  }
+
+  function placeBallOnPaddle(state) {
+    state.ball = {
+      x: state.paddle.x,
+      y: PADDLE.y - BALL.radius - 1.5,
+      vx: 0,
+      vy: 0,
+      launched: false,
+    };
+  }
+
+  function syncServeBall(state) {
+    if (state.ball.launched) return;
+    state.ball.x = state.paddle.x;
+    state.ball.y = PADDLE.y - BALL.radius - 1.5;
+    state.ball.vx = 0;
+    state.ball.vy = 0;
+  }
+
+  /** Create a fresh run at `level` (1-based) with three lives. */
+  function createState(options = {}) {
+    const seed = Number.isFinite(options.seed) ? (options.seed >>> 0) || 1 : 1;
+    const level = clampInt(options.level, 1, LEVELS.length, 1);
+    const state = {
+      version: SAVE_SCHEMA_VERSION,
+      seed,
+      rngState: seed,
+      level,
+      lives: START_LIVES,
+      score: 0,
+      status: 'ready',
+      paddle: { x: (FIELD.left + FIELD.right) / 2 },
+      ball: { x: 0, y: 0, vx: 0, vy: 0, launched: false },
+      bricks: createBricks(level),
+      levelHits: 0,
+      elapsedMs: 0,
+      clearTimer: 0,
+    };
+    placeBallOnPaddle(state);
+    return state;
+  }
+
+  /** Keep score/lives/seed, reset paddle, ball and bricks for a level. */
+  function startLevel(state, levelNumber) {
+    state.level = clampInt(levelNumber, 1, LEVELS.length, 1);
+    state.bricks = createBricks(state.level);
+    state.paddle.x = (FIELD.left + FIELD.right) / 2;
+    state.levelHits = 0;
+    state.elapsedMs = 0;
+    state.clearTimer = 0;
+    state.status = 'ready';
+    placeBallOnPaddle(state);
+    return state;
+  }
+
+  function restartState(state, seed) {
+    const nextSeed = Number.isFinite(seed)
+      ? seed >>> 0
+      : state && Number.isFinite(state.seed)
+        ? state.seed >>> 0
+        : 1;
+    return createState({ seed: nextSeed });
+  }
+
+  function movePaddle(state, x) {
+    const half = PADDLE.width / 2;
+    const target = Number.isFinite(x) ? x : state.paddle.x;
+    state.paddle.x = clamp(target, FIELD.left + half, FIELD.right - half);
+    syncServeBall(state);
+    return state.paddle.x;
+  }
+
+  function nudgePaddle(state, direction, dtMs) {
+    const sign = direction < 0 ? -1 : direction > 0 ? 1 : 0;
+    const delta = (Number.isFinite(dtMs) ? Math.max(0, dtMs) : 0) / 1000;
+    return movePaddle(state, state.paddle.x + sign * PADDLE.speed * delta);
+  }
+
+  function setPaused(state, paused) {
+    if (paused && state.status === 'playing') state.status = 'paused';
+    else if (!paused && state.status === 'paused') state.status = 'playing';
+    return state.status;
+  }
+
+  function scaleBallSpeed(state) {
+    const speed = Math.hypot(state.ball.vx, state.ball.vy);
+    if (!(speed > 0)) return;
+    const target = currentSpeed(state);
+    state.ball.vx = (state.ball.vx / speed) * target;
+    state.ball.vy = (state.ball.vy / speed) * target;
+  }
+
+  /**
+   * Launch the served ball. The angle is seeded (22°–31° from vertical), so a
+   * replay is reproducible while the ball never starts horizontally locked.
+   */
+  function launchBall(state) {
+    if (state.status !== 'ready' && state.status !== 'playing') return false;
+    if (state.ball.launched) return false;
+    const speed = currentSpeed(state);
+    const first = nextRandom(state.rngState);
+    const second = nextRandom(first.state);
+    state.rngState = second.state;
+    const direction = first.value < 0.5 ? -1 : 1;
+    const angle = BALL.maxBounceAngle * (0.34 + second.value * 0.18);
+    state.ball.vx = direction * Math.sin(angle) * speed;
+    state.ball.vy = -Math.cos(angle) * speed;
+    state.ball.launched = true;
+    state.status = 'playing';
+    state.elapsedMs = 0;
+    return true;
+  }
+
+  /**
+   * Bounce off the paddle using the hit offset. The 60° cap guarantees a
+   * vertical component of at least 0.5 × speed (no horizontal lock).
+   */
+  function bounceOffPaddle(state) {
+    const speed = currentSpeed(state);
+    const half = PADDLE.width / 2;
+    const offset = clamp((state.ball.x - state.paddle.x) / half, -1, 1);
+    const angle = offset * BALL.maxBounceAngle;
+    state.ball.vx = Math.sin(angle) * speed;
+    state.ball.vy = -Math.cos(angle) * speed;
+    state.ball.y = PADDLE.y - BALL.radius - 0.01;
+    state.ball.launched = true;
+    return state.ball;
+  }
+
+  function circleHitsRect(cx, cy, radius, rect) {
+    const closestX = clamp(cx, rect.x, rect.x + rect.width);
+    const closestY = clamp(cy, rect.y, rect.y + rect.height);
+    const dx = cx - closestX;
+    const dy = cy - closestY;
+    return dx * dx + dy * dy <= radius * radius;
+  }
+
+  function resolveWalls(state, events) {
+    const ball = state.ball;
+    const radius = BALL.radius;
+    if (ball.x - radius < FIELD.left) {
+      ball.x = FIELD.left + radius;
+      if (ball.vx < 0) ball.vx = -ball.vx;
+      events.push({ type: 'wall-hit', side: 'left' });
+    } else if (ball.x + radius > FIELD.right) {
+      ball.x = FIELD.right - radius;
+      if (ball.vx > 0) ball.vx = -ball.vx;
+      events.push({ type: 'wall-hit', side: 'right' });
+    }
+    if (ball.y - radius < FIELD.top) {
+      ball.y = FIELD.top + radius;
+      if (ball.vy < 0) ball.vy = -ball.vy;
+      events.push({ type: 'wall-hit', side: 'top' });
+    }
+  }
+
+  function resolvePaddle(state, events) {
+    const ball = state.ball;
+    if (ball.vy <= 0) return;
+    const half = PADDLE.width / 2;
+    const left = state.paddle.x - half;
+    const right = state.paddle.x + half;
+    const top = PADDLE.y;
+    const bottom = PADDLE.y + PADDLE.height;
+    const closestX = clamp(ball.x, left, right);
+    const closestY = clamp(ball.y, top, bottom);
+    const dx = ball.x - closestX;
+    const dy = ball.y - closestY;
+    if (dx * dx + dy * dy > BALL.radius * BALL.radius) return;
+    if (ball.y > bottom) return;
+    bounceOffPaddle(state);
+    events.push({ type: 'paddle-hit', x: ball.x, y: top });
+  }
+
+  function damageBrick(state, brick, index, events) {
+    const rect = brickRect(brick);
+    let points = 0;
+    let destroyed = false;
+    if (brick.type !== BRICK_TYPES.solid) {
+      brick.hp -= 1;
+      if (brick.hp <= 0) {
+        destroyed = true;
+        state.bricks.splice(index, 1);
+      }
+      points = pointsForHit(brick.type, destroyed);
+      state.score = Math.min(SCORE_MAX, state.score + points);
+    }
+    state.levelHits += 1;
+    events.push({
+      type: 'brick-hit',
+      brickType: brick.type,
+      row: brick.row,
+      col: brick.col,
+      points,
+      destroyed,
+      x: rect.x + rect.width / 2,
+      y: rect.y + rect.height / 2,
+    });
+  }
+
+  function resolveBricks(state, previousX, previousY, events) {
+    const ball = state.ball;
+    const radius = BALL.radius;
+    for (let index = 0; index < state.bricks.length; index += 1) {
+      const brick = state.bricks[index];
+      const rect = brickRect(brick);
+      if (!circleHitsRect(ball.x, ball.y, radius, rect)) continue;
+
+      const wasLeft = previousX + radius <= rect.x + 0.001;
+      const wasRight = previousX - radius >= rect.x + rect.width - 0.001;
+      const wasAbove = previousY + radius <= rect.y + 0.001;
+      const wasBelow = previousY - radius >= rect.y + rect.height - 0.001;
+      const overlapX = Math.min(ball.x + radius - rect.x, rect.x + rect.width - (ball.x - radius));
+      const overlapY = Math.min(ball.y + radius - rect.y, rect.y + rect.height - (ball.y - radius));
+      let horizontal;
+      if ((wasLeft || wasRight) && !(wasAbove || wasBelow)) horizontal = true;
+      else if (!(wasLeft || wasRight) && (wasAbove || wasBelow)) horizontal = false;
+      else horizontal = overlapX < overlapY;
+
+      if (horizontal) {
+        const fromLeft = ball.x < rect.x + rect.width / 2;
+        ball.x = fromLeft ? rect.x - radius - 0.01 : rect.x + rect.width + radius + 0.01;
+        ball.vx = fromLeft ? -Math.abs(ball.vx) : Math.abs(ball.vx);
+      } else {
+        const fromTop = ball.y < rect.y + rect.height / 2;
+        ball.y = fromTop ? rect.y - radius - 0.01 : rect.y + rect.height + radius + 0.01;
+        ball.vy = fromTop ? -Math.abs(ball.vy) : Math.abs(ball.vy);
+      }
+
+      damageBrick(state, brick, index, events);
+      scaleBallSpeed(state);
+      break;
+    }
+  }
+
+  function loseLife(state, events) {
+    state.lives = Math.max(0, state.lives - 1);
+    state.ball.launched = false;
+    state.ball.vx = 0;
+    state.ball.vy = 0;
+    events.push({ type: 'life-lost', lives: state.lives });
+    if (state.lives <= 0) {
+      state.status = 'over';
+      state.clearTimer = 0;
+      events.push({ type: 'game-over', score: state.score });
+      return;
+    }
+    state.status = 'ready';
+    state.paddle.x = (FIELD.left + FIELD.right) / 2;
+    state.levelHits = 0;
+    state.elapsedMs = 0;
+    placeBallOnPaddle(state);
+  }
+
+  function markLevelClear(state, events) {
+    state.status = 'level-clear';
+    state.clearTimer = LEVEL_CLEAR_MS;
+    state.ball.vx = 0;
+    state.ball.vy = 0;
+    state.ball.launched = false;
+    const bonus = levelClearBonus(state.level);
+    state.score = Math.min(SCORE_MAX, state.score + bonus);
+    events.push({ type: 'level-clear', level: state.level, bonus });
+  }
+
+  /** Advance one fixed simulation slice. Returns UI/SDK events; mutates state. */
+  function step(state, dtMs) {
+    const events = [];
+    const rawDt = Number.isFinite(dtMs) ? Math.max(0, dtMs) : STEP_MS;
+
+    if (state.status === 'level-clear') {
+      state.clearTimer = Math.max(0, state.clearTimer - rawDt);
+      if (state.clearTimer <= 0) {
+        if (state.level >= LEVELS.length) {
+          state.status = 'won';
+          state.ball.launched = false;
+          state.ball.vx = 0;
+          state.ball.vy = 0;
+          events.push({ type: 'won', score: state.score });
+        } else {
+          startLevel(state, state.level + 1);
+          launchBall(state);
+          events.push({ type: 'level-advanced', level: state.level });
+        }
+      }
+      return events;
+    }
+
+    if (state.status !== 'playing') return events;
+    if (!state.ball.launched) {
+      state.status = 'ready';
+      return events;
+    }
+
+    const dt = Math.min(50, rawDt);
+    const seconds = dt / 1000;
+    state.elapsedMs += dt;
+    const previousX = state.ball.x;
+    const previousY = state.ball.y;
+    state.ball.x += state.ball.vx * seconds;
+    state.ball.y += state.ball.vy * seconds;
+
+    resolveWalls(state, events);
+    resolvePaddle(state, events);
+    resolveBricks(state, previousX, previousY, events);
+
+    if (state.ball.y - BALL.radius > FIELD.bottom) loseLife(state, events);
+    if (state.status === 'playing' && destructibleCount(state) === 0) markLevelClear(state, events);
+    return events;
+  }
+
+  /** Serialize a run for `storage.save('current', …)`. */
+  function serialize(state) {
+    return {
+      version: SAVE_SCHEMA_VERSION,
+      seed: state.seed >>> 0,
+      rngState: state.rngState >>> 0,
+      level: state.level,
+      lives: state.lives,
+      score: state.score,
+      status: state.status,
+      paddle: { x: round3(state.paddle.x) },
+      ball: {
+        x: round3(state.ball.x),
+        y: round3(state.ball.y),
+        vx: round3(state.ball.vx),
+        vy: round3(state.ball.vy),
+        launched: state.ball.launched === true,
+      },
+      bricks: state.bricks.map(function mapBrick(brick) {
+        return { row: brick.row, col: brick.col, type: brick.type, hp: brick.hp };
+      }),
+      levelHits: state.levelHits,
+      elapsedMs: Math.round(state.elapsedMs),
+      clearTimer: Math.round(state.clearTimer),
+    };
+  }
+
+  function parseSaveInput(raw) {
+    if (typeof raw === 'string') {
+      try {
+        return JSON.parse(raw);
+      } catch (_error) {
+        return null;
+      }
+    }
+    return raw;
+  }
+
+  function validRectPosition(row, col) {
+    return Number.isInteger(row) && Number.isInteger(col) && row >= 0 && col >= 0 && col < BRICK.cols;
+  }
+
+  /**
+   * Decode `storage.load('current')`. Structural corruption returns null; a save
+   * whose ball already fell is normalized to a safe serve at the paddle.
+   */
+  function deserialize(raw) {
+    const save = parseSaveInput(raw);
+    if (!save || typeof save !== 'object' || Array.isArray(save)) return null;
+    if (save.version !== SAVE_SCHEMA_VERSION) return null;
+    if (!Number.isInteger(save.level) || save.level < 1 || save.level > LEVELS.length) return null;
+    if (!Number.isInteger(save.lives) || save.lives < 1 || save.lives > START_LIVES) return null;
+    if (!Number.isInteger(save.score) || save.score < 0 || save.score > SCORE_MAX) return null;
+    if (!Array.isArray(save.bricks) || save.bricks.length > 12 * BRICK.cols) return null;
+    if (!save.paddle || typeof save.paddle !== 'object' || !Number.isFinite(save.paddle.x)) return null;
+    if (!save.ball || typeof save.ball !== 'object') return null;
+    if (!Number.isFinite(save.ball.x) || !Number.isFinite(save.ball.y)) return null;
+    if (!Number.isFinite(save.ball.vx) || !Number.isFinite(save.ball.vy)) return null;
+    if (typeof save.ball.launched !== 'boolean') return null;
+
+    const allowedStatus = ['ready', 'playing', 'paused', 'level-clear'];
+    if (allowedStatus.indexOf(save.status) === -1) return null;
+
+    const expected = new Map();
+    for (const brick of createBricks(save.level)) {
+      expected.set(brick.row + ',' + brick.col, brick);
+    }
+
+    const bricks = [];
+    const seen = new Set();
+    for (const item of save.bricks) {
+      if (!item || typeof item !== 'object') return null;
+      if (!validRectPosition(item.row, item.col)) return null;
+      const key = item.row + ',' + item.col;
+      if (seen.has(key)) return null;
+      const reference = expected.get(key);
+      if (!reference || reference.type !== item.type) return null;
+      if (!Number.isInteger(item.hp)) return null;
+      if (item.type === BRICK_TYPES.solid && item.hp !== -1) return null;
+      if (item.type === BRICK_TYPES.normal && item.hp !== 1) return null;
+      if (item.type === BRICK_TYPES.hard && (item.hp < 1 || item.hp > 2)) return null;
+      seen.add(key);
+      bricks.push({ row: item.row, col: item.col, type: item.type, hp: item.hp });
+    }
+    for (const reference of expected.values()) {
+      if (reference.type === BRICK_TYPES.solid && !seen.has(reference.row + ',' + reference.col)) return null;
+    }
+
+    const state = createState({
+      seed: Number.isInteger(save.seed) ? save.seed : 1,
+      level: save.level,
+    });
+    state.rngState = Number.isInteger(save.rngState) ? save.rngState >>> 0 : state.seed;
+    state.levelHits = Number.isInteger(save.levelHits) && save.levelHits >= 0 ? save.levelHits : 0;
+    state.elapsedMs =
+      Number.isFinite(save.elapsedMs) && save.elapsedMs >= 0 ? Math.min(save.elapsedMs, 24 * 60 * 60 * 1000) : 0;
+    state.clearTimer = Number.isFinite(save.clearTimer) && save.clearTimer >= 0 ? save.clearTimer : 0;
+    state.lives = save.lives;
+    state.score = save.score;
+    state.status = save.status;
+    state.paddle.x = clamp(save.paddle.x, FIELD.left + PADDLE.width / 2, FIELD.right - PADDLE.width / 2);
+    state.bricks = bricks;
+
+    const launched = save.ball.launched === true;
+    const speed = Math.hypot(save.ball.vx, save.ball.vy);
+    const safeX = clamp(save.ball.x, FIELD.left + BALL.radius + 1, FIELD.right - BALL.radius - 1);
+    const safeY = clamp(save.ball.y, FIELD.top + BALL.radius + 1, FIELD.bottom - BALL.radius - 2);
+    const fallen = save.ball.y + BALL.radius >= FIELD.bottom;
+    if (!launched || !(speed >= 60) || speed > BALL.maxSpeed * 1.6 || fallen) {
+      placeBallOnPaddle(state);
+      if (state.status === 'playing' || state.status === 'level-clear') state.status = 'ready';
+    } else {
+      state.ball = { x: safeX, y: safeY, vx: save.ball.vx, vy: save.ball.vy, launched: true };
+      if (state.status === 'ready') placeBallOnPaddle(state);
+    }
+
+    if (destructibleCount(state) === 0) {
+      if (state.level >= LEVELS.length) return null;
+      startLevel(state, state.level + 1);
+      return state;
+    }
+
+    if (state.status === 'level-clear') {
+      if (state.level >= LEVELS.length) return null;
+      startLevel(state, state.level + 1);
+      return state;
+    }
+
+    return state;
+  }
+
+  return { LOGICAL_WIDTH, LOGICAL_HEIGHT, SAVE_SCHEMA_VERSION, SAVE_KEY, SCORE_MAX, START_LIVES, LEVEL_CLEAR_MS, STEP_MS, FIELD, PADDLE, BALL, BRICK, BRICK_WIDTH, BRICK_TYPES, LEVELS, maxHpForType, pointsForHit, levelClearBonus, levelDefinition, brickRect, createBricks, currentSpeed, destructibleCount, createState, startLevel, restartState, movePaddle, nudgePaddle, setPaused, launchBall, bounceOffPaddle, step, serialize, deserialize };
+  })();
+
+  // module: games/breakout/src/render.js
+  __mods["games/breakout/src/render.js"] = (function () {
+  const BALL = __mods["games/breakout/src/logic.js"].BALL;
+  const FIELD = __mods["games/breakout/src/logic.js"].FIELD;
+  const LEVELS = __mods["games/breakout/src/logic.js"].LEVELS;
+  const PADDLE = __mods["games/breakout/src/logic.js"].PADDLE;
+  const LOGICAL_HEIGHT = __mods["games/breakout/src/logic.js"].LOGICAL_HEIGHT;
+  const LOGICAL_WIDTH = __mods["games/breakout/src/logic.js"].LOGICAL_WIDTH;
+  const brickRect = __mods["games/breakout/src/logic.js"].brickRect;
+  const currentSpeed = __mods["games/breakout/src/logic.js"].currentSpeed;
+  /**
+   * Canvas presentation layer for Breakout. Visual-only: it reads the pure state
+   * produced by logic.js and never changes gameplay. Theme, reduced-motion and
+   * locale come from the SDK runtime.
+   */
+
+
+  const FONT_SANS =
+    'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
+  const FONT_MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
+
+  const PALETTES = {
+    dark: {
+      bgTop: '#060a12',
+      bgBottom: '#04060b',
+      glowA: 'rgba(34, 211, 238, 0.18)',
+      glowB: 'rgba(167, 139, 250, 0.16)',
+      panelTop: '#0c1626',
+      panelBottom: '#070d18',
+      fieldTop: '#0a1320',
+      fieldBottom: '#060b14',
+      fieldBorder: 'rgba(148, 197, 255, 0.18)',
+      fieldLine: 'rgba(148, 197, 255, 0.055)',
+      text: '#eaf2ff',
+      muted: '#8fa3bf',
+      faint: 'rgba(143, 163, 191, 0.45)',
+      accent: '#22d3ee',
+      accent2: '#a78bfa',
+      success: '#34d399',
+      danger: '#fb7185',
+      panel: 'rgba(13, 23, 40, 0.82)',
+      panelBorder: 'rgba(148, 197, 255, 0.16)',
+      ballCore: '#f8fafc',
+      ballRim: '#67e8f9',
+      ballGlow: 'rgba(103, 232, 249, 0.5)',
+      paddleTop: '#67e8f9',
+      paddleBottom: '#0ea5e9',
+      paddleGlow: 'rgba(34, 211, 238, 0.5)',
+      bricks: {
+        normal: { top: '#34d399', bottom: '#0f766e', edge: '#a7f3d0', glow: 'rgba(52, 211, 153, 0.36)' },
+        hard: { top: '#fbbf24', bottom: '#b45309', edge: '#fde68a', glow: 'rgba(251, 191, 36, 0.36)' },
+        solid: { top: '#64748b', bottom: '#334155', edge: '#cbd5e1', glow: 'rgba(148, 163, 184, 0.2)' },
+      },
+    },
+    light: {
+      bgTop: '#eef4fb',
+      bgBottom: '#e2ebf6',
+      glowA: 'rgba(8, 145, 178, 0.12)',
+      glowB: 'rgba(124, 58, 237, 0.1)',
+      panelTop: '#ffffff',
+      panelBottom: '#f1f6fd',
+      fieldTop: '#fbfdff',
+      fieldBottom: '#eaf2fb',
+      fieldBorder: 'rgba(15, 23, 42, 0.14)',
+      fieldLine: 'rgba(15, 23, 42, 0.055)',
+      text: '#0b1220',
+      muted: '#4c5f78',
+      faint: 'rgba(76, 95, 120, 0.42)',
+      accent: '#0891b2',
+      accent2: '#7c3aed',
+      success: '#047857',
+      danger: '#be123c',
+      panel: 'rgba(255, 255, 255, 0.88)',
+      panelBorder: 'rgba(15, 23, 42, 0.1)',
+      ballCore: '#0f172a',
+      ballRim: '#0e7490',
+      ballGlow: 'rgba(8, 145, 178, 0.32)',
+      paddleTop: '#0891b2',
+      paddleBottom: '#0e7490',
+      paddleGlow: 'rgba(8, 145, 178, 0.34)',
+      bricks: {
+        normal: { top: '#10b981', bottom: '#047857', edge: '#a7f3d0', glow: 'rgba(5, 150, 105, 0.24)' },
+        hard: { top: '#f59e0b', bottom: '#b45309', edge: '#fde68a', glow: 'rgba(217, 119, 6, 0.24)' },
+        solid: { top: '#64748b', bottom: '#475569', edge: '#e2e8f0', glow: 'rgba(71, 85, 105, 0.18)' },
+      },
+    },
+  };
+
+  const LABELS = {
+    zh: {
+      score: '得分',
+      best: '最高',
+      level: '关卡',
+      lives: '生命',
+      speed: '球速',
+      serve: '按 SPACE 或点击发射',
+      levelWord: '关',
+    },
+    en: {
+      score: 'SCORE',
+      best: 'BEST',
+      level: 'LEVEL',
+      lives: 'LIVES',
+      speed: 'SPEED',
+      serve: 'PRESS SPACE OR CLICK TO LAUNCH',
+      levelWord: 'LEVEL',
+    },
+  };
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function roundRect(ctx, x, y, width, height, radius) {
+    const r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + width, y, x + width, y + height, r);
+    ctx.arcTo(x + width, y + height, x, y + height, r);
+    ctx.arcTo(x, y + height, x, y, r);
+    ctx.arcTo(x, y, x + width, y, r);
+    ctx.closePath();
+  }
+
+  function formatScore(value) {
+    const safe = Math.max(0, Math.round(Number.isFinite(value) ? value : 0));
+    return String(safe).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function labelSet(locale) {
+    return typeof locale === 'string' && locale.toLowerCase().indexOf('zh') === 0 ? LABELS.zh : LABELS.en;
+  }
+
+  function levelName(levelNumber, lang) {
+    const level = LEVELS[clamp(levelNumber - 1, 0, LEVELS.length - 1)] || LEVELS[0];
+    return lang === 'zh' ? level.nameZh : level.nameEn;
+  }
+
+  function makeStars(count) {
+    const stars = [];
+    let seed = 0x51f15e;
+    for (let index = 0; index < count; index += 1) {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      const x = 26 + ((seed >>> 8) % 908);
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      const y = 96 + ((seed >>> 8) % 420);
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      const size = 1 + ((seed >>> 20) % 18) / 10;
+      stars.push({ x, y, size, phase: (seed % 100) / 100 });
+    }
+    return stars;
+  }
+
+  function createRenderer(canvas) {
+    const ctx = canvas.getContext('2d');
+    const stars = makeStars(30);
+    let palette = PALETTES.dark;
+    let dpr = 1;
+    let particles = [];
+    let flashLife = 0;
+    let lastState = null;
+    let lastOptions = null;
+
+    function resize() {
+      dpr = clamp(window.devicePixelRatio || 1, 1, 2);
+      canvas.width = Math.round(LOGICAL_WIDTH * dpr);
+      canvas.height = Math.round(LOGICAL_HEIGHT * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (lastState) draw(lastState, lastOptions || {});
+    }
+
+    function drawBackground(now, options) {
+      const bg = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
+      bg.addColorStop(0, palette.bgTop);
+      bg.addColorStop(1, palette.bgBottom);
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+      const glowA = ctx.createRadialGradient(170, -60, 20, 170, -60, 560);
+      glowA.addColorStop(0, palette.glowA);
+      glowA.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = glowA;
+      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+      const glowB = ctx.createRadialGradient(820, 620, 40, 820, 620, 600);
+      glowB.addColorStop(0, palette.glowB);
+      glowB.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = glowB;
+      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+      for (const star of stars) {
+        const pulse =
+          options.reducedMotion === true ? 0.5 : 0.35 + 0.35 * Math.sin(now / 900 + star.phase * Math.PI * 2);
+        ctx.globalAlpha = pulse;
+        ctx.fillStyle = palette.accent;
+        ctx.fillRect(star.x, star.y, star.size, star.size);
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function drawLogo() {
+      const x = 26;
+      const y = 15;
+      const gradient = ctx.createLinearGradient(x, y, x + 30, y + 30);
+      gradient.addColorStop(0, palette.accent);
+      gradient.addColorStop(1, palette.accent2);
+      ctx.save();
+      ctx.shadowColor = palette.accent;
+      ctx.shadowBlur = 16;
+      roundRect(ctx, x, y, 30, 30, 9);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      ctx.restore();
+      ctx.fillStyle = 'rgba(4, 10, 18, 0.72)';
+      roundRect(ctx, x + 7, y + 8, 16, 4, 2);
+      ctx.fill();
+      roundRect(ctx, x + 7, y + 15, 7, 4, 2);
+      ctx.fill();
+      roundRect(ctx, x + 16, y + 15, 7, 4, 2);
+      ctx.fill();
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = palette.text;
+      ctx.font = `800 16px ${FONT_MONO}`;
+      ctx.fillText('BREAKOUT', x + 40, 34);
+      ctx.fillStyle = palette.muted;
+      ctx.font = `600 10px ${FONT_SANS}`;
+      ctx.fillText('ARCADE / 打砖块', x + 40, 49);
+    }
+
+    function drawStat(label, value, rightX, y) {
+      ctx.textAlign = 'right';
+      ctx.fillStyle = palette.muted;
+      ctx.font = `700 9px ${FONT_SANS}`;
+      ctx.fillText(label, rightX, y);
+      ctx.fillStyle = palette.text;
+      ctx.font = `700 21px ${FONT_MONO}`;
+      ctx.fillText(formatScore(value), rightX, y + 24);
+    }
+
+    function drawLevelPill(state, lang) {
+      const width = 196;
+      const height = 46;
+      const x = (LOGICAL_WIDTH - width) / 2;
+      const y = 10;
+      roundRect(ctx, x, y, width, height, 14);
+      ctx.fillStyle = palette.panel;
+      ctx.fill();
+      ctx.strokeStyle = palette.panelBorder;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = palette.accent;
+      ctx.font = `700 9px ${FONT_SANS}`;
+      const word = lang === 'zh' ? '关卡' : 'LEVEL';
+      ctx.fillText(`${word} ${String(state.level).padStart(2, '0')} / ${String(LEVELS.length).padStart(2, '0')}`, 480, y + 17);
+      ctx.fillStyle = palette.text;
+      ctx.font = `700 14px ${FONT_SANS}`;
+      ctx.fillText(levelName(state.level, lang), 480, y + 35);
+    }
+
+    function drawLivesAndSpeed(state, lang) {
+      const labels = LABELS[lang];
+      ctx.textAlign = 'left';
+      ctx.fillStyle = palette.muted;
+      ctx.font = `700 9px ${FONT_SANS}`;
+      ctx.fillText(labels.lives, 26, 72);
+      const startX = 64;
+      for (let index = 0; index < 3; index += 1) {
+        const alive = index < state.lives;
+        roundRect(ctx, startX + index * 27, 64, 19, 8, 4);
+        if (alive) {
+          ctx.fillStyle = palette.accent;
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = palette.faint;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+
+      ctx.textAlign = 'right';
+      ctx.fillStyle = palette.muted;
+      ctx.font = `700 9px ${FONT_SANS}`;
+      const speed = (currentSpeed(state) / BALL.baseSpeed).toFixed(2);
+      ctx.fillText(`${labels.speed} ×${speed}`, LOGICAL_WIDTH - 26, 72);
+
+      const dotY = 68;
+      const total = LEVELS.length;
+      const spacing = 12;
+      const start = 480 - ((total - 1) * spacing) / 2;
+      for (let index = 0; index < total; index += 1) {
+        const reached = index + 1 < state.level;
+        const active = index + 1 === state.level;
+        ctx.beginPath();
+        ctx.arc(start + index * spacing, dotY, active ? 3.4 : 2.4, 0, Math.PI * 2);
+        ctx.fillStyle = active ? palette.accent : reached ? palette.success : palette.faint;
+        ctx.fill();
+      }
+    }
+
+    function drawField() {
+      ctx.save();
+      roundRect(ctx, FIELD.left - 10, FIELD.top + 5, FIELD.right - FIELD.left + 20, FIELD.bottom - FIELD.top + 16, 20);
+      ctx.fillStyle = palette.panel;
+      ctx.fill();
+      ctx.strokeStyle = palette.fieldBorder;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      roundRect(ctx, FIELD.left, FIELD.top, FIELD.right - FIELD.left, FIELD.bottom - FIELD.top, 14);
+      const gradient = ctx.createLinearGradient(0, FIELD.top, 0, FIELD.bottom);
+      gradient.addColorStop(0, palette.fieldTop);
+      gradient.addColorStop(1, palette.fieldBottom);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      ctx.save();
+      ctx.clip();
+
+      ctx.strokeStyle = palette.fieldLine;
+      ctx.lineWidth = 1;
+      for (let x = FIELD.left + 36; x < FIELD.right; x += 48) {
+        ctx.beginPath();
+        ctx.moveTo(x, FIELD.top);
+        ctx.lineTo(x, FIELD.bottom);
+        ctx.stroke();
+      }
+      for (let y = FIELD.top + 36; y < FIELD.bottom; y += 48) {
+        ctx.beginPath();
+        ctx.moveTo(FIELD.left, y);
+        ctx.lineTo(FIELD.right, y);
+        ctx.stroke();
+      }
+
+      const topLine = ctx.createLinearGradient(FIELD.left, 0, FIELD.right, 0);
+      topLine.addColorStop(0, 'rgba(34, 211, 238, 0)');
+      topLine.addColorStop(0.5, palette.accent);
+      topLine.addColorStop(1, 'rgba(34, 211, 238, 0)');
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = topLine;
+      ctx.fillRect(FIELD.left, FIELD.top, FIELD.right - FIELD.left, 1.5);
+      ctx.globalAlpha = 1;
+      ctx.restore();
+      ctx.restore();
+    }
+
+    function brickColors(brick) {
+      const set = palette.bricks[brick.type] || palette.bricks.normal;
+      return set;
+    }
+
+    function drawBrick(brick) {
+      const rect = brickRect(brick);
+      const colors = brickColors(brick);
+      const inset = 0.75;
+      const x = rect.x + inset;
+      const y = rect.y + inset;
+      const width = rect.width - inset * 2;
+      const height = rect.height - inset * 2;
+
+      ctx.save();
+      ctx.shadowColor = colors.glow;
+      ctx.shadowBlur = 9;
+      roundRect(ctx, x, y, width, height, 5);
+      const gradient = ctx.createLinearGradient(0, y, 0, y + height);
+      gradient.addColorStop(0, colors.top);
+      gradient.addColorStop(1, colors.bottom);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      roundRect(ctx, x, y, width, height, 5);
+      ctx.clip();
+
+      const shine = ctx.createLinearGradient(0, y, 0, y + height * 0.55);
+      shine.addColorStop(0, 'rgba(255, 255, 255, 0.34)');
+      shine.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = shine;
+      ctx.fillRect(x, y, width, height * 0.55);
+
+      if (brick.type === 'hard') {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+        ctx.lineWidth = 1.4;
+        const gap = width / 3;
+        for (let index = 1; index <= 2; index += 1) {
+          ctx.beginPath();
+          ctx.moveTo(x + gap * index, y + 5);
+          ctx.lineTo(x + gap * index, y + height - 5);
+          ctx.stroke();
+        }
+        if (brick.hp < 2) {
+          ctx.strokeStyle = 'rgba(12, 18, 30, 0.55)';
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.moveTo(x + width * 0.32, y + 1);
+          ctx.lineTo(x + width * 0.46, y + height * 0.4);
+          ctx.lineTo(x + width * 0.36, y + height * 0.62);
+          ctx.lineTo(x + width * 0.52, y + height - 1);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(x + width * 0.68, y + height - 1);
+          ctx.lineTo(x + width * 0.58, y + height * 0.52);
+          ctx.stroke();
+        }
+      } else if (brick.type === 'solid') {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+        ctx.lineWidth = 2;
+        for (let offset = -height; offset < width + height; offset += 8) {
+          ctx.beginPath();
+          ctx.moveTo(x + offset, y + height);
+          ctx.lineTo(x + offset + height, y);
+          ctx.stroke();
+        }
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.42)';
+        roundRect(ctx, x + width / 2 - 9, y + height / 2 - 3, 18, 6, 3);
+        ctx.fill();
+      } else {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+        ctx.lineWidth = 1;
+        roundRect(ctx, x + 5, y + 4, width - 10, height - 8, 3);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      roundRect(ctx, x, y, width, height, 5);
+      ctx.strokeStyle = colors.edge;
+      ctx.globalAlpha = 0.6;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    function drawPaddle(state) {
+      const x = state.paddle.x - PADDLE.width / 2;
+      const y = PADDLE.y;
+      ctx.save();
+      ctx.shadowColor = palette.paddleGlow;
+      ctx.shadowBlur = 20;
+      roundRect(ctx, x, y, PADDLE.width, PADDLE.height, 7);
+      const gradient = ctx.createLinearGradient(0, y, 0, y + PADDLE.height);
+      gradient.addColorStop(0, palette.paddleTop);
+      gradient.addColorStop(1, palette.paddleBottom);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      ctx.restore();
+
+      roundRect(ctx, x + 2, y + 2, PADDLE.width - 4, 3, 1.5);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(4, 12, 20, 0.35)';
+      ctx.lineWidth = 1.5;
+      for (let index = -1; index <= 1; index += 1) {
+        const cx = state.paddle.x + index * 9;
+        ctx.beginPath();
+        ctx.moveTo(cx, y + 5);
+        ctx.lineTo(cx, y + PADDLE.height - 5);
+        ctx.stroke();
+      }
+    }
+
+    function drawBall(state, options) {
+      const ball = state.ball;
+      if (state.status === 'won' || state.status === 'over') return;
+
+      if (!options.reducedMotion && ball.launched) {
+        for (let index = 1; index <= 3; index += 1) {
+          const factor = index * 0.011;
+          ctx.globalAlpha = 0.2 / index;
+          ctx.beginPath();
+          ctx.arc(ball.x - ball.vx * factor, ball.y - ball.vy * factor, BALL.radius * (1 - index * 0.16), 0, Math.PI * 2);
+          ctx.fillStyle = palette.ballRim;
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      const glow = ctx.createRadialGradient(ball.x, ball.y, 1, ball.x, ball.y, BALL.radius * 3.1);
+      glow.addColorStop(0, palette.ballGlow);
+      glow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, BALL.radius * 3.1, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, BALL.radius, 0, Math.PI * 2);
+      const core = ctx.createRadialGradient(
+        ball.x - BALL.radius * 0.35,
+        ball.y - BALL.radius * 0.35,
+        0.5,
+        ball.x,
+        ball.y,
+        BALL.radius,
+      );
+      core.addColorStop(0, palette.ballCore);
+      core.addColorStop(1, palette.ballRim);
+      ctx.fillStyle = core;
+      ctx.fill();
+      ctx.strokeStyle = palette.ballRim;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    function drawServeHint(state, options) {
+      if (options.overlay || state.status !== 'ready' || state.ball.launched) return;
+      const labels = LABELS[options.lang || 'en'];
+      const pulse = options.reducedMotion ? 0.85 : 0.62 + 0.24 * Math.sin(options.now / 420);
+      ctx.save();
+      ctx.globalAlpha = pulse;
+      ctx.font = `700 11px ${FONT_MONO}`;
+      const width = Math.min(420, ctx.measureText(labels.serve).width + 36);
+      const x = 480 - width / 2;
+      const y = 430;
+      roundRect(ctx, x, y, width, 30, 15);
+      ctx.fillStyle = palette.panel;
+      ctx.fill();
+      ctx.strokeStyle = palette.panelBorder;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = palette.text;
+      ctx.textAlign = 'center';
+      ctx.fillText(labels.serve, 480, y + 19);
+      ctx.restore();
+    }
+
+    function drawParticles() {
+      for (const particle of particles) {
+        const alpha = clamp(particle.life / particle.maxLife, 0, 1);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = particle.color;
+        ctx.fillRect(particle.x - particle.size / 2, particle.y - particle.size / 2, particle.size, particle.size);
+      }
+      ctx.globalAlpha = 1;
+      if (flashLife > 0) {
+        const alpha = (flashLife / 480) * 0.3;
+        const vignette = ctx.createRadialGradient(480, 300, 120, 480, 300, 560);
+        vignette.addColorStop(0, 'rgba(0,0,0,0)');
+        vignette.addColorStop(1, palette.danger);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = vignette;
+        ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    function drawBanner(options) {
+      const banner = options.banner;
+      if (!banner) return;
+      const now = options.now;
+      const age = now - banner.startedAt;
+      if (age < 0 || age > banner.duration) return;
+      const fadeIn = Math.min(1, age / 180);
+      const fadeOut = Math.min(1, (banner.duration - age) / 220);
+      const alpha = Math.max(0, Math.min(fadeIn, fadeOut));
+      const scale = options.reducedMotion ? 1 : 0.94 + 0.06 * Math.min(1, age / 220);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.translate(480, 276);
+      ctx.scale(scale, scale);
+      ctx.textAlign = 'center';
+
+      ctx.fillStyle = palette.panel;
+      roundRect(ctx, -190, -58, 380, 116, 20);
+      ctx.fill();
+      ctx.strokeStyle = palette.panelBorder;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = palette.accent;
+      ctx.font = `800 10px ${FONT_MONO}`;
+      ctx.fillText(banner.kicker || '', 0, -30);
+      ctx.fillStyle = palette.text;
+      ctx.font = `800 34px ${FONT_SANS}`;
+      ctx.fillText(banner.title || '', 0, 8);
+      if (banner.subtitle) {
+        ctx.fillStyle = palette.muted;
+        ctx.font = `600 12px ${FONT_SANS}`;
+        ctx.fillText(banner.subtitle, 0, 34);
+      }
+
+      const line = ctx.createLinearGradient(-110, 0, 110, 0);
+      line.addColorStop(0, 'rgba(34, 211, 238, 0)');
+      line.addColorStop(0.5, palette.accent);
+      line.addColorStop(1, 'rgba(34, 211, 238, 0)');
+      ctx.fillStyle = line;
+      ctx.fillRect(-110, 46, 220, 1.5);
+      ctx.restore();
+    }
+
+    function draw(state, options) {
+      lastState = state;
+      lastOptions = options;
+      palette = PALETTES[options.theme === 'light' ? 'light' : 'dark'];
+      const lang = options.lang || 'en';
+      const labels = LABELS[lang];
+
+      ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+      drawBackground(options.now, options);
+      drawLogo();
+      drawLevelPill(state, lang);
+      drawStat(labels.score, state.score, 934, 22);
+      drawStat(labels.best, options.best, 826, 22);
+      drawLivesAndSpeed(state, lang);
+
+      ctx.strokeStyle = palette.fieldBorder;
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(26, 84);
+      ctx.lineTo(934, 84);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      drawField();
+      for (const brick of state.bricks) drawBrick(brick);
+      drawPaddle(state);
+      drawBall(state, options);
+      drawServeHint(state, options);
+      drawParticles();
+      drawBanner(options);
+    }
+
+    function update(dtMs, reducedMotion) {
+      const dt = Math.max(0, Math.min(80, dtMs));
+      if (flashLife > 0) flashLife = Math.max(0, flashLife - dt);
+      if (reducedMotion) {
+        particles = [];
+        return;
+      }
+      for (const particle of particles) {
+        particle.life -= dt;
+        particle.x += (particle.vx * dt) / 1000;
+        particle.y += (particle.vy * dt) / 1000;
+        particle.vy += (720 * dt) / 1000;
+        particle.vx *= 0.995;
+      }
+      particles = particles.filter((particle) => particle.life > 0);
+    }
+
+    function burst(x, y, type, count) {
+      if (lastOptions && lastOptions.reducedMotion) return;
+      const colors = palette.bricks[type] || palette.bricks.normal;
+      const total = typeof count === 'number' ? count : 10;
+      for (let index = 0; index < total; index += 1) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 40 + Math.random() * 150;
+        const life = 260 + Math.random() * 260;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 40,
+          life,
+          maxLife: life,
+          size: 2 + Math.random() * 3,
+          color: index % 3 === 0 ? colors.edge : colors.top,
+        });
+      }
+      if (particles.length > 160) particles = particles.slice(particles.length - 160);
+    }
+
+    function flash() {
+      flashLife = 480;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    return {
+      draw,
+      update,
+      burst,
+      flash,
+      resize,
+    };
+  }
+
+  return { createRenderer };
+  })();
+
+  // module: games/breakout/src/game.js
+  __mods["games/breakout/src/game.js"] = (function () {
+  const FIELD = __mods["games/breakout/src/logic.js"].FIELD;
+  const LEVELS = __mods["games/breakout/src/logic.js"].LEVELS;
+  const SAVE_KEY = __mods["games/breakout/src/logic.js"].SAVE_KEY;
+  const STEP_MS = __mods["games/breakout/src/logic.js"].STEP_MS;
+  const createState = __mods["games/breakout/src/logic.js"].createState;
+  const deserialize = __mods["games/breakout/src/logic.js"].deserialize;
+  const launchBall = __mods["games/breakout/src/logic.js"].launchBall;
+  const movePaddle = __mods["games/breakout/src/logic.js"].movePaddle;
+  const nudgePaddle = __mods["games/breakout/src/logic.js"].nudgePaddle;
+  const serialize = __mods["games/breakout/src/logic.js"].serialize;
+  const setPaused = __mods["games/breakout/src/logic.js"].setPaused;
+  const step = __mods["games/breakout/src/logic.js"].step;
+  const createRenderer = __mods["games/breakout/src/render.js"].createRenderer;
+  /**
+   * Breakout game entry. Runs inside the sandboxed Runtime iframe and talks to
+   * the platform only through the inlined `DSH_GAME_SDK` global (PRD §8.3).
+   *
+   * Responsibilities kept out of logic.js: DOM/canvas wiring, keyboard/mouse
+   * input, the fixed-step loop, platform lifecycle, save/Continue and score
+   * submission. Game rules live in logic.js and are unit-tested in Node.
+   */
+
+
+  const game = DSH_GAME_SDK.createGameSDK();
+  const canvas = document.getElementById('board');
+  const renderer = createRenderer(canvas);
+
+  const overlayEl = document.getElementById('overlay');
+  const overlayCard = document.getElementById('overlay-card');
+  const overlayKicker = document.getElementById('overlay-kicker');
+  const overlayTitle = document.getElementById('overlay-title');
+  const overlayHint = document.getElementById('overlay-hint');
+  const overlayActions = document.getElementById('overlay-actions');
+  const primaryButton = document.getElementById('primary');
+  const secondaryButton = document.getElementById('secondary');
+  const toastEl = document.getElementById('toast');
+  const toastMessage = document.getElementById('toast-message');
+  const toastAction = document.getElementById('toast-action');
+  const saveStatusEl = document.getElementById('save-status');
+  const agentHintEl = document.getElementById('agent-hint');
+  const liveEl = document.getElementById('live');
+
+  const COPY = {
+    zh: {
+      loading: '正在载入',
+      loadingHint: '正在连接游戏运行时，请稍候',
+      startKicker: 'BREAKOUT · 街机弹球',
+      startTitle: '打砖块',
+      startHint: '鼠标移动挡板 · ← → / A D 操作\nSPACE / ENTER 发射 · P 暂停 · ESC 留给平台',
+      start: '开始游戏',
+      continueKicker: '已恢复上一局',
+      continueTitle: '继续上一局',
+      continueHint: '第 {level} 关 · 生命 {lives} · 得分 {score}',
+      continue: '继续游戏',
+      restart: '重新开始',
+      pausedKicker: 'PAUSED',
+      pausedTitle: '已暂停',
+      pausedHint: '按 P 继续',
+      pausedPlatform: '请在平台的暂停菜单中继续',
+      resume: '继续',
+      overKicker: 'GAME OVER',
+      overTitle: '本局结束',
+      wonKicker: 'VICTORY',
+      wonTitle: '全部通关',
+      finalScore: '本局得分',
+      best: '最高分',
+      newRecord: '新纪录',
+      playAgain: '再来一局',
+      saved: '已保存',
+      saveFailed: '保存失败',
+      saveReady: '等待保存',
+      level: '关卡',
+      levelClear: '清关',
+      levelClearSub: '过关奖励 +{bonus}',
+      lifeLost: '还剩 {lives} 条命',
+      scoreFailed: '分数提交失败',
+      sessionFailed: '会话结束失败',
+      loadFailed: '存档读取失败',
+      corruptSave: '存档不可用，已开始新游戏',
+      fatalKicker: '无法开始',
+      fatalTitle: '游戏暂时不可用',
+      fatalHint: '请返回市场后重新进入',
+      retry: '重试',
+      agent: 'Agent 状态更新',
+    },
+    en: {
+      loading: 'LOADING',
+      loadingHint: 'Connecting to the game runtime',
+      startKicker: 'BREAKOUT · ARCADE',
+      startTitle: 'Breakout',
+      startHint: 'Mouse moves the paddle · ← → / A D\nSPACE / ENTER launches · P pauses · ESC belongs to the platform',
+      start: 'Start game',
+      continueKicker: 'RUN RESTORED',
+      continueTitle: 'Continue',
+      continueHint: 'Level {level} · {lives} lives · {score} points',
+      continue: 'Continue',
+      restart: 'New run',
+      pausedKicker: 'PAUSED',
+      pausedTitle: 'Paused',
+      pausedHint: 'Press P to resume',
+      pausedPlatform: 'Resume from the platform pause menu',
+      resume: 'Resume',
+      overKicker: 'GAME OVER',
+      overTitle: 'Run over',
+      wonKicker: 'VICTORY',
+      wonTitle: 'All cleared',
+      finalScore: 'Score',
+      best: 'Best',
+      newRecord: 'New record',
+      playAgain: 'Play again',
+      saved: 'Saved',
+      saveFailed: 'Save failed',
+      saveReady: 'Not saved yet',
+      level: 'LEVEL',
+      levelClear: 'LEVEL CLEAR',
+      levelClearSub: 'Bonus +{bonus}',
+      lifeLost: '{lives} lives left',
+      scoreFailed: 'Score submission failed',
+      sessionFailed: 'Could not end the session',
+      loadFailed: 'Save load failed',
+      corruptSave: 'Save was unusable; started a new run',
+      fatalKicker: 'UNABLE TO START',
+      fatalTitle: 'Game unavailable',
+      fatalHint: 'Return to the market and open it again',
+      retry: 'Retry',
+      agent: 'Agent status changed',
+    },
+  };
+
+  let lang = 'zh';
+  let locale = 'zh-CN';
+  let theme = 'dark';
+  let reducedMotion = false;
+  let runtimeReady = false;
+
+  let state = createState({ seed: makeSeed() });
+  let best = 0;
+  let restoredSave = false;
+  let resultHandled = false;
+  let newRecord = false;
+  let sessionActive = false;
+  let sessionEnded = false;
+
+  let runtimePaused = false;
+  let localPaused = false;
+
+  let loopRunning = false;
+  let rafId = null;
+  let lastFrameTime = 0;
+  let accumulator = 0;
+
+  let keyLeft = false;
+  let keyRight = false;
+  let banner = null;
+
+  let overlay = { kind: null, primary: null, secondary: null };
+  let toastTimer = null;
+  let toastActionHandler = null;
+  let lastSaveErrorAt = 0;
+  let lastSaveErrorCode = '';
+
+  function makeSeed() {
+    const value = (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
+    return value || 1;
+  }
+
+  function text(key, vars) {
+    const table = COPY[lang] || COPY.zh;
+    let value = table[key] !== undefined ? table[key] : COPY.zh[key];
+    if (value === undefined) value = key;
+    if (vars) {
+      for (const name of Object.keys(vars)) {
+        value = value.replaceAll('{' + name + '}', String(vars[name]));
+      }
+    }
+    return value;
+  }
+
+  function formatScore(value) {
+    const safe = Math.max(0, Math.round(Number.isFinite(value) ? value : 0));
+    return String(safe).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function levelName(levelNumber) {
+    const index = Math.min(LEVELS.length - 1, Math.max(0, levelNumber - 1));
+    const level = LEVELS[index];
+    return lang === 'zh' ? level.nameZh : level.nameEn;
+  }
+
+  function errorCode(error) {
+    return error && typeof error.code === 'string' ? ' (' + error.code + ')' : '';
+  }
+
+  function announce(message) {
+    if (!liveEl) return;
+    liveEl.textContent = message;
+  }
+
+  function isPaused() {
+    return localPaused || runtimePaused;
+  }
+
+  function overlayVisible() {
+    return overlay.kind !== null;
+  }
+
+  function showOverlay(config) {
+    overlay.kind = config.kind || 'info';
+    overlay.primary = typeof config.onPrimary === 'function' ? config.onPrimary : null;
+    overlay.secondary = typeof config.onSecondary === 'function' ? config.onSecondary : null;
+    overlayKicker.textContent = config.kicker || '';
+    overlayTitle.textContent = config.title || '';
+    overlayHint.textContent = config.hint || '';
+    primaryButton.textContent = config.primaryLabel || text('resume');
+    primaryButton.hidden = !config.primaryLabel;
+    secondaryButton.hidden = !config.secondaryLabel;
+    secondaryButton.textContent = config.secondaryLabel || text('restart');
+    overlayActions.hidden = !config.primaryLabel && !config.secondaryLabel;
+    overlayEl.hidden = false;
+    announce(config.title + (config.hint ? '. ' + config.hint : ''));
+    if (config.focus !== false) {
+      if (config.primaryLabel) {
+        try {
+          primaryButton.focus({ preventScroll: true });
+        } catch (_error) {
+          primaryButton.focus();
+        }
+      } else {
+        try {
+          overlayCard.focus({ preventScroll: true });
+        } catch (_error) {
+          overlayCard.focus();
+        }
+      }
+    }
+  }
+
+  function hideOverlay(focusBoard) {
+    overlayEl.hidden = true;
+    overlay.kind = null;
+    overlay.primary = null;
+    overlay.secondary = null;
+    if (focusBoard) focusCanvas();
+  }
+
+  function focusCanvas() {
+    try {
+      if (typeof window.focus === 'function') window.focus();
+    } catch (_error) {
+      // focus is best-effort
+    }
+    try {
+      canvas.focus({ preventScroll: true });
+    } catch (_error) {
+      // focus is best-effort
+    }
+  }
+
+  function showLoadingOverlay() {
+    showOverlay({
+      kind: 'boot',
+      kicker: 'BREAKOUT',
+      title: text('loading'),
+      hint: text('loadingHint'),
+      focus: false,
+    });
+  }
+
+  function showStartOverlay() {
+    if (restoredSave) {
+      showOverlay({
+        kind: 'start',
+        kicker: text('continueKicker'),
+        title: text('continueTitle'),
+        hint: text('continueHint', {
+          level: state.level,
+          lives: state.lives,
+          score: formatScore(state.score),
+        }),
+        primaryLabel: text('continue'),
+        onPrimary: continueRun,
+        secondaryLabel: text('restart'),
+        onSecondary: startNewRun,
+        focus: true,
+      });
+      return;
+    }
+    showOverlay({
+      kind: 'start',
+      kicker: text('startKicker'),
+      title: text('startTitle'),
+      hint: text('startHint'),
+      primaryLabel: text('start'),
+      onPrimary: startNewRun,
+      focus: true,
+    });
+  }
+
+  function showPausedOverlay() {
+    if (overlay.kind && overlay.kind !== 'paused') return;
+    const actionable = !runtimePaused && localPaused;
+    showOverlay({
+      kind: 'paused',
+      kicker: text('pausedKicker'),
+      title: text('pausedTitle'),
+      hint: actionable ? text('pausedHint') : text('pausedPlatform'),
+      primaryLabel: actionable ? text('resume') : '',
+      onPrimary: resumeLocal,
+      focus: false,
+    });
+  }
+
+  function showResultOverlay(kind, focus) {
+    const won = kind === 'won';
+    const bestShown = Math.max(best, state.score);
+    const parts = [
+      text('finalScore') + ' ' + formatScore(state.score),
+      text('best') + ' ' + formatScore(bestShown),
+    ];
+    if (newRecord) parts.unshift(text('newRecord'));
+    showOverlay({
+      kind: 'result',
+      kicker: won ? text('wonKicker') : text('overKicker'),
+      title: won ? text('wonTitle') : text('overTitle'),
+      hint: parts.join(' · '),
+      primaryLabel: text('playAgain'),
+      onPrimary: startNewRun,
+      focus: focus !== false,
+    });
+  }
+
+  function showFatal(error) {
+    stopLoop();
+    const code = errorCode(error);
+    const message = error && error.message ? error.message : text('fatalHint');
+    showOverlay({
+      kind: 'fatal',
+      kicker: text('fatalKicker'),
+      title: text('fatalTitle'),
+      hint: message + code,
+      primaryLabel: text('retry'),
+      onPrimary: function retryBoot() {
+        try {
+          location.reload();
+        } catch (_error) {
+          // the platform overlay remains the recovery path
+        }
+      },
+      focus: true,
+    });
+    renderOnce();
+  }
+
+  function showToast(message, options) {
+    const config = options || {};
+    toastMessage.textContent = message;
+    toastEl.dataset.tone = config.tone || 'info';
+    toastActionHandler = typeof config.onAction === 'function' ? config.onAction : null;
+    toastAction.hidden = !config.actionLabel;
+    toastAction.textContent = config.actionLabel || '';
+    toastEl.hidden = false;
+    if (toastTimer) clearTimeout(toastTimer);
+    if (config.tone !== 'error') {
+      toastTimer = setTimeout(function hideLater() {
+        hideToast();
+      }, config.duration || 2200);
+    }
+  }
+
+  function hideToast() {
+    toastEl.hidden = true;
+    toastActionHandler = null;
+    if (toastTimer) {
+      clearTimeout(toastTimer);
+      toastTimer = null;
+    }
+  }
+
+  function setSaveStatus(kind, message) {
+    if (!saveStatusEl) return;
+    saveStatusEl.dataset.state = kind;
+    saveStatusEl.textContent = message;
+  }
+
+  function renderOptions() {
+    return {
+      theme,
+      reducedMotion,
+      best: Math.max(best, state.score),
+      now: performance.now(),
+      locale,
+      lang,
+      overlay: overlay.kind,
+      banner,
+    };
+  }
+
+  function renderOnce() {
+    renderer.draw(state, renderOptions());
+  }
+
+  function applyRuntimeInfo(info) {
+    if (!info) return;
+    theme = info.theme === 'light' ? 'light' : 'dark';
+    reducedMotion = info.reducedMotion === true;
+    locale = typeof info.locale === 'string' && info.locale ? info.locale : 'zh-CN';
+    lang = locale.toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en';
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.lang = locale;
+    document.documentElement.classList.toggle('reduced', reducedMotion);
+    document.documentElement.classList.toggle('reduced-motion', reducedMotion);
+  }
+
+  function syncRuntime() {
+    if (!runtimeReady) return;
+    const nextTheme = game.runtime.theme === 'light' ? 'light' : 'dark';
+    if (nextTheme !== theme) {
+      theme = nextTheme;
+      document.documentElement.dataset.theme = theme;
+    }
+    const nextReduced = game.runtime.reducedMotion === true;
+    if (nextReduced !== reducedMotion) {
+      reducedMotion = nextReduced;
+      document.documentElement.classList.toggle('reduced', reducedMotion);
+      document.documentElement.classList.toggle('reduced-motion', reducedMotion);
+    }
+    const nextLocale = typeof game.runtime.locale === 'string' ? game.runtime.locale : locale;
+    if (nextLocale && nextLocale !== locale) {
+      locale = nextLocale;
+      lang = locale.toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en';
+      document.documentElement.lang = locale;
+    }
+  }
+
+  function startLoop() {
+    if (loopRunning) return;
+    loopRunning = true;
+    lastFrameTime = 0;
+    accumulator = 0;
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function stopLoop() {
+    loopRunning = false;
+    if (rafId !== null && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+
+  function frame(timestamp) {
+    rafId = null;
+    if (!loopRunning) return;
+    const now = typeof timestamp === 'number' ? timestamp : performance.now();
+    if (lastFrameTime === 0) lastFrameTime = now;
+    const delta = Math.min(120, Math.max(0, now - lastFrameTime));
+    lastFrameTime = now;
+
+    if (!isPaused()) {
+      if (state.status === 'playing' || state.status === 'level-clear') {
+        accumulator += delta;
+        let steps = 0;
+        while (accumulator >= STEP_MS && steps < 10) {
+          accumulator -= STEP_MS;
+          steps += 1;
+          const events = step(state, STEP_MS);
+          handleEvents(events);
+          if (state.status === 'over' || state.status === 'won') {
+            accumulator = 0;
+            break;
+          }
+        }
+        if (steps >= 10) accumulator = 0;
+      } else {
+        accumulator = 0;
+      }
+      if (!overlayVisible() && (state.status === 'playing' || state.status === 'ready')) {
+        const direction = (keyRight ? 1 : 0) - (keyLeft ? 1 : 0);
+        if (direction !== 0) nudgePaddle(state, direction, Math.min(50, delta));
+      }
+    } else {
+      accumulator = 0;
+    }
+
+    syncRuntime();
+    renderer.update(delta, reducedMotion);
+    renderer.draw(state, renderOptions());
+    if (loopRunning) rafId = requestAnimationFrame(frame);
+  }
+
+  function handleEvents(events) {
+    for (const event of events) {
+      if (event.type === 'brick-hit') {
+        if (event.brickType !== 'solid') {
+          const count = event.destroyed ? 12 : 6;
+          renderer.burst(event.x, event.y, event.brickType, count);
+        } else {
+          renderer.burst(event.x, event.y, 'solid', 4);
+        }
+      } else if (event.type === 'paddle-hit') {
+        renderer.burst(event.x, event.y, 'normal', 4);
+      } else if (event.type === 'life-lost') {
+        renderer.flash();
+        showToast(text('lifeLost', { lives: event.lives }), { tone: 'warn', duration: 1600 });
+        saveState('life-lost');
+      } else if (event.type === 'level-clear') {
+        banner = {
+          kicker: text('level'),
+          title: text('levelClear'),
+          subtitle: text('levelClearSub', { bonus: event.bonus }),
+          startedAt: performance.now(),
+          duration: 1400,
+        };
+        saveState('level-clear');
+      } else if (event.type === 'level-advanced') {
+        banner = {
+          kicker: text('level'),
+          title: levelName(event.level),
+          subtitle: 'LEVEL ' + event.level + ' / ' + LEVELS.length,
+          startedAt: performance.now(),
+          duration: 1400,
+        };
+        saveState('level-advanced');
+      } else if (event.type === 'game-over') {
+        finishRun('over');
+      } else if (event.type === 'won') {
+        finishRun('won');
+      }
+    }
+  }
+
+  function finishRun(kind) {
+    if (resultHandled) return;
+    resultHandled = true;
+    localPaused = false;
+    const finalScore = state.score;
+    newRecord = false;
+    showResultOverlay(kind, true);
+    submitScore(finalScore);
+    endSession(finalScore);
+  }
+
+  function submitScore(score) {
+    game.score.submit(score).then(function onScored(result) {
+      if (result) {
+        if (Number.isFinite(result.best)) best = Math.max(best, Math.floor(result.best));
+        if (resultHandled && result.isBest === true) newRecord = true;
+      }
+      if (resultHandled && overlay.kind === 'result') {
+        showResultOverlay(state.status === 'won' ? 'won' : 'over', false);
+      }
+    }).catch(function onScoreError(error) {
+      showToast(text('scoreFailed') + errorCode(error), {
+        tone: 'error',
+        actionLabel: text('retry'),
+        onAction: function retryScore() {
+          hideToast();
+          submitScore(score);
+        },
+      });
+    });
+  }
+
+  function endSession(score) {
+    if (sessionEnded) return;
+    sessionEnded = true;
+    sessionActive = false;
+    game.session.end({ outcome: 'completed', score: score }).catch(function onEndError(error) {
+      if (overlay.kind !== 'result') return;
+      showToast(text('sessionFailed') + errorCode(error), {
+        tone: 'error',
+        actionLabel: text('retry'),
+        onAction: function retryEnd() {
+          hideToast();
+          requestSessionEnd(score);
+        },
+      });
+    });
+  }
+
+  function requestSessionEnd(score) {
+    game.session.end({ outcome: 'completed', score: score }).catch(function onEndRetry(error) {
+      if (overlay.kind !== 'result') return;
+      showToast(text('sessionFailed') + errorCode(error), {
+        tone: 'error',
+        actionLabel: text('retry'),
+        onAction: function retryEndAgain() {
+          hideToast();
+          requestSessionEnd(score);
+        },
+      });
+    });
+  }
+
+  function ensureSession() {
+    if (sessionActive) return;
+    sessionActive = true;
+    sessionEnded = false;
+    game.session.start().catch(function ignore() {
+      // The platform auto-starts a session on first play; a failure here is not fatal.
+    });
+  }
+
+  function saveState(reason) {
+    if (!runtimeReady || !state) return Promise.resolve(null);
+    if (state.status === 'over' || state.status === 'won') return Promise.resolve(null);
+    let payload;
+    try {
+      payload = serialize(state);
+    } catch (_error) {
+      return Promise.resolve(null);
+    }
+    return game.storage.save(SAVE_KEY, payload).then(function onSaved(result) {
+      setSaveStatus('saved', text('saved'));
+      if (reason === 'before-save' || reason === 'retry') announce(text('saved'));
+      return result;
+    }).catch(function onSaveError(error) {
+      setSaveStatus('failed', text('saveFailed'));
+      const code = errorCode(error);
+      const now = Date.now();
+      if (code !== lastSaveErrorCode || now - lastSaveErrorAt > 4000) {
+        lastSaveErrorAt = now;
+        lastSaveErrorCode = code;
+        showToast(text('saveFailed') + code, {
+          tone: 'error',
+          actionLabel: text('retry'),
+          onAction: function retrySave() {
+            hideToast();
+            saveState('retry');
+          },
+        });
+      }
+      return null;
+    });
+  }
+
+  async function loadBest() {
+    try {
+      const result = await game.score.getBest();
+      if (result && Number.isFinite(result.score)) {
+        return Math.max(0, Math.min(10000000, Math.floor(result.score)));
+      }
+    } catch (_error) {
+      // A missing score capability or Host hiccup must not block play.
+    }
+    return 0;
+  }
+
+  async function loadSavedState() {
+    try {
+      const saved = await game.storage.load(SAVE_KEY);
+      if (!saved || saved.data === undefined || saved.data === null) {
+        return { state: null, error: null, corrupt: false, empty: true };
+      }
+      const restored = deserialize(saved.data);
+      if (!restored) return { state: null, error: null, corrupt: true, empty: false };
+      return { state: restored, error: null, corrupt: false, empty: false };
+    } catch (error) {
+      return { state: null, error, corrupt: false, empty: false };
+    }
+  }
+
+  async function retryLoadSave() {
+    hideToast();
+    const loaded = await loadSavedState();
+    if (loaded.state) {
+      state = loaded.state;
+      restoredSave = true;
+      showStartOverlay();
+      startLoop();
+      return;
+    }
+    if (loaded.corrupt) {
+      showToast(text('corruptSave'), { tone: 'error', duration: 3200 });
+      return;
+    }
+    if (loaded.error) {
+      showToast(text('loadFailed') + errorCode(loaded.error), {
+        tone: 'error',
+        actionLabel: text('retry'),
+        onAction: retryLoadSave,
+      });
+    }
+  }
+
+  function launchFromServe() {
+    if (isPaused() || overlayVisible()) return;
+    if (state.status !== 'ready') return;
+    const launched = launchBall(state);
+    if (!launched) return;
+    ensureSession();
+    accumulator = 0;
+    if (!loopRunning) startLoop();
+    focusCanvas();
+  }
+
+  function startNewRun() {
+    if (runtimePaused) return;
+    state = createState({ seed: makeSeed() });
+    restoredSave = false;
+    resultHandled = false;
+    newRecord = false;
+    localPaused = false;
+    banner = null;
+    hideToast();
+    hideOverlay(true);
+    ensureSession();
+    saveState('new-run');
+    accumulator = 0;
+    startLoop();
+    focusCanvas();
+    announce(text('startHint'));
+  }
+
+  function continueRun() {
+    if (runtimePaused) return;
+    hideToast();
+    hideOverlay(true);
+    if (state.status === 'paused') setPaused(state, false);
+    if (state.status === 'playing' && !state.ball.launched) state.status = 'ready';
+    ensureSession();
+    saveState('continue');
+    accumulator = 0;
+    startLoop();
+    focusCanvas();
+    if (state.status === 'ready') announce(text('startHint'));
+  }
+
+  function resumeLocal() {
+    if (runtimePaused) return;
+    localPaused = false;
+    if (state.status === 'paused') setPaused(state, false);
+    hideOverlay(true);
+    saveState('resume');
+    accumulator = 0;
+    startLoop();
+    focusCanvas();
+  }
+
+  function togglePause() {
+    if (overlay.kind === 'fatal' || overlay.kind === 'boot') return;
+    if (runtimePaused) return;
+    if (!localPaused) {
+      if (state.status !== 'playing' && state.status !== 'ready' && state.status !== 'level-clear') return;
+      localPaused = true;
+      if (state.status === 'playing') setPaused(state, true);
+      stopLoop();
+      saveState('pause');
+      showPausedOverlay();
+      renderOnce();
+      announce(text('pausedTitle'));
+      return;
+    }
+    resumeLocal();
+  }
+
+  function onRuntimePause() {
+    if (overlay.kind === 'fatal') return;
+    runtimePaused = true;
+    stopLoop();
+    if (state.status === 'playing') setPaused(state, true);
+    if (!overlay.kind || overlay.kind === 'paused') showPausedOverlay();
+    if (state.status !== 'over' && state.status !== 'won') saveState('pause');
+    renderOnce();
+  }
+
+  function onRuntimeResume() {
+    runtimePaused = false;
+    if (localPaused) {
+      saveState('resume');
+      showPausedOverlay();
+      renderOnce();
+      return;
+    }
+    if (overlay.kind === 'paused') hideOverlay(false);
+    if (state.status === 'paused') setPaused(state, false);
+    if (overlay.kind === 'start' || overlay.kind === 'result') {
+      if (!primaryButton.hidden) {
+        try {
+          primaryButton.focus({ preventScroll: true });
+        } catch (_error) {
+          // focus is best-effort
+        }
+      }
+    } else if (!overlay.kind) {
+      focusCanvas();
+    }
+    if (state.status !== 'over' && state.status !== 'won') saveState('resume');
+    accumulator = 0;
+    startLoop();
+  }
+
+  function onAgentStatus(snapshot) {
+    if (!snapshot || !agentHintEl) return;
+    if (snapshot.state === 'waiting-user' || snapshot.state === 'completed' || snapshot.state === 'error') {
+      agentHintEl.textContent = snapshot.label || text('agent');
+      agentHintEl.dataset.state = snapshot.state;
+      agentHintEl.classList.add('visible');
+    } else {
+      agentHintEl.textContent = '';
+      agentHintEl.dataset.state = snapshot.state || 'idle';
+      agentHintEl.classList.remove('visible');
+    }
+  }
+
+  function handleKeyDown(event) {
+    if (!event || typeof event.key !== 'string') return;
+    const key = event.key;
+    if (key === 'Escape') return;
+    const lower = key.toLowerCase();
+    const isActivation = key === 'Enter' || key === ' ' || key === 'Spacebar';
+    const isLeft = key === 'ArrowLeft' || lower === 'a';
+    const isRight = key === 'ArrowRight' || lower === 'd';
+    const isPause = lower === 'p';
+    const onButton = event.target && event.target.tagName === 'BUTTON';
+
+    if (isActivation) {
+      if (onButton) return;
+      if (overlayVisible()) {
+        if (overlay.primary) {
+          event.preventDefault();
+          overlay.primary();
+        }
+        return;
+      }
+      if (state.status === 'ready') {
+        event.preventDefault();
+        launchFromServe();
+        return;
+      }
+      if (state.status === 'over' || state.status === 'won') {
+        event.preventDefault();
+        startNewRun();
+        return;
+      }
+      if (state.status === 'playing') event.preventDefault();
+      return;
+    }
+
+    if (isPause) {
+      if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (overlay.kind === 'fatal' || overlay.kind === 'boot' || overlay.kind === 'start' || overlay.kind === 'result') {
+        return;
+      }
+      event.preventDefault();
+      togglePause();
+      return;
+    }
+
+    if (isLeft || isRight) {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (isPaused() || overlayVisible()) return;
+      if (state.status !== 'playing' && state.status !== 'ready') return;
+      event.preventDefault();
+      if (isLeft) keyLeft = true;
+      else keyRight = true;
+    }
+  }
+
+  function handleKeyUp(event) {
+    if (!event || typeof event.key !== 'string') return;
+    const key = event.key;
+    const lower = key.toLowerCase();
+    if (key === 'ArrowLeft' || lower === 'a') keyLeft = false;
+    if (key === 'ArrowRight' || lower === 'd') keyRight = false;
+  }
+
+  function clearKeys() {
+    keyLeft = false;
+    keyRight = false;
+  }
+
+  function contentBox() {
+    const rect = canvas.getBoundingClientRect();
+    const scale = Math.min(rect.width / 960, rect.height / 540);
+    const width = 960 * scale;
+    const height = 540 * scale;
+    return {
+      left: rect.left + (rect.width - width) / 2,
+      top: rect.top + (rect.height - height) / 2,
+      width,
+      height,
+    };
+  }
+
+  function handlePointerMove(event) {
+    if (!event || isPaused() || overlayVisible()) return;
+    if (state.status !== 'playing' && state.status !== 'ready') return;
+    const box = contentBox();
+    if (!(box.width > 0)) return;
+    const ratio = Math.min(1, Math.max(0, (event.clientX - box.left) / box.width));
+    movePaddle(state, FIELD.left + ratio * (FIELD.right - FIELD.left));
+  }
+
+  function handlePointerDown(event) {
+    if (!event || isPaused() || overlayVisible()) return;
+    focusCanvas();
+    if (state.status === 'ready') launchFromServe();
+  }
+
+  function onVisibilityChange() {
+    if (document.hidden) {
+      stopLoop();
+      saveState('hidden');
+      return;
+    }
+    if (!isPaused()) startLoop();
+    else renderOnce();
+  }
+
+  function boot() {
+    showLoadingOverlay();
+    setSaveStatus('idle', text('saveReady'));
+    renderOnce();
+
+    game.lifecycle.on('pause', onRuntimePause);
+    game.lifecycle.on('resume', onRuntimeResume);
+    game.lifecycle.on('hidden', function onHidden() {
+      stopLoop();
+      saveState('hidden');
+    });
+    game.lifecycle.on('visible', function onVisible() {
+      if (!isPaused()) startLoop();
+    });
+    game.lifecycle.on('before-save', function onBeforeSave() {
+      return saveState('before-save');
+    });
+    game.agent.on('status', onAgentStatus);
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('blur', clearKeys);
+    window.addEventListener('pointermove', handlePointerMove);
+    canvas.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    primaryButton.addEventListener('click', function onPrimaryClick() {
+      if (typeof overlay.primary === 'function') overlay.primary();
+    });
+    secondaryButton.addEventListener('click', function onSecondaryClick() {
+      if (typeof overlay.secondary === 'function') overlay.secondary();
+    });
+    toastAction.addEventListener('click', function onToastAction() {
+      if (typeof toastActionHandler === 'function') toastActionHandler();
+    });
+
+    startLoop();
+
+    game.ready().then(async function onReady(info) {
+      runtimeReady = true;
+      applyRuntimeInfo(info);
+      best = await loadBest();
+      const loaded = await loadSavedState();
+      if (loaded.error) {
+        showToast(text('loadFailed') + errorCode(loaded.error), {
+          tone: 'error',
+          actionLabel: text('retry'),
+          onAction: retryLoadSave,
+        });
+      } else if (loaded.corrupt) {
+        showToast(text('corruptSave'), { tone: 'error', duration: 3200 });
+      }
+      if (loaded.state) {
+        state = loaded.state;
+        restoredSave = true;
+      }
+      ensureSession();
+      setSaveStatus('idle', text('saveReady'));
+      showStartOverlay();
+      renderOnce();
+      if (!runtimePaused) startLoop();
+    }).catch(function onBootError(error) {
+      runtimeReady = false;
+      showFatal(error);
+    });
+  }
+
+  // Small read-only diagnostic hook for the isolated verification harness.
+  if (typeof window !== 'undefined') {
+    window.__dshBreakoutDebug = function __dshBreakoutDebug() {
+      return {
+        status: state && state.status,
+        level: state && state.level,
+        lives: state && state.lives,
+        score: state && state.score,
+        best: best,
+        paddleX: state && state.paddle.x,
+        ball: state && { x: state.ball.x, y: state.ball.y, launched: state.ball.launched },
+        remaining: state && state.bricks.filter(function alive(brick) { return brick.type !== 'solid'; }).length,
+        loopRunning: loopRunning,
+        runtimePaused: runtimePaused,
+        localPaused: localPaused,
+        overlay: overlay.kind,
+        sessionActive: sessionActive,
+        restoredSave: restoredSave,
+        saveStatus: saveStatusEl ? saveStatusEl.dataset.state : null,
+      };
+    };
+  }
+
+  boot();
+
+  return {};
+  })();
+
+  const __entry = __mods["games/breakout/src/game.js"];
+
+  return __entry;
+})();
+
+    </script>
+  </body>
+</html>
