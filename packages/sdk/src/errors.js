@@ -34,7 +34,10 @@ export function isGameError(error) {
 export function toGameError(error) {
   if (isGameError(error)) {
     if (error instanceof GameError) return error;
-    return new GameError(error.code, error.message, { retryable: error.retryable === true });
+    return new GameError(error.code, error.message, {
+      retryable: error.retryable === true,
+      details: error.details,
+    });
   }
   return new GameError(GM.INTERNAL, defaultMessageFor(GM.INTERNAL), { retryable: false });
 }

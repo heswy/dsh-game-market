@@ -12,6 +12,7 @@ import { PROTOCOL_VERSION, SDK_VERSION, TIMING } from '../../shared/src/constant
 import { GM } from '../../shared/src/errors.js';
 import { EVENTS, MAX_INFLIGHT_REQUESTS, METHODS, createErrorResponse, createEvent, createRequest, createResponse, isPlainObject, parseLaunchQuery, validateBridgeMessage } from '../../shared/src/protocol.js';
 import { createGameError, toGameError } from './errors.js';
+import { negotiateSdkRange } from './version.js';
 
 export const SDK_METHOD_TIMEOUTS = Object.freeze({
   ready: 10000,
@@ -63,6 +64,7 @@ export function createBridgeClient(options = {}) {
   let readyResult = null;
   let requestSeq = 0;
   let invalidMessages = 0;
+  let sdkAhead = false;
   let readyTimeoutMs = TIMING.handshakeTimeoutMs;
   const pending = new Map();
 
@@ -194,11 +196,17 @@ export function createBridgeClient(options = {}) {
       invalidMessages += 1;
       return;
     }
+    if (initData) return; // duplicate init after a successful handshake
     if (data.protocolVersion !== PROTOCOL_VERSION) {
       fail(createGameError(GM.PROTOCOL_MISMATCH, 'Unsupported bridge protocol version'));
       return;
     }
-    if (initData) return;
+    const sdkRange = negotiateSdkRange(SDK_VERSION, data.supportedSdkRange);
+    if (!sdkRange.ok) {
+      fail(createGameError(GM.PROTOCOL_MISMATCH, 'Game SDK version is not supported by this Runtime'));
+      return;
+    }
+    sdkAhead = sdkRange.ahead;
     initData = data;
     if (helloTimer !== null) {
       timers.clearTimeout(helloTimer);
@@ -242,6 +250,7 @@ export function createBridgeClient(options = {}) {
     entry.reject(
       createGameError(errorPayload.code || GM.INTERNAL, errorPayload.message, {
         retryable: errorPayload.retryable === true,
+        details: errorPayload.details,
       })
     );
   }
@@ -360,7 +369,7 @@ export function createBridgeClient(options = {}) {
       return { init: initData, result: readyResult };
     },
     getDiagnostics: function getDiagnostics() {
-      return { helloCount, invalidMessages, pending: pending.size };
+      return { helloCount, invalidMessages, pending: pending.size, sdkAhead };
     },
     start,
     ready: readyWithTimeout,
