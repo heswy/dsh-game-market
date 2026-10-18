@@ -101,7 +101,10 @@ function upsertBlock(text, content) {
   if (text.includes('id: dsh-game-market')) {
     throw new Error('a dsh-game-market row already exists outside the managed block; remove it first.');
   }
-  const trimmed = text.replace(/\s+$/, '');
+  // A profile patch may start as the YAML flow-style empty array `[]`. Appending
+  // block items after it would be invalid, so drop that empty-array marker first.
+  const withoutEmptyArray = text.replace(/^[ \t]*\[\][ \t]*(?:\r?\n|$)/m, '');
+  const trimmed = withoutEmptyArray.replace(/\s+$/, '');
   return `${trimmed}${trimmed ? '\n\n' : ''}${content}\n`;
 }
 
