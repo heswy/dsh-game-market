@@ -1,0 +1,2770 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Snake</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #07080a;
+        --stage: #0b0c0e;
+        --panel: rgba(18, 20, 24, 0.78);
+        --panel-border: rgba(255, 255, 255, 0.08);
+        --text: #e8edf2;
+        --muted: #8b95a1;
+        --accent: #34d399;
+        --accent-strong: #a7f3d0;
+        --food: #fbbf24;
+        --danger: #fb7185;
+        --grid: rgba(255, 255, 255, 0.035);
+        --shadow: rgba(0, 0, 0, 0.55);
+      }
+
+      html[data-theme='light'] {
+        color-scheme: light;
+        --bg: #eef1f4;
+        --stage: #f6f8fa;
+        --panel: rgba(255, 255, 255, 0.82);
+        --panel-border: rgba(15, 23, 42, 0.1);
+        --text: #101418;
+        --muted: #5b6673;
+        --accent: #059669;
+        --accent-strong: #065f46;
+        --food: #d97706;
+        --danger: #e11d48;
+        --grid: rgba(15, 23, 42, 0.05);
+        --shadow: rgba(15, 23, 42, 0.16);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+          'Microsoft YaHei', sans-serif;
+      }
+
+      #app {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        background:
+          radial-gradient(120% 90% at 50% 0%, rgba(52, 211, 153, 0.08), transparent 60%),
+          radial-gradient(90% 70% at 50% 100%, rgba(14, 165, 233, 0.06), transparent 65%),
+          var(--bg);
+      }
+
+      .stage {
+        position: relative;
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+
+      #board {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        outline: none;
+        touch-action: none;
+      }
+
+      .hud {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 18px 26px 0;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+
+      .brand .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12);
+      }
+
+      .brand .version {
+        letter-spacing: 0.08em;
+        font-weight: 500;
+        opacity: 0.7;
+        text-transform: none;
+      }
+
+      .scores {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .score-card {
+        min-width: 86px;
+        padding: 7px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--panel-border);
+        background: var(--panel);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        text-align: right;
+      }
+
+      .score-card span {
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+
+      .score-card b {
+        display: block;
+        font-size: 20px;
+        line-height: 1.15;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .score-card.best b {
+        color: var(--accent);
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(4, 6, 8, 0.46);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        transition: opacity 160ms ease;
+      }
+
+      html[data-theme='light'] .overlay {
+        background: rgba(238, 241, 244, 0.55);
+      }
+
+      .overlay.hidden {
+        display: none;
+      }
+
+      .card {
+        width: min(420px, 86vw);
+        padding: 26px 26px 22px;
+        border-radius: 18px;
+        border: 1px solid var(--panel-border);
+        background: var(--panel);
+        box-shadow: 0 24px 70px var(--shadow);
+        text-align: center;
+      }
+
+      .kicker {
+        margin: 0 0 8px;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .card h1 {
+        margin: 0 0 8px;
+        font-size: 26px;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+      }
+
+      .card p.hint {
+        margin: 0 0 18px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+
+      .actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      button.primary {
+        appearance: none;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #04120c;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 10px 22px;
+        cursor: pointer;
+        transition: transform 120ms ease, filter 120ms ease;
+      }
+
+      button.primary:hover {
+        filter: brightness(1.06);
+      }
+
+      button.primary:active {
+        transform: translateY(1px);
+      }
+
+      button.primary:focus-visible {
+        outline: 2px solid var(--accent-strong);
+        outline-offset: 2px;
+      }
+
+      .footer {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 26px 16px;
+        pointer-events: none;
+        z-index: 2;
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .agent-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 20px;
+        opacity: 0;
+        transition: opacity 200ms ease;
+      }
+
+      .agent-hint.visible {
+        opacity: 1;
+      }
+
+      .agent-hint::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--food);
+      }
+
+      .keys {
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.02em;
+      }
+
+      .fatal {
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid rgba(251, 113, 133, 0.4);
+        color: var(--danger);
+        font-size: 12px;
+      }
+
+      @media (max-width: 720px) {
+        .hud {
+          padding: 12px 14px 0;
+        }
+        .footer {
+          padding: 0 14px 10px;
+        }
+        .brand {
+          font-size: 11px;
+        }
+        .score-card {
+          min-width: 70px;
+          padding: 6px 9px;
+        }
+        .score-card b {
+          font-size: 17px;
+        }
+        .keys {
+          display: none;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .overlay,
+        .agent-hint,
+        button.primary {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="hud" aria-hidden="true">
+        <div class="brand"><span class="dot"></span> Snake <span class="version">v0.1.0</span></div>
+        <div class="scores">
+          <div class="score-card"><span>得分</span><b id="score">0</b></div>
+          <div class="score-card best"><span>最高</span><b id="best">0</b></div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <canvas id="board" width="960" height="540" aria-label="贪吃蛇棋盘"></canvas>
+      </div>
+
+      <div id="overlay" class="overlay hidden" role="status" aria-live="polite">
+        <div class="card">
+          <p id="overlay-kicker" class="kicker">贪吃蛇</p>
+          <h1 id="overlay-title">按方向键开始</h1>
+          <p id="overlay-hint" class="hint">方向键 / WASD 移动 · 空格暂停 · Enter 重开</p>
+          <div id="overlay-actions" class="actions">
+            <button id="primary" class="primary" type="button">开始游戏</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer" aria-hidden="true">
+        <span id="agent-hint" class="agent-hint"></span>
+        <span class="keys">↑ ← ↓ → / WASD 移动 · Space / P 暂停 · Enter 重开</span>
+      </div>
+    </div>
+
+    <script>
+      var DSH_GAME_SDK = (function () {
+  'use strict';
+  // Generated by scripts/bundle-lib.mjs — do not edit by hand.
+  const __mods = Object.create(null);
+
+  // module: packages/shared/src/constants.js
+  __mods["packages/shared/src/constants.js"] = (function () {
+  /**
+   * Shared constants for dsh-game-market.
+   *
+   * Pure JS: no Node built-ins, no browser globals at import time.
+   * Kept dependency-free so Host (Node ESM), Client (bundled browser), Runtime,
+   * SDK (inlined into games) and tests can all import this file.
+   */
+
+  const BUNDLE_ID = 'dsh-game-market';
+  const CLIENT_MODULE_ID = BUNDLE_ID;
+  const MAIN_PANEL_KEY = BUNDLE_ID;
+  const API_BASE = '/api/game-market';
+  const LOG_PREFIX = '[game-market]';
+
+  /** Bumped together when the Runtime/SDK contract changes. */
+  const RUNTIME_VERSION = '0.1.0';
+  const SDK_VERSION = '0.1.0';
+  const PROTOCOL_VERSION = 1;
+
+  const LIMITS = Object.freeze({
+    /** Total bytes of one game's save (envelope included). PRD D-005. */
+    saveTotalBytes: 1024 * 1024,
+    /** Max UTF-8 bytes for a single key value. */
+    saveValueBytes: 256 * 1024,
+    /** Max number of keys per game. */
+    saveKeys: 32,
+    /** Max JSON request body accepted by Host API. */
+    jsonBodyBytes: 1024 * 1024,
+    /** Max bytes for one score `meta` object. */
+    scoreMetaBytes: 2048,
+    /** Max score history entries per game. */
+    scoreHistory: 200,
+    /** Max session records per game. */
+    sessionRecords: 100,
+    /** Max entry HTML bytes served to the sandbox iframe. */
+    entryBytes: 24 * 1024 * 1024,
+    /** Max preview image bytes served to Market UI. */
+    previewBytes: 2 * 1024 * 1024,
+  });
+
+  const TIMING = Object.freeze({
+    /** Waiting-entry appears after the Agent has run this long. PRD D-001. */
+    waitEntryThresholdMs: 5000,
+    /** Client polls the Host agent snapshot at this interval while visible. */
+    agentPollMs: 1000,
+    /** Autosave cadence while playing. PRD D-005. */
+    autosaveMs: 30000,
+    /** How long Runtime waits for a game to answer `before-save`. */
+    saveTimeoutMs: 1500,
+    /** Bridge handshake deadline. */
+    handshakeTimeoutMs: 10000,
+    /** Slow-load notice threshold. */
+    loadSlowMs: 10000,
+    /** Hard load failure threshold. */
+    loadErrorMs: 20000,
+    /** Runtime pings the iframe at this interval. */
+    iframePingMs: 5000,
+    /** Agent snapshot older than this is considered stale. */
+    agentStaleMs: 5000,
+    /** Runtime polling backoff cap. */
+    pollBackoffMaxMs: 8000,
+    /** UI animation durations (ms). */
+    motion: Object.freeze({
+      panel: 240,
+      chipIn: 160,
+      chipOut: 120,
+      bubble: 220,
+      whaleState: 240,
+      overlay: 160,
+    }),
+  });
+
+  const AGENT_STATES = Object.freeze(['idle', 'running', 'waiting-user', 'completed', 'error']);
+  const AGENT_SOURCES = Object.freeze(['turn', 'tool', 'approval', 'question', 'lifecycle', 'restore']);
+  const AGENT_PRIORITY = Object.freeze({ 'waiting-user': 100, error: 80, completed: 60, running: 30, idle: 10 });
+
+  /**
+   * V0 label templates (zh-first). V1 moves these to locale files + labelKey.
+   * The Host resolves the final string; games must not parse it.
+   */
+  const AGENT_LABELS_ZH = Object.freeze({
+    idle: 'Agent 空闲',
+    running: '正在工作…',
+    test: '正在运行测试…',
+    build: '正在构建…',
+    search: '正在查找资料…',
+    read: '正在查看文件…',
+    write: '正在修改文件…',
+    command: '正在执行命令…',
+    'waiting-approval': '需要你确认一项操作',
+    'waiting-question': '需要你回答一个问题',
+    'waiting-generic': 'Agent 在等你',
+    completed: '任务完成啦',
+    error: '遇到了一点问题',
+  });
+
+  /** Stable label keys (mirror PRD §9.8); Host only emits keys, Client localizes in V1. */
+  const AGENT_LABEL_KEYS = Object.freeze({
+    idle: 'agent.state.idle',
+    running: 'agent.state.running',
+    test: 'agent.state.test',
+    build: 'agent.state.build',
+    search: 'agent.state.search',
+    read: 'agent.state.read',
+    write: 'agent.state.write',
+    command: 'agent.state.command',
+    'waiting-approval': 'agent.state.waiting.approval',
+    'waiting-question': 'agent.state.waiting.question',
+    'waiting-generic': 'agent.state.waiting.generic',
+    completed: 'agent.state.completed',
+    error: 'agent.state.error',
+  });
+
+  const GAME_ID_PATTERN = Object.freeze(/^[a-z0-9][a-z0-9-]{1,46}[a-z0-9]$/);
+  const PLAY_SESSION_ID_PATTERN = Object.freeze(/^ps_[a-z0-9]{16,32}$/);
+  const INSTANCE_ID_PATTERN = Object.freeze(/^[a-f0-9]{32}$/);
+  const NONCE_PATTERN = Object.freeze(/^[a-f0-9]{32}$/);
+  /** DSH Session ids are opaque; keep a conservative printable bound. */
+  const DSH_SESSION_ID_PATTERN = Object.freeze(/^[A-Za-z0-9._:-]{1,128}$/);
+
+  const LAUNCH_MODES = Object.freeze(['start', 'resume-paused']);
+  const PAUSE_REASONS = Object.freeze(['user', 'hidden', 'leave', 'waiting-user']);
+  const SAVE_REASONS = Object.freeze(['interval', 'pause', 'hidden', 'leave', 'agent-complete']);
+  const SESSION_OUTCOMES = Object.freeze(['completed', 'lost', 'abandoned', 'quit']);
+
+  /** V0 built-in games. Paths are relative to the bundle root. */
+  const BUILTIN_GAMES = Object.freeze([
+    Object.freeze({
+      id: 'snake',
+      name: 'Snake',
+      version: '0.1.0',
+      dir: 'games/snake',
+      manifestFile: 'game.json',
+      entryFile: 'dist/index.html',
+      viewport: Object.freeze({ width: 960, height: 540, fit: 'contain' }),
+    }),
+  ]);
+
+  const AGENT_ACK_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+  return { BUNDLE_ID, CLIENT_MODULE_ID, MAIN_PANEL_KEY, API_BASE, LOG_PREFIX, RUNTIME_VERSION, SDK_VERSION, PROTOCOL_VERSION, LIMITS, TIMING, AGENT_STATES, AGENT_SOURCES, AGENT_PRIORITY, AGENT_LABELS_ZH, AGENT_LABEL_KEYS, GAME_ID_PATTERN, PLAY_SESSION_ID_PATTERN, INSTANCE_ID_PATTERN, NONCE_PATTERN, DSH_SESSION_ID_PATTERN, LAUNCH_MODES, PAUSE_REASONS, SAVE_REASONS, SESSION_OUTCOMES, BUILTIN_GAMES, AGENT_ACK_MAX_AGE_MS };
+  })();
+
+  // module: packages/shared/src/errors.js
+  __mods["packages/shared/src/errors.js"] = (function () {
+  /**
+   * Error codes shared by Host API, Runtime bridge and Client UI.
+   *
+   * External contract (PRD §8.13 / D-030): only `GM-*` codes cross the
+   * API/bridge boundary. Internal `E_*` names never reach the Client.
+   */
+
+  const GM = Object.freeze({
+    INTERNAL: 'GM-5000',
+    INVALID_JSON: 'GM-4001',
+    INVALID_PARAM: 'GM-4002',
+    UNKNOWN_METHOD: 'GM-4004',
+    BAD_GAME_ID: 'GM-4005',
+    SCORE_OUT_OF_RANGE: 'GM-4006',
+    NOT_READY: 'GM-4031',
+    CAPABILITY_DENIED: 'GM-4032',
+    SESSION_NOT_BOUND: 'GM-4033',
+    SAVE_NOT_FOUND: 'GM-4041',
+    GAME_NOT_FOUND: 'GM-4042',
+    ASSET_NOT_FOUND: 'GM-4043',
+    INSTALL_IN_PROGRESS: 'GM-4091',
+    STORAGE_CONFLICT: 'GM-4092',
+    SESSION_STATE_CONFLICT: 'GM-4093',
+    SCHEMA_READ_TOO_NEW: 'GM-4098',
+    SAVE_SCHEMA_TOO_NEW: 'GM-4099',
+    SAVE_TOO_LARGE: 'GM-4131',
+    STORAGE_QUOTA: 'GM-4132',
+    STORAGE_KEY_INVALID: 'GM-4133',
+    VALUE_NOT_SERIALIZABLE: 'GM-4134',
+    UNSUPPORTED_MEDIA_TYPE: 'GM-4150',
+    MANIFEST_INVALID: 'GM-4221',
+    RUNTIME_INCOMPATIBLE: 'GM-4260',
+    SDK_INCOMPATIBLE: 'GM-4261',
+    RATE_LIMITED: 'GM-4290',
+    BACKPRESSURE: 'GM-4291',
+    HANDSHAKE_TIMEOUT: 'GM-5001',
+    PROTOCOL_MISMATCH: 'GM-5002',
+    NO_RUNTIME: 'GM-5003',
+    MESSAGE_INVALID: 'GM-5004',
+    BRIDGE_TIMEOUT: 'GM-5005',
+    LOAD_TIMEOUT: 'GM-5011',
+    IFRAME_UNRESPONSIVE: 'GM-5012',
+    IFRAME_CRASHED: 'GM-5013',
+    ASSET_INTEGRITY: 'GM-5014',
+    SAVE_WRITE_FAILED: 'GM-5021',
+    SAVE_CORRUPT: 'GM-5022',
+    HOST_EPOCH_STALE: 'GM-5023',
+    HOST_UNAVAILABLE: 'GM-5031',
+    REGISTRY_UNAVAILABLE: 'GM-5032',
+    INSTALL_FAILED: 'GM-5033',
+  });
+
+  const DEFAULT_MESSAGES = Object.freeze({
+    [GM.INTERNAL]: 'Internal error',
+    [GM.INVALID_JSON]: 'Request body must be valid JSON',
+    [GM.INVALID_PARAM]: 'Invalid parameter',
+    [GM.UNKNOWN_METHOD]: 'Unknown method',
+    [GM.BAD_GAME_ID]: 'Invalid game id',
+    [GM.SCORE_OUT_OF_RANGE]: 'Score is outside the declared range',
+    [GM.NOT_READY]: 'Game is not ready',
+    [GM.CAPABILITY_DENIED]: 'Capability not declared',
+    [GM.SESSION_NOT_BOUND]: 'No Agent Session is bound',
+    [GM.SAVE_NOT_FOUND]: 'Save not found',
+    [GM.GAME_NOT_FOUND]: 'Game not found',
+    [GM.ASSET_NOT_FOUND]: 'Asset not found',
+    [GM.INSTALL_IN_PROGRESS]: 'Another install is in progress',
+    [GM.STORAGE_CONFLICT]: 'Storage revision conflict',
+    [GM.SESSION_STATE_CONFLICT]: 'Session state conflict',
+    [GM.SCHEMA_READ_TOO_NEW]: 'Stored data needs a newer Game Market',
+    [GM.SAVE_SCHEMA_TOO_NEW]: 'Save needs a newer game version',
+    [GM.SAVE_TOO_LARGE]: 'Save exceeds the 1 MiB limit',
+    [GM.STORAGE_QUOTA]: 'Storage quota exceeded',
+    [GM.STORAGE_KEY_INVALID]: 'Invalid storage key',
+    [GM.VALUE_NOT_SERIALIZABLE]: 'Value is not JSON-serializable',
+    [GM.UNSUPPORTED_MEDIA_TYPE]: 'Unsupported media type',
+    [GM.MANIFEST_INVALID]: 'Invalid game manifest',
+    [GM.RUNTIME_INCOMPATIBLE]: 'Game requires a different Runtime version',
+    [GM.SDK_INCOMPATIBLE]: 'Game requires a different SDK version',
+    [GM.RATE_LIMITED]: 'Too many requests',
+    [GM.BACKPRESSURE]: 'Too many in-flight requests',
+    [GM.HANDSHAKE_TIMEOUT]: 'Game handshake timed out',
+    [GM.PROTOCOL_MISMATCH]: 'Game protocol version mismatch',
+    [GM.NO_RUNTIME]: 'Game Runtime is not available',
+    [GM.MESSAGE_INVALID]: 'Invalid bridge message',
+    [GM.BRIDGE_TIMEOUT]: 'Bridge request timed out',
+    [GM.LOAD_TIMEOUT]: 'Game failed to load in time',
+    [GM.IFRAME_UNRESPONSIVE]: 'Game is not responding',
+    [GM.IFRAME_CRASHED]: 'Game crashed',
+    [GM.ASSET_INTEGRITY]: 'Game files failed integrity check',
+    [GM.SAVE_WRITE_FAILED]: 'Could not write save',
+    [GM.SAVE_CORRUPT]: 'Save file is corrupt',
+    [GM.HOST_EPOCH_STALE]: 'Host restarted; refresh state',
+    [GM.HOST_UNAVAILABLE]: 'Game Market Host is unavailable',
+    [GM.REGISTRY_UNAVAILABLE]: 'Game registry is unavailable',
+    [GM.INSTALL_FAILED]: 'Install failed',
+  });
+
+  /** HTTP status for a GM code (PRD §8.5 mapping). */
+  function httpStatusFor(gmCode) {
+    const num = Number(String(gmCode).slice(3));
+    if (!Number.isFinite(num)) return 500;
+    if (gmCode === GM.INTERNAL) return 500;
+    if (gmCode === GM.MANIFEST_INVALID) return 422;
+    if (num >= 5000 && num < 6000) return num >= 5030 ? 503 : 500;
+    if (num >= 4000 && num < 5000) return Math.floor(num / 100) * 100;
+    return 500;
+  }
+
+  function isGmCode(value) {
+    return typeof value === 'string' && /^GM-\d{4}$/.test(value);
+  }
+
+  /**
+   * Create a plain error object for Host responses and bridge failures.
+   * Never include paths, stack traces or user content in `details`.
+   */
+  function makeGameError(code, message, options = {}) {
+    const gmCode = isGmCode(code) ? code : GM.INTERNAL;
+    return {
+      code: gmCode,
+      message: message || DEFAULT_MESSAGES[gmCode] || DEFAULT_MESSAGES[GM.INTERNAL],
+      retryable: options.retryable === true,
+      ...(options.details === undefined ? {} : { details: options.details }),
+    };
+  }
+
+  function errorResponseBody(code, message, options = {}) {
+    return { ok: false, error: makeGameError(code, message, options) };
+  }
+
+  function defaultMessageFor(code) {
+    return DEFAULT_MESSAGES[code] || DEFAULT_MESSAGES[GM.INTERNAL];
+  }
+
+  /** SDK/bridge error codes are the same GM codes; aliases keep call sites readable. */
+  const SDK_ERROR_CODES = Object.freeze(Object.values(GM));
+
+  return { GM, httpStatusFor, isGmCode, makeGameError, errorResponseBody, defaultMessageFor, SDK_ERROR_CODES };
+  })();
+
+  // module: packages/shared/src/protocol.js
+  __mods["packages/shared/src/protocol.js"] = (function () {
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+  const PROTOCOL_VERSION = __mods["packages/shared/src/constants.js"].PROTOCOL_VERSION;
+  /**
+   * postMessage bridge protocol helpers shared by Runtime and SDK (PRD §8.4).
+   *
+   * Runtime is the trusted side; SDK is the iframe-side client. Both must accept
+   * only the exact envelope shapes below and reject everything else.
+   */
+
+
+  const BRIDGE_VERSION = PROTOCOL_VERSION;
+  const MAX_BRIDGE_MESSAGE_BYTES = LIMITS.saveTotalBytes + 64 * 1024;
+  const MAX_BRIDGE_DEPTH = 32;
+  const MAX_INFLIGHT_REQUESTS = 32;
+  const MAX_INVALID_MESSAGES_PER_10S = 50;
+  const MAX_MESSAGES_PER_SECOND = 200;
+
+  const METHODS = Object.freeze({
+    READY: 'ready',
+    PING: 'ping',
+    STORAGE_SAVE: 'storage.save',
+    STORAGE_LOAD: 'storage.load',
+    STORAGE_REMOVE: 'storage.remove',
+    SESSION_START: 'session.start',
+    SESSION_END: 'session.end',
+    SCORE_SUBMIT: 'score.submit',
+    SCORE_GET_BEST: 'score.getBest',
+    AGENT_GET_STATUS: 'agent.getStatus',
+  });
+
+  const EVENTS = Object.freeze({
+    HELLO: 'hello',
+    INIT: 'init',
+    PAUSE: 'pause',
+    RESUME: 'resume',
+    HIDDEN: 'hidden',
+    VISIBLE: 'visible',
+    BEFORE_SAVE: 'before-save',
+    AGENT_STATUS: 'agent-status',
+    THEME: 'theme',
+    VIEWPORT: 'viewport',
+  });
+
+  /** Runtime → game methods list (SDK side handles these). */
+  const RUNTIME_TO_GAME_METHODS = Object.freeze(['ping']);
+  /** Game → Runtime methods list (Runtime side handles these). */
+  const GAME_TO_RUNTIME_METHODS = Object.freeze([
+    METHODS.READY,
+    METHODS.STORAGE_SAVE,
+    METHODS.STORAGE_LOAD,
+    METHODS.STORAGE_REMOVE,
+    METHODS.SESSION_START,
+    METHODS.SESSION_END,
+    METHODS.SCORE_SUBMIT,
+    METHODS.SCORE_GET_BEST,
+    METHODS.AGENT_GET_STATUS,
+  ]);
+
+  const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+  function isPlainObject(value) {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+    const proto = Object.getPrototypeOf(value);
+    return proto === Object.prototype || proto === null;
+  }
+
+  /** 32 lowercase hex chars from the platform CSPRNG; works in browser + Node. */
+  function randomHex32() {
+    const bytes = new Uint8Array(16);
+    const cryptoApi = globalThis.crypto;
+    if (!cryptoApi || typeof cryptoApi.getRandomValues !== 'function') {
+      throw new Error('crypto.getRandomValues is unavailable');
+    }
+    cryptoApi.getRandomValues(bytes);
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function createInstanceId() {
+    return randomHex32();
+  }
+
+  function createNonce() {
+    return randomHex32();
+  }
+
+  /** UTF-8 byte length of the JSON serialization; throws on non-JSON values. */
+  function jsonByteLength(value) {
+    return byteLength(JSON.stringify(value));
+  }
+
+  function byteLength(text) {
+    return new TextEncoder().encode(text).length;
+  }
+
+  /**
+   * Validate a JSON value: finite numbers, plain objects/arrays, depth-bounded,
+   * no prototype-pollution keys. Returns a cloned plain value.
+   */
+  function cloneJsonValue(value, depth = 0) {
+    if (depth > MAX_BRIDGE_DEPTH) {
+      throw protocolError(GM.VALUE_NOT_SERIALIZABLE, 'Value nesting is too deep');
+    }
+    if (value === null || typeof value === 'string' || typeof value === 'boolean') return value;
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value)) throw protocolError(GM.VALUE_NOT_SERIALIZABLE, 'Number must be finite');
+      return value;
+    }
+    if (Array.isArray(value)) return value.map((item) => cloneJsonValue(item, depth + 1));
+    if (isPlainObject(value)) {
+      const out = {};
+      for (const key of Object.keys(value)) {
+        if (FORBIDDEN_KEYS.has(key)) {
+          throw protocolError(GM.VALUE_NOT_SERIALIZABLE, `Forbidden key: ${key}`);
+        }
+        out[key] = cloneJsonValue(value[key], depth + 1);
+      }
+      return out;
+    }
+    throw protocolError(GM.VALUE_NOT_SERIALIZABLE, `Unsupported value type: ${typeof value}`);
+  }
+
+  function isValidStorageKey(key) {
+    return typeof key === 'string' && /^[a-z0-9][a-z0-9._-]{0,63}$/.test(key) && !FORBIDDEN_KEYS.has(key);
+  }
+
+  function protocolError(code, message) {
+    return { code, message, retryable: false };
+  }
+
+  function createRequest(id, method, params) {
+    return { v: BRIDGE_VERSION, id, kind: 'req', method, params: params === undefined ? {} : params };
+  }
+
+  function createResponse(id, result) {
+    return { v: BRIDGE_VERSION, id, kind: 'res', ok: true, result };
+  }
+
+  function createErrorResponse(id, error) {
+    return { v: BRIDGE_VERSION, id, kind: 'res', ok: false, error };
+  }
+
+  function createEvent(event, data) {
+    return { v: BRIDGE_VERSION, kind: 'evt', event, ...(data === undefined ? {} : { data }) };
+  }
+
+  function envelopeByteSize(message) {
+    try {
+      return jsonByteLength(message);
+    } catch (_error) {
+      return Infinity;
+    }
+  }
+
+  /**
+   * Structural validation. Sender/source identity and nonce matching stay with
+   * the caller because they are transport-specific.
+   *
+   * @returns {{ok: true, message: object} | {ok: false, code: string, message: string}}
+   */
+  function validateBridgeMessage(raw) {
+    if (!isPlainObject(raw)) return invalid('Message must be a plain object');
+    if (raw.v !== BRIDGE_VERSION) return invalid(`Unsupported protocol version: ${String(raw.v)}`, GM.PROTOCOL_MISMATCH);
+    if (raw.kind === 'req') {
+      if (typeof raw.id !== 'string' || raw.id.length === 0 || raw.id.length > 64) return invalid('Invalid request id');
+      if (typeof raw.method !== 'string' || raw.method.length === 0 || raw.method.length > 64) return invalid('Invalid method');
+      if (raw.params !== undefined && !isPlainObject(raw.params)) return invalid('params must be an object');
+      if (envelopeByteSize(raw) > MAX_BRIDGE_MESSAGE_BYTES) return invalid('Message too large');
+      return { ok: true, message: raw };
+    }
+    if (raw.kind === 'res') {
+      if (typeof raw.id !== 'string' || raw.id.length === 0 || raw.id.length > 64) return invalid('Invalid response id');
+      if (raw.ok === true) return { ok: true, message: raw };
+      if (raw.ok === false && isPlainObject(raw.error) && typeof raw.error.code === 'string') {
+        return { ok: true, message: raw };
+      }
+      return invalid('Invalid error response');
+    }
+    if (raw.kind === 'evt') {
+      if (typeof raw.event !== 'string' || raw.event.length === 0 || raw.event.length > 64) return invalid('Invalid event name');
+      if (envelopeByteSize(raw) > MAX_BRIDGE_MESSAGE_BYTES) return invalid('Message too large');
+      return { ok: true, message: raw };
+    }
+    return invalid(`Unknown message kind: ${String(raw.kind)}`);
+  }
+
+  function invalid(message, code = GM.MESSAGE_INVALID) {
+    return { ok: false, code, message };
+  }
+
+  /**
+   * SDK handshake inputs come from the URL query. Runtime puts them there.
+   * @returns {{instanceId: string, nonce: string} | null}
+   */
+  function parseLaunchQuery(search) {
+    try {
+      const params = new URLSearchParams(search || '');
+      const instanceId = params.get('instance') || '';
+      const nonce = params.get('nonce') || '';
+      if (!/^[a-f0-9]{32}$/.test(instanceId) || !/^[a-f0-9]{32}$/.test(nonce)) return null;
+      return { instanceId, nonce };
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  /** Narrow runtime info handed to the game in `init`. */
+  function createRuntimeInfo(fields) {
+    return {
+      sdkVersion: fields.sdkVersion,
+      protocolVersion: BRIDGE_VERSION,
+      runtimeVersion: fields.runtimeVersion,
+      gameId: fields.gameId,
+      gameVersion: fields.gameVersion,
+      locale: fields.locale || 'zh',
+      theme: fields.theme === 'dark' ? 'dark' : 'light',
+      reducedMotion: fields.reducedMotion === true,
+      capabilities: Array.isArray(fields.capabilities) ? fields.capabilities.slice() : [],
+      viewport: {
+        width: Number(fields.viewport?.width) || 0,
+        height: Number(fields.viewport?.height) || 0,
+        dpr: Number(fields.viewport?.dpr) || 1,
+      },
+      ready: fields.ready === true,
+    };
+  }
+
+  return { BRIDGE_VERSION, MAX_BRIDGE_MESSAGE_BYTES, MAX_BRIDGE_DEPTH, MAX_INFLIGHT_REQUESTS, MAX_INVALID_MESSAGES_PER_10S, MAX_MESSAGES_PER_SECOND, METHODS, EVENTS, RUNTIME_TO_GAME_METHODS, GAME_TO_RUNTIME_METHODS, isPlainObject, randomHex32, createInstanceId, createNonce, jsonByteLength, byteLength, cloneJsonValue, isValidStorageKey, protocolError, createRequest, createResponse, createErrorResponse, createEvent, envelopeByteSize, validateBridgeMessage, parseLaunchQuery, createRuntimeInfo };
+  })();
+
+  // module: packages/sdk/src/errors.js
+  __mods["packages/sdk/src/errors.js"] = (function () {
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const defaultMessageFor = __mods["packages/shared/src/errors.js"].defaultMessageFor;
+  const isGmCode = __mods["packages/shared/src/errors.js"].isGmCode;
+  /**
+   * SDK-side error type. Every error crossing the bridge uses a `GM-*` code so
+   * games can branch on a stable, documented surface (PRD §8.3 / D-030).
+   */
+
+
+  class GameError extends Error {
+    /**
+     * @param {string} code GM code
+     * @param {string} [message]
+     * @param {{retryable?: boolean, details?: object}} [options]
+     */
+    constructor(code, message, options = {}) {
+      const gmCode = isGmCode(code) ? code : GM.INTERNAL;
+      super(message || defaultMessageFor(gmCode));
+      this.name = 'GameError';
+      this.code = gmCode;
+      this.retryable = options.retryable === true;
+      if (options.details !== undefined) this.details = options.details;
+    }
+  }
+
+  function createGameError(code, message, options = {}) {
+    return new GameError(code, message, options);
+  }
+
+  function isGameError(error) {
+    if (error instanceof GameError) return true;
+    return Boolean(error) && typeof error === 'object' && isGmCode(error.code) && typeof error.message === 'string';
+  }
+
+  /** Never leak a non-GM error object across the public SDK surface. */
+  function toGameError(error) {
+    if (isGameError(error)) {
+      if (error instanceof GameError) return error;
+      return new GameError(error.code, error.message, { retryable: error.retryable === true });
+    }
+    return new GameError(GM.INTERNAL, defaultMessageFor(GM.INTERNAL), { retryable: false });
+  }
+
+  return { GameError, createGameError, isGameError, toGameError };
+  })();
+
+  // module: packages/sdk/src/bridge-client.js
+  __mods["packages/sdk/src/bridge-client.js"] = (function () {
+  const PROTOCOL_VERSION = __mods["packages/shared/src/constants.js"].PROTOCOL_VERSION;
+  const SDK_VERSION = __mods["packages/shared/src/constants.js"].SDK_VERSION;
+  const TIMING = __mods["packages/shared/src/constants.js"].TIMING;
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const EVENTS = __mods["packages/shared/src/protocol.js"].EVENTS;
+  const MAX_INFLIGHT_REQUESTS = __mods["packages/shared/src/protocol.js"].MAX_INFLIGHT_REQUESTS;
+  const METHODS = __mods["packages/shared/src/protocol.js"].METHODS;
+  const createErrorResponse = __mods["packages/shared/src/protocol.js"].createErrorResponse;
+  const createEvent = __mods["packages/shared/src/protocol.js"].createEvent;
+  const createRequest = __mods["packages/shared/src/protocol.js"].createRequest;
+  const createResponse = __mods["packages/shared/src/protocol.js"].createResponse;
+  const isPlainObject = __mods["packages/shared/src/protocol.js"].isPlainObject;
+  const parseLaunchQuery = __mods["packages/shared/src/protocol.js"].parseLaunchQuery;
+  const validateBridgeMessage = __mods["packages/shared/src/protocol.js"].validateBridgeMessage;
+  const createGameError = __mods["packages/sdk/src/errors.js"].createGameError;
+  const toGameError = __mods["packages/sdk/src/errors.js"].toGameError;
+  /**
+   * iframe-side bridge client (PRD §8.4 postMessage protocol).
+   *
+   * Runs inside the sandboxed game iframe. It only knows `window.parent` and
+   * `location.search`; it never touches host DOM, storage or network.
+   *
+   * Handshake:
+   *   hello (every 250ms, at most 30 times) -> init -> ready request -> ready.
+   */
+
+
+  const SDK_METHOD_TIMEOUTS = Object.freeze({
+    ready: 10000,
+    ping: 2000,
+    'storage.save': 6000,
+    'storage.load': 3000,
+    'storage.remove': 3000,
+    'session.start': 4000,
+    'session.end': 6000,
+    'score.submit': 4000,
+    'score.getBest': 3000,
+    'agent.getStatus': 2000,
+  });
+
+  const HELLO_INTERVAL_MS = 250;
+  const MAX_HELLO_COUNT = 30;
+  const READY_EVENT_NAMES = Object.freeze([EVENTS.PAUSE, EVENTS.RESUME, EVENTS.HIDDEN, EVENTS.VISIBLE, EVENTS.BEFORE_SAVE]);
+
+  function createBridgeClient(options = {}) {
+    const win = options.window || null;
+    const parent = options.parent || null;
+    const location = options.location || null;
+    const timers = options.timers || globalThis;
+    const now = typeof options.now === 'function' ? options.now : Date.now;
+    const cryptoApi = options.crypto || (win && win.crypto) || null;
+    const onEvent = typeof options.onEvent === 'function' ? options.onEvent : function noop() {};
+    const onInit = typeof options.onInit === 'function' ? options.onInit : function noop() {};
+    const onFatal = typeof options.onFatal === 'function' ? options.onFatal : function noop() {};
+
+    const launchQuery = parseLaunchQuery(location && location.search);
+    const available = Boolean(
+      win &&
+        parent &&
+        parent !== win &&
+        typeof parent.postMessage === 'function' &&
+        launchQuery
+    );
+
+    let started = false;
+    let disposed = false;
+    let readySettled = false;
+    let ready = false;
+    let fatalError = null;
+    let helloCount = 0;
+    let helloTimer = null;
+    let deadlineTimer = null;
+    let listenerAttached = false;
+    let initData = null;
+    let readyResult = null;
+    let requestSeq = 0;
+    let invalidMessages = 0;
+    let readyTimeoutMs = TIMING.handshakeTimeoutMs;
+    const pending = new Map();
+
+    let resolveReady = null;
+    let rejectReady = null;
+    const readyPromise = new Promise(function executor(resolve, reject) {
+      resolveReady = resolve;
+      rejectReady = reject;
+    });
+    // The promise may be observed later (or never); keep the rejection handled.
+    readyPromise.then(undefined, function ignore() {});
+
+    function isAvailable() {
+      return available;
+    }
+
+    function attachListener() {
+      if (listenerAttached || !win || typeof win.addEventListener !== 'function') return;
+      win.addEventListener('message', handleMessage);
+      listenerAttached = true;
+    }
+
+    function detachListener() {
+      if (!listenerAttached || !win || typeof win.removeEventListener !== 'function') return;
+      win.removeEventListener('message', handleMessage);
+      listenerAttached = false;
+    }
+
+    function nextId() {
+      requestSeq += 1;
+      if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
+        try {
+          return cryptoApi.randomUUID();
+        } catch (_error) {
+          // fall through
+        }
+      }
+      return `m-${requestSeq}-${Math.random().toString(36).slice(2, 10)}`;
+    }
+
+    function post(message) {
+      if (disposed || !parent) return;
+      try {
+        parent.postMessage(message, '*');
+      } catch (_error) {
+        fail(createGameError(GM.NO_RUNTIME, 'Cannot reach the Game Runtime'));
+      }
+    }
+
+    function clearHandshakeTimers() {
+      if (helloTimer !== null) {
+        timers.clearTimeout(helloTimer);
+        helloTimer = null;
+      }
+      if (deadlineTimer !== null) {
+        timers.clearTimeout(deadlineTimer);
+        deadlineTimer = null;
+      }
+    }
+
+    function clearPending(error) {
+      for (const entry of pending.values()) {
+        timers.clearTimeout(entry.timer);
+        entry.reject(error);
+      }
+      pending.clear();
+    }
+
+    function settleResolve(value) {
+      if (readySettled) return;
+      readySettled = true;
+      clearHandshakeTimers();
+      resolveReady(value);
+    }
+
+    function fail(error) {
+      const gameError = toGameError(error);
+      if (disposed) return;
+      fatalError = gameError;
+      if (!readySettled) {
+        readySettled = true;
+        clearHandshakeTimers();
+        clearPending(gameError);
+        rejectReady(gameError);
+      }
+      onFatal(gameError);
+    }
+
+    function start() {
+      if (started || disposed) return;
+      started = true;
+      if (!available) {
+        fail(createGameError(GM.NO_RUNTIME, 'Game Runtime is not available (not running inside a sandbox iframe)'));
+        return;
+      }
+      attachListener();
+      deadlineTimer = timers.setTimeout(function onDeadline() {
+        deadlineTimer = null;
+        fail(createGameError(GM.HANDSHAKE_TIMEOUT, 'Game handshake timed out'));
+      }, readyTimeoutMs);
+      sendHello();
+    }
+
+    function sendHello() {
+      if (disposed || readySettled || ready) return;
+      if (!available) return;
+      if (helloCount >= MAX_HELLO_COUNT) {
+        fail(createGameError(GM.HANDSHAKE_TIMEOUT, 'Game handshake timed out'));
+        return;
+      }
+      helloCount += 1;
+      post(
+        createEvent(EVENTS.HELLO, {
+          instanceId: launchQuery.instanceId,
+          nonce: launchQuery.nonce,
+          sdkVersion: SDK_VERSION,
+          protocolVersion: PROTOCOL_VERSION,
+        })
+      );
+      helloTimer = timers.setTimeout(sendHello, HELLO_INTERVAL_MS);
+    }
+
+    function handleInit(data) {
+      if (!isPlainObject(data)) {
+        invalidMessages += 1;
+        return;
+      }
+      if (data.instanceId !== launchQuery.instanceId || data.nonce !== launchQuery.nonce) {
+        invalidMessages += 1;
+        return;
+      }
+      if (data.protocolVersion !== PROTOCOL_VERSION) {
+        fail(createGameError(GM.PROTOCOL_MISMATCH, 'Unsupported bridge protocol version'));
+        return;
+      }
+      if (initData) return;
+      initData = data;
+      if (helloTimer !== null) {
+        timers.clearTimeout(helloTimer);
+        helloTimer = null;
+      }
+      onInit(data);
+      dispatchRequest(METHODS.READY, { sdkVersion: SDK_VERSION, protocolVersion: PROTOCOL_VERSION }, readyTimeoutMs).then(
+        function onReady(result) {
+          if (readySettled || disposed) return;
+          if (result !== null && result !== undefined && !isPlainObject(result)) {
+            fail(createGameError(GM.PROTOCOL_MISMATCH, 'Invalid ready result'));
+            return;
+          }
+          if (result && result.protocolVersion !== undefined && result.protocolVersion !== PROTOCOL_VERSION) {
+            fail(createGameError(GM.PROTOCOL_MISMATCH, 'Unsupported runtime protocol version'));
+            return;
+          }
+          ready = true;
+          readyResult = result || {};
+          settleResolve({ init: initData, result: readyResult });
+        },
+        function onReadyError(error) {
+          fail(error);
+        }
+      );
+    }
+
+    function handleResponse(message) {
+      const entry = pending.get(message.id);
+      if (!entry) {
+        invalidMessages += 1;
+        return;
+      }
+      pending.delete(message.id);
+      timers.clearTimeout(entry.timer);
+      if (message.ok === true) {
+        entry.resolve(message.result === undefined ? null : message.result);
+        return;
+      }
+      const errorPayload = message.error || {};
+      entry.reject(
+        createGameError(errorPayload.code || GM.INTERNAL, errorPayload.message, {
+          retryable: errorPayload.retryable === true,
+        })
+      );
+    }
+
+    function handleEvent(message) {
+      if (message.event === EVENTS.INIT) {
+        handleInit(message.data);
+        return;
+      }
+      if (!initData) return;
+      if (message.event === EVENTS.AGENT_STATUS) {
+        onEvent('agent-status', message.data);
+        return;
+      }
+      if (message.event === EVENTS.THEME) {
+        onEvent('theme', message.data);
+        return;
+      }
+      if (message.event === EVENTS.VIEWPORT) {
+        onEvent('viewport', message.data);
+        return;
+      }
+      if (READY_EVENT_NAMES.includes(message.event)) {
+        onEvent(message.event, message.data || {});
+        return;
+      }
+      // Unknown events are ignored by contract (forward compatibility).
+    }
+
+    function handleRequest(message) {
+      if (message.method === METHODS.PING) {
+        const requestAt = message.params && Number.isFinite(message.params.at) ? message.params.at : now();
+        post(createResponse(message.id, { at: requestAt }));
+        return;
+      }
+      post(createErrorResponse(message.id, { code: GM.UNKNOWN_METHOD, message: 'Unknown game method', retryable: false }));
+    }
+
+    function handleMessage(event) {
+      if (disposed || !event) return;
+      if (event.source !== parent) {
+        invalidMessages += 1;
+        return;
+      }
+      const checked = validateBridgeMessage(event.data);
+      if (!checked.ok) {
+        invalidMessages += 1;
+        return;
+      }
+      const message = checked.message;
+      try {
+        if (message.kind === 'evt') handleEvent(message);
+        else if (message.kind === 'req') handleRequest(message);
+        else if (message.kind === 'res') handleResponse(message);
+      } catch (_error) {
+        invalidMessages += 1;
+      }
+    }
+
+    function dispatchRequest(method, params, timeoutMs) {
+      if (disposed) return Promise.reject(createGameError(GM.NO_RUNTIME, 'Game Runtime is not available'));
+      if (fatalError) return Promise.reject(fatalError);
+      if (pending.size >= MAX_INFLIGHT_REQUESTS) {
+        return Promise.reject(createGameError(GM.BACKPRESSURE, 'Too many in-flight bridge requests'));
+      }
+      const ms = typeof timeoutMs === 'number' && timeoutMs > 0 ? timeoutMs : SDK_METHOD_TIMEOUTS[method] || 5000;
+      return new Promise(function executor(resolve, reject) {
+        const id = nextId();
+        const timer = timers.setTimeout(function onTimeout() {
+          const entry = pending.get(id);
+          if (!entry) return;
+          pending.delete(id);
+          reject(createGameError(GM.BRIDGE_TIMEOUT, `Bridge request timed out: ${method}`, { retryable: true }));
+        }, ms);
+        pending.set(id, { resolve, reject, timer });
+        post(createRequest(id, method, params));
+      });
+    }
+
+    function readyWithTimeout(timeoutMs) {
+      if (!started && typeof timeoutMs === 'number' && timeoutMs > 0 && timeoutMs < readyTimeoutMs) {
+        readyTimeoutMs = timeoutMs;
+      }
+      start();
+      return readyPromise;
+    }
+
+    function request(method, params, timeoutMs) {
+      if (fatalError) return Promise.reject(fatalError);
+      if (!ready) return Promise.reject(createGameError(GM.NOT_READY, 'Game is not ready'));
+      return dispatchRequest(method, params, timeoutMs);
+    }
+
+    function dispose() {
+      if (disposed) return;
+      disposed = true;
+      clearHandshakeTimers();
+      detachListener();
+      const error = createGameError(GM.NO_RUNTIME, 'Game Runtime was closed');
+      clearPending(error);
+      if (!readySettled) {
+        readySettled = true;
+        rejectReady(error);
+      }
+    }
+
+    return Object.freeze({
+      isAvailable,
+      isReady: function isReady() {
+        return ready;
+      },
+      getFatalError: function getFatalError() {
+        return fatalError;
+      },
+      getInfo: function getInfo() {
+        return { init: initData, result: readyResult };
+      },
+      getDiagnostics: function getDiagnostics() {
+        return { helloCount, invalidMessages, pending: pending.size };
+      },
+      start,
+      ready: readyWithTimeout,
+      request,
+      dispose,
+    });
+  }
+
+  return { SDK_METHOD_TIMEOUTS, createBridgeClient };
+  })();
+
+  // module: packages/sdk/src/event-hub.js
+  __mods["packages/sdk/src/event-hub.js"] = (function () {
+  /**
+   * Tiny event hub used for lifecycle / agent subscriptions.
+   *
+   * - Handlers run in registration order and are isolated: a throwing handler
+   *   never breaks the bridge (PRD §8.3 lifecycle semantics).
+   * - Lifecycle events that arrive before `ready` are buffered and replayed once
+   *   the game becomes ready, so "subscribe first, event later" and "event first,
+   *   subscribe later" both work for the handshake window.
+   */
+
+  const LIFECYCLE_EVENTS = Object.freeze(['pause', 'resume', 'hidden', 'visible', 'before-save']);
+
+  function isLifecycleEvent(name) {
+    return LIFECYCLE_EVENTS.includes(name);
+  }
+
+  function createEventHub() {
+    const handlers = new Map();
+    const buffered = [];
+    let open = false;
+
+    function on(name, handler) {
+      if (typeof handler !== 'function') return function off() {};
+      let set = handlers.get(name);
+      if (!set) {
+        set = new Set();
+        handlers.set(name, set);
+      }
+      set.add(handler);
+      return function off() {
+        const current = handlers.get(name);
+        if (!current) return;
+        current.delete(handler);
+        if (current.size === 0) handlers.delete(name);
+      };
+    }
+
+    function dispatch(name, payload) {
+      const set = handlers.get(name);
+      if (!set || set.size === 0) return;
+      for (const handler of Array.from(set)) {
+        try {
+          const result = handler(payload);
+          if (result && typeof result.then === 'function') {
+            result.then(undefined, function ignore() {});
+          }
+        } catch (_error) {
+          // Game callbacks must never break the bridge.
+        }
+      }
+    }
+
+    function emit(name, payload, options) {
+      const shouldBuffer = options ? options.buffer !== false : true;
+      if (!open && shouldBuffer) {
+        buffered.push([name, payload]);
+        if (buffered.length > 64) buffered.shift();
+        return;
+      }
+      dispatch(name, payload);
+    }
+
+    function openBuffer() {
+      if (open) return;
+      open = true;
+      const queued = buffered.splice(0, buffered.length);
+      for (const entry of queued) dispatch(entry[0], entry[1]);
+    }
+
+    function has(name) {
+      const set = handlers.get(name);
+      return Boolean(set && set.size > 0);
+    }
+
+    return { on, emit, open: openBuffer, has, isOpen: function isOpen() { return open; } };
+  }
+
+  return { isLifecycleEvent, createEventHub };
+  })();
+
+  // module: packages/sdk/src/validate.js
+  __mods["packages/sdk/src/validate.js"] = (function () {
+  const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+  const SESSION_OUTCOMES = __mods["packages/shared/src/constants.js"].SESSION_OUTCOMES;
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const MAX_BRIDGE_DEPTH = __mods["packages/shared/src/protocol.js"].MAX_BRIDGE_DEPTH;
+  const cloneJsonValue = __mods["packages/shared/src/protocol.js"].cloneJsonValue;
+  const isValidStorageKey = __mods["packages/shared/src/protocol.js"].isValidStorageKey;
+  const jsonByteLength = __mods["packages/shared/src/protocol.js"].jsonByteLength;
+  const createGameError = __mods["packages/sdk/src/errors.js"].createGameError;
+  /**
+   * Client-side pre-flight checks. The Host is authoritative; the SDK runs the
+   * same cheap checks locally so obvious mistakes fail with a precise GM code
+   * before a message is posted (PRD §8.3).
+   */
+
+
+  const MAX_OBJECT_KEYS = 1000;
+  const MAX_KEY_LENGTH = 128;
+  const MAX_SCORE_ABS = 1e12;
+
+  function assertStorageKey(key) {
+    if (!isValidStorageKey(key)) {
+      throw createGameError(GM.STORAGE_KEY_INVALID, `Invalid storage key: ${String(key).slice(0, 64)}`);
+    }
+  }
+
+  function cloneValue(value) {
+    try {
+      return cloneJsonValue(value);
+    } catch (error) {
+      throw createGameError(GM.VALUE_NOT_SERIALIZABLE, error && error.message ? error.message : 'Value is not JSON-serializable');
+    }
+  }
+
+  /** Extra shape rules from PRD §8.3 (depth / object size) that cloneJsonValue does not cover. */
+  function assertJsonShape(value, depth) {
+    if (depth > MAX_BRIDGE_DEPTH) {
+      throw createGameError(GM.VALUE_NOT_SERIALIZABLE, 'Value nesting is too deep');
+    }
+    if (value === null || typeof value === 'string' || typeof value === 'boolean') return;
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value)) throw createGameError(GM.VALUE_NOT_SERIALIZABLE, 'Number must be finite');
+      return;
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) assertJsonShape(item, depth + 1);
+      return;
+    }
+    if (typeof value === 'object') {
+      const keys = Object.keys(value);
+      if (keys.length > MAX_OBJECT_KEYS) {
+        throw createGameError(GM.VALUE_NOT_SERIALIZABLE, 'Object has too many keys');
+      }
+      for (const key of keys) {
+        if (key.length > MAX_KEY_LENGTH) throw createGameError(GM.VALUE_NOT_SERIALIZABLE, 'Object key is too long');
+        assertJsonShape(value[key], depth + 1);
+      }
+      return;
+    }
+    throw createGameError(GM.VALUE_NOT_SERIALIZABLE, `Unsupported value type: ${typeof value}`);
+  }
+
+  /**
+   * @returns {{value: unknown, bytes: number}}
+   */
+  function prepareStorageValue(data) {
+    const value = cloneValue(data);
+    assertJsonShape(value, 0);
+    const bytes = jsonByteLength(value);
+    if (bytes > LIMITS.saveValueBytes) {
+      throw createGameError(GM.SAVE_TOO_LARGE, `Value exceeds ${LIMITS.saveValueBytes} bytes`);
+    }
+    return { value, bytes };
+  }
+
+  /** `meta` is optional; `undefined`/`null` become `null`, never `undefined`. */
+  function prepareScoreMeta(meta) {
+    if (meta === undefined || meta === null) return null;
+    const value = cloneValue(meta);
+    assertJsonShape(value, 0);
+    const bytes = jsonByteLength(value);
+    if (bytes > LIMITS.scoreMetaBytes) {
+      throw createGameError(GM.INVALID_PARAM, `Score meta exceeds ${LIMITS.scoreMetaBytes} bytes`);
+    }
+    return value;
+  }
+
+  function assertScoreValue(score) {
+    if (typeof score !== 'number' || !Number.isFinite(score) || Math.abs(score) > MAX_SCORE_ABS) {
+      throw createGameError(GM.INVALID_PARAM, 'Score must be a finite number within ±1e12');
+    }
+  }
+
+  function assertSessionOutcome(outcome) {
+    if (!SESSION_OUTCOMES.includes(outcome)) {
+      throw createGameError(GM.INVALID_PARAM, `Invalid session outcome: ${String(outcome)}`);
+    }
+  }
+
+  return { assertStorageKey, prepareStorageValue, prepareScoreMeta, assertScoreValue, assertSessionOutcome };
+  })();
+
+  // module: packages/sdk/src/sdk.js
+  __mods["packages/sdk/src/sdk.js"] = (function () {
+  const PROTOCOL_VERSION = __mods["packages/shared/src/constants.js"].PROTOCOL_VERSION;
+  const SDK_VERSION = __mods["packages/shared/src/constants.js"].SDK_VERSION;
+  const GM = __mods["packages/shared/src/errors.js"].GM;
+  const METHODS = __mods["packages/shared/src/protocol.js"].METHODS;
+  const createBridgeClient = __mods["packages/sdk/src/bridge-client.js"].createBridgeClient;
+  const SDK_METHOD_TIMEOUTS = __mods["packages/sdk/src/bridge-client.js"].SDK_METHOD_TIMEOUTS;
+  const GameErrorImpl = __mods["packages/sdk/src/errors.js"].GameError;
+  const createGameError = __mods["packages/sdk/src/errors.js"].createGameError;
+  const isGameErrorImpl = __mods["packages/sdk/src/errors.js"].isGameError;
+  const createEventHub = __mods["packages/sdk/src/event-hub.js"].createEventHub;
+  const isLifecycleEvent = __mods["packages/sdk/src/event-hub.js"].isLifecycleEvent;
+  const assertScoreValue = __mods["packages/sdk/src/validate.js"].assertScoreValue;
+  const assertSessionOutcome = __mods["packages/sdk/src/validate.js"].assertSessionOutcome;
+  const assertStorageKey = __mods["packages/sdk/src/validate.js"].assertStorageKey;
+  const prepareScoreMeta = __mods["packages/sdk/src/validate.js"].prepareScoreMeta;
+  const prepareStorageValue = __mods["packages/sdk/src/validate.js"].prepareStorageValue;
+  /**
+   * Public game SDK (PRD §8.3 / D-011).
+   *
+   *   const game = DSH_GAME_SDK.createGameSDK();
+   *   const info = await game.ready();
+   *   await game.storage.save('current', state);
+   *
+   * The API surface is intentionally tiny: ready / storage / session / score /
+   * lifecycle / agent / runtime. Anything else is out of scope by contract.
+   */
+
+
+  /** Re-export the error class without `export { }` (restricted bundler syntax). */
+  const GameError = GameErrorImpl;
+
+  function isGameError(error) {
+    return isGameErrorImpl(error);
+  }
+
+  function createRuntimeState() {
+    return {
+      sdkVersion: SDK_VERSION,
+      protocolVersion: PROTOCOL_VERSION,
+      runtimeVersion: null,
+      gameId: '',
+      gameVersion: '',
+      locale: 'zh',
+      theme: 'light',
+      reducedMotion: false,
+      capabilities: Object.freeze([]),
+      viewport: Object.freeze({ width: 0, height: 0, dpr: 1 }),
+      ready: false,
+    };
+  }
+
+  function createRuntimeView(state) {
+    const view = {};
+    for (const key of Object.keys(state)) {
+      Object.defineProperty(view, key, {
+        enumerable: true,
+        get: function get() {
+          return state[key];
+        },
+      });
+    }
+    return Object.freeze(view);
+  }
+
+  function normalizeAgentState(value) {
+    if (!value || typeof value !== 'object') return null;
+    return {
+      state: value.state,
+      label: typeof value.label === 'string' ? value.label : '',
+      sessionId: value.sessionId === undefined ? null : value.sessionId,
+      updatedAt: value.updatedAt,
+      source: value.source,
+      seq: value.seq,
+      since: value.since,
+      turnId: value.turnId === undefined ? null : value.turnId,
+    };
+  }
+
+  function normalizeViewport(value) {
+    const source = value && typeof value === 'object' ? value : {};
+    const width = Number.isFinite(source.width) ? source.width : 0;
+    const height = Number.isFinite(source.height) ? source.height : 0;
+    const dpr = Number.isFinite(source.dpr) && source.dpr > 0 ? source.dpr : 1;
+    return Object.freeze({ width, height, dpr });
+  }
+
+  function createGameSDK(options = {}) {
+    const win = options.window || (typeof window !== 'undefined' ? window : null);
+    const parent = options.parent || (win && win.parent) || null;
+    const location = options.location || (win && win.location) || null;
+    const timers = options.timers || globalThis;
+    const now = typeof options.now === 'function' ? options.now : Date.now;
+
+    const hub = createEventHub();
+    const runtimeState = createRuntimeState();
+    const runtimeView = createRuntimeView(runtimeState);
+
+    let readyPromise = null;
+    let backfillPromise = null;
+    let lastAgent = null;
+
+    function applyViewport(value) {
+      runtimeState.viewport = normalizeViewport(value);
+    }
+
+    function applyInit(init) {
+      if (!init || typeof init !== 'object') return;
+      if (typeof init.gameId === 'string') runtimeState.gameId = init.gameId;
+      if (typeof init.gameVersion === 'string') runtimeState.gameVersion = init.gameVersion;
+      if (typeof init.runtimeVersion === 'string') runtimeState.runtimeVersion = init.runtimeVersion;
+      if (typeof init.sdkVersion === 'string') runtimeState.sdkVersion = init.sdkVersion;
+      if (typeof init.locale === 'string') runtimeState.locale = init.locale;
+      if (init.theme === 'dark' || init.theme === 'light') runtimeState.theme = init.theme;
+      if (typeof init.reducedMotion === 'boolean') runtimeState.reducedMotion = init.reducedMotion;
+      if (Array.isArray(init.capabilities)) runtimeState.capabilities = Object.freeze(init.capabilities.slice());
+      if (init.viewport) applyViewport(init.viewport);
+    }
+
+    function applyReadyResult(result) {
+      if (!result || typeof result !== 'object') return;
+      if (typeof result.runtimeVersion === 'string') runtimeState.runtimeVersion = result.runtimeVersion;
+      if (typeof result.gameId === 'string') runtimeState.gameId = result.gameId;
+      if (typeof result.gameVersion === 'string') runtimeState.gameVersion = result.gameVersion;
+      if (typeof result.sdkVersion === 'string') runtimeState.sdkVersion = result.sdkVersion;
+      if (typeof result.locale === 'string') runtimeState.locale = result.locale;
+      if (result.theme === 'dark' || result.theme === 'light') runtimeState.theme = result.theme;
+      if (typeof result.reducedMotion === 'boolean') runtimeState.reducedMotion = result.reducedMotion;
+      if (Array.isArray(result.capabilities)) runtimeState.capabilities = Object.freeze(result.capabilities.slice());
+      if (result.viewport) applyViewport(result.viewport);
+      if (typeof result.protocolVersion === 'number') runtimeState.protocolVersion = result.protocolVersion;
+      runtimeState.ready = true;
+    }
+
+    function handleRuntimeEvent(name, data) {
+      if (name === 'theme') {
+        if (!data || typeof data !== 'object') return;
+        if (data.theme === 'dark' || data.theme === 'light') runtimeState.theme = data.theme;
+        if (typeof data.reducedMotion === 'boolean') runtimeState.reducedMotion = data.reducedMotion;
+        return;
+      }
+      if (name === 'viewport') {
+        applyViewport(data);
+        return;
+      }
+      if (name === 'agent-status') {
+        const snapshot = normalizeAgentState(data);
+        if (!snapshot) return;
+        lastAgent = snapshot;
+        hub.emit('agent-status', snapshot, { buffer: false });
+        return;
+      }
+      if (isLifecycleEvent(name)) {
+        hub.emit(name, data && typeof data === 'object' ? data : {});
+      }
+    }
+
+    function handleFatal(error) {
+      hub.emit('fatal', error, { buffer: false });
+    }
+
+    const bridge = createBridgeClient({
+      window: win,
+      parent,
+      location,
+      timers,
+      now,
+      crypto: options.crypto,
+      onInit: applyInit,
+      onEvent: handleRuntimeEvent,
+      onFatal: handleFatal,
+    });
+
+    function requireReady() {
+      const fatal = bridge.getFatalError();
+      if (fatal) throw fatal;
+      if (!bridge.isReady()) {
+        throw createGameError(GM.NOT_READY, 'Game is not ready yet');
+      }
+    }
+
+    function ready(timeoutMs) {
+      if (!readyPromise) {
+        readyPromise = bridge.ready(timeoutMs).then(function onReady(info) {
+          const payload = info && typeof info === 'object' ? info : {};
+          applyInit(payload.init);
+          applyReadyResult(payload.result);
+          runtimeState.ready = true;
+          hub.open();
+          ensureAgentBackfill();
+          return runtimeView;
+        });
+        // A game may register listeners without ever awaiting ready().
+        readyPromise.then(undefined, function ignore() {});
+      }
+      return readyPromise;
+    }
+
+    function ensureAgentBackfill() {
+      if (backfillPromise) return backfillPromise;
+      if (!hub.has('agent-status')) return null;
+      backfillPromise = bridge.ready().then(function onReady() {
+        return bridge.request(METHODS.AGENT_GET_STATUS, {}, SDK_METHOD_TIMEOUTS['agent.getStatus']);
+      }).then(function onStatus(snapshot) {
+        const normalized = normalizeAgentState(snapshot);
+        if (!normalized) return;
+        lastAgent = normalized;
+        hub.emit('agent-status', normalized, { buffer: false });
+      }).then(undefined, function ignore() {});
+      return backfillPromise;
+    }
+
+    async function storageSave(key, data) {
+      requireReady();
+      assertStorageKey(key);
+      const prepared = prepareStorageValue(data);
+      return bridge.request(METHODS.STORAGE_SAVE, { key, data: prepared.value }, SDK_METHOD_TIMEOUTS['storage.save']);
+    }
+
+    async function storageLoad(key) {
+      requireReady();
+      assertStorageKey(key);
+      return bridge.request(METHODS.STORAGE_LOAD, { key }, SDK_METHOD_TIMEOUTS['storage.load']).then(function onLoaded(
+        result
+      ) {
+        return result === undefined ? null : result;
+      });
+    }
+
+    async function storageRemove(key) {
+      requireReady();
+      assertStorageKey(key);
+      return bridge.request(METHODS.STORAGE_REMOVE, { key }, SDK_METHOD_TIMEOUTS['storage.remove']);
+    }
+
+    async function sessionStart() {
+      requireReady();
+      return bridge.request(METHODS.SESSION_START, {}, SDK_METHOD_TIMEOUTS['session.start']);
+    }
+
+    async function sessionEnd(endOptions) {
+      requireReady();
+      const input = endOptions && typeof endOptions === 'object' ? endOptions : {};
+      const outcome = input.outcome === undefined ? 'completed' : input.outcome;
+      assertSessionOutcome(outcome);
+      let score = null;
+      if (input.score !== undefined && input.score !== null) {
+        assertScoreValue(input.score);
+        score = input.score;
+      }
+      return bridge.request(METHODS.SESSION_END, { outcome, score }, SDK_METHOD_TIMEOUTS['session.end']);
+    }
+
+    async function scoreSubmit(score, meta) {
+      requireReady();
+      assertScoreValue(score);
+      const preparedMeta = prepareScoreMeta(meta);
+      return bridge.request(
+        METHODS.SCORE_SUBMIT,
+        { score, meta: preparedMeta },
+        SDK_METHOD_TIMEOUTS['score.submit']
+      );
+    }
+
+    async function scoreGetBest() {
+      requireReady();
+      return bridge.request(METHODS.SCORE_GET_BEST, {}, SDK_METHOD_TIMEOUTS['score.getBest']).then(function onBest(
+        result
+      ) {
+        return result === undefined ? null : result;
+      });
+    }
+
+    async function agentGetStatus() {
+      requireReady();
+      return bridge.request(METHODS.AGENT_GET_STATUS, {}, SDK_METHOD_TIMEOUTS['agent.getStatus']).then(function onStatus(
+        snapshot
+      ) {
+        const normalized = normalizeAgentState(snapshot);
+        if (normalized) lastAgent = normalized;
+        return normalized || snapshot;
+      });
+    }
+
+    function agentOn(event, handler) {
+      if (event !== 'status') throw createGameError(GM.INVALID_PARAM, `Unknown agent event: ${String(event)}`);
+      const off = hub.on('agent-status', handler);
+      bridge.start();
+      if (bridge.isReady()) ensureAgentBackfill();
+      else bridge.ready().then(ensureAgentBackfill, function ignore() {});
+      return off;
+    }
+
+    function lifecycleOn(event, handler) {
+      if (!isLifecycleEvent(event)) {
+        throw createGameError(GM.INVALID_PARAM, `Unknown lifecycle event: ${String(event)}`);
+      }
+      const off = hub.on(event, handler);
+      bridge.start();
+      return off;
+    }
+
+    const storage = Object.freeze({
+      save: storageSave,
+      load: storageLoad,
+      remove: storageRemove,
+    });
+
+    const session = Object.freeze({
+      start: sessionStart,
+      end: sessionEnd,
+    });
+
+    const score = Object.freeze({
+      submit: scoreSubmit,
+      getBest: scoreGetBest,
+    });
+
+    const lifecycle = Object.freeze({
+      on: lifecycleOn,
+    });
+
+    const agent = Object.freeze({
+      getStatus: agentGetStatus,
+      on: agentOn,
+    });
+
+    const game = {
+      runtime: runtimeView,
+      ready,
+      storage,
+      session,
+      score,
+      lifecycle,
+      agent,
+      onError: function onError(handler) {
+        return hub.on('fatal', handler);
+      },
+      isGameError,
+    };
+
+    return Object.freeze(game);
+  }
+
+  return { GameError, isGameError, createGameSDK };
+  })();
+
+  const __entry = __mods["packages/sdk/src/sdk.js"];
+
+  return __entry;
+})();
+
+(function () {
+  'use strict';
+  // Generated by scripts/bundle-lib.mjs — do not edit by hand.
+  const __mods = Object.create(null);
+
+  // module: games/snake/src/logic.js
+  __mods["games/snake/src/logic.js"] = (function () {
+  /**
+   * Pure Snake rules: grid, body, direction queue, food, collisions, scoring and
+   * save encoding. No DOM, no timers, no randomness outside the seedable PRNG,
+   * so every rule is unit-testable and saves are deterministic.
+   */
+
+  const BOARD_COLS = 26;
+  const BOARD_ROWS = 14;
+  const CELL_SIZE = 32;
+  const START_LENGTH = 4;
+  const SCORE_PER_FOOD = 10;
+  const SAVE_SCHEMA_VERSION = 1;
+  const MIN_TICK_MS = 70;
+  const BASE_TICK_MS = 150;
+
+  const DIRECTIONS = Object.freeze({
+    up: Object.freeze({ x: 0, y: -1 }),
+    down: Object.freeze({ x: 0, y: 1 }),
+    left: Object.freeze({ x: -1, y: 0 }),
+    right: Object.freeze({ x: 1, y: 0 }),
+  });
+
+  const DIRECTION_LIST = Object.freeze([DIRECTIONS.up, DIRECTIONS.down, DIRECTIONS.left, DIRECTIONS.right]);
+  const DIRECTIONS_BY_NAME = Object.freeze({
+    up: DIRECTIONS.up,
+    down: DIRECTIONS.down,
+    left: DIRECTIONS.left,
+    right: DIRECTIONS.right,
+    w: DIRECTIONS.up,
+    s: DIRECTIONS.down,
+    a: DIRECTIONS.left,
+    d: DIRECTIONS.right,
+    arrowup: DIRECTIONS.up,
+    arrowdown: DIRECTIONS.down,
+    arrowleft: DIRECTIONS.left,
+    arrowright: DIRECTIONS.right,
+  });
+
+  function cellKey(cell) {
+    return `${cell.x},${cell.y}`;
+  }
+
+  function sameCell(a, b) {
+    return Boolean(a && b) && a.x === b.x && a.y === b.y;
+  }
+
+  function isOpposite(a, b) {
+    return a.x === -b.x && a.y === -b.y;
+  }
+
+  function cloneDirection(direction) {
+    return { x: direction.x, y: direction.y };
+  }
+
+  /** Normalize a key name (`ArrowUp`, `w`, `up`) or `{x,y}` into `{x,y}` or null. */
+  function normalizeDirection(input) {
+    if (typeof input === 'string') {
+      const found = DIRECTIONS_BY_NAME[input.toLowerCase()];
+      return found ? cloneDirection(found) : null;
+    }
+    if (input && Number.isInteger(input.x) && Number.isInteger(input.y)) {
+      for (const direction of DIRECTION_LIST) {
+        if (direction.x === input.x && direction.y === input.y) return cloneDirection(direction);
+      }
+    }
+    return null;
+  }
+
+  function tickMsFor(score) {
+    const steps = Math.floor(Math.max(0, score) / 50);
+    return Math.max(MIN_TICK_MS, BASE_TICK_MS - steps * 10);
+  }
+
+  function nextRandom(seed) {
+    let a = seed >>> 0;
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    const value = ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    return { state: a, value };
+  }
+
+  function inBounds(state, cell) {
+    return cell.x >= 0 && cell.y >= 0 && cell.x < state.cols && cell.y < state.rows;
+  }
+
+  function freeCells(state) {
+    const occupied = new Set(state.snake.map(cellKey));
+    const free = [];
+    for (let y = 0; y < state.rows; y += 1) {
+      for (let x = 0; x < state.cols; x += 1) {
+        if (!occupied.has(`${x},${y}`)) free.push({ x, y });
+      }
+    }
+    return free;
+  }
+
+  function placeFood(state, rngState) {
+    const free = freeCells(state);
+    if (free.length === 0) return { food: null, rngState };
+    const random = nextRandom(rngState);
+    const index = Math.min(free.length - 1, Math.floor(random.value * free.length));
+    return { food: free[index], rngState: random.state };
+  }
+
+  /**
+   * @param {{cols?: number, rows?: number, seed?: number}} [options]
+   */
+  function createGame(options = {}) {
+    const cols = clampInt(options.cols, 8, 64, BOARD_COLS);
+    const rows = clampInt(options.rows, 6, 48, BOARD_ROWS);
+    const seed = Number.isFinite(options.seed) ? options.seed >>> 0 : (Date.now() >>> 0) || 1;
+    const headX = Math.min(cols - 3, Math.max(3, Math.floor(cols / 2)));
+    const headY = Math.floor(rows / 2);
+    const snake = [];
+    for (let index = 0; index < START_LENGTH; index += 1) {
+      snake.push({ x: headX - index, y: headY });
+    }
+    const base = {
+      cols,
+      rows,
+      snake,
+      direction: cloneDirection(DIRECTIONS.right),
+      pendingDirections: [],
+      food: null,
+      score: 0,
+      foodEaten: 0,
+      status: 'ready',
+      rngState: seed,
+    };
+    const placed = placeFood(base, seed);
+    return {
+      ...base,
+      food: placed.food,
+      rngState: placed.rngState,
+    };
+  }
+
+  function clampInt(value, min, max, fallback) {
+    if (!Number.isInteger(value)) return fallback;
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function startGame(state) {
+    if (state.status === 'playing' || state.status === 'over' || state.status === 'won') return state;
+    return { ...state, status: 'playing' };
+  }
+
+  function restartGame(state, seed) {
+    return createGame({ cols: state.cols, rows: state.rows, seed: Number.isFinite(seed) ? seed : (Date.now() >>> 0) || 1 });
+  }
+
+  /**
+   * Queue a turn. Reversing into the neck and repeating the last queued turn are
+   * ignored (classic Snake rule). At most two turns are buffered.
+   */
+  function setDirection(state, input) {
+    const direction = normalizeDirection(input);
+    if (!direction) return state;
+    if (state.status === 'over' || state.status === 'won') return state;
+    const last =
+      state.pendingDirections.length > 0
+        ? state.pendingDirections[state.pendingDirections.length - 1]
+        : state.direction;
+    if (sameCell(direction, last) || isOpposite(direction, last)) return state;
+    if (state.pendingDirections.length >= 2) return state;
+    const pending = state.pendingDirections.concat([direction]);
+    const next = { ...state, pendingDirections: pending };
+    if (next.status === 'ready') next.status = 'playing';
+    return next;
+  }
+
+  /**
+   * Advance exactly one tick. Pure: returns the same object when not playing.
+   */
+  function advance(state) {
+    if (state.status !== 'playing') return state;
+    let direction = state.direction;
+    const pending = state.pendingDirections.slice();
+    if (pending.length > 0) {
+      const candidate = pending.shift();
+      if (!isOpposite(candidate, state.direction) && !sameCell(candidate, state.direction)) {
+        direction = candidate;
+      }
+    }
+    const head = {
+      x: state.snake[0].x + direction.x,
+      y: state.snake[0].y + direction.y,
+    };
+    if (head.x < 0 || head.y < 0 || head.x >= state.cols || head.y >= state.rows) {
+      return { ...state, direction, pendingDirections: pending, status: 'over', overReason: 'wall' };
+    }
+    const eats = Boolean(state.food && sameCell(head, state.food));
+    const bodyToCheck = eats ? state.snake : state.snake.slice(0, state.snake.length - 1);
+    for (const segment of bodyToCheck) {
+      if (sameCell(segment, head)) {
+        return { ...state, direction, pendingDirections: pending, status: 'over', overReason: 'self' };
+      }
+    }
+    const snake = [head, ...state.snake];
+    if (!eats) snake.pop();
+    const score = eats ? state.score + SCORE_PER_FOOD : state.score;
+    const foodEaten = eats ? state.foodEaten + 1 : state.foodEaten;
+    const next = {
+      ...state,
+      snake,
+      direction,
+      pendingDirections: pending,
+      score,
+      foodEaten,
+    };
+    if (eats) {
+      const placed = placeFood(next, state.rngState);
+      next.food = placed.food;
+      next.rngState = placed.rngState;
+      if (!placed.food) next.status = 'won';
+    }
+    return next;
+  }
+
+  /** Test/debug helper: force the next food cell (validated). */
+  function setFood(state, cell) {
+    if (!cell || !Number.isInteger(cell.x) || !Number.isInteger(cell.y)) {
+      return { ...state, food: null };
+    }
+    const candidate = { x: cell.x, y: cell.y };
+    if (!inBounds(state, candidate) || state.snake.some((segment) => sameCell(segment, candidate))) {
+      return { ...state, food: null };
+    }
+    return { ...state, food: candidate };
+  }
+
+  function serialize(state) {
+    return {
+      schemaVersion: SAVE_SCHEMA_VERSION,
+      cols: state.cols,
+      rows: state.rows,
+      snake: state.snake.map((cell) => ({ x: cell.x, y: cell.y })),
+      direction: cloneDirection(state.direction),
+      pendingDirections: state.pendingDirections.map(cloneDirection),
+      food: state.food ? { x: state.food.x, y: state.food.y } : null,
+      score: state.score,
+      foodEaten: state.foodEaten,
+      status: state.status,
+      rngState: state.rngState >>> 0,
+    };
+  }
+
+  function validCell(cell, cols, rows) {
+    return (
+      cell &&
+      Number.isInteger(cell.x) &&
+      Number.isInteger(cell.y) &&
+      cell.x >= 0 &&
+      cell.y >= 0 &&
+      cell.x < cols &&
+      cell.y < rows
+    );
+  }
+
+  function parseSaveInput(raw) {
+    if (typeof raw === 'string') {
+      try {
+        return JSON.parse(raw);
+      } catch (_error) {
+        return null;
+      }
+    }
+    return raw;
+  }
+
+  /**
+   * Decode a stored board. Returns null when the save is structurally invalid.
+   * A mid-run save is restored as `ready` so the game cannot move (and crash)
+   * before the user presses a direction key.
+   */
+  function deserialize(raw) {
+    const save = parseSaveInput(raw);
+    if (!save || typeof save !== 'object' || Array.isArray(save)) return null;
+    if (save.schemaVersion !== SAVE_SCHEMA_VERSION) return null;
+    if (!Number.isInteger(save.cols) || save.cols < 8 || save.cols > 64) return null;
+    if (!Number.isInteger(save.rows) || save.rows < 6 || save.rows > 48) return null;
+    if (!Array.isArray(save.snake) || save.snake.length < 1 || save.snake.length > save.cols * save.rows) return null;
+    const seen = new Set();
+    const snake = [];
+    for (const cell of save.snake) {
+      if (!validCell(cell, save.cols, save.rows)) return null;
+      const key = cellKey(cell);
+      if (seen.has(key)) return null;
+      seen.add(key);
+      snake.push({ x: cell.x, y: cell.y });
+    }
+    const direction = normalizeDirection(save.direction);
+    if (!direction) return null;
+    const pendingDirections = [];
+    if (Array.isArray(save.pendingDirections)) {
+      for (const item of save.pendingDirections.slice(0, 2)) {
+        const pending = normalizeDirection(item);
+        if (pending) pendingDirections.push(pending);
+      }
+    }
+    if (!Number.isFinite(save.score) || save.score < 0) return null;
+    const score = Math.floor(save.score);
+    const foodEaten =
+      Number.isInteger(save.foodEaten) && save.foodEaten >= 0 ? save.foodEaten : Math.floor(score / SCORE_PER_FOOD);
+    const rngState = Number.isInteger(save.rngState) ? save.rngState >>> 0 : 1;
+    const state = {
+      cols: save.cols,
+      rows: save.rows,
+      snake,
+      direction,
+      pendingDirections,
+      food: validCell(save.food, save.cols, save.rows) && !snake.some((cell) => sameCell(cell, save.food)) ? { ...save.food } : null,
+      score,
+      foodEaten,
+      status: save.status === 'over' || save.status === 'won' ? save.status : 'ready',
+      rngState,
+    };
+    if (!state.food) {
+      const placed = placeFood(state, state.rngState);
+      state.food = placed.food;
+      state.rngState = placed.rngState;
+    }
+    return state;
+  }
+
+  return { BOARD_COLS, BOARD_ROWS, CELL_SIZE, START_LENGTH, SCORE_PER_FOOD, SAVE_SCHEMA_VERSION, MIN_TICK_MS, BASE_TICK_MS, DIRECTIONS, cellKey, sameCell, isOpposite, cloneDirection, normalizeDirection, tickMsFor, createGame, startGame, restartGame, setDirection, advance, setFood, serialize, deserialize };
+  })();
+
+  // module: games/snake/src/game.js
+  __mods["games/snake/src/game.js"] = (function () {
+  const BOARD_COLS = __mods["games/snake/src/logic.js"].BOARD_COLS;
+  const BOARD_ROWS = __mods["games/snake/src/logic.js"].BOARD_ROWS;
+  const CELL_SIZE = __mods["games/snake/src/logic.js"].CELL_SIZE;
+  const SCORE_PER_FOOD = __mods["games/snake/src/logic.js"].SCORE_PER_FOOD;
+  const advance = __mods["games/snake/src/logic.js"].advance;
+  const createGame = __mods["games/snake/src/logic.js"].createGame;
+  const deserialize = __mods["games/snake/src/logic.js"].deserialize;
+  const normalizeDirection = __mods["games/snake/src/logic.js"].normalizeDirection;
+  const restartGame = __mods["games/snake/src/logic.js"].restartGame;
+  const serialize = __mods["games/snake/src/logic.js"].serialize;
+  const setDirection = __mods["games/snake/src/logic.js"].setDirection;
+  const tickMsFor = __mods["games/snake/src/logic.js"].tickMsFor;
+  /**
+   * Snake game entry. Runs inside the sandbox iframe and talks to the platform
+   * only through the inlined SDK global (`DSH_GAME_SDK`).
+   *
+   * Recovery contract: a stored board is restored and shown on a "continue"
+   * screen; the snake never starts moving by itself. In `resume-paused` mode the
+   * Runtime sends `pause` and only a later `resume` event restarts the loop.
+   */
+
+
+  const LOGICAL_WIDTH = 960;
+  const LOGICAL_HEIGHT = 540;
+  const boardWidth = BOARD_COLS * CELL_SIZE;
+  const boardHeight = BOARD_ROWS * CELL_SIZE;
+  const boardX = Math.round((LOGICAL_WIDTH - boardWidth) / 2);
+  const boardY = 72;
+
+  const game = DSH_GAME_SDK.createGameSDK();
+
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const bestEl = document.getElementById('best');
+  const overlayEl = document.getElementById('overlay');
+  const overlayKickerEl = document.getElementById('overlay-kicker');
+  const overlayTitleEl = document.getElementById('overlay-title');
+  const overlayHintEl = document.getElementById('overlay-hint');
+  const overlayActionsEl = document.getElementById('overlay-actions');
+  const primaryButton = document.getElementById('primary');
+  const agentHintEl = document.getElementById('agent-hint');
+
+  let state = createGame({ seed: 1 });
+  let mode = 'boot';
+  let runtimePaused = false;
+  let moving = false;
+  let wasMovingBeforePause = false;
+  let restoredSave = false;
+  let best = 0;
+  let loopRunning = false;
+  let rafId = null;
+  let lastFrameTime = 0;
+  let accumulator = 0;
+  let overlayAction = null;
+  let sessionActive = false;
+  let theme = 'dark';
+  let reducedMotion = false;
+
+  function makeSeed() {
+    const value = (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
+    return value || 1;
+  }
+
+  function roundRectPath(target, x, y, width, height, radius) {
+    const r = Math.min(radius, width / 2, height / 2);
+    target.beginPath();
+    target.moveTo(x + r, y);
+    target.arcTo(x + width, y, x + width, y + height, r);
+    target.arcTo(x + width, y + height, x, y + height, r);
+    target.arcTo(x, y + height, x, y, r);
+    target.arcTo(x, y, x + width, y, r);
+    target.closePath();
+  }
+
+  function mixHex(from, to, ratio) {
+    const parse = function parse(value) {
+      return [parseInt(value.slice(1, 3), 16), parseInt(value.slice(3, 5), 16), parseInt(value.slice(5, 7), 16)];
+    };
+    const a = parse(from);
+    const b = parse(to);
+    const t = Math.max(0, Math.min(1, ratio));
+    const channel = function channel(index) {
+      return Math.round(a[index] + (b[index] - a[index]) * t)
+        .toString(16)
+        .padStart(2, '0');
+    };
+    return `#${channel(0)}${channel(1)}${channel(2)}`;
+  }
+
+  function setupCanvas() {
+    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+    canvas.width = Math.round(LOGICAL_WIDTH * dpr);
+    canvas.height = Math.round(LOGICAL_HEIGHT * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function updateScores() {
+    scoreEl.textContent = String(state.score);
+    bestEl.textContent = String(Math.max(best, state.score));
+  }
+
+  function setOverlay(config) {
+    overlayKickerEl.textContent = config.kicker || '';
+    overlayTitleEl.textContent = config.title || '';
+    overlayHintEl.textContent = config.hint || '';
+    overlayAction = typeof config.onAction === 'function' ? config.onAction : null;
+    if (config.actionLabel && overlayAction) {
+      primaryButton.textContent = config.actionLabel;
+      overlayActionsEl.style.display = '';
+    } else {
+      overlayActionsEl.style.display = 'none';
+    }
+    overlayEl.classList.remove('hidden');
+  }
+
+  function hideOverlay() {
+    overlayEl.classList.add('hidden');
+    overlayAction = null;
+  }
+
+  function showContinueOverlay() {
+    setOverlay({
+      kicker: '已恢复上一局',
+      title: '继续上一局',
+      hint: '棋盘与分数已恢复 · 按方向键开始',
+      actionLabel: '开始游戏',
+      onAction: function onAction() {
+        startFromReady(true);
+      },
+    });
+  }
+
+  function showStartOverlay() {
+    setOverlay({
+      kicker: '贪吃蛇',
+      title: '按方向键开始',
+      hint: '方向键 / WASD 移动 · Space 暂停 · 吃到食物 +' + SCORE_PER_FOOD,
+      actionLabel: '开始游戏',
+      onAction: function onAction() {
+        startFromReady(false);
+      },
+    });
+  }
+
+  function showPausedOverlay() {
+    if (runtimePaused) {
+      setOverlay({
+        kicker: '已暂停',
+        title: '已恢复上一局',
+        hint: '在平台的暂停菜单中点击“继续”后开始',
+      });
+      return;
+    }
+    setOverlay({
+      kicker: '已暂停',
+      title: '休息一下',
+      hint: '按空格 / P 继续',
+      actionLabel: '继续',
+      onAction: toggleLocalPause,
+    });
+  }
+
+  function showGameOverOverlay() {
+    const reason =
+      state.status === 'won' ? '棋盘填满了' : state.overReason === 'self' ? '撞到自己了' : '撞到墙了';
+    setOverlay({
+      kicker: '本局结束',
+      title: '得分 ' + state.score,
+      hint: reason + ' · 按 Enter 再来一局',
+      actionLabel: '再来一局',
+      onAction: function onAction() {
+        restart();
+      },
+    });
+  }
+
+  function showFatal(error) {
+    mode = 'error';
+    stopLoop();
+    const code = error && error.code ? ' · ' + error.code : '';
+    setOverlay({
+      kicker: '无法开始',
+      title: '游戏暂时不可用',
+      hint: (error && error.message ? error.message : '请返回市场后重新进入') + code,
+    });
+  }
+
+  function startFromReady(resumeMotion) {
+    if (mode !== 'ready') return;
+    hideOverlay();
+    mode = 'playing';
+    moving = resumeMotion === true;
+    render();
+    startLoop();
+  }
+
+  function startLoop() {
+    if (loopRunning) return;
+    loopRunning = true;
+    lastFrameTime = 0;
+    accumulator = 0;
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function stopLoop() {
+    loopRunning = false;
+    if (rafId !== null && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+
+  function onGameOver() {
+    if (mode === 'over') return;
+    mode = 'over';
+    moving = false;
+    stopLoop();
+    updateScores();
+    render();
+    showGameOverOverlay();
+    saveState();
+    game.score.submit(state.score).then(function onSubmitted(result) {
+      if (result && typeof result.best === 'number' && result.best > best) {
+        best = result.best;
+        updateScores();
+      }
+    }).catch(function ignore() {});
+    if (sessionActive) {
+      sessionActive = false;
+      game.session.end({ outcome: 'completed', score: state.score }).catch(function ignore() {});
+    }
+  }
+
+  function restart() {
+    state = restartGame(state, makeSeed());
+    restoredSave = false;
+    moving = true;
+    mode = 'playing';
+    hideOverlay();
+    setupCanvas();
+    render();
+    updateScores();
+    startLoop();
+    if (!sessionActive) {
+      sessionActive = true;
+      game.session.start().catch(function ignore() {});
+    }
+  }
+
+  function toggleLocalPause() {
+    if (runtimePaused || mode === 'boot' || mode === 'over' || mode === 'error') return;
+    if (mode === 'playing') {
+      mode = 'paused';
+      stopLoop();
+      saveState();
+      showPausedOverlay();
+      render();
+      return;
+    }
+    if (mode === 'paused') {
+      mode = 'playing';
+      hideOverlay();
+      startLoop();
+    }
+  }
+
+  function saveState() {
+    if (!state) return Promise.resolve();
+    return game.storage.save('current', serialize(state)).then(undefined, function ignore() {});
+  }
+
+  function frame(timestamp) {
+    rafId = null;
+    if (!loopRunning) return;
+    const nowMs = typeof timestamp === 'number' ? timestamp : performance.now();
+    if (lastFrameTime === 0) lastFrameTime = nowMs;
+    const delta = Math.min(120, Math.max(0, nowMs - lastFrameTime));
+    lastFrameTime = nowMs;
+    if (moving && state.status === 'playing') {
+      accumulator += delta;
+      let guard = 0;
+      while (accumulator >= tickMsFor(state.score) && state.status === 'playing' && guard < 8) {
+        accumulator -= tickMsFor(state.score);
+        guard += 1;
+        state = advance(state);
+        if (state.status === 'over' || state.status === 'won') {
+          onGameOver();
+          break;
+        }
+      }
+    }
+    render();
+    updateScores();
+    if (loopRunning) rafId = requestAnimationFrame(frame);
+  }
+
+  function render() {
+    const nowMs = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+    const isLight = theme === 'light';
+    ctx.save();
+    roundRectPath(ctx, boardX - 16, boardY - 16, boardWidth + 32, boardHeight + 32, 22);
+    ctx.fillStyle = isLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(255, 255, 255, 0.035)';
+    ctx.fill();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = isLight ? 'rgba(15, 23, 42, 0.12)' : 'rgba(255, 255, 255, 0.08)';
+    ctx.stroke();
+
+    roundRectPath(ctx, boardX, boardY, boardWidth, boardHeight, 14);
+    ctx.fillStyle = isLight ? '#0f141b' : '#0b0c0e';
+    ctx.fill();
+    ctx.save();
+    ctx.clip();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.045)';
+    ctx.lineWidth = 1;
+    for (let column = 1; column < BOARD_COLS; column += 1) {
+      const x = boardX + column * CELL_SIZE + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(x, boardY);
+      ctx.lineTo(x, boardY + boardHeight);
+      ctx.stroke();
+    }
+    for (let row = 1; row < BOARD_ROWS; row += 1) {
+      const y = boardY + row * CELL_SIZE + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(boardX, y);
+      ctx.lineTo(boardX + boardWidth, y);
+      ctx.stroke();
+    }
+
+    if (state.food) {
+      const pulse = reducedMotion ? 1 : 1 + Math.sin(nowMs / 260) * 0.08;
+      const centerX = boardX + state.food.x * CELL_SIZE + CELL_SIZE / 2;
+      const centerY = boardY + state.food.y * CELL_SIZE + CELL_SIZE / 2;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, CELL_SIZE * 0.34 * pulse, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.16)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, CELL_SIZE * 0.22, 0, Math.PI * 2);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fill();
+    }
+
+    const length = state.snake.length;
+    for (let index = length - 1; index >= 0; index -= 1) {
+      const segment = state.snake[index];
+      const head = index === 0;
+      const inset = head ? 2 : 3;
+      const ratio = length <= 1 ? 0 : index / Math.max(1, length - 1);
+      roundRectPath(
+        ctx,
+        boardX + segment.x * CELL_SIZE + inset,
+        boardY + segment.y * CELL_SIZE + inset,
+        CELL_SIZE - inset * 2,
+        CELL_SIZE - inset * 2,
+        head ? 10 : 8
+      );
+      ctx.fillStyle = head ? '#a7f3d0' : mixHex('#34d399', '#0ea5e9', ratio);
+      ctx.fill();
+      if (head) {
+        const direction = state.direction;
+        const centerX = boardX + segment.x * CELL_SIZE + CELL_SIZE / 2;
+        const centerY = boardY + segment.y * CELL_SIZE + CELL_SIZE / 2;
+        const perpendicularX = direction.y !== 0 ? 1 : 0;
+        const perpendicularY = direction.x !== 0 ? 1 : 0;
+        const forwardX = direction.x * 6;
+        const forwardY = direction.y * 6;
+        const spread = 5;
+        ctx.fillStyle = '#04120c';
+        for (const sign of [-1, 1]) {
+          ctx.beginPath();
+          ctx.arc(
+            centerX + forwardX + perpendicularX * spread * sign,
+            centerY + forwardY + perpendicularY * spread * sign,
+            2.4,
+            0,
+            Math.PI * 2
+          );
+          ctx.fill();
+        }
+      }
+    }
+    ctx.restore();
+    ctx.restore();
+  }
+
+  function handleKeydown(event) {
+    if (!event || typeof event.key !== 'string') return;
+    const direction = normalizeDirection(event.key);
+    if (runtimePaused) {
+      if (direction) event.preventDefault();
+      return;
+    }
+    if (direction) {
+      if (mode === 'boot' || mode === 'over' || mode === 'error') return;
+      event.preventDefault();
+      if (mode === 'ready') {
+        state = setDirection(state, direction);
+        startFromReady(true);
+        return;
+      }
+      if (mode === 'playing' || mode === 'paused') {
+        state = setDirection(state, direction);
+        if (mode === 'paused') {
+          mode = 'playing';
+          hideOverlay();
+          startLoop();
+        }
+        moving = true;
+      }
+      return;
+    }
+    const key = event.key.toLowerCase();
+    if (key === ' ' || key === 'p' || key === 'spacebar') {
+      if (mode === 'playing' || mode === 'paused') {
+        event.preventDefault();
+        toggleLocalPause();
+      }
+      return;
+    }
+    if (key === 'enter') {
+      if (mode === 'over') {
+        event.preventDefault();
+        restart();
+      } else if (mode === 'ready') {
+        event.preventDefault();
+        startFromReady(false);
+      }
+    }
+  }
+
+  function handleResize() {
+    setupCanvas();
+    render();
+  }
+
+  function applyTheme(nextTheme) {
+    theme = nextTheme === 'light' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = theme;
+  }
+
+  function onRuntimePause() {
+    if (mode === 'over' || mode === 'error') return;
+    runtimePaused = true;
+    stopLoop();
+    if (mode === 'playing' || mode === 'ready') {
+      const wasPlaying = mode === 'playing';
+      if (wasPlaying) wasMovingBeforePause = moving;
+      mode = 'paused';
+      if (wasPlaying) saveState();
+      showPausedOverlay();
+      render();
+    }
+  }
+
+  function onRuntimeResume() {
+    runtimePaused = false;
+    if (mode !== 'paused' && mode !== 'ready') return;
+    hideOverlay();
+    mode = 'playing';
+    moving = restoredSave || wasMovingBeforePause;
+    wasMovingBeforePause = false;
+    startLoop();
+  }
+
+  function onBeforeSave() {
+    return saveState();
+  }
+
+  function onAgentStatus(snapshot) {
+    if (!snapshot || !agentHintEl) return;
+    if (snapshot.state === 'waiting-user') {
+      agentHintEl.textContent = snapshot.label || 'Agent 需要你';
+      agentHintEl.classList.add('visible');
+    } else if (snapshot.state === 'completed') {
+      agentHintEl.textContent = snapshot.label || '任务完成';
+      agentHintEl.classList.add('visible');
+    } else {
+      agentHintEl.textContent = '';
+      agentHintEl.classList.remove('visible');
+    }
+  }
+
+  async function loadSave() {
+    try {
+      return await game.storage.load('current');
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  async function loadBest() {
+    try {
+      const result = await game.score.getBest();
+      if (result && typeof result.score === 'number' && result.score > 0) return result.score;
+    } catch (_error) {
+      // `score` capability missing or Host unavailable: the game still plays.
+    }
+    return 0;
+  }
+
+  async function boot() {
+    setupCanvas();
+    window.addEventListener('keydown', handleKeydown);
+    window.addEventListener('resize', handleResize);
+    primaryButton.addEventListener('click', function onPrimary() {
+      if (overlayAction) overlayAction();
+    });
+    render();
+
+    // Register before ready(): the Runtime may deliver `pause` immediately after
+    // the ready handshake in `resume-paused` mode.
+    game.lifecycle.on('pause', onRuntimePause);
+    game.lifecycle.on('resume', onRuntimeResume);
+    game.lifecycle.on('before-save', onBeforeSave);
+    game.agent.on('status', onAgentStatus);
+
+    try {
+      const info = await game.ready();
+      applyTheme(info.theme);
+      reducedMotion = info.reducedMotion === true;
+      best = await loadBest();
+      const saved = await loadSave();
+      const restored = saved ? deserialize(saved.data) : null;
+      if (restored) {
+        state = restored;
+        restoredSave = true;
+        if (state.status === 'over' || state.status === 'won') {
+          mode = 'over';
+          showGameOverOverlay();
+        } else {
+          mode = 'ready';
+          if (runtimePaused) showPausedOverlay();
+          else showContinueOverlay();
+        }
+      } else {
+        state = createGame({ seed: makeSeed() });
+        mode = 'ready';
+        if (runtimePaused) showPausedOverlay();
+        else showStartOverlay();
+      }
+      updateScores();
+      render();
+      if (!runtimePaused && mode === 'ready') startLoop();
+      if (mode === 'over') render();
+      if (!sessionActive && mode !== 'over') {
+        sessionActive = true;
+        game.session.start().catch(function ignore() {});
+      }
+    } catch (error) {
+      showFatal(error);
+    }
+  }
+
+  boot();
+
+  return {};
+  })();
+
+  const __entry = __mods["games/snake/src/game.js"];
+
+  return __entry;
+})();
+    </script>
+  </body>
+</html>
