@@ -11,8 +11,9 @@ import path from 'node:path';
 
 import { BUILTIN_GAMES, LIMITS } from '../../shared/src/constants.js';
 import { GM } from '../../shared/src/errors.js';
+import { installationView } from './installations.js';
 import { hostError } from './errors.js';
-import { parseRange, parseVersion } from './semver.js';
+import { compatibilityFor, compareVersions, parseRange, parseVersion } from './semver.js';
 import {
   isInside,
   isPlainObject,
@@ -21,6 +22,18 @@ import {
 } from './validation.js';
 
 const MANIFEST_MAX_BYTES = 64 * 1024;
+const CATEGORIES = Object.freeze([
+  'arcade',
+  'puzzle',
+  'card',
+  'idle',
+  'action',
+  'strategy',
+  'trivia',
+  'sandbox',
+]);
+const CATEGORY_SET = new Set(CATEGORIES);
+const DEFAULT_PAGE_LIMIT = 20;
 const DEFAULT_VIEWPORT = Object.freeze({ width: 960, height: 540, fit: 'contain' });
 const SUPPORTED_CAPABILITIES = new Set(['storage', 'score']);
 const PREVIEW_TYPES = Object.freeze({
@@ -369,105 +382,453 @@ export function createGameCatalog({ root, entries = BUILTIN_GAMES, logger = null
   return { root, entries, list, get, diagnostics, getPreview, load };
 }
 
-/**
- * GameRecord projection for Market / My Games (contracts.js `GameRecord`).
- */
-export function createGamesService({ catalog, storage, saves, sessions, scores, now }) {
-  async function readInstallations() {
+const PREVIEW_BASE = '/api/game-market/preview';
+
+function previewQuery(gameId, version, file) {
+  const params = new URLSearchParams({ gameId, version, file });
+  return `${PREVIEW_BASE}?${params.toString()}`;
+}
+
+function normaliseViewport(value) {
+  if (!isPlainObject(value)) return { width: 960, height: 540, fit: 'contain' };
+  const width = Number.isInteger(value.width) && value.width >= 1 && value.width <= 3840 ? value.width : 960;
+  const height = Number.isInteger(value.height) && value.height >= 1 && value.height <= 3840 ? value.height : 540;
+  return { width, height, fit: 'contain' };
+}
+
+function authorOf(manifest) {
+  if (!manifest) return { name: '' };
+  if (typeof manifest.author === 'string') return { name: manifest.author };
+  if (isPlainObject(manifest.author) && typeof manifest.author.name === 'string') {
+    return {
+      name: manifest.author.name,
+      ...(typeof manifest.author.url === 'string' ? { url: manifest.author.url } : {}),
+    };
+  }
+  return { name: '' };
+}
+
+function compatibilityView(compatibility) {
+  if (!compatibility) return { ok: false, reason: GM.INSTALL_CORRUPT };
+  if (compatibility.status === 'ok') return { ok: true, reason: null };
+  const reason = Array.isArray(compatibility.reasons) && compatibility.reasons.length > 0
+    ? compatibility.reasons[0]
+    : null;
+  return { ok: false, reason };
+}
+
+function tagsOf(manifest, entry) {
+  if (manifest && Array.isArray(manifest.tags)) return manifest.tags.slice();
+  if (entry && Array.isArray(entry.tags)) return entry.tags.slice();
+  return [];
+}
+
+/** GameSummary / GameDetail projection for Market and My Games (V1-CONTRACTS §7.3). */
+export function createGamesService({
+  catalog,
+  devCatalog = null,
+  installations,
+  registry,
+  storage,
+  saves,
+  sessions,
+  scores,
+  now,
+}) {
+  async function activityFor(gameId) {
+    const [meta, running, lastSessionAt, best] = await Promise.all([
+      saves.meta(gameId).catch(() => null),
+      sessions.findRunning(gameId).catch(() => null),
+      sessions.lastPlayedAt(gameId).catch(() => null),
+      scores.bestValue(gameId).catch(() => null),
+    ]);
+    return {
+      meta,
+      running,
+      lastPlayedAt: lastSessionAt,
+      bestScore: best && Number.isFinite(best.value) ? best.value : null,
+    };
+  }
+
+  async function previewUrls(gameId, version) {
+    if (!version) return { icon: null, cover: null, screenshots: [] };
     try {
-      const file = storage.filePath('installations.json');
-      const result = await storage.readJson(file, { schemaVersion: 1 });
-      const value = result && result.value;
-      if (value && isPlainObject(value.games)) return value;
-      return null;
+      return await registry.previewUrls(gameId, version);
     } catch (_error) {
-      return null;
+      return { icon: null, cover: null, screenshots: [] };
     }
   }
 
-  async function buildRecord(info, installations) {
+  async function buildBuiltin(info, activity) {
     const manifest = info.manifest || info.placeholder;
-    const [meta, running, lastSessionAt, best] = await Promise.all([
-      info.manifest ? saves.meta(info.gameId).catch(() => null) : Promise.resolve(null),
-      info.manifest ? sessions.findRunning(info.gameId).catch(() => null) : Promise.resolve(null),
-      info.manifest ? sessions.lastPlayedAt(info.gameId).catch(() => null) : Promise.resolve(null),
-      info.manifest ? scores.bestValue(info.gameId).catch(() => null) : Promise.resolve(null),
-    ]);
-    const installation = installations && installations.games ? installations.games[info.gameId] : null;
-    const installedAt =
-      installation && typeof installation.lastPlayedAt === 'string'
-        ? installation.lastPlayedAt
-        : lastSessionAt;
+    const id = manifest.id;
+    const version = manifest.version;
+    const entry = registry.findEntry(id);
+    const canonical = info.manifest ? manifest : null;
+    const compatibility = compatibilityFor(canonical || manifest, now().toISOString());
     return {
-      id: manifest.id,
+      id,
       name: manifest.name,
-      version: manifest.version,
+      version,
       description: manifest.description,
-      author: manifest.author,
-      categories: manifest.categories.slice(),
-      capabilities: manifest.capabilities.slice(),
+      author: authorOf(canonical || manifest),
+      categories: (canonical ? canonical.categories : []).slice(),
+      tags: tagsOf(canonical, entry),
+      capabilities: (canonical ? canonical.capabilities : []).slice(),
+      sdkVersion: canonical && typeof canonical.sdkVersion === 'string' ? canonical.sdkVersion : null,
+      runtimeVersion: canonical && typeof canonical.runtimeVersion === 'string' ? canonical.runtimeVersion : null,
+      icon: canonical && canonical.icon ? previewQuery(id, version, 'icon') : null,
+      cover: canonical && canonical.cover ? previewQuery(id, version, 'cover') : null,
+      screenshots: canonical && Array.isArray(canonical.screenshots)
+        ? canonical.screenshots.map((_value, index) => previewQuery(id, version, `screenshot-${index + 1}`))
+        : [],
+      homepage: canonical ? canonical.homepage || null : null,
+      repository: canonical ? canonical.repository || null : null,
+      license: canonical ? canonical.license || null : null,
+      changelog: entry ? entry.changelog || null : null,
+      featured: entry ? entry.featured === true : false,
+      quickPlay: entry ? entry.quickPlay === true : false,
+      publishedAt: null,
+      updatedAt: null,
+      source: 'builtin',
+      dev: false,
+      installedVersion: info.manifest ? version : null,
+      updateAvailable: false,
+      canContinue: Boolean(info.manifest && activity.running && activity.meta && activity.meta.revision > 0),
+      bestScore: activity.bestScore,
+      lastPlayedAt: activity.lastPlayedAt,
+      compatibility: compatibilityView(compatibility),
+      preferredTheme: canonical ? canonical.preferredTheme || 'system' : 'system',
+      i18n: entry ? entry.i18n || null : null,
+      // Legacy V0 fields kept additively for older consumers.
       builtin: true,
       installed: Boolean(info.manifest),
-      canContinue: Boolean(info.manifest && running && meta && meta.revision > 0),
-      bestScore: best && Number.isFinite(best.value) ? best.value : null,
-      lastPlayedAt: typeof installedAt === 'string' ? installedAt : null,
-      viewport: { ...manifest.viewport },
-      // V0 diagnostics: lets the Client explain a broken built-in instead of hiding it.
+      viewport: normaliseViewport(canonical && canonical.viewport),
       entryAvailable: info.entryExists,
       issue: info.issue,
     };
   }
 
-  async function list({ q = null, category = null, limit = null, cursor = null } = {}) {
-    const installations = await readInstallations();
-    const infos = await catalog.list();
-    let items = [];
-    for (const info of infos) items.push(await buildRecord(info, installations));
+  async function buildInstalled(record, entry, activity) {
+    const manifest = isPlainObject(record.manifest) ? record.manifest : null;
+    const version = record.version;
+    const compatibility = record.compatibility || compatibilityFor(manifest || {}, now().toISOString());
+    let updateAvailable = false;
+    let latestVersion = null;
+    if (entry && typeof entry.version === 'string') {
+      latestVersion = entry.version;
+      const latestCompatibility = compatibilityFor(
+        { capabilities: entry.capabilities, sdkVersion: entry.sdkVersion, runtimeVersion: entry.runtimeVersion },
+        now().toISOString()
+      );
+      updateAvailable = compareVersions(entry.version, version) > 0 && latestCompatibility.status === 'ok';
+    }
+    const installedPreviews = await previewUrls(record.id, version);
+    const latestPreviews = entry && latestVersion && latestVersion !== version
+      ? await previewUrls(record.id, latestVersion)
+      : { icon: null, cover: null, screenshots: [] };
+    const inlineIcon = manifest && typeof manifest.icon === 'string' && manifest.icon.startsWith('data:image/')
+      ? previewQuery(record.id, version, 'icon')
+      : null;
+    const icon = installedPreviews.icon || inlineIcon || latestPreviews.icon;
+    const cover = installedPreviews.cover || latestPreviews.cover;
+    const screenshots = installedPreviews.screenshots.length > 0
+      ? installedPreviews.screenshots
+      : latestPreviews.screenshots;
+    return {
+      id: record.id,
+      name: manifest ? manifest.name : record.id,
+      version,
+      description: manifest ? manifest.description : '',
+      author: authorOf(manifest),
+      categories: manifest && Array.isArray(manifest.categories) ? manifest.categories.slice() : [],
+      tags: tagsOf(manifest, entry),
+      capabilities: manifest && Array.isArray(manifest.capabilities) ? manifest.capabilities.slice() : [],
+      sdkVersion: manifest && typeof manifest.sdkVersion === 'string' ? manifest.sdkVersion : null,
+      runtimeVersion: manifest && typeof manifest.runtimeVersion === 'string' ? manifest.runtimeVersion : null,
+      icon,
+      cover,
+      screenshots,
+      homepage: (manifest && manifest.homepage) || (entry && entry.homepage) || null,
+      repository: (manifest && manifest.repository) || (entry && entry.repository) || null,
+      license: (manifest && manifest.license) || (entry && entry.license) || null,
+      changelog: entry ? entry.changelog || null : null,
+      featured: entry ? entry.featured === true : false,
+      quickPlay: entry ? entry.quickPlay === true : false,
+      publishedAt: entry ? entry.publishedAt || null : null,
+      updatedAt: entry ? entry.updatedAt || null : record.updatedAt || null,
+      source: record.source,
+      dev: record.source === 'dev',
+      installedVersion: version,
+      updateAvailable,
+      canContinue: Boolean(activity.running && activity.meta && activity.meta.revision > 0),
+      bestScore: activity.bestScore,
+      lastPlayedAt:
+        (typeof record.lastPlayedAt === 'string' ? record.lastPlayedAt : null) || activity.lastPlayedAt,
+      compatibility: compatibilityView(compatibility),
+      preferredTheme: manifest ? manifest.preferredTheme || 'system' : 'system',
+      i18n: (manifest && manifest.i18n) || (entry && entry.i18n) || null,
+      // Legacy V0 fields kept additively for older consumers.
+      builtin: false,
+      installed: true,
+      viewport: normaliseViewport(manifest && manifest.viewport),
+      entryAvailable: true,
+      issue: null,
+      latestVersion,
+    };
+  }
+
+  async function buildRegistry(entry) {
+    const compatibility = compatibilityFor(
+      { capabilities: entry.capabilities, sdkVersion: entry.sdkVersion, runtimeVersion: entry.runtimeVersion },
+      now().toISOString()
+    );
+    const previews = await previewUrls(entry.id, entry.version);
+    return {
+      id: entry.id,
+      name: entry.name,
+      version: entry.version,
+      description: entry.description,
+      author: authorOf({ author: entry.author }),
+      categories: Array.isArray(entry.categories) ? entry.categories.slice() : [],
+      tags: Array.isArray(entry.tags) ? entry.tags.slice() : [],
+      capabilities: Array.isArray(entry.capabilities) ? entry.capabilities.slice() : [],
+      sdkVersion: entry.sdkVersion || null,
+      runtimeVersion: entry.runtimeVersion || null,
+      icon: previews.icon,
+      cover: previews.cover,
+      screenshots: previews.screenshots,
+      homepage: entry.homepage || null,
+      repository: entry.repository || null,
+      license: entry.license || null,
+      changelog: entry.changelog || null,
+      featured: entry.featured === true,
+      quickPlay: entry.quickPlay === true,
+      publishedAt: entry.publishedAt || null,
+      updatedAt: entry.updatedAt || null,
+      source: 'registry',
+      dev: false,
+      installedVersion: null,
+      updateAvailable: false,
+      canContinue: false,
+      bestScore: null,
+      lastPlayedAt: null,
+      compatibility: compatibilityView(compatibility),
+      preferredTheme: entry.preferredTheme || 'system',
+      i18n: entry.i18n || null,
+      // Legacy V0 fields kept additively for older consumers.
+      builtin: false,
+      installed: false,
+      viewport: { width: 960, height: 540, fit: 'contain' },
+      entryAvailable: false,
+      issue: null,
+    };
+  }
+
+  async function buildDev(item, activity) {
+    const manifest = item.manifest;
+    const compatibility = item.compatibility || compatibilityFor(manifest, now().toISOString());
+    const previews = await previewUrls(item.id, item.version);
+    return {
+      id: item.id,
+      name: manifest.name,
+      version: item.version,
+      description: manifest.description,
+      author: authorOf(manifest),
+      categories: Array.isArray(manifest.categories) ? manifest.categories.slice() : [],
+      tags: tagsOf(manifest, null),
+      capabilities: Array.isArray(manifest.capabilities) ? manifest.capabilities.slice() : [],
+      sdkVersion: typeof manifest.sdkVersion === 'string' ? manifest.sdkVersion : null,
+      runtimeVersion: typeof manifest.runtimeVersion === 'string' ? manifest.runtimeVersion : null,
+      icon: previews.icon,
+      cover: previews.cover,
+      screenshots: previews.screenshots,
+      homepage: manifest.homepage || null,
+      repository: manifest.repository || null,
+      license: manifest.license || null,
+      changelog: null,
+      featured: false,
+      quickPlay: false,
+      publishedAt: null,
+      updatedAt: null,
+      source: 'dev',
+      dev: true,
+      installedVersion: null,
+      updateAvailable: false,
+      canContinue: Boolean(activity.running && activity.meta && activity.meta.revision > 0),
+      bestScore: activity.bestScore,
+      lastPlayedAt: activity.lastPlayedAt,
+      compatibility: compatibilityView(compatibility),
+      preferredTheme: manifest.preferredTheme || 'system',
+      i18n: manifest.i18n || null,
+      // Legacy V0 fields kept additively for older consumers.
+      builtin: false,
+      installed: false,
+      viewport: normaliseViewport(manifest.viewport),
+      entryAvailable: true,
+      issue: null,
+    };
+  }
+
+  function sortSummaries(items) {
+    return items.sort((left, right) => {
+      if (left.featured !== right.featured) return left.featured ? -1 : 1;
+      if (left.quickPlay !== right.quickPlay) return left.quickPlay ? -1 : 1;
+      if (left.installed !== right.installed) return left.installed ? -1 : 1;
+      return left.id < right.id ? -1 : left.id > right.id ? 1 : 0;
+    });
+  }
+
+  async function buildAll() {
+    const [infos, records, devItems] = await Promise.all([
+      catalog.list(),
+      installations.records(),
+      devCatalog ? devCatalog.list() : Promise.resolve([]),
+    ]);
+    const summaries = new Map();
+    const builtinIds = new Set();
+    for (const info of infos) {
+      if (!info) continue;
+      const activity = await activityFor(info.gameId);
+      summaries.set(info.gameId, await buildBuiltin(info, activity));
+      builtinIds.add(info.gameId);
+    }
+    for (const record of records) {
+      if (!record || builtinIds.has(record.id) || summaries.has(record.id)) continue;
+      const activity = await activityFor(record.id);
+      summaries.set(record.id, await buildInstalled(record, registry.findEntry(record.id), activity));
+    }
+    for (const entry of registry.games()) {
+      if (!entry || summaries.has(entry.id)) continue;
+      summaries.set(entry.id, await buildRegistry(entry));
+    }
+    for (const item of devItems) {
+      if (!item) continue;
+      const activity = await activityFor(item.id);
+      summaries.set(item.id, await buildDev(item, activity));
+    }
+    return sortSummaries([...summaries.values()]);
+  }
+
+  function filterSummaries(items, { q = null, category = null, limit = null, cursor = null } = {}) {
+    let filtered = items;
     if (typeof q === 'string' && q.length > 0) {
       const needle = q.toLowerCase();
-      items = items.filter(
+      filtered = filtered.filter(
         (item) =>
           item.name.toLowerCase().includes(needle) ||
           item.description.toLowerCase().includes(needle) ||
-          item.id.includes(needle)
+          item.id.includes(needle) ||
+          item.tags.some((tag) => tag.toLowerCase().includes(needle))
       );
     }
     if (typeof category === 'string' && category.length > 0) {
-      items = items.filter((item) => item.categories.includes(category));
+      if (!CATEGORY_SET.has(category)) {
+        throw hostError(GM.INVALID_PARAM, 'Invalid category');
+      }
+      filtered = filtered.filter((item) => item.categories.includes(category));
     }
     let start = 0;
     if (typeof cursor === 'string' && cursor.length > 0) {
-      const parsed = Number(cursor);
-      if (Number.isSafeInteger(parsed) && parsed >= 0) start = parsed;
+      if (!/^\d+$/.test(cursor)) throw hostError(GM.INVALID_PARAM, 'Invalid cursor');
+      start = Number(cursor);
+      if (!Number.isSafeInteger(start)) throw hostError(GM.INVALID_PARAM, 'Invalid cursor');
     }
-    if (Number.isInteger(limit)) items = items.slice(start, start + limit);
-    else if (start > 0) items = items.slice(start);
+    const effectiveLimit = Number.isInteger(limit) ? limit : DEFAULT_PAGE_LIMIT;
+    const page = filtered.slice(start, start + effectiveLimit);
+    const nextCursor = start + effectiveLimit < filtered.length ? String(start + effectiveLimit) : null;
+    return { items: page, nextCursor };
+  }
+
+  function marketSource(items) {
+    const registryCount = registry.games().length;
+    if (registryCount === 0) return 'builtin';
+    const hasOther = items.some((item) => item.source !== 'registry');
+    return hasOther ? 'merged' : 'market';
+  }
+
+  async function list(options = {}) {
+    const all = await buildAll();
+    const { items, nextCursor } = filterSummaries(all, options);
     return {
       items,
-      nextCursor: null,
-      source: 'builtin',
+      nextCursor,
+      source: marketSource(all),
       refreshedAt: now().toISOString(),
+      registry: await registry.snapshot(),
     };
   }
 
   async function installed() {
-    const result = await list({});
-    return { items: result.items };
+    const all = await buildAll();
+    const items = all.filter((item) => item.installed === true || item.builtin === true);
+    return { items };
   }
 
   async function get(gameId) {
-    const info = await catalog.get(gameId);
-    const installations = await readInstallations();
-    const record = await buildRecord(info, installations);
-    let activePlaySession = null;
-    if (info.manifest) {
-      const running = await sessions.findRunning(gameId).catch(() => null);
-      if (running) {
-        activePlaySession = { playSessionId: running.playSessionId, startedAt: running.startedAt };
+    validateGameId(gameId);
+    const all = await buildAll();
+    const summary = all.find((item) => item.id === gameId);
+    if (!summary) throw hostError(GM.GAME_NOT_FOUND, 'Game not found', { retryable: false });
+    if (summary.source === 'builtin' && summary.issue) {
+      if (summary.issue === 'manifest-invalid' || summary.issue === 'manifest-too-large') {
+        throw hostError(GM.MANIFEST_INVALID, 'Game manifest is invalid', { retryable: false });
+      }
+      if (summary.issue === 'manifest-missing' || summary.issue === 'manifest-unreadable') {
+        throw hostError(GM.GAME_NOT_FOUND, 'Game not found', { retryable: false });
       }
     }
-    return { ...record, activePlaySession };
+    const [record, activity] = await Promise.all([
+      installations.get(gameId),
+      activityFor(gameId),
+    ]);
+    const entry = registry.findEntry(gameId);
+    const running = activity.running;
+    const detail = {
+      ...summary,
+      activePlaySession: running
+        ? { playSessionId: running.playSessionId, startedAt: running.startedAt }
+        : null,
+      saveInfo: activity.meta
+        ? {
+            saveSchemaVersion: activity.meta.saveSchemaVersion,
+            savedAt: activity.meta.savedAt || null,
+          }
+        : null,
+      preferredTheme: summary.preferredTheme || 'system',
+      i18n: summary.i18n || null,
+    };
+    return {
+      game: detail,
+      installed: record ? installationView(record) : null,
+      canContinue: summary.canContinue,
+      bestScore: summary.bestScore,
+      activePlaySession: detail.activePlaySession,
+      registry: entry,
+      // Legacy V0 flat fields (kept additively; `installed` above is the V1 view).
+      id: summary.id,
+      name: summary.name,
+      version: summary.version,
+      description: summary.description,
+      author: summary.author,
+      categories: summary.categories,
+      capabilities: summary.capabilities,
+      builtin: summary.builtin,
+      entryAvailable: summary.entryAvailable,
+      issue: summary.issue,
+      viewport: summary.viewport,
+      lastPlayedAt: summary.lastPlayedAt,
+    };
   }
 
-  return { list, installed, get, buildRecord, readInstallations };
+  async function readInstallations() {
+    try {
+      const result = await installations.read();
+      return result && isPlainObject(result.games) ? result : null;
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  return { list, installed, get, buildAll, filterSummaries, readInstallations, activityFor };
 }

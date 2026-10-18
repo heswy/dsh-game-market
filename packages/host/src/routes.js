@@ -18,7 +18,7 @@ function requireObjectBody(body) {
 }
 
 export function createRouteTable({ services, devMode = false }) {
-  const { health, games, saves, sessions, scores, preferences, agent, entry } = services;
+  const { health, games, saves, sessions, scores, preferences, agent, entry, install, registry } = services;
 
   const routeList = [
     {
@@ -54,6 +54,35 @@ export function createRouteTable({ services, devMode = false }) {
       path: ROUTES.INSTALLED,
       methods: ['GET'],
       handler: async () => games.installed(),
+    },
+    {
+      path: ROUTES.INSTALL,
+      methods: ['POST'],
+      handler: async ({ body }) => install.install(requireObjectBody(body)),
+    },
+    {
+      path: ROUTES.INSTALL_LOCAL,
+      methods: ['POST'],
+      rawBody: true,
+      handler: async ({ request, url }) => install.installLocal(request, url),
+    },
+    {
+      path: ROUTES.UNINSTALL,
+      methods: ['POST'],
+      handler: async ({ body }) => install.uninstall(requireObjectBody(body)),
+    },
+    {
+      path: ROUTES.REGISTRY_REFRESH,
+      methods: ['POST'],
+      optionalBody: true,
+      handler: async ({ body }) => {
+        const request = body === null || body === undefined ? {} : requireObjectBody(body);
+        return registry.refresh({
+          manual: true,
+          force: request.force === true,
+          operationId: request.operationId,
+        });
+      },
     },
     {
       path: ROUTES.SAVE,

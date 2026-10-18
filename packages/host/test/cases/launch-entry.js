@@ -118,9 +118,7 @@ export function register() {
       "default-src 'none'",
       "script-src 'unsafe-inline'",
       "style-src 'unsafe-inline'",
-      'img-src data: blob:',
-      'font-src data:',
-      'media-src data: blob:',
+      'img-src data:',
       "connect-src 'none'",
       "frame-src 'none'",
       "child-src 'none'",
@@ -128,10 +126,14 @@ export function register() {
       "object-src 'none'",
       "base-uri 'none'",
       "form-action 'none'",
-      'frame-ancestors *',
+      "frame-ancestors 'self' http://127.0.0.1:* http://localhost:*",
     ]) {
       assert.ok(csp.includes(directive), `missing CSP directive: ${directive}`);
     }
+    // V1 never falls back to the V0 wildcard.
+    assert.equal(csp.includes('frame-ancestors *'), false);
+    assert.equal(csp.includes('blob:'), false);
+    assert.equal(response.headers.get('x-entry-version'), '0.1.0');
     const body = await response.text();
     assert.ok(body.includes('data-test-entry="snake"'));
     assert.equal(body.includes(info.instanceId), false);

@@ -30,6 +30,11 @@ export function createNonce() {
   return randomHex(16);
 }
 
+/** `job_` + 16 lowercase hex (V1-CONTRACTS §1.2). */
+export function createJobId() {
+  return `job_${randomHex(8)}`;
+}
+
 /** Random id of the current Host process. */
 export function createHostEpoch() {
   return `he_${randomHex(8)}`;

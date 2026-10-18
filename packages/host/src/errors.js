@@ -82,9 +82,12 @@ export function statusForGm(code) {
   if (numeric >= 5000) return 500;
   if (numeric >= 4290 && numeric < 4300) return 429;
   if (numeric >= 4260 && numeric < 4270) return 409;
-  if (numeric >= 4220 && numeric < 4230) return 422;
+  // GM-422x (package) and GM-423x/GM-424x (manifest fields) are all 422.
+  if (numeric >= 4220 && numeric < 4250) return 422;
   if (numeric >= 4150 && numeric < 4160) return 415;
   if (numeric >= 4130 && numeric < 4140) return 413;
+  // Disk-full is documented as 413 even though its code lives in GM-414x.
+  if (numeric === 4142) return 413;
   if (numeric >= 4090 && numeric < 4100) return 409;
   if (numeric >= 4040 && numeric < 4050) return 404;
   if (numeric >= 4030 && numeric < 4040) return 403;

@@ -20,6 +20,15 @@ function pathnameOf(request) {
   }
 }
 
+/** True for a POST with no declared/actual body (used by optional-body routes). */
+function isEmptyBody(request) {
+  const declared = request.headers.get('content-length');
+  if (declared === '0') return true;
+  if (declared !== null && declared !== '') return false;
+  const contentType = request.headers.get('content-type');
+  return contentType === null || contentType === '';
+}
+
 function finalise(response, method, requestId) {
   const headers = new Headers(response.headers);
   if (!headers.has('x-request-id')) headers.set('x-request-id', requestId);
@@ -53,7 +62,13 @@ export function createRouter({ routes, logger = null, now = () => new Date() }) 
       }
       const url = new URL(request.url);
       let body = null;
-      if (method === 'POST') body = await readJsonBody(request);
+      if (method === 'POST' && route.rawBody !== true) {
+        if (route.optionalBody === true && isEmptyBody(request)) {
+          body = null;
+        } else {
+          body = await readJsonBody(request);
+        }
+      }
       const result = await route.handler({
         request,
         url,
