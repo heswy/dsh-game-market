@@ -198,11 +198,12 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · **V0.2 已发布**：`main` merge `3bfea76`，tag `v0.0.2`；验证见 `docs/V0-VERIFICATION.md`。
 - 2026-10-18 · **V0.3 修复**：Host 改订阅真实 `session/event`，修复 Agent 完成后游戏内无提示；真机验证真实 turn/end(error) 到达 Host；单测覆盖完成/取消/审批映射；全量 314 tests 通过。Host 改动需重启 DSH。
 - 2026-10-18 · **V0.3 已发布**：`main` merge `c476266`，tag `v0.0.3` 已推送；验证见 `docs/V0-VERIFICATION.md`。
+- 2026-10-18 · **V0 用户验收通过**：用户确认 V0.2 入口/恢复与 V0.3 完成提醒在真实桌面端正常工作；“v0 基本验收完毕”。V0 范围（V0-01～V0-15，含 V0.2/V0.3 调整）收官。下一步进入 V1 规划。
 - （待续）
 
 **当前状态 / 待用户确认**：
 
-- V0 代码与证据已完成并推送；V0.1 tag `v0.0.1`、V0.2 tag `v0.0.2`、V0.3 tag `v0.0.3` 均已推送（V0.3 merge `c476266`）。V0.3 改了 Host，用户需重启 DSH 才生效。
+- **V0 已完成并通过用户验收**：`main` 已推送，tag `v0.0.0`/`v0.0.1`/`v0.0.2`/`v0.0.3` 均已推送；V0.3 Host 修复需重启 DSH，用户已确认生效。下一步：V1 需求拆解（安装/Registry/CLI/多文件游戏等）。
 - 日常桌面端需用户自行 `npm run dev:enable -- --yes` 并重启 DSH；UI 客户端改动刷新页面即可。
 - 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复；用户桌面端版本已确认为 0.2.1-rc.2，与验证基线一致。
 - GitHub 推送权限：若 `git push` 失败，需要用户提供可用凭据或代为推送。
