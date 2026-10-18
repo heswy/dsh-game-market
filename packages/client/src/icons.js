@@ -74,6 +74,118 @@ export function GameMarketIcon(props) {
   );
 }
 
+export function SearchIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h(
+    'svg',
+    svgProps(size, '0 0 16 16'),
+    h('circle', { cx: 7.2, cy: 7.2, r: 4.4 }),
+    h('path', { d: 'm10.6 10.6 3.1 3.1' })
+  );
+}
+
+export function CloseIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h('svg', svgProps(size, '0 0 16 16'), h('path', { d: 'm4 4 8 8M12 4l-8 8' }));
+}
+
+export function CheckIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h('svg', svgProps(size, '0 0 16 16'), h('path', { d: 'm3.4 8.4 2.9 2.9 6.3-6.6' }));
+}
+
+export function MoreIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h(
+    'svg',
+    svgProps(size, '0 0 16 16'),
+    h('circle', { cx: 3.4, cy: 8, r: 1.15, fill: 'currentColor', stroke: 'none' }),
+    h('circle', { cx: 8, cy: 8, r: 1.15, fill: 'currentColor', stroke: 'none' }),
+    h('circle', { cx: 12.6, cy: 8, r: 1.15, fill: 'currentColor', stroke: 'none' })
+  );
+}
+
+export function TrashIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h(
+    'svg',
+    svgProps(size, '0 0 16 16'),
+    h('path', { d: 'M3.5 4.6h9M6.5 4.6V3.2h3v1.4M5 4.6l.6 8.2h4.8l.6-8.2' }),
+    h('path', { d: 'M6.9 7v3.4M9.1 7v3.4' })
+  );
+}
+
+export function DownloadIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h(
+    'svg',
+    svgProps(size, '0 0 16 16'),
+    h('path', { d: 'M8 2.6v7.2M5.4 7.4 8 10l2.6-2.6' }),
+    h('path', { d: 'M3.4 12.4h9.2' })
+  );
+}
+
+export function RefreshIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h(
+    'svg',
+    svgProps(size, '0 0 16 16'),
+    h('path', { d: 'M13.1 8a5.1 5.1 0 1 1-1.5-3.6' }),
+    h('path', { d: 'M13.4 2.9v3.2h-3.2' })
+  );
+}
+
+export function ChevronRightIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h('svg', svgProps(size, '0 0 16 16'), h('path', { d: 'm6.2 3.5 4.5 4.5-4.5 4.5' }));
+}
+
+export function ChevronLeftIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h('svg', svgProps(size, '0 0 16 16'), h('path', { d: 'M9.8 3.5 5.3 8l4.5 4.5' }));
+}
+
+export function ClockIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h(
+    'svg',
+    svgProps(size, '0 0 16 16'),
+    h('circle', { cx: 8, cy: 8, r: 5.4 }),
+    h('path', { d: 'M8 5.1V8l2.1 1.4' })
+  );
+}
+
+export function TrophyIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h(
+    'svg',
+    svgProps(size, '0 0 16 16'),
+    h('path', { d: 'M5.2 3.2h5.6v3.3a2.8 2.8 0 0 1-5.6 0V3.2Z' }),
+    h('path', { d: 'M5.2 4.3H3.4v1.1a2 2 0 0 0 2 2M10.8 4.3h1.8v1.1a2 2 0 0 1-2 2' }),
+    h('path', { d: 'M8 9.3v2.1M6 12.8h4' })
+  );
+}
+
+export function FolderOpenIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h(
+    'svg',
+    svgProps(size, '0 0 16 16'),
+    h('path', { d: 'M2.4 11.9V4.4h4l1.2 1.6h5.8v1.1' }),
+    h('path', { d: 'M2.8 11.9h9.7l1.3-4.4H4.1l-1.3 4.4Z' })
+  );
+}
+
+export function ShieldIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h(
+    'svg',
+    svgProps(size, '0 0 16 16'),
+    h('path', { d: 'M8 2.4 13 4v3.7c0 2.7-1.9 4.9-5 5.9-3.1-1-5-3.2-5-5.9V4l5-1.6Z' }),
+    h('path', { d: 'm5.9 8 1.5 1.5 2.8-2.9' })
+  );
+}
+
 /**
  * V0 placeholder whale (D-007). Kept at `viewBox="0 0 48 48"` with the four
  * groups the final artwork must preserve: body, spout, eye, halo.

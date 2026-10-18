@@ -110,6 +110,81 @@ test('every static t() key used in source exists in the dictionary', function ()
   }
 });
 
+const V1_MARKET_KEYS = [
+  'market.title',
+  'market.tab.market',
+  'market.tab.mygames',
+  'market.section.continue',
+  'market.section.quick',
+  'market.section.popular',
+  'market.section.new',
+  'market.section.all',
+  'market.hero.empty.title',
+  'market.hero.continue',
+  'market.search.placeholder',
+  'market.search.empty',
+  'market.search.results',
+  'market.filter.all',
+  'market.category.arcade',
+  'market.category.sandbox',
+  'market.offline',
+  'market.empty.all',
+  'market.localInstall',
+  'market.localInstall.title',
+  'mygames.empty.title',
+  'mygames.progress.score',
+  'mygames.best',
+  'mygames.update.available',
+  'mygames.uninstall.title',
+  'mygames.uninstall.deleteData',
+  'mygames.uninstall.confirmDelete',
+  'mygames.deleteData.title',
+  'mygames.deleteData.confirm',
+  'mygames.menu.restart',
+  'detail.action.install',
+  'detail.action.cancelInstall',
+  'detail.action.continue',
+  'detail.action.update',
+  'detail.action.incompatible',
+  'detail.action.reinstall',
+  'detail.install.stage.downloading',
+  'detail.install.stage.verifying',
+  'detail.install.stage.installing',
+  'detail.install.failed.download',
+  'detail.permissions.storageScore',
+  'detail.permissions.note',
+  'detail.error.missing',
+  'detail.leaderboard.title',
+  'error.gm.installBusy',
+  'error.gm.notSelfContained',
+  'error.gm.integrity',
+  'a11y.installed',
+  'a11y.updateAvailable',
+  'a11y.installProgress',
+  'toast.installed',
+  'toast.uninstalled',
+];
+
+test('V1 Market, detail and error copy exists in both dictionaries', function () {
+  for (const key of V1_MARKET_KEYS) {
+    assert.ok(Object.prototype.hasOwnProperty.call(ZH, key), 'missing zh ' + key);
+    assert.ok(Object.prototype.hasOwnProperty.call(EN, key), 'missing en ' + key);
+  }
+  assert.equal(ZH['market.title'], 'Game Market', 'brand name stays untranslated');
+  assert.equal(EN['market.title'], 'Game Market', 'brand name stays untranslated');
+});
+
+test('locale switching returns the matching Market copy', function () {
+  assert.equal(translate('zh', 'market.section.quick'), '快速一局');
+  assert.equal(translate('en', 'market.section.quick'), 'Quick play');
+  assert.equal(translate('zh', 'mygames.uninstall.confirm'), '卸载');
+  assert.equal(translate('en', 'mygames.uninstall.confirm'), 'Uninstall');
+  assert.equal(translate('zh', 'detail.install.stage.downloading', { percent: 42 }), '下载中 42%');
+  assert.equal(translate('en', 'detail.install.stage.downloading', { percent: 42 }), 'Downloading 42%');
+  assert.equal(translate('zh', 'error.gm.installBusy').length > 0, true);
+  assert.equal(translate('en', 'error.gm.installBusy').length > 0, true);
+});
+
 test('interpolation and translate fallbacks are safe', function () {
   assert.equal(interpolate('Hello {name}!', { name: 'DSH' }), 'Hello DSH!');
   assert.equal(interpolate('Hello {name}!', {}), 'Hello {name}!');
