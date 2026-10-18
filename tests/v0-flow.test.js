@@ -164,7 +164,9 @@ test('V0 flow: snake market, launch, save, continue, score, agent presence', asy
       body: JSON.stringify({ gameId: 'snake', score: 42, playSessionId, operationId: 'op_score_1' }),
     });
     assert.equal(submitted.body.ok, true);
-    assert.equal(submitted.body.data.best, 42);
+    // Host returns the best entry; Runtime/SDK normalize it to a number.
+    const submittedBest = submitted.body.data.best;
+    assert.equal(typeof submittedBest === 'object' ? submittedBest.value : submittedBest, 42);
     const scores = await getJson(fake, '/api/game-market/scores?gameId=snake');
     assert.equal(scores.body.data.best.value, 42);
     assert.ok(scores.body.data.history.some((entry) => entry.value === 42));
@@ -196,11 +198,17 @@ test('V0 flow: snake market, launch, save, continue, score, agent presence', asy
     assert.equal(waiting.body.ok, true);
     assert.equal(waiting.body.data.state, 'waiting-user');
 
-    const ackBody = { sessionId: 'ses_test', seq: waiting.body.data.seq };
+    const completed = await getJson(fake, '/api/game-market/dev/agent-state', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ sessionId: 'ses_test', state: 'completed', turnId: 'turn_1' }),
+    });
+    assert.equal(completed.body.data.state, 'completed');
+
     const acked = await getJson(fake, '/api/game-market/agent-ack', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(ackBody),
+      body: JSON.stringify({ sessionId: 'ses_test', seq: completed.body.data.seq }),
     });
     assert.equal(acked.body.data.state, 'idle');
   }

@@ -1305,54 +1305,237 @@ window.__ModuleLoader__.load({
     return { GM, httpStatusFor, isGmCode, makeGameError, errorResponseBody, defaultMessageFor, SDK_ERROR_CODES };
     })();
 
-    // module: packages/client/src/api.js
-    __mods["packages/client/src/api.js"] = (function () {
+    // module: packages/shared/src/api-client.js
+    __mods["packages/shared/src/api-client.js"] = (function () {
     const API_BASE = __mods["packages/shared/src/constants.js"].API_BASE;
     const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
     const GM = __mods["packages/shared/src/errors.js"].GM;
-    const reportDiagnostic = __mods["packages/client/src/diagnostics.js"].reportDiagnostic;
     /**
-     * Same-origin API client for the Host routes.
+     * Host API client used by the Client and Runtime.
      *
-     * The repository's shared `api-client.js` cannot be used in the browser bundle:
-     * its final `export { randomOperationId };` form is outside the restricted
-     * bundler subset. This module keeps the same endpoint shapes, envelope checks and
-     * error codes from `packages/shared` without importing that file.
+     * - Same-origin relative base by default (`api/game-market`, matching the
+     *   verified DSH pattern `fetch('api/...')`).
+     * - Injected `fetchImpl` keeps it testable in Node.
+     * - Throws `GameMarketApiError` on `{ ok:false }` responses or transport errors.
+     *
+     * Endpoint shapes live in ./contracts.js.
      */
 
-    const TIMEOUTS = Object.freeze({
-      games: 5000,
-      'agent-state': 3000,
-      'agent-ack': 2000,
-      launch: 8000,
-    });
 
-    class ClientApiError extends Error {
-      constructor(code, message, options) {
+    class GameMarketApiError extends Error {
+      /**
+       * @param {string} code GM code
+       * @param {string} message
+       * @param {{retryable?: boolean, status?: number, details?: object}} [options]
+       */
+      constructor(code, message, options = {}) {
         super(message || code);
-        this.name = 'ClientApiError';
+        this.name = 'GameMarketApiError';
         this.code = code;
-        this.retryable = Boolean(options && options.retryable);
-        this.status = (options && options.status) || 0;
+        this.retryable = options.retryable === true;
+        this.status = options.status || 0;
+        this.details = options.details;
       }
     }
 
-    function timeoutSignal(ms) {
+    const DEFAULT_TIMEOUTS = Object.freeze({
+      health: 3000,
+      games: 5000,
+      game: 3000,
+      installed: 3000,
+      save: 6000,
+      session: 5000,
+      scores: 3000,
+      score: 5000,
+      preferences: 3000,
+      'agent-state': 3000,
+      'agent-ack': 2000,
+      launch: 8000,
+      'dev-agent-state': 2000,
+    });
+
+    function stripLeadingSlash(path) {
+      return path.startsWith('/') ? path.slice(1) : path;
+    }
+
+    function createTimeoutSignal(ms) {
       if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
         return AbortSignal.timeout(ms);
       }
       const controller = new AbortController();
-      const timer = setTimeout(function abort() {
-        controller.abort();
-      }, ms);
-      if (timer && typeof timer.unref === 'function') timer.unref();
+      const timer = setTimeout(() => controller.abort(), ms);
+      if (typeof timer.unref === 'function') timer.unref();
       return controller.signal;
     }
 
     function randomOperationId() {
       const cryptoApi = globalThis.crypto;
-      if (cryptoApi && typeof cryptoApi.randomUUID === 'function') return 'op_' + cryptoApi.randomUUID();
-      return 'op_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+      if (cryptoApi && typeof cryptoApi.randomUUID === 'function') return `op_${cryptoApi.randomUUID()}`;
+      return `op_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+    }
+
+    /**
+     * @param {{base?: string, fetchImpl?: Function, timeoutMs?: number}} [options]
+     */
+    function createApiClient(options = {}) {
+      const base = stripLeadingSlash(options.base || API_BASE);
+      const fetchImpl = options.fetchImpl || globalThis.fetch;
+
+      if (typeof fetchImpl !== 'function') throw new Error('fetch is unavailable');
+
+      async function call(name, { method = 'GET', query, body, timeoutMs, retry = method === 'GET' } = {}) {
+        const ms = timeoutMs || DEFAULT_TIMEOUTS[name] || 5000;
+        const url = `${base}/${name}${query ? `?${new URLSearchParams(query).toString()}` : ''}`;
+        const headers = body === undefined ? undefined : { 'content-type': 'application/json' };
+        const requestBody = body === undefined ? undefined : JSON.stringify(body);
+        if (requestBody !== undefined && new TextEncoder().encode(requestBody).length > LIMITS.jsonBodyBytes) {
+          throw new GameMarketApiError(GM.INVALID_PARAM, 'Request body is too large');
+        }
+
+        let lastError = null;
+        for (let attempt = 0; attempt < (retry ? 3 : 1); attempt += 1) {
+          try {
+            const response = await fetchImpl(url, {
+              method,
+              headers,
+              credentials: 'same-origin',
+              body: requestBody,
+              signal: createTimeoutSignal(ms),
+            });
+            const payload = await safeJson(response);
+            if (payload && payload.ok === true) return payload.data;
+            if (payload && payload.ok === false && payload.error) {
+              const error = new GameMarketApiError(payload.error.code || GM.INTERNAL, payload.error.message, {
+                retryable: payload.error.retryable,
+                status: response.status,
+                details: payload.error.details,
+              });
+              if (retry && (response.status === 429 || response.status === 503)) {
+                lastError = error;
+                await sleep(200 * 2 ** attempt);
+                continue;
+              }
+              throw error;
+            }
+            throw new GameMarketApiError(GM.INTERNAL, `Unexpected response from ${name}`, {
+              retryable: false,
+              status: response.status,
+            });
+          } catch (error) {
+            if (error instanceof GameMarketApiError) {
+              if (!(retry && error.retryable && attempt < 2)) throw error;
+              lastError = error;
+            } else {
+              lastError = new GameMarketApiError(GM.HOST_UNAVAILABLE, `Cannot reach Game Market Host (${name})`, {
+                retryable: true,
+                status: 0,
+              });
+              if (!retry || attempt >= 2) throw lastError;
+            }
+            await sleep(200 * 2 ** attempt);
+          }
+        }
+        throw lastError || new GameMarketApiError(GM.HOST_UNAVAILABLE, 'Cannot reach Game Market Host');
+      }
+
+      return Object.freeze({
+        base,
+        requestId: randomOperationId,
+        health: () => call('health', { timeoutMs: 3000 }),
+        listGames: () => call('games'),
+        listInstalled: () => call('installed'),
+        getGame: (gameId) => call('game', { query: { id: gameId } }),
+        getSave: (gameId, { includeData = false } = {}) =>
+          call('save', { query: includeData ? { gameId, include: 'data' } : { gameId } }),
+        setSave: ({ gameId, key, data, expectedRevision, operationId }) =>
+          call('save', {
+            method: 'POST',
+            body: {
+              gameId,
+              key,
+              data,
+              ...(expectedRevision === undefined ? {} : { expectedRevision }),
+              operationId: operationId || randomOperationId(),
+            },
+            timeoutMs: 6000,
+          }),
+        startSession: ({ gameId, dshSessionId = null, operationId }) =>
+          call('session', {
+            method: 'POST',
+            body: { gameId, action: 'start', dshSessionId, operationId: operationId || randomOperationId() },
+          }),
+        endSession: ({ gameId, playSessionId, outcome, score = null, operationId }) =>
+          call('session', {
+            method: 'POST',
+            body: {
+              gameId,
+              action: 'end',
+              playSessionId,
+              outcome,
+              score,
+              operationId: operationId || randomOperationId(),
+            },
+          }),
+        getScores: (gameId) => call('scores', { query: { gameId } }),
+        submitScore: ({ gameId, score, meta = null, playSessionId = null, operationId }) =>
+          call('score', {
+            method: 'POST',
+            body: {
+              gameId,
+              score,
+              meta,
+              playSessionId,
+              operationId: operationId || randomOperationId(),
+            },
+          }),
+        getPreferences: () => call('preferences'),
+        setPreferences: (patch) => call('preferences', { method: 'POST', body: patch }),
+        /**
+         * @param {string} sessionId
+         * @param {{etag?: string}} [opts]
+         * @returns {Promise<{snapshot: object, etag: string|null, notModified: boolean}>}
+         */
+        getAgentState: async (sessionId, { etag } = {}) => {
+          const url = `${base}/agent-state?${new URLSearchParams({ sessionId }).toString()}`;
+          const headers = etag ? { 'if-none-match': etag } : undefined;
+          const response = await fetchImpl(url, {
+            method: 'GET',
+            headers,
+            credentials: 'same-origin',
+            signal: createTimeoutSignal(DEFAULT_TIMEOUTS['agent-state']),
+          });
+          if (response.status === 304) return { snapshot: null, etag, notModified: true };
+          const payload = await safeJson(response);
+          if (payload && payload.ok === true) {
+            return { snapshot: payload.data, etag: response.headers?.get?.('etag') || null, notModified: false };
+          }
+          const error = payload?.error || { code: GM.HOST_UNAVAILABLE, message: 'Agent state unavailable' };
+          throw new GameMarketApiError(error.code || GM.HOST_UNAVAILABLE, error.message, {
+            retryable: error.retryable,
+            status: response.status,
+          });
+        },
+        ackAgent: ({ sessionId, seq }) => call('agent-ack', { method: 'POST', body: { sessionId, seq } }),
+        launch: ({ gameId, version, dshSessionId = null, mode = 'start' }) =>
+          call('launch', {
+            method: 'POST',
+            body: {
+              gameId,
+              ...(version ? { version } : {}),
+              dshSessionId,
+              mode,
+            },
+            retry: false,
+          }),
+        /** Dev-only: requires Host config.devMode. */
+        devSetAgentState: ({ sessionId, state, label, labelKey, turnId }) =>
+          call('dev/agent-state', {
+            method: 'POST',
+            body: { sessionId, state, label, labelKey, turnId },
+            retry: false,
+          }),
+        operationId: randomOperationId,
+      });
     }
 
     async function safeJson(response) {
@@ -1363,109 +1546,32 @@ window.__ModuleLoader__.load({
       }
     }
 
-    /**
-     * @param {{base?: string, fetchImpl?: Function}} [options]
-     */
-    function createClientApi(options) {
-      const opts = options && typeof options === 'object' ? options : {};
-      const base = String(opts.base || API_BASE).replace(/^\/+/, '');
-      const fetchImpl = opts.fetchImpl || globalThis.fetch;
-      if (typeof fetchImpl !== 'function') throw new Error('fetch is unavailable');
-
-      async function call(name, config) {
-        const cfg = config && typeof config === 'object' ? config : {};
-        const method = cfg.method || 'GET';
-        const timeoutMs = cfg.timeoutMs || TIMEOUTS[name] || 5000;
-        const query = cfg.query ? '?' + new URLSearchParams(cfg.query).toString() : '';
-        const url = base + '/' + name + query;
-        const body = cfg.body === undefined ? undefined : JSON.stringify(cfg.body);
-        if (body !== undefined) {
-          const bytes = new TextEncoder().encode(body).length;
-          if (bytes > LIMITS.jsonBodyBytes) throw new ClientApiError(GM.INVALID_PARAM, 'Request body is too large');
-        }
-        let response;
-        try {
-          response = await fetchImpl(url, {
-            method: method,
-            headers: body === undefined ? cfg.headers : { ...(cfg.headers || {}), 'content-type': 'application/json' },
-            credentials: 'same-origin',
-            body: body,
-            signal: timeoutSignal(timeoutMs),
-          });
-        } catch (_error) {
-          throw new ClientApiError(GM.HOST_UNAVAILABLE, 'Cannot reach Game Market Host', { retryable: true });
-        }
-        const payload = await safeJson(response);
-        if (payload && payload.ok === true) return payload.data;
-        if (payload && payload.ok === false && payload.error) {
-          throw new ClientApiError(payload.error.code || GM.INTERNAL, payload.error.message, {
-            retryable: payload.error.retryable === true,
-            status: response.status,
-          });
-        }
-        throw new ClientApiError(GM.INTERNAL, 'Unexpected response from ' + name, {
-          retryable: false,
-          status: response.status,
-        });
-      }
-
-      return Object.freeze({
-        base: base,
-        listGames: function listGames() {
-          return call('games', { timeoutMs: TIMEOUTS.games });
-        },
-        getAgentState: async function getAgentState(sessionId, stateOptions) {
-          const etag = stateOptions && stateOptions.etag;
-          const url = base + '/agent-state?' + new URLSearchParams({ sessionId: sessionId }).toString();
-          const headers = etag ? { 'if-none-match': etag } : undefined;
-          let response;
-          try {
-            response = await fetchImpl(url, {
-              method: 'GET',
-              headers: headers,
-              credentials: 'same-origin',
-              signal: timeoutSignal(TIMEOUTS['agent-state']),
-            });
-          } catch (_error) {
-            throw new ClientApiError(GM.HOST_UNAVAILABLE, 'Agent state unavailable', { retryable: true });
-          }
-          if (response.status === 304) return { snapshot: null, etag: etag || null, notModified: true };
-          const payload = await safeJson(response);
-          if (payload && payload.ok === true) {
-            return {
-              snapshot: payload.data,
-              etag: response.headers && typeof response.headers.get === 'function' ? response.headers.get('etag') : null,
-              notModified: false,
-            };
-          }
-          const error = payload && payload.error ? payload.error : null;
-          throw new ClientApiError((error && error.code) || GM.HOST_UNAVAILABLE, error && error.message, {
-            retryable: error && error.retryable,
-            status: response.status,
-          });
-        },
-        ackAgent: function ackAgent(input) {
-          return call('agent-ack', {
-            method: 'POST',
-            body: { sessionId: input.sessionId, seq: input.seq },
-            timeoutMs: TIMEOUTS['agent-ack'],
-          });
-        },
-        launch: function launch(input) {
-          return call('launch', {
-            method: 'POST',
-            body: {
-              gameId: input.gameId,
-              ...(input.version ? { version: input.version } : {}),
-              dshSessionId: input.dshSessionId === undefined ? null : input.dshSessionId,
-              mode: input.mode || 'start',
-            },
-            timeoutMs: TIMEOUTS.launch,
-          });
-        },
-        operationId: randomOperationId,
-      });
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
     }
+
+
+    return { GameMarketApiError, randomOperationId, createApiClient };
+    })();
+
+    // module: packages/client/src/api.js
+    __mods["packages/client/src/api.js"] = (function () {
+    const sharedCreateApiClient = __mods["packages/shared/src/api-client.js"].createApiClient;
+    const GameMarketApiError = __mods["packages/shared/src/api-client.js"].GameMarketApiError;
+    const reportDiagnostic = __mods["packages/client/src/diagnostics.js"].reportDiagnostic;
+    /**
+     * Same-origin Host API client used by the Client and injected into Runtime.
+     *
+     * The heavy lifting lives in the shared client (all V0 endpoints + GM error
+     * mapping). This module only owns the browser singleton and the test seam.
+     */
+
+    const ClientApiError = GameMarketApiError;
+
+    /** Factory kept for tests/back-compat: same signature as the shared client. */
+    const createClientApi = function createClientApi(options) {
+      return sharedCreateApiClient(options && typeof options === 'object' ? options : {});
+    };
 
     let client = null;
 
@@ -3479,20 +3585,1956 @@ window.__ModuleLoader__.load({
     return { isSafeEntryUrl, validateLaunchInfo, deriveLoadPhase, isRuntimeLoadingState, isRuntimeInteractiveState };
     })();
 
-    // module: packages/runtime/src/index.js
-    __mods["packages/runtime/src/index.js"] = (function () {
+    // module: packages/shared/src/protocol.js
+    __mods["packages/shared/src/protocol.js"] = (function () {
+    const GM = __mods["packages/shared/src/errors.js"].GM;
+    const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+    const PROTOCOL_VERSION = __mods["packages/shared/src/constants.js"].PROTOCOL_VERSION;
     /**
-     * Runtime stub — replaced by the runtime implementation branch.
-     * Kept on main so packages/client can build/test against the documented
-     * RuntimeController contract before the runtime branch merges.
+     * postMessage bridge protocol helpers shared by Runtime and SDK (PRD §8.4).
+     *
+     * Runtime is the trusted side; SDK is the iframe-side client. Both must accept
+     * only the exact envelope shapes below and reject everything else.
      */
-    const RUNTIME_STUB = true;
 
-    function createGameRuntime() {
-      throw new Error('Game Runtime is not implemented in this checkout yet');
+
+    const BRIDGE_VERSION = PROTOCOL_VERSION;
+    const MAX_BRIDGE_MESSAGE_BYTES = LIMITS.saveTotalBytes + 64 * 1024;
+    const MAX_BRIDGE_DEPTH = 32;
+    const MAX_INFLIGHT_REQUESTS = 32;
+    const MAX_INVALID_MESSAGES_PER_10S = 50;
+    const MAX_MESSAGES_PER_SECOND = 200;
+
+    const METHODS = Object.freeze({
+      READY: 'ready',
+      PING: 'ping',
+      STORAGE_SAVE: 'storage.save',
+      STORAGE_LOAD: 'storage.load',
+      STORAGE_REMOVE: 'storage.remove',
+      SESSION_START: 'session.start',
+      SESSION_END: 'session.end',
+      SCORE_SUBMIT: 'score.submit',
+      SCORE_GET_BEST: 'score.getBest',
+      AGENT_GET_STATUS: 'agent.getStatus',
+    });
+
+    const EVENTS = Object.freeze({
+      HELLO: 'hello',
+      INIT: 'init',
+      PAUSE: 'pause',
+      RESUME: 'resume',
+      HIDDEN: 'hidden',
+      VISIBLE: 'visible',
+      BEFORE_SAVE: 'before-save',
+      AGENT_STATUS: 'agent-status',
+      THEME: 'theme',
+      VIEWPORT: 'viewport',
+    });
+
+    /** Runtime → game methods list (SDK side handles these). */
+    const RUNTIME_TO_GAME_METHODS = Object.freeze(['ping']);
+    /** Game → Runtime methods list (Runtime side handles these). */
+    const GAME_TO_RUNTIME_METHODS = Object.freeze([
+      METHODS.READY,
+      METHODS.STORAGE_SAVE,
+      METHODS.STORAGE_LOAD,
+      METHODS.STORAGE_REMOVE,
+      METHODS.SESSION_START,
+      METHODS.SESSION_END,
+      METHODS.SCORE_SUBMIT,
+      METHODS.SCORE_GET_BEST,
+      METHODS.AGENT_GET_STATUS,
+    ]);
+
+    const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+    function isPlainObject(value) {
+      if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+      const proto = Object.getPrototypeOf(value);
+      return proto === Object.prototype || proto === null;
     }
 
-    return { RUNTIME_STUB, createGameRuntime };
+    /** 32 lowercase hex chars from the platform CSPRNG; works in browser + Node. */
+    function randomHex32() {
+      const bytes = new Uint8Array(16);
+      const cryptoApi = globalThis.crypto;
+      if (!cryptoApi || typeof cryptoApi.getRandomValues !== 'function') {
+        throw new Error('crypto.getRandomValues is unavailable');
+      }
+      cryptoApi.getRandomValues(bytes);
+      return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function createInstanceId() {
+      return randomHex32();
+    }
+
+    function createNonce() {
+      return randomHex32();
+    }
+
+    /** UTF-8 byte length of the JSON serialization; throws on non-JSON values. */
+    function jsonByteLength(value) {
+      return byteLength(JSON.stringify(value));
+    }
+
+    function byteLength(text) {
+      return new TextEncoder().encode(text).length;
+    }
+
+    /**
+     * Validate a JSON value: finite numbers, plain objects/arrays, depth-bounded,
+     * no prototype-pollution keys. Returns a cloned plain value.
+     */
+    function cloneJsonValue(value, depth = 0) {
+      if (depth > MAX_BRIDGE_DEPTH) {
+        throw protocolError(GM.VALUE_NOT_SERIALIZABLE, 'Value nesting is too deep');
+      }
+      if (value === null || typeof value === 'string' || typeof value === 'boolean') return value;
+      if (typeof value === 'number') {
+        if (!Number.isFinite(value)) throw protocolError(GM.VALUE_NOT_SERIALIZABLE, 'Number must be finite');
+        return value;
+      }
+      if (Array.isArray(value)) return value.map((item) => cloneJsonValue(item, depth + 1));
+      if (isPlainObject(value)) {
+        const out = {};
+        for (const key of Object.keys(value)) {
+          if (FORBIDDEN_KEYS.has(key)) {
+            throw protocolError(GM.VALUE_NOT_SERIALIZABLE, `Forbidden key: ${key}`);
+          }
+          out[key] = cloneJsonValue(value[key], depth + 1);
+        }
+        return out;
+      }
+      throw protocolError(GM.VALUE_NOT_SERIALIZABLE, `Unsupported value type: ${typeof value}`);
+    }
+
+    function isValidStorageKey(key) {
+      return typeof key === 'string' && /^[a-z0-9][a-z0-9._-]{0,63}$/.test(key) && !FORBIDDEN_KEYS.has(key);
+    }
+
+    function protocolError(code, message) {
+      return { code, message, retryable: false };
+    }
+
+    function createRequest(id, method, params) {
+      return { v: BRIDGE_VERSION, id, kind: 'req', method, params: params === undefined ? {} : params };
+    }
+
+    function createResponse(id, result) {
+      return { v: BRIDGE_VERSION, id, kind: 'res', ok: true, result };
+    }
+
+    function createErrorResponse(id, error) {
+      return { v: BRIDGE_VERSION, id, kind: 'res', ok: false, error };
+    }
+
+    function createEvent(event, data) {
+      return { v: BRIDGE_VERSION, kind: 'evt', event, ...(data === undefined ? {} : { data }) };
+    }
+
+    function envelopeByteSize(message) {
+      try {
+        return jsonByteLength(message);
+      } catch (_error) {
+        return Infinity;
+      }
+    }
+
+    /**
+     * Structural validation. Sender/source identity and nonce matching stay with
+     * the caller because they are transport-specific.
+     *
+     * @returns {{ok: true, message: object} | {ok: false, code: string, message: string}}
+     */
+    function validateBridgeMessage(raw) {
+      if (!isPlainObject(raw)) return invalid('Message must be a plain object');
+      if (raw.v !== BRIDGE_VERSION) return invalid(`Unsupported protocol version: ${String(raw.v)}`, GM.PROTOCOL_MISMATCH);
+      if (raw.kind === 'req') {
+        if (typeof raw.id !== 'string' || raw.id.length === 0 || raw.id.length > 64) return invalid('Invalid request id');
+        if (typeof raw.method !== 'string' || raw.method.length === 0 || raw.method.length > 64) return invalid('Invalid method');
+        if (raw.params !== undefined && !isPlainObject(raw.params)) return invalid('params must be an object');
+        if (envelopeByteSize(raw) > MAX_BRIDGE_MESSAGE_BYTES) return invalid('Message too large');
+        return { ok: true, message: raw };
+      }
+      if (raw.kind === 'res') {
+        if (typeof raw.id !== 'string' || raw.id.length === 0 || raw.id.length > 64) return invalid('Invalid response id');
+        if (raw.ok === true) return { ok: true, message: raw };
+        if (raw.ok === false && isPlainObject(raw.error) && typeof raw.error.code === 'string') {
+          return { ok: true, message: raw };
+        }
+        return invalid('Invalid error response');
+      }
+      if (raw.kind === 'evt') {
+        if (typeof raw.event !== 'string' || raw.event.length === 0 || raw.event.length > 64) return invalid('Invalid event name');
+        if (envelopeByteSize(raw) > MAX_BRIDGE_MESSAGE_BYTES) return invalid('Message too large');
+        return { ok: true, message: raw };
+      }
+      return invalid(`Unknown message kind: ${String(raw.kind)}`);
+    }
+
+    function invalid(message, code = GM.MESSAGE_INVALID) {
+      return { ok: false, code, message };
+    }
+
+    /**
+     * SDK handshake inputs come from the URL query. Runtime puts them there.
+     * @returns {{instanceId: string, nonce: string} | null}
+     */
+    function parseLaunchQuery(search) {
+      try {
+        const params = new URLSearchParams(search || '');
+        const instanceId = params.get('instance') || '';
+        const nonce = params.get('nonce') || '';
+        if (!/^[a-f0-9]{32}$/.test(instanceId) || !/^[a-f0-9]{32}$/.test(nonce)) return null;
+        return { instanceId, nonce };
+      } catch (_error) {
+        return null;
+      }
+    }
+
+    /** Narrow runtime info handed to the game in `init`. */
+    function createRuntimeInfo(fields) {
+      return {
+        sdkVersion: fields.sdkVersion,
+        protocolVersion: BRIDGE_VERSION,
+        runtimeVersion: fields.runtimeVersion,
+        gameId: fields.gameId,
+        gameVersion: fields.gameVersion,
+        locale: fields.locale || 'zh',
+        theme: fields.theme === 'dark' ? 'dark' : 'light',
+        reducedMotion: fields.reducedMotion === true,
+        capabilities: Array.isArray(fields.capabilities) ? fields.capabilities.slice() : [],
+        viewport: {
+          width: Number(fields.viewport?.width) || 0,
+          height: Number(fields.viewport?.height) || 0,
+          dpr: Number(fields.viewport?.dpr) || 1,
+        },
+        ready: fields.ready === true,
+      };
+    }
+
+    return { BRIDGE_VERSION, MAX_BRIDGE_MESSAGE_BYTES, MAX_BRIDGE_DEPTH, MAX_INFLIGHT_REQUESTS, MAX_INVALID_MESSAGES_PER_10S, MAX_MESSAGES_PER_SECOND, METHODS, EVENTS, RUNTIME_TO_GAME_METHODS, GAME_TO_RUNTIME_METHODS, isPlainObject, randomHex32, createInstanceId, createNonce, jsonByteLength, byteLength, cloneJsonValue, isValidStorageKey, protocolError, createRequest, createResponse, createErrorResponse, createEvent, envelopeByteSize, validateBridgeMessage, parseLaunchQuery, createRuntimeInfo };
+    })();
+
+    // module: packages/runtime/src/bridge.js
+    __mods["packages/runtime/src/bridge.js"] = (function () {
+    const PROTOCOL_VERSION = __mods["packages/shared/src/constants.js"].PROTOCOL_VERSION;
+    const GM = __mods["packages/shared/src/errors.js"].GM;
+    const isGmCode = __mods["packages/shared/src/errors.js"].isGmCode;
+    const EVENTS = __mods["packages/shared/src/protocol.js"].EVENTS;
+    const GAME_TO_RUNTIME_METHODS = __mods["packages/shared/src/protocol.js"].GAME_TO_RUNTIME_METHODS;
+    const MAX_INFLIGHT_REQUESTS = __mods["packages/shared/src/protocol.js"].MAX_INFLIGHT_REQUESTS;
+    const MAX_INVALID_MESSAGES_PER_10S = __mods["packages/shared/src/protocol.js"].MAX_INVALID_MESSAGES_PER_10S;
+    const MAX_MESSAGES_PER_SECOND = __mods["packages/shared/src/protocol.js"].MAX_MESSAGES_PER_SECOND;
+    const METHODS = __mods["packages/shared/src/protocol.js"].METHODS;
+    const createErrorResponse = __mods["packages/shared/src/protocol.js"].createErrorResponse;
+    const createEvent = __mods["packages/shared/src/protocol.js"].createEvent;
+    const createRequest = __mods["packages/shared/src/protocol.js"].createRequest;
+    const createResponse = __mods["packages/shared/src/protocol.js"].createResponse;
+    const isPlainObject = __mods["packages/shared/src/protocol.js"].isPlainObject;
+    const validateBridgeMessage = __mods["packages/shared/src/protocol.js"].validateBridgeMessage;
+    /**
+     * Trusted-side bridge (PRD §8.4 postMessage protocol).
+     *
+     * Pure message routing: source identity is injected by the controller; all
+     * timers and the outgoing `send` are injected so this module is testable
+     * without a DOM.
+     *
+     * Responsibilities:
+     *   - validate envelope structure, per-10s invalid budget, per-second rate;
+     *   - route game -> Runtime requests to `onRequest`, with per-method timeouts;
+     *   - serialize the documented write methods;
+     *   - send Runtime -> game requests (`ping`) and match responses by id;
+     *   - emit events (`init`, `pause`, `before-save`, ...).
+     */
+
+
+    const BRIDGE_METHOD_TIMEOUTS = Object.freeze({
+      ready: 10000,
+      ping: 2000,
+      'storage.save': 6000,
+      'storage.load': 3000,
+      'storage.remove': 3000,
+      'session.start': 4000,
+      'session.end': 6000,
+      'score.submit': 4000,
+      'score.getBest': 3000,
+      'agent.getStatus': 2000,
+    });
+
+    const WRITE_METHODS = Object.freeze([
+      METHODS.STORAGE_SAVE,
+      METHODS.STORAGE_REMOVE,
+      METHODS.SESSION_START,
+      METHODS.SESSION_END,
+      METHODS.SCORE_SUBMIT,
+    ]);
+
+    function bridgeError(code, message, retryable) {
+      return { code: isGmCode(code) ? code : GM.INTERNAL, message, retryable: retryable === true };
+    }
+
+    function normalizeError(error) {
+      if (error && isGmCode(error.code)) {
+        return bridgeError(error.code, error.message || 'Bridge request failed', error.retryable === true);
+      }
+      return bridgeError(GM.INTERNAL, 'Bridge request failed', false);
+    }
+
+    /**
+     * @param {{
+     *   instanceId: string,
+     *   nonce: string,
+     *   isTrustedSource: (source: unknown) => boolean,
+     *   send: (message: object) => void,
+     *   onRequest: (method: string, params: object) => Promise<unknown>|unknown,
+     *   onHello: (data: object) => void,
+     *   onFatal?: (error: {code:string,message:string,retryable:boolean}) => void,
+     *   timers?: {setTimeout: Function, clearTimeout: Function},
+     *   now?: () => number,
+     * }} options
+     */
+    function createRuntimeBridge(options = {}) {
+      const instanceId = options.instanceId;
+      const nonce = options.nonce;
+      const isTrustedSource =
+        typeof options.isTrustedSource === 'function' ? options.isTrustedSource : function alwaysFalse() { return false; };
+      const send = typeof options.send === 'function' ? options.send : function noop() {};
+      const onRequest = typeof options.onRequest === 'function' ? options.onRequest : function notFound() {};
+      const onHello = typeof options.onHello === 'function' ? options.onHello : function noop() {};
+      const onFatal = typeof options.onFatal === 'function' ? options.onFatal : function noop() {};
+      const timers = options.timers || globalThis;
+      const now = typeof options.now === 'function' ? options.now : Date.now;
+
+      let initialized = false;
+      let readyAcknowledged = false;
+      let destroyed = false;
+      let fatalSent = false;
+      let sequence = 0;
+      let writeTail = Promise.resolve();
+      const pending = new Map();
+      let invalidTimestamps = [];
+      let rateTimestamps = [];
+
+      function pruneWindow(list, windowMs, timestamp) {
+        const cutoff = timestamp - windowMs;
+        let index = 0;
+        while (index < list.length && list[index] <= cutoff) index += 1;
+        if (index > 0) list.splice(0, index);
+        return list;
+      }
+
+      function noteInvalid(code, message) {
+        if (destroyed) return;
+        const timestamp = now();
+        pruneWindow(invalidTimestamps, 10000, timestamp);
+        invalidTimestamps.push(timestamp);
+        if (invalidTimestamps.length > MAX_INVALID_MESSAGES_PER_10S && !fatalSent) {
+          fatalSent = true;
+          onFatal(bridgeError(GM.MESSAGE_INVALID, 'Too many invalid bridge messages', false));
+        }
+        return { code, message };
+      }
+
+      function trackRate() {
+        const timestamp = now();
+        pruneWindow(rateTimestamps, 1000, timestamp);
+        if (rateTimestamps.length >= MAX_MESSAGES_PER_SECOND) return false;
+        rateTimestamps.push(timestamp);
+        return true;
+      }
+
+      function sendResponse(id, result, error) {
+        const message = error ? createErrorResponse(id, error) : createResponse(id, result);
+        send(message);
+        return message;
+      }
+
+      function withTimeout(work, timeoutMs, method) {
+        return new Promise(function executor(resolve, reject) {
+          let settled = false;
+          const timer = timers.setTimeout(function onTimeout() {
+            if (settled) return;
+            settled = true;
+            reject(bridgeError(GM.BRIDGE_TIMEOUT, `Bridge request timed out: ${method}`, true));
+          }, timeoutMs);
+          Promise.resolve()
+            .then(work)
+            .then(
+              function onOk(value) {
+                if (settled) return;
+                settled = true;
+                timers.clearTimeout(timer);
+                resolve(value);
+              },
+              function onError(error) {
+                if (settled) return;
+                settled = true;
+                timers.clearTimeout(timer);
+                reject(error);
+              }
+            );
+        });
+      }
+
+      function enqueueWrite(work) {
+        const run = writeTail.then(work, work);
+        writeTail = run.then(function ignore() {}, function ignore() {});
+        return run;
+      }
+
+      function handleResponse(message) {
+        const entry = pending.get(message.id);
+        if (!entry) return null;
+        pending.delete(message.id);
+        timers.clearTimeout(entry.timer);
+        if (message.ok === true) {
+          entry.resolve(message.result === undefined ? null : message.result);
+        } else {
+          const error = message.error || {};
+          entry.reject(bridgeError(error.code || GM.INTERNAL, error.message || 'Bridge error', error.retryable === true));
+        }
+        return null;
+      }
+
+      function handleEvent(message) {
+        if (message.event !== EVENTS.HELLO) return null; // unknown game -> Runtime events are ignored
+        const data = message.data;
+        if (!isPlainObject(data) || data.instanceId !== instanceId || data.nonce !== nonce) {
+          noteInvalid(GM.MESSAGE_INVALID, 'Invalid hello identity');
+          return null;
+        }
+        onHello(data);
+        return null;
+      }
+
+      function handleRequest(message) {
+        if (!initialized) {
+          return Promise.resolve(
+            sendResponse(message.id, null, bridgeError(GM.NOT_READY, 'Handshake has not started', false))
+          );
+        }
+        if (!readyAcknowledged && message.method !== METHODS.READY) {
+          return Promise.resolve(sendResponse(message.id, null, bridgeError(GM.NOT_READY, 'Game is not ready', false)));
+        }
+        if (!GAME_TO_RUNTIME_METHODS.includes(message.method)) {
+          return Promise.resolve(
+            sendResponse(message.id, null, bridgeError(GM.UNKNOWN_METHOD, 'Unknown bridge method', false))
+          );
+        }
+        const params = message.params && typeof message.params === 'object' ? message.params : {};
+        const timeoutMs = BRIDGE_METHOD_TIMEOUTS[message.method] || 5000;
+        const run = function run() {
+          return withTimeout(function work() {
+            return onRequest(message.method, params);
+          }, timeoutMs, message.method);
+        };
+        const promise = WRITE_METHODS.includes(message.method) ? enqueueWrite(run) : run();
+        return promise.then(
+          function onResult(result) {
+            return sendResponse(message.id, result === undefined ? null : result);
+          },
+          function onFailure(error) {
+            return sendResponse(message.id, null, normalizeError(error));
+          }
+        );
+      }
+
+      function handleIncoming(data, source) {
+        if (destroyed) return Promise.resolve(null);
+        if (!isTrustedSource(source)) {
+          noteInvalid(GM.MESSAGE_INVALID, 'Untrusted bridge source');
+          return Promise.resolve(null);
+        }
+        if (!trackRate()) {
+          noteInvalid(GM.RATE_LIMITED, 'Bridge message rate exceeded');
+          return Promise.resolve(null);
+        }
+        const checked = validateBridgeMessage(data);
+        if (!checked.ok) {
+          noteInvalid(checked.code || GM.MESSAGE_INVALID, checked.message);
+          return Promise.resolve(null);
+        }
+        const message = checked.message;
+        try {
+          if (message.kind === 'res') return Promise.resolve(handleResponse(message));
+          if (message.kind === 'evt') return Promise.resolve(handleEvent(message));
+          return handleRequest(message).then(undefined, function ignore() { return null; });
+        } catch (_error) {
+          noteInvalid(GM.MESSAGE_INVALID, 'Bridge handler threw');
+          return Promise.resolve(null);
+        }
+      }
+
+      function sendRequest(method, params, timeoutMs) {
+        if (destroyed) return Promise.reject(bridgeError(GM.NO_RUNTIME, 'Game Runtime was closed', false));
+        if (pending.size >= MAX_INFLIGHT_REQUESTS) {
+          return Promise.reject(bridgeError(GM.BACKPRESSURE, 'Too many in-flight bridge requests', true));
+        }
+        const ms = typeof timeoutMs === 'number' && timeoutMs > 0 ? timeoutMs : BRIDGE_METHOD_TIMEOUTS[method] || 5000;
+        return new Promise(function executor(resolve, reject) {
+          sequence += 1;
+          const id = `rt-${sequence}`;
+          const timer = timers.setTimeout(function onTimeout() {
+            if (!pending.has(id)) return;
+            pending.delete(id);
+            reject(bridgeError(GM.BRIDGE_TIMEOUT, `Bridge request timed out: ${method}`, true));
+          }, ms);
+          pending.set(id, { resolve, reject, timer });
+          send(createRequest(id, method, params));
+        });
+      }
+
+      function sendEvent(event, data) {
+        if (destroyed) return false;
+        send(createEvent(event, data));
+        return true;
+      }
+
+      function markInitialized() {
+        initialized = true;
+      }
+
+      function isInitialized() {
+        return initialized;
+      }
+
+      function markReady() {
+        readyAcknowledged = true;
+      }
+
+      function isReadyAcknowledged() {
+        return readyAcknowledged;
+      }
+
+      function getInvalidCount() {
+        return invalidTimestamps.length;
+      }
+
+      function getPendingCount() {
+        return pending.size;
+      }
+
+      function destroy() {
+        if (destroyed) return;
+        destroyed = true;
+        for (const entry of pending.values()) {
+          timers.clearTimeout(entry.timer);
+          entry.reject(bridgeError(GM.NO_RUNTIME, 'Game Runtime was closed', false));
+        }
+        pending.clear();
+        invalidTimestamps = [];
+        rateTimestamps = [];
+      }
+
+      return {
+        handleIncoming,
+        sendRequest,
+        sendEvent,
+        markInitialized,
+        isInitialized,
+        markReady,
+        isReadyAcknowledged,
+        getInvalidCount,
+        getPendingCount,
+        destroy,
+      };
+    }
+
+    return { BRIDGE_METHOD_TIMEOUTS, createRuntimeBridge };
+    })();
+
+    // module: packages/runtime/src/requests.js
+    __mods["packages/runtime/src/requests.js"] = (function () {
+    const AGENT_LABELS_ZH = __mods["packages/shared/src/constants.js"].AGENT_LABELS_ZH;
+    const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+    const SESSION_OUTCOMES = __mods["packages/shared/src/constants.js"].SESSION_OUTCOMES;
+    const GM = __mods["packages/shared/src/errors.js"].GM;
+    const isGmCode = __mods["packages/shared/src/errors.js"].isGmCode;
+    const makeGameError = __mods["packages/shared/src/errors.js"].makeGameError;
+    const METHODS = __mods["packages/shared/src/protocol.js"].METHODS;
+    const isValidStorageKey = __mods["packages/shared/src/protocol.js"].isValidStorageKey;
+    /**
+     * Runtime-side request service (PRD §8.3 methods table).
+     *
+     * Pure logic: maps bridge methods onto the injected Host API client, applies
+     * save limits and capability checks, and turns everything into plain
+     * `{ code, message, retryable }` errors. No DOM, no timers.
+     */
+
+
+    const STORAGE_METHODS = Object.freeze([METHODS.STORAGE_SAVE, METHODS.STORAGE_LOAD, METHODS.STORAGE_REMOVE]);
+    const SCORE_METHODS = Object.freeze([METHODS.SCORE_SUBMIT, METHODS.SCORE_GET_BEST]);
+    const MAX_SCORE_ABS = 1e12;
+
+    function errorOf(code, message, options) {
+      return makeGameError(code, message, options);
+    }
+
+    function normalizeLimits(input) {
+      const source = input && typeof input === 'object' ? input : {};
+      return {
+        saveBytes: positiveInt(source.saveBytes, LIMITS.saveTotalBytes),
+        saveKeys: positiveInt(source.saveKeys, LIMITS.saveKeys),
+        scoreMetaBytes: positiveInt(source.scoreMetaBytes, LIMITS.scoreMetaBytes),
+      };
+    }
+
+    function positiveInt(value, fallback) {
+      return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : fallback;
+    }
+
+    function hasOwn(object, key) {
+      return Object.prototype.hasOwnProperty.call(object, key);
+    }
+
+    function idleSnapshot(timestamp) {
+      return {
+        state: 'idle',
+        label: AGENT_LABELS_ZH.idle,
+        labelKey: null,
+        sessionId: null,
+        updatedAt: timestamp,
+        source: 'lifecycle',
+        seq: 0,
+        since: timestamp,
+        turnId: null,
+      };
+    }
+
+    /** Validate the JSON value once more on the Runtime side (defense in depth). */
+    function checkSerializable(value) {
+      let text;
+      try {
+        text = JSON.stringify(value);
+      } catch (_error) {
+        throw errorOf(GM.VALUE_NOT_SERIALIZABLE, 'Value is not JSON-serializable');
+      }
+      if (text === undefined) throw errorOf(GM.VALUE_NOT_SERIALIZABLE, 'Value is not JSON-serializable');
+      return text;
+    }
+
+    function rejectUnsafeProto(value, depth) {
+      if (depth > 32 || value === null || typeof value !== 'object') return;
+      if (Array.isArray(value)) {
+        for (const item of value) rejectUnsafeProto(item, depth + 1);
+        return;
+      }
+      for (const key of Object.keys(value)) {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+          throw errorOf(GM.VALUE_NOT_SERIALIZABLE, `Forbidden key: ${key}`);
+        }
+        rejectUnsafeProto(value[key], depth + 1);
+      }
+    }
+
+    /**
+     * @param {{
+     *   api: object,
+     *   getGameId: () => string,
+     *   getAgentSnapshot: () => object|null,
+     *   onSaveOutcome?: (outcome: {ok: boolean, error?: object}) => void,
+     *   capabilities?: string[],
+     *   limits?: object,
+     *   now?: () => number,
+     * }} options
+     */
+    function createRequestService(options = {}) {
+      const api = options.api;
+      const getGameId = typeof options.getGameId === 'function' ? options.getGameId : function noGame() { return null; };
+      const getAgentSnapshot =
+        typeof options.getAgentSnapshot === 'function' ? options.getAgentSnapshot : function noAgent() { return null; };
+      const onSaveOutcome =
+        typeof options.onSaveOutcome === 'function' ? options.onSaveOutcome : function noop() {};
+      const now = typeof options.now === 'function' ? options.now : Date.now;
+      const capabilities = Array.isArray(options.capabilities) ? options.capabilities.slice() : [];
+      const limits = normalizeLimits(options.limits);
+      const keySizes = new Map();
+      let playSessionId = null;
+      let revision = 0;
+
+      function requireCapability(name) {
+        if (!capabilities.includes(name)) {
+          throw errorOf(GM.CAPABILITY_DENIED, `Game did not declare the "${name}" capability`);
+        }
+      }
+
+      function requireGameId() {
+        const gameId = getGameId();
+        if (typeof gameId !== 'string' || gameId.length === 0) {
+          throw errorOf(GM.INVALID_PARAM, 'Game instance has no gameId');
+        }
+        return gameId;
+      }
+
+      function totalBytes() {
+        let total = 0;
+        for (const bytes of keySizes.values()) total += bytes;
+        return total;
+      }
+
+      function assertStorageKey(key) {
+        if (!isValidStorageKey(key)) throw errorOf(GM.STORAGE_KEY_INVALID, 'Invalid storage key');
+      }
+
+      async function storageSave(params) {
+        requireCapability('storage');
+        const gameId = requireGameId();
+        const key = params.key;
+        assertStorageKey(key);
+        if (!hasOwn(params, 'data')) throw errorOf(GM.INVALID_PARAM, 'storage.save requires data');
+        const data = params.data;
+        rejectUnsafeProto(data, 0);
+        const serialized = checkSerializable(data);
+        const bytes = typeof TextEncoder === 'function' ? new TextEncoder().encode(serialized).length : serialized.length;
+        if (bytes > LIMITS.saveValueBytes) {
+          throw errorOf(GM.SAVE_TOO_LARGE, `Value exceeds ${LIMITS.saveValueBytes} bytes`);
+        }
+        const previous = keySizes.has(key) ? keySizes.get(key) : 0;
+        if (!keySizes.has(key) && keySizes.size >= limits.saveKeys) {
+          throw errorOf(GM.STORAGE_QUOTA, `Save has more than ${limits.saveKeys} keys`);
+        }
+        if (totalBytes() - previous + bytes > limits.saveBytes) {
+          throw errorOf(GM.STORAGE_QUOTA, `Save exceeds ${limits.saveBytes} bytes`);
+        }
+
+        try {
+          const result = await api.setSave({ gameId, key, data });
+          keySizes.set(key, bytes);
+          if (result && typeof result.revision === 'number') revision = result.revision;
+          onSaveOutcome({ ok: true });
+          return {
+            key,
+            bytes,
+            revision: result && typeof result.revision === 'number' ? result.revision : revision,
+            updatedAt: result && result.updatedAt ? result.updatedAt : null,
+          };
+        } catch (error) {
+          onSaveOutcome({ ok: false, error: normalizeApiError(error) });
+          throw error;
+        }
+      }
+
+      async function storageLoad(params) {
+        requireCapability('storage');
+        const gameId = requireGameId();
+        const key = params.key;
+        assertStorageKey(key);
+        let save;
+        try {
+          save = await api.getSave(gameId, { includeData: true });
+        } catch (error) {
+          if (error && error.code === GM.SAVE_NOT_FOUND) return null;
+          throw error;
+        }
+        if (!save || typeof save !== 'object') return null;
+        if (typeof save.revision === 'number') revision = save.revision;
+        const values = save.values && typeof save.values === 'object' ? save.values : {};
+        if (!hasOwn(values, key)) return null;
+        return {
+          key,
+          data: values[key],
+          revision: typeof save.revision === 'number' ? save.revision : revision,
+          updatedAt: save.updatedAt || null,
+        };
+      }
+
+      async function storageRemove(params) {
+        requireCapability('storage');
+        const gameId = requireGameId();
+        const key = params.key;
+        assertStorageKey(key);
+        let result;
+        try {
+          if (typeof api.removeSave === 'function') {
+            result = await api.removeSave({ gameId, key });
+          } else {
+            // V0 Host API only exposes POST /save; `data: null` means "remove this key".
+            // (Interface gap reported to Lead; see runtime README/report.)
+            result = await api.setSave({ gameId, key, data: null });
+          }
+        } catch (error) {
+          onSaveOutcome({ ok: false, error: normalizeApiError(error) });
+          throw error;
+        }
+        keySizes.delete(key);
+        if (result && typeof result.revision === 'number') revision = result.revision;
+        onSaveOutcome({ ok: true });
+        return {
+          key,
+          removed: true,
+          revision: result && typeof result.revision === 'number' ? result.revision : revision,
+        };
+      }
+
+      async function sessionStart() {
+        const gameId = requireGameId();
+        const result = await api.startSession({ gameId });
+        playSessionId = result && result.playSessionId ? result.playSessionId : null;
+        return {
+          playSessionId: result && result.playSessionId ? result.playSessionId : null,
+          startedAt: result && result.startedAt ? result.startedAt : null,
+          adopted: Boolean(result && result.adopted),
+        };
+      }
+
+      async function sessionEnd(params) {
+        const gameId = requireGameId();
+        const outcome = params.outcome === undefined ? 'completed' : params.outcome;
+        if (!SESSION_OUTCOMES.includes(outcome)) throw errorOf(GM.INVALID_PARAM, 'Invalid session outcome');
+        let score = null;
+        if (params.score !== undefined && params.score !== null) {
+          if (typeof params.score !== 'number' || !Number.isFinite(params.score) || Math.abs(params.score) > MAX_SCORE_ABS) {
+            throw errorOf(GM.INVALID_PARAM, 'Invalid session score');
+          }
+          score = params.score;
+        }
+        if (!playSessionId) return null;
+        const activePlaySessionId = playSessionId;
+        const result = await api.endSession({ gameId, playSessionId: activePlaySessionId, outcome, score });
+        playSessionId = null;
+        return result || null;
+      }
+
+      async function scoreSubmit(params) {
+        requireCapability('score');
+        const gameId = requireGameId();
+        const score = params.score;
+        if (typeof score !== 'number' || !Number.isFinite(score) || Math.abs(score) > MAX_SCORE_ABS) {
+          throw errorOf(GM.INVALID_PARAM, 'Score must be a finite number');
+        }
+        let meta = params.meta === undefined ? null : params.meta;
+        if (meta !== null) {
+          rejectUnsafeProto(meta, 0);
+          const text = checkSerializable(meta);
+          const bytes = typeof TextEncoder === 'function' ? new TextEncoder().encode(text).length : text.length;
+          if (bytes > limits.scoreMetaBytes) throw errorOf(GM.INVALID_PARAM, 'Score meta is too large');
+        }
+        const result = await api.submitScore({ gameId, score, meta, playSessionId });
+        const best = result && result.best && typeof result.best === 'object' ? result.best.value : result && result.best;
+        return {
+          best: typeof best === 'number' ? best : null,
+          isBest: Boolean(result && result.isBest),
+          submittedAt: result && result.submittedAt ? result.submittedAt : null,
+        };
+      }
+
+      async function scoreGetBest() {
+        requireCapability('score');
+        const gameId = requireGameId();
+        const result = await api.getScores(gameId);
+        const best = result && result.best ? result.best : null;
+        if (!best) return null;
+        return {
+          score: typeof best.value === 'number' ? best.value : 0,
+          achievedAt: best.achievedAt || null,
+          meta: best.meta === undefined ? null : best.meta,
+        };
+      }
+
+      function agentGetStatus() {
+        const snapshot = getAgentSnapshot();
+        if (!snapshot || typeof snapshot !== 'object') {
+          return idleSnapshot(new Date(now()).toISOString());
+        }
+        return snapshot;
+      }
+
+      async function handle(method, params) {
+        const input = params && typeof params === 'object' ? params : {};
+        if (STORAGE_METHODS.includes(method)) return handleStorage(method, input);
+        if (SCORE_METHODS.includes(method)) return handleScore(method, input);
+        if (method === METHODS.SESSION_START) return sessionStart();
+        if (method === METHODS.SESSION_END) return sessionEnd(input);
+        if (method === METHODS.AGENT_GET_STATUS) return agentGetStatus();
+        throw errorOf(GM.UNKNOWN_METHOD, `Unknown method: ${String(method)}`);
+      }
+
+      function handleStorage(method, params) {
+        if (method === METHODS.STORAGE_SAVE) return storageSave(params);
+        if (method === METHODS.STORAGE_LOAD) return storageLoad(params);
+        return storageRemove(params);
+      }
+
+      function handleScore(method, params) {
+        if (method === METHODS.SCORE_SUBMIT) return scoreSubmit(params);
+        return scoreGetBest();
+      }
+
+      return {
+        handle,
+        getPlaySessionId: function getPlaySessionId() {
+          return playSessionId;
+        },
+        getRevision: function getRevision() {
+          return revision;
+        },
+        getKeyCount: function getKeyCount() {
+          return keySizes.size;
+        },
+        getTotalBytes: totalBytes,
+      };
+    }
+
+    /** Turn a GameMarketApiError / GM-shaped object into the bridge error payload. */
+    function normalizeApiError(error) {
+      if (error && isGmCode(error.code)) {
+        return { code: error.code, message: error.message || 'Game Market request failed', retryable: error.retryable === true };
+      }
+      return { code: GM.INTERNAL, message: 'Game Market request failed', retryable: false };
+    }
+
+    return { createRequestService, normalizeApiError };
+    })();
+
+    // module: packages/runtime/src/scheduler.js
+    __mods["packages/runtime/src/scheduler.js"] = (function () {
+    const TIMING = __mods["packages/shared/src/constants.js"].TIMING;
+    /**
+     * Autosave scheduler (PRD §8.4 / D-005).
+     *
+     * Pure timer logic with injected clock; the controller provides the bridge
+     * `before-save` sender and forwards storage.save outcomes back via `noteSave`.
+     *
+     * Guarantees:
+     *   - while started: one `before-save` every `autosaveMs` (paused/error stop it);
+     *   - a forced save awaits the game's storage.save, up to `saveTimeoutMs`;
+     *   - at most one save runs and at most one is queued (extra triggers coalesce);
+     *   - failures never delete the previous save; the result carries `saveStale`.
+     */
+
+
+    /**
+     * @param {{
+     *   sendBeforeSave: (reason: string) => void,
+     *   onStatus?: (status: 'idle'|'saving'|'saved'|'failed', at: number|null) => void,
+     *   timers?: {setTimeout: Function, clearTimeout: Function},
+     *   now?: () => number,
+     *   autosaveMs?: number,
+     *   saveTimeoutMs?: number,
+     *   deadlineMs?: number,
+     * }} options
+     */
+    function createSaveScheduler(options = {}) {
+      const timers = options.timers || globalThis;
+      const now = typeof options.now === 'function' ? options.now : Date.now;
+      const autosaveMs = positiveNumber(options.autosaveMs, TIMING.autosaveMs);
+      const saveTimeoutMs = positiveNumber(options.saveTimeoutMs, TIMING.saveTimeoutMs);
+      const deadlineMs = positiveNumber(options.deadlineMs, saveTimeoutMs);
+      const sendBeforeSave =
+        typeof options.sendBeforeSave === 'function' ? options.sendBeforeSave : function noop() {};
+      const onStatus = typeof options.onStatus === 'function' ? options.onStatus : function noop() {};
+
+      let intervalTimer = null;
+      let started = false;
+      let destroyed = false;
+      let active = null;
+      let queued = null;
+
+      function positiveNumber(value, fallback) {
+        return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : fallback;
+      }
+
+      function setStatus(status) {
+        onStatus(status, status === 'idle' ? null : now());
+      }
+
+      function record(result) {
+        setStatus(result.ok ? 'saved' : 'failed');
+        return result;
+      }
+
+      function scheduleInterval() {
+        if (!started || destroyed || intervalTimer !== null) return;
+        intervalTimer = timers.setTimeout(function onInterval() {
+          intervalTimer = null;
+          trigger('interval');
+          scheduleInterval();
+        }, autosaveMs);
+      }
+
+      function start() {
+        if (destroyed || started) return;
+        started = true;
+        scheduleInterval();
+      }
+
+      function stop() {
+        if (!started) return;
+        started = false;
+        if (intervalTimer !== null) {
+          timers.clearTimeout(intervalTimer);
+          intervalTimer = null;
+        }
+      }
+
+      function begin(reason, waiters) {
+        let settled = false;
+        const finish = function finish(outcome) {
+          if (settled) return;
+          settled = true;
+          if (active && active.timer !== null) {
+            timers.clearTimeout(active.timer);
+          }
+          active = null;
+          const result = {
+            ok: outcome.ok === true,
+            saveStale: outcome.ok !== true,
+            skipped: outcome.skipped === true,
+            reason,
+          };
+          record(result);
+          for (const waiter of waiters) waiter.resolve(result);
+          if (queued) {
+            const next = queued;
+            queued = null;
+            begin(next.reason, next.waiters);
+          }
+        };
+
+        setStatus('saving');
+        active = {
+          reason,
+          waiters,
+          settle: finish,
+          timer: timers.setTimeout(function onTimeout() {
+            finish({ ok: false, skipped: true });
+          }, saveTimeoutMs),
+        };
+        try {
+          sendBeforeSave(reason, { deadlineMs });
+        } catch (_error) {
+          finish({ ok: false });
+        }
+      }
+
+      /**
+       * Request a save. Concurrent calls are coalesced into one queued run.
+       * @param {string} reason interval|pause|hidden|leave|agent-complete
+       * @returns {Promise<{ok:boolean, saveStale:boolean, skipped:boolean, reason:string}>}
+       */
+      function save(reason) {
+        const effectiveReason = typeof reason === 'string' && reason ? reason : 'interval';
+        if (destroyed) {
+          return Promise.resolve({ ok: false, saveStale: true, skipped: true, reason: effectiveReason });
+        }
+        return new Promise(function executor(resolve) {
+          if (active) {
+            if (queued) {
+              queued.waiters.push({ resolve });
+            } else {
+              queued = { reason: effectiveReason, waiters: [{ resolve }] };
+            }
+            return;
+          }
+          begin(effectiveReason, [{ resolve }]);
+        });
+      }
+
+      /** Alias used by the 30s cadence: fire-and-forget, result still reported via status. */
+      function trigger(reason) {
+        return save(reason);
+      }
+
+      /**
+       * Called by the request service when the game's storage.save settles.
+       * @returns {boolean} true when an in-flight save consumed the outcome
+       */
+      function noteSave(outcome) {
+        if (!active) return false;
+        active.settle({ ok: Boolean(outcome && outcome.ok), skipped: false });
+        return true;
+      }
+
+      function isSaving() {
+        return active !== null;
+      }
+
+      function isStarted() {
+        return started;
+      }
+
+      function pending() {
+        return (active ? 1 : 0) + (queued ? 1 : 0);
+      }
+
+      function destroy() {
+        destroyed = true;
+        stop();
+        if (active) {
+          if (active.timer !== null) timers.clearTimeout(active.timer);
+          const cancelled = { ok: false, saveStale: true, skipped: true, reason: active.reason };
+          for (const waiter of active.waiters) waiter.resolve(cancelled);
+        }
+        if (queued) {
+          const cancelledQueued = { ok: false, saveStale: true, skipped: true, reason: queued.reason };
+          for (const waiter of queued.waiters) waiter.resolve(cancelledQueued);
+        }
+        active = null;
+        queued = null;
+      }
+
+      return { start, stop, save, trigger, noteSave, isSaving, isStarted, pending, destroy };
+    }
+
+    return { createSaveScheduler };
+    })();
+
+    // module: packages/runtime/src/state-machine.js
+    __mods["packages/runtime/src/state-machine.js"] = (function () {
+    /**
+     * Runtime page state machine (PRD §8.4).
+     *
+     * `ready` and `saving` are transient states; the controller leaves them on its
+     * own timers. Illegal transitions are ignored (and can be reported through
+     * `onInvalidTransition`) so a misbehaving game or a late timer can never drive
+     * the controller into an impossible state.
+     */
+
+    const RUNTIME_STATES = Object.freeze([
+      'idle',
+      'loading',
+      'ready',
+      'playing',
+      'paused',
+      'saving',
+      'error',
+      'exited',
+    ]);
+
+    const ALLOWED = Object.freeze({
+      idle: Object.freeze(['loading', 'exited']),
+      loading: Object.freeze(['ready', 'error', 'exited']),
+      ready: Object.freeze(['playing', 'paused', 'loading', 'error', 'exited']),
+      playing: Object.freeze(['paused', 'saving', 'loading', 'error', 'exited']),
+      paused: Object.freeze(['playing', 'saving', 'loading', 'error', 'exited']),
+      saving: Object.freeze(['paused', 'playing', 'loading', 'error', 'exited']),
+      error: Object.freeze(['loading', 'exited']),
+      exited: Object.freeze(['loading']),
+    });
+
+    function isRuntimeState(value) {
+      return RUNTIME_STATES.includes(value);
+    }
+
+    function canTransition(from, to) {
+      if (!isRuntimeState(from) || !isRuntimeState(to)) return false;
+      if (from === to) return false;
+      const allowed = ALLOWED[from];
+      return Boolean(allowed && allowed.includes(to));
+    }
+
+    /**
+     * @param {{initial?: string, onInvalidTransition?: (from: string, to: string) => void}} [options]
+     */
+    function createStateMachine(options = {}) {
+      const initial = isRuntimeState(options.initial) ? options.initial : 'idle';
+      const onInvalidTransition =
+        typeof options.onInvalidTransition === 'function' ? options.onInvalidTransition : function noop() {};
+      let current = initial;
+
+      function get() {
+        return current;
+      }
+
+      function can(to) {
+        return canTransition(current, to);
+      }
+
+      function transition(to) {
+        if (!isRuntimeState(to)) {
+          onInvalidTransition(current, String(to));
+          return false;
+        }
+        if (!canTransition(current, to)) {
+          onInvalidTransition(current, to);
+          return false;
+        }
+        current = to;
+        return true;
+      }
+
+      /** Quiet reset used when a controller relaunches before emitting a loading state. */
+      function reset(next) {
+        current = isRuntimeState(next) ? next : 'idle';
+        return current;
+      }
+
+      return { get, can, transition, reset };
+    }
+
+    return { RUNTIME_STATES, isRuntimeState, canTransition, createStateMachine };
+    })();
+
+    // module: packages/runtime/src/controller.js
+    __mods["packages/runtime/src/controller.js"] = (function () {
+    const INSTANCE_ID_PATTERN = __mods["packages/shared/src/constants.js"].INSTANCE_ID_PATTERN;
+    const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+    const NONCE_PATTERN = __mods["packages/shared/src/constants.js"].NONCE_PATTERN;
+    const RUNTIME_VERSION = __mods["packages/shared/src/constants.js"].RUNTIME_VERSION;
+    const SDK_VERSION = __mods["packages/shared/src/constants.js"].SDK_VERSION;
+    const TIMING = __mods["packages/shared/src/constants.js"].TIMING;
+    const GM = __mods["packages/shared/src/errors.js"].GM;
+    const defaultMessageFor = __mods["packages/shared/src/errors.js"].defaultMessageFor;
+    const isGmCode = __mods["packages/shared/src/errors.js"].isGmCode;
+    const makeGameError = __mods["packages/shared/src/errors.js"].makeGameError;
+    const BRIDGE_VERSION = __mods["packages/shared/src/protocol.js"].BRIDGE_VERSION;
+    const EVENTS = __mods["packages/shared/src/protocol.js"].EVENTS;
+    const METHODS = __mods["packages/shared/src/protocol.js"].METHODS;
+    const isPlainObject = __mods["packages/shared/src/protocol.js"].isPlainObject;
+    const createRuntimeBridge = __mods["packages/runtime/src/bridge.js"].createRuntimeBridge;
+    const createRequestService = __mods["packages/runtime/src/requests.js"].createRequestService;
+    const createSaveScheduler = __mods["packages/runtime/src/scheduler.js"].createSaveScheduler;
+    const createStateMachine = __mods["packages/runtime/src/state-machine.js"].createStateMachine;
+    /**
+     * Game Runtime controller (PRD §8.4 / §9.6).
+     *
+     * Owns the single sandbox iframe, the bridge, the autosave scheduler and the
+     * page state machine. The DOM layer is deliberately thin: tests inject a fake
+     * `window` / `document` / clock into this same controller.
+     *
+     * Security invariants:
+     *   - exactly one iframe, `sandbox="allow-scripts"` (never allow-same-origin);
+     *   - no game data is placed in host DOM attributes;
+     *   - the game never receives DSH objects, paths or credentials.
+     */
+
+
+    const SUPPORTED_SDK_RANGE = '>=0.1.0 <0.2.0';
+    const PAUSE_REASONS = Object.freeze(['user', 'hidden', 'leave', 'waiting-user']);
+    const VIEWPORT_THROTTLE_MS = 200;
+    const PING_TIMEOUT_MS = 2000;
+    const MAX_PING_MISSES = 3;
+
+    function noop() {}
+
+    function pauseSaveReason(reason) {
+      if (reason === 'hidden') return 'hidden';
+      if (reason === 'leave' || reason === 'waiting-user') return 'leave';
+      return 'pause';
+    }
+
+    function readEntryQuery(entryUrl) {
+      try {
+        const base = typeof location !== 'undefined' && location && location.href ? location.href : 'http://dsh-game.local/';
+        return new URL(entryUrl, base).searchParams;
+      } catch (_error) {
+        try {
+          return new URLSearchParams(String(entryUrl).split('?')[1] || '');
+        } catch (_error2) {
+          return new URLSearchParams('');
+        }
+      }
+    }
+
+    function normalizeLimits(input) {
+      const source = input && typeof input === 'object' ? input : {};
+      return {
+        saveBytes: positiveInt(source.saveBytes, LIMITS.saveTotalBytes),
+        saveKeys: positiveInt(source.saveKeys, LIMITS.saveKeys),
+        scoreMetaBytes: positiveInt(source.scoreMetaBytes, LIMITS.scoreMetaBytes),
+      };
+    }
+
+    function positiveInt(value, fallback) {
+      return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : fallback;
+    }
+
+    function normalizeLaunchInfo(info) {
+      if (!isPlainObject(info)) throw makeGameError(GM.INVALID_PARAM, 'launch requires a LaunchInfo object');
+      if (typeof info.entryUrl !== 'string' || info.entryUrl.length === 0) {
+        throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo.entryUrl must be a non-empty string');
+      }
+      if (typeof info.instanceId !== 'string' || !INSTANCE_ID_PATTERN.test(info.instanceId)) {
+        throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo.instanceId must be 32 lowercase hex characters');
+      }
+      if (typeof info.nonce !== 'string' || !NONCE_PATTERN.test(info.nonce)) {
+        throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo.nonce must be 32 lowercase hex characters');
+      }
+      const query = readEntryQuery(info.entryUrl);
+      // LaunchInfo (shared contract) has no gameId/gameVersion fields; the Host puts
+      // them in entryUrl. Accept explicit fields too, for forward compatibility.
+      const gameId = typeof info.gameId === 'string' && info.gameId ? info.gameId : query.get('gameId');
+      if (!gameId) throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo is missing gameId (entryUrl query)');
+      const gameVersion =
+        (typeof info.gameVersion === 'string' && info.gameVersion) ||
+        query.get('version') ||
+        query.get('gameVersion') ||
+        '0.0.0';
+      return {
+        gameId,
+        gameVersion,
+        entryUrl: info.entryUrl,
+        instanceId: info.instanceId,
+        nonce: info.nonce,
+        mode: info.mode === 'resume-paused' ? 'resume-paused' : 'start',
+        capabilities: Array.isArray(info.capabilities) ? info.capabilities.slice() : [],
+        limits: normalizeLimits(info.limits),
+        viewport: info.viewport && typeof info.viewport === 'object' ? info.viewport : { width: 960, height: 540, fit: 'contain' },
+        runtimeVersion: typeof info.runtimeVersion === 'string' ? info.runtimeVersion : RUNTIME_VERSION,
+        sdkVersion: typeof info.sdkVersion === 'string' ? info.sdkVersion : SDK_VERSION,
+      };
+    }
+
+    function normalizeEnvironment(input) {
+      const source = input && typeof input === 'object' ? input : {};
+      return {
+        theme: source.theme === 'dark' ? 'dark' : 'light',
+        reducedMotion: source.reducedMotion === true,
+        locale: typeof source.locale === 'string' && source.locale ? source.locale : 'zh',
+      };
+    }
+
+    /**
+     * @param {{
+     *   container: object,
+     *   api: object,
+     *   environment?: {theme: string, reducedMotion: boolean, locale: string},
+     *   onEvent?: (event: object) => void,
+     *   window?: object,
+     *   document?: object,
+     *   timers?: {setTimeout: Function, clearTimeout: Function},
+     *   now?: () => number,
+     * }} options
+     */
+    function createGameController(options = {}) {
+      const container = options.container;
+      const api = options.api;
+      if (!container || typeof container.appendChild !== 'function') {
+        throw new Error('createGameRuntime requires a container element');
+      }
+      if (!api || typeof api.setSave !== 'function' || typeof api.getSave !== 'function') {
+        throw new Error('createGameRuntime requires an API client');
+      }
+      const win = options.window || (typeof window !== 'undefined' ? window : null);
+      const doc = options.document || (win && win.document) || (typeof document !== 'undefined' ? document : null);
+      const timers = options.timers || globalThis;
+      const now = typeof options.now === 'function' ? options.now : Date.now;
+      const emitRaw = typeof options.onEvent === 'function' ? options.onEvent : noop;
+
+      let environment = normalizeEnvironment(options.environment);
+      let launchInfo = null;
+      let iframe = null;
+      let iframeWindow = null;
+      let iframeLoaded = false;
+      let bridge = null;
+      let scheduler = null;
+      let requests = null;
+      let destroyed = false;
+      let generation = 0;
+      let viewport = { width: 0, height: 0, dpr: 1 };
+      let agentSnapshot = null;
+
+      let handshakeTimer = null;
+      let loadSlowTimer = null;
+      let loadErrorTimer = null;
+      let readyFinalizeTimer = null;
+      let pingTimer = null;
+      let pingActive = false;
+      let viewportTimer = null;
+      let pingMisses = 0;
+      let pausePromise = null;
+      let hiddenPaused = false;
+      let hiddenPausePromise = null;
+
+      let resizeObserver = null;
+      let messageHandler = null;
+      let visibilityHandler = null;
+      let resizeHandler = null;
+      let iframeLoadHandler = null;
+      let iframeErrorHandler = null;
+
+      const machine = createStateMachine({ initial: 'idle' });
+
+      function emit(event) {
+        try {
+          emitRaw(event);
+        } catch (_error) {
+          // Consumer callbacks must never break the runtime loop.
+        }
+      }
+
+      function emitError(code, message, retryable) {
+        const error = {
+          code: isGmCode(code) ? code : GM.INTERNAL,
+          message: message || defaultMessageFor(code) || 'Runtime error',
+          retryable: retryable === true,
+        };
+        emit({ type: 'error', error });
+        return error;
+      }
+
+      function clearTimer(timer) {
+        if (timer !== null && timer !== undefined) timers.clearTimeout(timer);
+        return null;
+      }
+
+      function enterState(next) {
+        if (!machine.transition(next)) return false;
+        emit({ type: 'state', state: next });
+        if (scheduler) {
+          if (next === 'playing') scheduler.start();
+          else scheduler.stop();
+        }
+        return true;
+      }
+
+      function measureViewport() {
+        let width = 0;
+        let height = 0;
+        if (container && typeof container.getBoundingClientRect === 'function') {
+          const rect = container.getBoundingClientRect();
+          width = Math.round(rect && Number.isFinite(rect.width) ? rect.width : 0);
+          height = Math.round(rect && Number.isFinite(rect.height) ? rect.height : 0);
+        }
+        if ((!width || !height) && container) {
+          width = width || Number(container.clientWidth) || 0;
+          height = height || Number(container.clientHeight) || 0;
+        }
+        const dpr = win && typeof win.devicePixelRatio === 'number' && win.devicePixelRatio > 0 ? win.devicePixelRatio : 1;
+        return { width, height, dpr };
+      }
+
+      function sendToGame(message) {
+        if (!iframeWindow || typeof iframeWindow.postMessage !== 'function') return;
+        try {
+          iframeWindow.postMessage(message, '*');
+        } catch (_error) {
+          // The iframe may have navigated away; heartbeat/load error handling covers it.
+        }
+      }
+
+      function buildInitData() {
+        return {
+          protocolVersion: BRIDGE_VERSION,
+          instanceId: launchInfo.instanceId,
+          nonce: launchInfo.nonce,
+          gameId: launchInfo.gameId,
+          gameVersion: launchInfo.gameVersion,
+          runtimeVersion: launchInfo.runtimeVersion,
+          sdkVersion: launchInfo.sdkVersion,
+          supportedSdkRange: SUPPORTED_SDK_RANGE,
+          locale: environment.locale,
+          theme: environment.theme,
+          reducedMotion: environment.reducedMotion,
+          capabilities: launchInfo.capabilities.slice(),
+          limits: {
+            saveBytes: launchInfo.limits.saveBytes,
+            saveKeys: launchInfo.limits.saveKeys,
+            scoreMetaBytes: launchInfo.limits.scoreMetaBytes,
+          },
+          viewport: { width: viewport.width, height: viewport.height, dpr: viewport.dpr },
+        };
+      }
+
+      function buildRuntimeInfo() {
+        return {
+          sdkVersion: launchInfo.sdkVersion,
+          protocolVersion: BRIDGE_VERSION,
+          runtimeVersion: launchInfo.runtimeVersion,
+          gameId: launchInfo.gameId,
+          gameVersion: launchInfo.gameVersion,
+          locale: environment.locale,
+          theme: environment.theme,
+          reducedMotion: environment.reducedMotion,
+          capabilities: launchInfo.capabilities.slice(),
+          viewport: { width: viewport.width, height: viewport.height, dpr: viewport.dpr },
+          ready: true,
+        };
+      }
+
+      function handleSaveOutcome(outcome) {
+        if (scheduler && scheduler.noteSave(outcome)) return;
+        emit({ type: 'save-status', status: outcome && outcome.ok ? 'saved' : 'failed', at: now() });
+      }
+
+      function handleHello() {
+        if (!bridge) return;
+        bridge.markInitialized();
+        bridge.sendEvent(EVENTS.INIT, buildInitData());
+        if (agentSnapshot) bridge.sendEvent(EVENTS.AGENT_STATUS, agentSnapshot);
+      }
+
+      function handleReady(params) {
+        if (!bridge || !launchInfo) throw makeGameError(GM.NOT_READY, 'Game Runtime is not launched');
+        const protocolVersion = params ? params.protocolVersion : undefined;
+        if (protocolVersion !== undefined && protocolVersion !== BRIDGE_VERSION) {
+          fail(GM.PROTOCOL_MISMATCH, 'Game protocol version is not supported');
+          throw makeGameError(GM.PROTOCOL_MISMATCH, 'Game protocol version is not supported');
+        }
+        if (bridge.isReadyAcknowledged()) return buildRuntimeInfo();
+        handshakeTimer = clearTimer(handshakeTimer);
+        bridge.markReady();
+        enterState('ready');
+        if (iframeLoaded) startPing();
+        readyFinalizeTimer = timers.setTimeout(function finalize() {
+          readyFinalizeTimer = null;
+          finalizeReadyState();
+        }, 0);
+        return buildRuntimeInfo();
+      }
+
+      function finalizeReadyState() {
+        if (destroyed || !bridge || !launchInfo || machine.get() !== 'ready') return;
+        if (launchInfo.mode === 'resume-paused') {
+          bridge.sendEvent(EVENTS.PAUSE, { reason: 'user', at: now() });
+          enterState('paused');
+        } else {
+          enterState('playing');
+        }
+      }
+
+      function handleBridgeRequest(method, params) {
+        if (method === METHODS.READY) return handleReady(params);
+        if (!requests) throw makeGameError(GM.NO_RUNTIME, 'Game Runtime is not available');
+        return requests.handle(method, params);
+      }
+
+      function handleMessage(event) {
+        if (!event || !bridge) return;
+        try {
+          const result = bridge.handleIncoming(event.data, event.source);
+          if (result && typeof result.catch === 'function') result.catch(noop);
+        } catch (_error) {
+          // Malformed events never escape the listener.
+        }
+      }
+
+      function startPing() {
+        if (pingActive) return;
+        pingActive = true;
+        pingMisses = 0;
+        sendPing();
+        schedulePingTick();
+      }
+
+      function schedulePingTick() {
+        if (destroyed || !bridge) return;
+        pingTimer = timers.setTimeout(function pingTick() {
+          pingTimer = null;
+          if (destroyed || !bridge) return;
+          sendPing();
+          schedulePingTick();
+        }, TIMING.iframePingMs);
+      }
+
+      function sendPing() {
+        if (!bridge) return;
+        bridge.sendRequest(METHODS.PING, { at: now() }, PING_TIMEOUT_MS).then(
+          function onPong() {
+            pingMisses = 0;
+          },
+          function onMiss() {
+            pingMisses += 1;
+            if (pingMisses >= MAX_PING_MISSES && !destroyed) {
+              stopPing();
+              fail(GM.IFRAME_UNRESPONSIVE, 'Game is not responding');
+            }
+          }
+        );
+      }
+
+      function stopPing() {
+        pingActive = false;
+        pingTimer = clearTimer(pingTimer);
+      }
+
+      function fail(code, message, retryable) {
+        if (destroyed) return;
+        handshakeTimer = clearTimer(handshakeTimer);
+        loadSlowTimer = clearTimer(loadSlowTimer);
+        loadErrorTimer = clearTimer(loadErrorTimer);
+        stopPing();
+        readyFinalizeTimer = clearTimer(readyFinalizeTimer);
+        emitError(code, message, retryable);
+        if (machine.get() !== 'error' && machine.get() !== 'exited') enterState('error');
+      }
+
+      function startLoadTimers() {
+        if (iframeLoaded) return;
+        loadSlowTimer = timers.setTimeout(function slowLoad() {
+          loadSlowTimer = null;
+          if (destroyed || iframeLoaded) return;
+          emitError(GM.LOAD_TIMEOUT, 'Game is taking longer than usual to load', true);
+        }, TIMING.loadSlowMs);
+        loadErrorTimer = timers.setTimeout(function abortedLoad() {
+          loadErrorTimer = null;
+          if (destroyed || iframeLoaded) return;
+          fail(GM.LOAD_TIMEOUT, 'Game failed to load in time', true);
+        }, TIMING.loadErrorMs);
+      }
+
+      function onIframeLoad() {
+        iframeLoaded = true;
+        loadSlowTimer = clearTimer(loadSlowTimer);
+        loadErrorTimer = clearTimer(loadErrorTimer);
+        if (bridge && bridge.isReadyAcknowledged()) startPing();
+        if (iframe && typeof iframe.focus === 'function') {
+          try {
+            iframe.focus();
+          } catch (_error) {
+            // focus can fail if the element was detached
+          }
+        }
+      }
+
+      function scheduleViewport() {
+        if (viewportTimer !== null || destroyed) return;
+        viewportTimer = timers.setTimeout(function flushViewport() {
+          viewportTimer = null;
+          if (destroyed) return;
+          const next = measureViewport();
+          const changed = next.width !== viewport.width || next.height !== viewport.height || next.dpr !== viewport.dpr;
+          viewport = next;
+          if (changed && bridge && bridge.isInitialized()) bridge.sendEvent(EVENTS.VIEWPORT, viewport);
+        }, VIEWPORT_THROTTLE_MS);
+      }
+
+      function observeViewport() {
+        viewport = measureViewport();
+        if (win && typeof win.ResizeObserver === 'function') {
+          try {
+            resizeObserver = new win.ResizeObserver(function onResize() {
+              scheduleViewport();
+            });
+            resizeObserver.observe(container);
+            return;
+          } catch (_error) {
+            resizeObserver = null;
+          }
+        }
+        if (win && typeof win.addEventListener === 'function') {
+          resizeHandler = function onWindowResize() {
+            scheduleViewport();
+          };
+          win.addEventListener('resize', resizeHandler);
+        }
+      }
+
+      function handleVisibilityChange() {
+        if (!doc || typeof doc.hidden !== 'boolean') return;
+        if (doc.hidden) {
+          if (bridge && bridge.isInitialized()) bridge.sendEvent(EVENTS.HIDDEN, { at: now() });
+          if (machine.get() === 'playing') {
+            hiddenPaused = true;
+            hiddenPausePromise = pause('hidden');
+          }
+          return;
+        }
+        if (bridge && bridge.isInitialized()) bridge.sendEvent(EVENTS.VISIBLE, { at: now() });
+        if (!hiddenPaused) return;
+        const resumeAfterPause = function resumeAfterPause() {
+          hiddenPaused = false;
+          hiddenPausePromise = null;
+          if (machine.get() === 'paused') resumeWithReason('visible');
+        };
+        if (hiddenPausePromise) hiddenPausePromise.then(resumeAfterPause, resumeAfterPause);
+        else resumeAfterPause();
+      }
+
+      function pause(reason) {
+        const pauseReason = PAUSE_REASONS.includes(reason) ? reason : 'user';
+        if (pausePromise) return pausePromise;
+        if (!launchInfo || !bridge || machine.get() !== 'playing') {
+          return Promise.resolve({ ok: true, saveStale: false });
+        }
+        const token = generation;
+        scheduler.stop();
+        enterState('paused');
+        bridge.sendEvent(EVENTS.PAUSE, { reason: pauseReason, at: now() });
+        if (!launchInfo.capabilities.includes('storage')) {
+          return Promise.resolve({ ok: true, saveStale: false });
+        }
+        enterState('saving');
+        pausePromise = scheduler.save(pauseSaveReason(pauseReason)).then(
+          function onSaved(result) {
+            pausePromise = null;
+            if (token !== generation || destroyed) return { ok: Boolean(result.ok), saveStale: result.saveStale };
+            if (machine.get() === 'saving') enterState('paused');
+            return { ok: Boolean(result.ok), saveStale: result.saveStale };
+          },
+          function onSaveError() {
+            pausePromise = null;
+            if (token !== generation || destroyed) return { ok: false, saveStale: true };
+            if (machine.get() === 'saving') enterState('paused');
+            return { ok: false, saveStale: true };
+          }
+        );
+        return pausePromise;
+      }
+
+      function resumeWithReason(reason) {
+        if (!launchInfo || !bridge) return;
+        if (machine.get() !== 'paused') return;
+        enterState('playing');
+        bridge.sendEvent(EVENTS.RESUME, { reason: reason === 'visible' ? 'visible' : 'user', at: now() });
+      }
+
+      function resume() {
+        resumeWithReason('user');
+      }
+
+      function cleanupDom() {
+        generation += 1;
+        handshakeTimer = clearTimer(handshakeTimer);
+        loadSlowTimer = clearTimer(loadSlowTimer);
+        loadErrorTimer = clearTimer(loadErrorTimer);
+        readyFinalizeTimer = clearTimer(readyFinalizeTimer);
+        viewportTimer = clearTimer(viewportTimer);
+        stopPing();
+        pausePromise = null;
+        hiddenPausePromise = null;
+        hiddenPaused = false;
+
+        if (win && messageHandler && typeof win.removeEventListener === 'function') {
+          win.removeEventListener('message', messageHandler);
+        }
+        messageHandler = null;
+        if (doc && visibilityHandler && typeof doc.removeEventListener === 'function') {
+          doc.removeEventListener('visibilitychange', visibilityHandler);
+        }
+        visibilityHandler = null;
+        if (win && resizeHandler && typeof win.removeEventListener === 'function') {
+          win.removeEventListener('resize', resizeHandler);
+        }
+        resizeHandler = null;
+        if (resizeObserver && typeof resizeObserver.disconnect === 'function') {
+          try {
+            resizeObserver.disconnect();
+          } catch (_error) {
+            // already disconnected
+          }
+        }
+        resizeObserver = null;
+
+        if (iframe) {
+          if (iframeLoadHandler && typeof iframe.removeEventListener === 'function') {
+            iframe.removeEventListener('load', iframeLoadHandler);
+          }
+          if (iframeErrorHandler && typeof iframe.removeEventListener === 'function') {
+            iframe.removeEventListener('error', iframeErrorHandler);
+          }
+          try {
+            if (typeof iframe.remove === 'function') iframe.remove();
+            else if (iframe.parentNode && typeof iframe.parentNode.removeChild === 'function') {
+              iframe.parentNode.removeChild(iframe);
+            }
+          } catch (_error) {
+            // detached already
+          }
+        }
+        iframe = null;
+        iframeWindow = null;
+        iframeLoaded = false;
+        iframeLoadHandler = null;
+        iframeErrorHandler = null;
+
+        if (bridge) bridge.destroy();
+        if (scheduler) scheduler.destroy();
+        bridge = null;
+        scheduler = null;
+        requests = null;
+      }
+
+      function createIframe(info) {
+        if (!doc || typeof doc.createElement !== 'function') {
+          throw new Error('Game Runtime needs a document to create the iframe');
+        }
+        const frame = doc.createElement('iframe');
+        frame.setAttribute('sandbox', 'allow-scripts');
+        frame.setAttribute('allow', 'autoplay');
+        frame.setAttribute('referrerpolicy', 'no-referrer');
+        frame.setAttribute('loading', 'eager');
+        frame.setAttribute('title', `Game: ${info.gameId}`);
+        frame.setAttribute('src', info.entryUrl);
+        if (frame.style) {
+          frame.style.width = '100%';
+          frame.style.height = '100%';
+          frame.style.border = '0';
+          frame.style.display = 'block';
+          frame.style.background = '#000';
+        }
+        iframeLoadHandler = onIframeLoad;
+        iframeErrorHandler = function onIframeError() {
+          fail(GM.IFRAME_CRASHED, 'Game crashed');
+        };
+        if (typeof frame.addEventListener === 'function') {
+          frame.addEventListener('load', iframeLoadHandler);
+          frame.addEventListener('error', iframeErrorHandler);
+        }
+        container.appendChild(frame);
+        iframe = frame;
+        iframeWindow = frame.contentWindow || null;
+      }
+
+      async function launch(info) {
+        if (destroyed) throw makeGameError(GM.NO_RUNTIME, 'Game Runtime was destroyed');
+        const normalized = normalizeLaunchInfo(info);
+        if (iframe || bridge) cleanupDom();
+        machine.reset('idle');
+        launchInfo = normalized;
+        pausePromise = null;
+
+        requests = createRequestService({
+          api,
+          limits: normalized.limits,
+          capabilities: normalized.capabilities,
+          getGameId: function getGameId() {
+            return launchInfo ? launchInfo.gameId : null;
+          },
+          getAgentSnapshot: function getAgentSnapshot() {
+            return agentSnapshot;
+          },
+          onSaveOutcome: handleSaveOutcome,
+          now,
+        });
+
+        scheduler = createSaveScheduler({
+          timers,
+          now,
+          sendBeforeSave: function sendBeforeSave(reason, meta) {
+            if (bridge && bridge.isInitialized()) {
+              bridge.sendEvent(EVENTS.BEFORE_SAVE, {
+                reason,
+                deadlineMs: meta && typeof meta.deadlineMs === 'number' ? meta.deadlineMs : TIMING.saveTimeoutMs,
+              });
+            }
+          },
+          onStatus: function onStatus(status, at) {
+            emit({ type: 'save-status', status, at });
+          },
+        });
+
+        bridge = createRuntimeBridge({
+          instanceId: normalized.instanceId,
+          nonce: normalized.nonce,
+          isTrustedSource: function isTrustedSource(source) {
+            return Boolean(iframeWindow && source === iframeWindow);
+          },
+          send: sendToGame,
+          onRequest: handleBridgeRequest,
+          onHello: handleHello,
+          onFatal: function onFatal(error) {
+            fail(error.code, error.message, error.retryable);
+            if (error.code === GM.MESSAGE_INVALID) cleanupDom();
+          },
+          timers,
+          now,
+        });
+
+        try {
+          createIframe(normalized);
+        } catch (error) {
+          cleanupDom();
+          throw error;
+        }
+        if (win && typeof win.addEventListener === 'function') {
+          messageHandler = handleMessage;
+          win.addEventListener('message', messageHandler);
+        }
+        if (doc && typeof doc.addEventListener === 'function') {
+          visibilityHandler = handleVisibilityChange;
+          doc.addEventListener('visibilitychange', visibilityHandler);
+        }
+        observeViewport();
+        enterState('loading');
+        emit({ type: 'save-status', status: 'idle', at: null });
+        handshakeTimer = timers.setTimeout(function handshakeTimeout() {
+          handshakeTimer = null;
+          if (!bridge || bridge.isReadyAcknowledged() || destroyed) return;
+          fail(GM.HANDSHAKE_TIMEOUT, 'Game handshake timed out');
+        }, TIMING.handshakeTimeoutMs);
+        startLoadTimers();
+      }
+
+      function destroy() {
+        if (destroyed) return;
+        destroyed = true;
+        cleanupDom();
+        if (machine.get() !== 'exited') {
+          if (!machine.transition('exited')) machine.reset('exited');
+          emit({ type: 'state', state: 'exited' });
+        }
+        emit({ type: 'exit', reason: 'destroy' });
+      }
+
+      function getState() {
+        return {
+          state: machine.get(),
+          gameId: launchInfo ? launchInfo.gameId : null,
+        };
+      }
+
+      function handleAgentState(snapshot) {
+        if (snapshot === null || snapshot === undefined) {
+          agentSnapshot = null;
+          return;
+        }
+        if (!isPlainObject(snapshot)) return;
+        const previous = agentSnapshot;
+        agentSnapshot = snapshot;
+        if (bridge && bridge.isInitialized()) bridge.sendEvent(EVENTS.AGENT_STATUS, snapshot);
+        emit({ type: 'agent-state', snapshot: snapshot });
+        const justCompleted = snapshot.state === 'completed' && (!previous || previous.state !== 'completed');
+        if (
+          justCompleted &&
+          scheduler &&
+          launchInfo &&
+          launchInfo.capabilities.includes('storage') &&
+          machine.get() === 'playing'
+        ) {
+          scheduler.save('agent-complete');
+        }
+      }
+
+      function updateEnvironment(info) {
+        if (!info || typeof info !== 'object') return;
+        if (info.theme === 'light' || info.theme === 'dark') environment.theme = info.theme;
+        if (typeof info.reducedMotion === 'boolean') environment.reducedMotion = info.reducedMotion;
+        if (bridge && bridge.isInitialized()) {
+          bridge.sendEvent(EVENTS.THEME, {
+            theme: environment.theme,
+            reducedMotion: environment.reducedMotion,
+          });
+        }
+      }
+
+      return Object.freeze({
+        launch,
+        pause,
+        resume,
+        destroy,
+        getState,
+        handleAgentState,
+        updateEnvironment,
+      });
+    }
+
+    return { createGameController };
+    })();
+
+    // module: packages/runtime/src/index.js
+    __mods["packages/runtime/src/index.js"] = (function () {
+    const createGameController = __mods["packages/runtime/src/controller.js"].createGameController;
+    const RUNTIME_STATES = __mods["packages/runtime/src/state-machine.js"].RUNTIME_STATES;
+    /**
+     * Game Runtime entry (RuntimeController contract, packages/shared/src/contracts.js).
+     *
+     * `createGameRuntime({ container, api, environment, onEvent })` returns the
+     * controller used by the Client. Runtime owns the sandbox iframe, the
+     * postMessage bridge and the save scheduling; it never imports Client modules.
+     */
+
+
+    function createGameRuntime(options = {}) {
+      return createGameController(options);
+    }
+
+    /** Introspection list for the Client / tests; not part of the controller API. */
+    const RUNTIME_STATE_NAMES = RUNTIME_STATES;
+
+    return { createGameRuntime, RUNTIME_STATE_NAMES };
     })();
 
     // module: packages/client/src/runtime-adapter.js

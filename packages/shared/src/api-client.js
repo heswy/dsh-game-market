@@ -58,7 +58,7 @@ function createTimeoutSignal(ms) {
   return controller.signal;
 }
 
-function randomOperationId() {
+export function randomOperationId() {
   const cryptoApi = globalThis.crypto;
   if (cryptoApi && typeof cryptoApi.randomUUID === 'function') return `op_${cryptoApi.randomUUID()}`;
   return `op_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
@@ -240,4 +240,3 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export { randomOperationId };
