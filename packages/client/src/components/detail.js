@@ -1,6 +1,6 @@
 /** Game detail page: hero, two columns, the single primary action (PRD 9.5). */
 import React from 'react';
-import { authorName, categoryLabel, detailActionReasonKey, resolveDetailAction, screenshotsFor, } from '../catalog.js';
+import { authorName, categoryLabel, detailActionReasonKey, initialFor, resolveDetailAction, resolvePermissions, screenshotsFor } from '../catalog.js';
 import { formatAbsoluteTime, formatBytes, formatRelativeTime, formatScore } from '../format.js';
 import { installStageTextKey } from '../errors-text.js';
 import { MAX_SCREENSHOTS } from '../constants.js';

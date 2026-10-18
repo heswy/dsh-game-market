@@ -1,6 +1,6 @@
 /** Market home: Hero / Quick Play / Popular / New / All games (PRD 9.3). */
 import React from 'react';
-import { authorName, categoryLabel, filterCatalog, installedGames, primaryCategory, selectHero, selectSections, } from '../catalog.js';
+import { authorName, categoryLabel, coverTone, filterCatalog, installedGames, primaryCategory, selectHero, selectSections } from '../catalog.js';
 import { countColumns, nextGridIndex } from '../keyboard.js';
 import { formatCount, formatRelativeTime, formatScore } from '../format.js';
 import { PlayIcon } from '../icons.js';

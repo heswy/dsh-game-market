@@ -11796,6 +11796,7 @@ window.__ModuleLoader__.load({
     const React = __react;
     const authorName = __mods["packages/client/src/catalog.js"].authorName;
     const categoryLabel = __mods["packages/client/src/catalog.js"].categoryLabel;
+    const coverTone = __mods["packages/client/src/catalog.js"].coverTone;
     const filterCatalog = __mods["packages/client/src/catalog.js"].filterCatalog;
     const installedGames = __mods["packages/client/src/catalog.js"].installedGames;
     const primaryCategory = __mods["packages/client/src/catalog.js"].primaryCategory;
@@ -12730,7 +12731,9 @@ window.__ModuleLoader__.load({
     const authorName = __mods["packages/client/src/catalog.js"].authorName;
     const categoryLabel = __mods["packages/client/src/catalog.js"].categoryLabel;
     const detailActionReasonKey = __mods["packages/client/src/catalog.js"].detailActionReasonKey;
+    const initialFor = __mods["packages/client/src/catalog.js"].initialFor;
     const resolveDetailAction = __mods["packages/client/src/catalog.js"].resolveDetailAction;
+    const resolvePermissions = __mods["packages/client/src/catalog.js"].resolvePermissions;
     const screenshotsFor = __mods["packages/client/src/catalog.js"].screenshotsFor;
     const formatAbsoluteTime = __mods["packages/client/src/format.js"].formatAbsoluteTime;
     const formatBytes = __mods["packages/client/src/format.js"].formatBytes;
