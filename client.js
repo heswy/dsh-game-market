@@ -2096,7 +2096,6 @@ window.__ModuleLoader__.load({
     const runtimeStarted = __mods["packages/client/src/store.js"].runtimeStarted;
     const runtimePatched = __mods["packages/client/src/store.js"].runtimePatched;
     const pausedGameRecorded = __mods["packages/client/src/store.js"].pausedGameRecorded;
-    const pausedGameCleared = __mods["packages/client/src/store.js"].pausedGameCleared;
     const completedAcknowledged = __mods["packages/client/src/store.js"].completedAcknowledged;
     const leaveCompleted = __mods["packages/client/src/store.js"].leaveCompleted;
     const normalizeUiError = __mods["packages/client/src/ui-errors.js"].normalizeUiError;
@@ -2153,7 +2152,6 @@ window.__ModuleLoader__.load({
             ? state.bindingSessionId
             : null;
       target.dispatch(runtimeStarted(opts.gameId, mode, sessionId));
-      target.dispatch(pausedGameCleared());
       return true;
     }
 
@@ -4411,7 +4409,7 @@ window.__ModuleLoader__.load({
       }
 
       function resumeGame() {
-        if (leavingRef.current) return;
+        if (leavingRef.current || busy) return;
         const resumed = resumeRuntime(controllerRef.current);
         if (resumed) {
           setResumeConfirmed(true);
@@ -4551,7 +4549,7 @@ window.__ModuleLoader__.load({
                 type: 'button',
                 className: 'dgm-control-btn',
                 onClick: function back() {
-                  if (runtime.state === 'error' || runtime.state === 'exited') {
+                  if (loading || runtime.state === 'error' || runtime.state === 'exited') {
                     backToMarketWithoutRuntime();
                     return;
                   }
@@ -4571,7 +4569,7 @@ window.__ModuleLoader__.load({
                 onClick: handlePauseToggle,
                 'aria-label': runtime.state === 'paused' ? t('runtime.action.resume') : t('runtime.action.pause'),
                 title: runtime.state === 'paused' ? t('runtime.action.resume') : t('runtime.action.pause'),
-                disabled: busy || (runtime.state !== 'playing' && runtime.state !== 'paused'),
+                disabled: busy || runtime.state === 'saving' || (runtime.state !== 'playing' && runtime.state !== 'paused'),
               },
               runtime.state === 'paused' ? h(PlayIcon, { size: 15 }) : h(PauseIcon, { size: 15 })
             )
@@ -4592,14 +4590,16 @@ window.__ModuleLoader__.load({
               )
             : null,
         ),
-        h(AgentPresence, {
-          presence: presence,
-          agent: agent,
-          t: t,
-          busy: busy || runtime.state === 'saving',
-          dimmed: showPauseOverlay,
-          onAction: handlePresenceAction,
-        }),
+        !loading && !showError && !showExited
+          ? h(AgentPresence, {
+              presence: presence,
+              agent: agent,
+              t: t,
+              busy: busy || runtime.state === 'saving',
+              dimmed: showPauseOverlay,
+              onAction: handlePresenceAction,
+            })
+          : null,
         showPauseOverlay
           ? h(
               'div',
@@ -4717,6 +4717,7 @@ window.__ModuleLoader__.load({
     const MAIN_PANEL_KEY = __mods["packages/client/src/constants.js"].MAIN_PANEL_KEY;
     const agentMatchesSession = __mods["packages/client/src/chip-state.js"].agentMatchesSession;
     const isAgentFresh = __mods["packages/client/src/chip-state.js"].isAgentFresh;
+    const acknowledgeCompleted = __mods["packages/client/src/actions.js"].acknowledgeCompleted;
     const beginGame = __mods["packages/client/src/actions.js"].beginGame;
     const launchModeFor = __mods["packages/client/src/actions.js"].launchModeFor;
     const refreshMarket = __mods["packages/client/src/actions.js"].refreshMarket;
@@ -4742,6 +4743,16 @@ window.__ModuleLoader__.load({
     const h = React.createElement;
 
     function headerBack() {
+      const current = store.getState();
+      const agent = current.agent;
+      if (agent && agent.state === 'completed' && agent.sessionId) {
+        void acknowledgeCompleted({
+          store: store,
+          api: getApiClient(),
+          sessionId: agent.sessionId,
+          seq: agent.seq,
+        });
+      }
       backToConversation();
     }
 

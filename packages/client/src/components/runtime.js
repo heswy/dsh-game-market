@@ -493,7 +493,7 @@ export function RuntimeView(props) {
   }
 
   function resumeGame() {
-    if (leavingRef.current) return;
+    if (leavingRef.current || busy) return;
     const resumed = resumeRuntime(controllerRef.current);
     if (resumed) {
       setResumeConfirmed(true);
@@ -633,7 +633,7 @@ export function RuntimeView(props) {
             type: 'button',
             className: 'dgm-control-btn',
             onClick: function back() {
-              if (runtime.state === 'error' || runtime.state === 'exited') {
+              if (loading || runtime.state === 'error' || runtime.state === 'exited') {
                 backToMarketWithoutRuntime();
                 return;
               }
@@ -653,7 +653,7 @@ export function RuntimeView(props) {
             onClick: handlePauseToggle,
             'aria-label': runtime.state === 'paused' ? t('runtime.action.resume') : t('runtime.action.pause'),
             title: runtime.state === 'paused' ? t('runtime.action.resume') : t('runtime.action.pause'),
-            disabled: busy || (runtime.state !== 'playing' && runtime.state !== 'paused'),
+            disabled: busy || runtime.state === 'saving' || (runtime.state !== 'playing' && runtime.state !== 'paused'),
           },
           runtime.state === 'paused' ? h(PlayIcon, { size: 15 }) : h(PauseIcon, { size: 15 })
         )
@@ -674,14 +674,16 @@ export function RuntimeView(props) {
           )
         : null,
     ),
-    h(AgentPresence, {
-      presence: presence,
-      agent: agent,
-      t: t,
-      busy: busy || runtime.state === 'saving',
-      dimmed: showPauseOverlay,
-      onAction: handlePresenceAction,
-    }),
+    !loading && !showError && !showExited
+      ? h(AgentPresence, {
+          presence: presence,
+          agent: agent,
+          t: t,
+          busy: busy || runtime.state === 'saving',
+          dimmed: showPauseOverlay,
+          onAction: handlePresenceAction,
+        })
+      : null,
     showPauseOverlay
       ? h(
           'div',

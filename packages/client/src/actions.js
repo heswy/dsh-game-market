@@ -6,7 +6,7 @@
  */
 import { GM } from '../../shared/src/errors.js';
 import { PAGES } from './constants.js';
-import { marketLoading, marketReady, marketFailed, marketInvalidated, runtimeStarted, runtimePatched, pausedGameRecorded, pausedGameCleared, completedAcknowledged, leaveCompleted } from './store.js';
+import { marketLoading, marketReady, marketFailed, marketInvalidated, runtimeStarted, runtimePatched, pausedGameRecorded, completedAcknowledged, leaveCompleted } from './store.js';
 import { normalizeUiError, uiError } from './ui-errors.js';
 import { reportDiagnostic } from './diagnostics.js';
 
@@ -54,7 +54,6 @@ export function beginGame(target, options) {
         ? state.bindingSessionId
         : null;
   target.dispatch(runtimeStarted(opts.gameId, mode, sessionId));
-  target.dispatch(pausedGameCleared());
   return true;
 }
 

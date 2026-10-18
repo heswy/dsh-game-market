@@ -3,7 +3,7 @@ import React from 'react';
 import { store, pageChanged, sessionBound, surfaceChanged } from '../store.js';
 import { PAGES, MAIN_PANEL_KEY } from '../constants.js';
 import { agentMatchesSession, isAgentFresh } from '../chip-state.js';
-import { beginGame, launchModeFor, refreshMarket } from '../actions.js';
+import { acknowledgeCompleted, beginGame, launchModeFor, refreshMarket } from '../actions.js';
 import { getApiClient } from '../api.js';
 import { makeT, detectLocale } from '../locale.js';
 import { formatCategory, formatRelativeTime, formatScore } from '../format.js';
@@ -16,6 +16,16 @@ import { RuntimeView } from './runtime.js';
 const h = React.createElement;
 
 function headerBack() {
+  const current = store.getState();
+  const agent = current.agent;
+  if (agent && agent.state === 'completed' && agent.sessionId) {
+    void acknowledgeCompleted({
+      store: store,
+      api: getApiClient(),
+      sessionId: agent.sessionId,
+      seq: agent.seq,
+    });
+  }
   backToConversation();
 }
 
