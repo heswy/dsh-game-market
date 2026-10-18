@@ -43,18 +43,18 @@ function state(overrides) {
   });
 }
 
-test('polling requires visibility, a binding, and a mounted surface', function () {
+test('polling requires visibility and a bound session', function () {
   assert.equal(shouldPollAgent(state(), 'visible'), true);
   assert.equal(shouldPollAgent(state(), 'hidden'), false);
   assert.equal(shouldPollAgent(state({ bindingSessionId: null }), 'visible'), false);
-  assert.equal(shouldPollAgent(state({ surface: { chip: false } }), 'visible'), false);
+  assert.equal(shouldPollAgent(state({ surface: { chip: false } }), 'visible'), true);
   assert.equal(
     shouldPollAgent(state({ page: 'runtime', surface: { runtime: true } }), 'visible'),
     true
   );
   assert.equal(
     shouldPollAgent(state({ page: 'market', surface: { runtime: true } }), 'visible'),
-    false
+    true
   );
 });
 

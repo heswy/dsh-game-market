@@ -221,7 +221,7 @@ export const HOST_PLUGIN_EXPORTS = Object.freeze({
  * Registers with the DSH Client plugin context:
  *   ctx.slots.inject('main', () => ctx.slots.register({ name:'main', key:'dsh-game-market', ... }, GameMarketPanel))
  *   ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({ name:'sidebar.panellist', id:'dsh-game-market', order:40, label, locale }, GameMarketIcon))
- *   ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({ name:'conversation.session.header.actions', locale }, WaitEntryChip))
+ *   ctx.slots.inject('conversation.view', () => ctx.slots.register({ name:'conversation.view', id:'game', label, locale }, GameEntryView))
  *
  * Module store (outside React) shape:
  * @typedef {Object} ClientStore

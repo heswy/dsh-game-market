@@ -1,8 +1,8 @@
 /**
  * Agent snapshot polling (PRD D-015 / 8.5 / 9.1.1).
  *
- * - 1000ms while the page is visible and either the header chip is mounted or
- *   the Game Market panel is showing the Runtime.
+ * - while the page is visible and a Session is bound (the persistent Game tab and
+ *   the in-game whale both need state even when no floating hint is mounted).
  * - stops on `document.hidden`; an immediate refresh happens on return.
  * - ETag/304 keeps the fresh timestamp without replacing the snapshot.
  * - failures back off 1s → 2s → 4s → 8s (shared TIMING cap).
@@ -24,10 +24,7 @@ export function pollingSessionId(state) {
 /** Pure polling decision, also used by tests and the runtime view. */
 export function shouldPollAgent(state, visibility) {
   if (!state || visibility !== 'visible') return false;
-  if (!pollingSessionId(state)) return false;
-  const surface = state.surface && typeof state.surface === 'object' ? state.surface : {};
-  if (surface.chip === true) return true;
-  return state.page === 'runtime' && surface.runtime === true;
+  return Boolean(pollingSessionId(state));
 }
 
 /** Exponential backoff for snapshot failures, capped by shared TIMING. */

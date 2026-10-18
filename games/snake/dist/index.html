@@ -2208,21 +2208,18 @@
    * Resume policy for the platform's `resume-paused` handshake.
    *
    * The Runtime may deliver `resume` while Boot is still loading best/save, so the
-   * game must remember it. Once the board is restored there are exactly two
-   * sensible outcomes:
-   * - the saved board was already running: hand control back and keep moving;
-   * - the saved board never left its prompt: keep the game's own prompt visible
-   *   (an explicit affordance), instead of hiding it under a static board.
+   * game must remember it. The platform modal is the only confirmation prompt: once
+   * the player confirms, the game starts playing instead of showing a second prompt.
    */
   const RESUME_PLAN = Object.freeze({
     IGNORE: 'ignore',
     PLAY: 'play',
-    PROMPT: 'prompt',
   });
 
   function planResume(mode, savedStatus) {
+    void savedStatus;
     if (mode === 'over' || mode === 'error') return RESUME_PLAN.IGNORE;
-    return savedStatus === 'playing' ? RESUME_PLAN.PLAY : RESUME_PLAN.PROMPT;
+    return RESUME_PLAN.PLAY;
   }
 
   return { RESUME_PLAN, planResume };
@@ -2241,6 +2238,7 @@
   const restartGame = __mods["games/snake/src/logic.js"].restartGame;
   const serialize = __mods["games/snake/src/logic.js"].serialize;
   const setDirection = __mods["games/snake/src/logic.js"].setDirection;
+  const startGame = __mods["games/snake/src/logic.js"].startGame;
   const tickMsFor = __mods["games/snake/src/logic.js"].tickMsFor;
   const RESUME_PLAN = __mods["games/snake/src/resume.js"].RESUME_PLAN;
   const planResume = __mods["games/snake/src/resume.js"].planResume;
@@ -2469,19 +2467,13 @@
     resumeRequested = false;
     const plan = planResume(mode, state.status);
     if (plan === RESUME_PLAN.IGNORE) return;
-    if (plan === RESUME_PLAN.PLAY) {
-      hideOverlay();
-      mode = 'playing';
-      moving = true;
-      startLoop();
-      focusBoard();
-      return;
-    }
-    // The board was saved before the first direction key (or the game was paused
-    // on its own prompt). Keep an explicit affordance instead of a static board.
-    mode = 'ready';
-    if (restoredSave) showContinueOverlay();
-    else showStartOverlay();
+    // The platform modal is the single confirmation; start immediately and put
+    // keyboard focus back on the board, so there is no second prompt and no static
+    // ready board. A board saved before its first key simply starts moving.
+    hideOverlay();
+    mode = 'playing';
+    if (state.status === 'ready' || state.status === 'playing') state = startGame(state);
+    moving = true;
     startLoop();
     focusBoard();
   }

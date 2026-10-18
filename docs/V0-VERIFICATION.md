@@ -40,13 +40,13 @@ npm test          → 312 tests / 312 pass / 0 fail
 | V0-01 | 插件安装/启用/停用清理 | **通过** | 隔离 profile 加载成功；停用并重启后 `Game Market` 按钮为 0、`[class*="dgm-"]` 节点为 0 |
 | V0-02 | 主面板切换、Sidebar 保留 | **通过** | 点击 Sidebar 图标进入 Market；返回 Conversation（截图 01/02） |
 | V0-03 | Conversation 草稿保留 | **通过** | 输入 `draft-check-42` → 进入 Market → 返回，草稿仍在 |
-| V0-04 | 等待入口 5s 阈值 | **通过** | running 后 2s 无提示，6.5s 会话头出现「游戏」提示（V0.1 起位于标题右侧） |
-| V0-05 | 入口菜单与忽略频控 | **通过** | 菜单含继续/选择/暂时忽略；忽略后同 turn 不再出现，新 turn 重新出现 |
+| V0-04 | 常驻游戏入口 | **通过（V0.2 调整）** | 会话 tab 行常驻「游戏 / Game」tab（不依赖 Agent 状态、不隐藏）；点击进入 Game Market |
+| V0-05 | 入口菜单与忽略频控 | **已被 V0.2 取代** | 用户要求入口常驻、无需 5s 延迟/忽略机制；原 header chip 菜单与忽略逻辑移除，Sidebar 状态点保留 |
 | V0-06 | Sidebar 状态点 | **通过** | running / waiting / completed 均出现对应状态点（截图 05/08/10） |
 | V0-07 | 游戏加载与键盘 | **通过** | sandbox iframe 正常加载；点击画布后方向键可移动蛇、吃食物逻辑运行（截图 04） |
 | V0-08 | Agent Presence 运行态 | **通过** | 鲸鱼 aria-label `Agent 状态：正在工作…。按下返回工作`；完成后切换完成态 |
 | V0-09 | 完成提醒不打断 | **通过** | 游戏继续运行，鲸鱼展示 `任务完成啦 / 查看结果`（截图 08），未暂停/关闭游戏 |
-| V0-10 | 需要用户 → 切回处理 → 返回游戏 | **通过** | 鲸鱼等待态 → 点击后暂停并存档 → 回到 Conversation → 页面显示 `已恢复上一局` → 返回游戏；未开始的棋盘会显示明确的「继续上一局 / 开始游戏」入口（V0.1 修复卡住问题） |
+| V0-10 | 需要用户 / 返回游戏 | **通过（V0.2 调整）** | 鲸鱼等待态 → 暂停存档 → 回到 Conversation；再次进入游戏时**只保留平台的一次「已恢复上一局」确认**，确认后直接开始游戏（不再出现游戏内第二个遮罩） |
 | V0-11 | 自动保存 / Continue / 跨重启 | **通过** | 存档文件 revision 递增、`.bak` 存在；退出→市场显示 Continue；重启 Host 后 Continue 仍可恢复 |
 | V0-12 | 存档原子性与恢复 | **通过（自动化）** | Host 测试覆盖 tmp→fsync→.bak、损坏恢复、只读模式；Live 额外观测到多次 revision 与备份文件 |
 | V0-13 | 错误与恢复 UI | **通过** | 集成测试覆盖错误码；Live 中真实观测到 `游戏加载超时 / 问题编号 GM-5001` 错误卡与返回路径（CSP 问题修复前） |
@@ -83,6 +83,22 @@ npm test          → 312 tests / 312 pass / 0 fail
 | ![v0.1-resume-playing](./verification/v0/v0.1-resume-playing.png) | 运行中棋盘恢复后继续游戏 |
 
 自动化：`npm test` → **315 tests / 315 pass**。
+
+## 4.2 V0.2 反馈迭代（2026-10-18 晚第二次）
+
+1. **入口常驻在会话 tab 行**：用户指出入口应在「对话 / 轨迹 / 上下文 / 编队」这一行且永不隐藏。改为注册官方 `conversation.view` tab（id `game`，order 100），label 随语言显示「游戏 / Game」；点击 tab 打开 Game Market 主面板，并把会话 view 重置回 Chat，返回时仍是正常对话。原 `conversation.session.header.actions` 提示与 composer dock 方案全部移除（`chip.js` 删除）。
+2. **消除恢复时的重复提示**：平台「已恢复上一局」确认后游戏直接开始播放，不再显示游戏内第二个「继续上一局」遮罩；saved `ready` 棋盘也会被启动（`resume.js` 策略简化为 IGNORE/PLAY），恢复后焦点交给 canvas。
+3. **轮询策略**：入口不再依赖 chip surface，Agent 快照在页面可见且绑定 session 时轮询（Market 的等待横幅、in-game 鲸鱼都继续工作）。
+
+| 截图 | 内容 |
+|---|---|
+| ![v0.2-game-tab](./verification/v0/v0.2-game-tab.png) | 会话 tab 行的常驻「游戏」入口 |
+| ![v0.2-tab-opens-market](./verification/v0/v0.2-tab-opens-market.png) | 点击「游戏」直接进入 Game Market |
+| ![v0.2-back-to-chat](./verification/v0/v0.2-back-to-chat.png) | 从市场返回后仍是正常对话 |
+| ![v0.2-single-resume-prompt](./verification/v0/v0.2-single-resume-prompt.png) | 恢复时只有平台这一处确认 |
+| ![v0.2-resume-playing](./verification/v0/v0.2-resume-playing.png) | 确认后直接开始游戏，无第二个遮罩 |
+
+自动化：`npm test` → **314 tests / 314 pass**。
 
 ## 5. 未覆盖项与已知限制
 

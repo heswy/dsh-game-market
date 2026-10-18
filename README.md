@@ -14,7 +14,7 @@
 |---|---|
 | Bundle 安装形态（Host 半 + `dsh.client` 半） | ✅ 已完成（可用/可停用清理） |
 | `main` 面板 + Sidebar 入口；进入/返回不丢会话草稿 | ✅ 已完成 |
-| Agent 运行 ≥5s 的会话头「游戏」提示（可爱动效 + 菜单） | ✅ 已完成 |
+| 会话 tab 行的常驻「游戏 / Game」入口（点击进入 Game Market） | ✅ 已完成 |
 | Agent Presence 小鲸鱼（running / waiting-user / completed / error） | ✅ 已完成 |
 | sandbox iframe Runtime + 自动保存 + Continue | ✅ 已完成 |
 | 需要用户：暂停存档 → 切回处理 → 一键回游戏 | ✅ 已完成 |
@@ -25,7 +25,8 @@
 
 - 自动化：`npm run build && npm run check && npm test` → **312 tests / 312 pass**，严格检查 13 项通过。
 - 真机（同一版本 DSH 0.2.1-rc.2 的隔离 Web 宿主 + headless Chrome）：市场/等待入口/游戏运行/等待用户/完成提醒/继续游戏/跨重启恢复/多 Session/停用清理全部通过。
-- 2026-10-18 V0.1 反馈迭代：等待提示移至会话头并在语言切换下显示「游戏 / Game」；弹层与提示居中对齐；修复从“继续游戏”返回时棋盘停在 ready、失去键盘焦点的卡住问题（315 tests 通过）。
+- 2026-10-18 V0.1 反馈迭代：修复从“继续游戏”返回时棋盘停在 ready、失去键盘焦点的卡住问题（315 tests 通过）。
+- 2026-10-18 V0.2 反馈迭代：入口改为会话 tab 行常驻「游戏 / Game」tab（点击进入 Game Market）；返回游戏只保留平台一次确认并直接开玩（314 tests 通过）。
 - 完整清单、截图与未覆盖项见 [`docs/V0-VERIFICATION.md`](./docs/V0-VERIFICATION.md)。
 
 ## 目录结构
@@ -84,7 +85,7 @@ npm run dev:disable -- --yes
 
 1. 侧栏出现 Game Market 图标；点击打开 Market（只有内置 Snake + Continue）。
 2. 点开 Snake，方向键/WASD 可玩；暂停、返回、再进入后进度还在。
-3. 让 Agent 跑一个 ≥5 秒的任务：会话头标题右侧出现带动效的「游戏」提示；点击打开菜单（继续上一局 / 选择一个游戏 / 暂时忽略）。
+3. 打开任意会话：tab 行（对话 / 轨迹 / … / 游戏）最右侧有常驻「游戏」入口；点击进入 Game Market，返回时仍是该会话。
 4. 游戏中 Agent 完成：右下角小鲸鱼提示“任务完成啦 / 查看结果”，游戏不被暂停或关闭。
 5. 用 dev 模式模拟 `waiting-user`（见下）：小鲸鱼提示后点击 → 游戏暂停并存档 → 切回会话 → 出现“继续游戏” → 回到游戏并恢复棋盘。
 6. 关闭 DSH 再打开：Snake 显示 Continue 与上一局分数，进入后继续。

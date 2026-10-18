@@ -174,8 +174,10 @@ V0 的真机 UI 验证不依赖用户日常 profile：
   - V0-03：V0 label 先用中文固定模板（zh-first），labelKey 机制推迟到 V1；SDK 仍不解析 label。
   - V0-04：Client 构建使用零依赖自研 bundler（`scripts/bundle-lib.mjs`），只支持受限 ESM 子集；不支持动态 import/循环依赖。
   - V0-05：UI 验收通过隔离 DSH 宿主 + headless Chrome 完成；自动化覆盖 Host/API/Runtime 纯逻辑/SDK 协议/游戏逻辑。
-  - V0-07：等待提示从 `conversation.header.leading` 移至 `conversation.session.header.actions`（真机反馈：应放在会话头红框位置）。可见标签只写随语言变化的「游戏 / Game」，状态用动效/圆点/菜单表达；提示在 composer dock 时弹层会在输入框上方漂移，已弃用。
-  - V0-08：`resume-paused` 与游戏 boot 的竞态修复：游戏记录提前到达的 resume；`resume.js` 纯策略——saved status `playing` 才隐藏遮罩并恢复运动，`ready` 则保留游戏自己的开始入口；恢复后 `focusBoard()` 把键盘焦点交还给 canvas。否则会出现“继续游戏后静止棋盘、键盘无响应”。
+  - V0-07（已被 V0-09 取代）：等待提示曾放在 `conversation.session.header.actions`；用户随后要求入口在会话 tab 行且常驻，已改为 conversation.view tab。
+  - V0-08（已部分被 V0-10 取代）：`resume-paused` 竞态修复（记录提前 resume、focusBoard）；V0.2 起不再保留游戏内的第二个开始入口。
+  - V0-09：游戏入口 = 官方 `conversation.view` tab（id `game`, order 100），label 随语言「游戏 / Game」，**常驻不隐藏**；点击 tab 打开 Game Market 主面板并把会话 view 重置为 chat，返回后仍是正常对话。原 header/composer chip 方案与 `chip.js` 已删除；Sidebar Game Market 入口保留。
+  - V0-10：恢复游戏只保留平台一次「已恢复上一局」确认；平台确认后游戏直接开始（含 saved `ready`，`resume.js` 仅 IGNORE/PLAY），不再显示游戏内第二个遮罩，并 focusBoard。Agent 快照在页面可见且绑定 session 时轮询，不再依赖 chip surface。
   - V0-06：entry 的 CSP `frame-ancestors` 在 V0 使用 `*`。原因：DSH Host 侧看到的请求 origin（`dsh.internal`）与嵌入页面实际 origin（loopback Web UI）可能不同，单一 origin 会阻止 iframe 加载；游戏是不可信静态内容且受 sandbox 隔离，V0 接受该放宽，V1 改为可配置 allowlist（PRD §8.10）。
 
 ---
@@ -191,11 +193,12 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · **V0 已发布**：`main` 合并提交 `bcdbbfc`，tag `v0.0.0` 已推送 GitHub；feature worktrees/分支已清理（main + origin/main）。下一步：日常桌面端自测（用户执行 dev:enable 并重启）→ V1 规划。
 - 2026-10-18 · **V0.1 反馈修复**：等待提示移至会话头标题右侧并本地化「游戏/Game」+ 可爱动效；弹层居中/翻转；修复继续游戏后 ready 状态静止棋盘 + 键盘焦点丢失（新增 `resume.js` 策略与 3 个测试）；dev-enable 兼容空数组 `[]` profile patch；全量 315 tests 通过。
 - 2026-10-18 · **V0.1 已发布**：`main` merge `55bc9f8`，tag `v0.0.1`；等待提示位置/动效/弹层对齐与 resume 卡住问题已修复，验证证据更新在 `docs/V0-VERIFICATION.md`。
+- 2026-10-18 · **V0.2 反馈修复**：入口改为会话 tab 行常驻「游戏 / Game」（conversation.view），点击进 Market；删除 chip 组件；恢复游戏只保留平台一次确认并直接开玩；轮询改为绑定 session 即可工作；全量 314 tests 通过。
 - （待续）
 
 **当前状态 / 待用户确认**：
 
-- V0 代码与证据已完成并推送；V0.1 反馈修复已合并 `main`（merge commit `55bc9f8`），tag `v0.0.1` 待推送。
+- V0 代码与证据已完成并推送；V0.1 已推送（tag `v0.0.1`）；V0.2 修复在 `fix/v0.2-tab-entry` 分支验证中，合并后推 `main` + tag `v0.0.2`。
 - 日常桌面端需用户自行 `npm run dev:enable -- --yes` 并重启 DSH；UI 客户端改动刷新页面即可。
 - 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复；用户桌面端版本已确认为 0.2.1-rc.2，与验证基线一致。
 - GitHub 推送权限：若 `git push` 失败，需要用户提供可用凭据或代为推送。
