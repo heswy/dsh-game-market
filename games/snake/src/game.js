@@ -93,6 +93,7 @@ const srStatusEl = document.getElementById('sr-status');
 let state = createGame({ seed: 1 });
 let mode = 'boot';
 let runtimePaused = false;
+let runtimeHidden = false;
 let moving = false;
 let wasMovingBeforePause = false;
 let restoredSave = false;
@@ -624,7 +625,7 @@ function startFromReady() {
 }
 
 function startLoop() {
-  if (loopRunning) return;
+  if (loopRunning || runtimeHidden) return;
   loopRunning = true;
   lastFrameTime = 0;
   accumulator = 0;
@@ -910,6 +911,24 @@ function onRuntimeResume() {
   if (mode === 'paused' || mode === 'ready') beginPlayingFromResume();
 }
 
+// `hidden` stops the render/tick loop immediately (PRD §8.5). `visible` may
+// restore rendering, but a paused Runtime keeps the loop stopped until its
+// `resume` event so the player never loses a frame or a tick while away.
+function onRuntimeHidden() {
+  runtimeHidden = true;
+  stopLoop();
+}
+
+function onRuntimeVisible() {
+  runtimeHidden = false;
+  if (runtimePaused) {
+    render();
+    return;
+  }
+  if (mode === 'playing' || mode === 'ready') startLoop();
+  else render();
+}
+
 function onBeforeSave() {
   return saveState();
 }
@@ -979,6 +998,8 @@ async function boot() {
   // the ready handshake in `resume-paused` mode.
   game.lifecycle.on('pause', onRuntimePause);
   game.lifecycle.on('resume', onRuntimeResume);
+  game.lifecycle.on('hidden', onRuntimeHidden);
+  game.lifecycle.on('visible', onRuntimeVisible);
   game.lifecycle.on('before-save', onBeforeSave);
   game.agent.on('status', onAgentStatus);
 
@@ -1028,6 +1049,7 @@ if (typeof window !== 'undefined') {
     return {
       mode: mode,
       runtimePaused: runtimePaused,
+      runtimeHidden: runtimeHidden,
       resumeRequested: resumeRequested,
       restoredSave: restoredSave,
       moving: moving,

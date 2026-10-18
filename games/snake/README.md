@@ -66,6 +66,9 @@ source once the repository-level V0 checker stops requiring it.
   pairs meet WCAG AA contrast.
 - `game.runtime.reducedMotion` (or `prefers-reduced-motion`) disables the food
   pulse, score pops, death flash and CSS transitions.
+- `lifecycle.on('hidden')` stops the tick/render loop immediately;
+  `lifecycle.on('visible')` restores rendering, while a platform pause keeps the
+  loop stopped until the matching `resume` (no ticks are lost or replayed).
 - An `aria-live` status announces start/pause/game-over/new-record events; the
   error overlay shows the `GM-*` code and offers a retry.
 
