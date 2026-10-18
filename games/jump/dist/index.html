@@ -1082,12 +1082,12 @@
   const SAVE_REASONS = Object.freeze(['interval', 'pause', 'hidden', 'leave', 'agent-complete']);
   const SESSION_OUTCOMES = Object.freeze(['completed', 'lost', 'abandoned', 'quit']);
 
-  /** V0 built-in games. Paths are relative to the bundle root. */
+  /** V0/V1 built-in games. Paths are relative to the bundle root. */
   const BUILTIN_GAMES = Object.freeze([
     Object.freeze({
       id: 'snake',
       name: 'Snake',
-      version: '0.1.0',
+      version: '1.0.0',
       dir: 'games/snake',
       manifestFile: 'game.json',
       entryFile: 'dist/index.html',
@@ -1133,6 +1133,26 @@
     VALUE_NOT_SERIALIZABLE: 'GM-4134',
     UNSUPPORTED_MEDIA_TYPE: 'GM-4150',
     MANIFEST_INVALID: 'GM-4221',
+    // Manifest field-level errors (PRD §8.13.2)
+    MANIFEST_JSON: 'GM-4228',
+    MANIFEST_VERSION: 'GM-4230',
+    FIELD_MISSING: 'GM-4231',
+    FIELD_TYPE: 'GM-4232',
+    FIELD_RANGE: 'GM-4233',
+    ID_INVALID: 'GM-4234',
+    ID_RESERVED: 'GM-4235',
+    VERSION_INVALID: 'GM-4236',
+    LEGACY_FIELD: 'GM-4237',
+    CATEGORY_UNKNOWN: 'GM-4238',
+    CAPABILITY_UNKNOWN: 'GM-4239',
+    CAPABILITY_UNSUPPORTED: 'GM-4240',
+    CAPABILITY_DUPLICATE: 'GM-4241',
+    PERMISSION_UNSUPPORTED: 'GM-4242',
+    SCORE_RANGE: 'GM-4243',
+    SAVE_SCHEMA: 'GM-4244',
+    RANGE_SYNTAX: 'GM-4245',
+    ICON_FORMAT: 'GM-4247',
+    ICON_TOO_LARGE: 'GM-4248',
     RUNTIME_INCOMPATIBLE: 'GM-4260',
     SDK_INCOMPATIBLE: 'GM-4261',
     RATE_LIMITED: 'GM-4290',
@@ -1160,6 +1180,7 @@
     MANIFEST_TOO_LARGE: 'GM-4229',
     PACKAGE_TOO_LARGE: 'GM-4135',
     INSTALL_URL_REJECTED: 'GM-4034',
+    REGISTRY_URL: 'GM-4035',
     MARKET_DISABLED: 'GM-4036',
     STORE_PATH_ESCAPE: 'GM-4037',
     UNINSTALL_BUILTIN: 'GM-4038',
@@ -1200,6 +1221,25 @@
     [GM.VALUE_NOT_SERIALIZABLE]: 'Value is not JSON-serializable',
     [GM.UNSUPPORTED_MEDIA_TYPE]: 'Unsupported media type',
     [GM.MANIFEST_INVALID]: 'Invalid game manifest',
+    [GM.MANIFEST_JSON]: 'Inline manifest JSON is invalid',
+    [GM.MANIFEST_VERSION]: 'Unsupported manifestVersion',
+    [GM.FIELD_MISSING]: 'A required manifest field is missing',
+    [GM.FIELD_TYPE]: 'A manifest field has the wrong type',
+    [GM.FIELD_RANGE]: 'A manifest field is out of range',
+    [GM.ID_INVALID]: 'Invalid game id',
+    [GM.ID_RESERVED]: 'Game id is reserved',
+    [GM.VERSION_INVALID]: 'Invalid game version',
+    [GM.LEGACY_FIELD]: 'Manifest uses a legacy field',
+    [GM.CATEGORY_UNKNOWN]: 'Unknown category',
+    [GM.CAPABILITY_UNKNOWN]: 'Unknown capability',
+    [GM.CAPABILITY_UNSUPPORTED]: 'Capability is not supported in V1',
+    [GM.CAPABILITY_DUPLICATE]: 'Duplicate capability',
+    [GM.PERMISSION_UNSUPPORTED]: 'Permissions are not supported in V1',
+    [GM.SCORE_RANGE]: 'Invalid score range',
+    [GM.SAVE_SCHEMA]: 'Invalid save schemaVersion',
+    [GM.RANGE_SYNTAX]: 'Unsupported version range syntax',
+    [GM.ICON_FORMAT]: 'Icon data URI format is not supported',
+    [GM.ICON_TOO_LARGE]: 'Icon exceeds the size limit',
     [GM.RUNTIME_INCOMPATIBLE]: 'Game requires a different Runtime version',
     [GM.SDK_INCOMPATIBLE]: 'Game requires a different SDK version',
     [GM.RATE_LIMITED]: 'Too many requests',
@@ -1247,7 +1287,9 @@
     const num = Number(String(gmCode).slice(3));
     if (!Number.isFinite(num)) return 500;
     if (gmCode === GM.INTERNAL) return 500;
-    if (gmCode === GM.MANIFEST_INVALID) return 422;
+    // Package/manifest semantics (GM-422x–424x) are 422, size/quota (413x–414x) are 413.
+    if (num >= 4220 && num <= 4249) return 422;
+    if (num >= 4130 && num <= 4149) return 413;
     if (num >= 5000 && num < 6000) return num >= 5030 ? 503 : 500;
     if (num >= 4000 && num < 5000) return Math.floor(num / 10);
     return 500;
@@ -1268,31 +1310,31 @@
     E_PKG_HTML_INVALID: GM.PACKAGE_INVALID,
     E_PKG_MANIFEST_MISSING: GM.MANIFEST_INVALID,
     E_PKG_MANIFEST_DUPLICATE: GM.MANIFEST_INVALID,
-    E_PKG_MANIFEST_JSON: 'GM-4228',
+    E_PKG_MANIFEST_JSON: GM.MANIFEST_JSON,
     E_PKG_MANIFEST_TOO_LARGE: GM.MANIFEST_TOO_LARGE,
-    E_PKG_MANIFEST_VERSION: 'GM-4230',
-    E_PKG_FIELD_MISSING: 'GM-4231',
-    E_PKG_FIELD_TYPE: 'GM-4232',
-    E_PKG_FIELD_RANGE: 'GM-4233',
-    E_PKG_ID_INVALID: 'GM-4234',
-    E_PKG_ID_RESERVED: 'GM-4235',
-    E_PKG_VERSION_INVALID: 'GM-4236',
-    E_PKG_LEGACY_FIELD: 'GM-4237',
-    E_PKG_CATEGORY_UNKNOWN: 'GM-4238',
-    E_PKG_CAPABILITY_UNKNOWN: 'GM-4239',
-    E_PKG_CAPABILITY_UNSUPPORTED: 'GM-4240',
-    E_PKG_CAPABILITY_DUPLICATE: 'GM-4241',
-    E_PKG_PERMISSION_UNSUPPORTED: 'GM-4242',
-    E_PKG_SCORE_RANGE: 'GM-4243',
-    E_PKG_SAVE_SCHEMA: 'GM-4244',
-    E_PKG_RANGE_SYNTAX: 'GM-4245',
-    E_PKG_ICON_FORMAT: 'GM-4247',
-    E_PKG_ICON_TOO_LARGE: 'GM-4248',
+    E_PKG_MANIFEST_VERSION: GM.MANIFEST_VERSION,
+    E_PKG_FIELD_MISSING: GM.FIELD_MISSING,
+    E_PKG_FIELD_TYPE: GM.FIELD_TYPE,
+    E_PKG_FIELD_RANGE: GM.FIELD_RANGE,
+    E_PKG_ID_INVALID: GM.ID_INVALID,
+    E_PKG_ID_RESERVED: GM.ID_RESERVED,
+    E_PKG_VERSION_INVALID: GM.VERSION_INVALID,
+    E_PKG_LEGACY_FIELD: GM.LEGACY_FIELD,
+    E_PKG_CATEGORY_UNKNOWN: GM.CATEGORY_UNKNOWN,
+    E_PKG_CAPABILITY_UNKNOWN: GM.CAPABILITY_UNKNOWN,
+    E_PKG_CAPABILITY_UNSUPPORTED: GM.CAPABILITY_UNSUPPORTED,
+    E_PKG_CAPABILITY_DUPLICATE: GM.CAPABILITY_DUPLICATE,
+    E_PKG_PERMISSION_UNSUPPORTED: GM.PERMISSION_UNSUPPORTED,
+    E_PKG_SCORE_RANGE: GM.SCORE_RANGE,
+    E_PKG_SAVE_SCHEMA: GM.SAVE_SCHEMA,
+    E_PKG_RANGE_SYNTAX: GM.RANGE_SYNTAX,
+    E_PKG_ICON_FORMAT: GM.ICON_FORMAT,
+    E_PKG_ICON_TOO_LARGE: GM.ICON_TOO_LARGE,
     E_PKG_ENTRY_NOT_SELF_CONTAINED: GM.ENTRY_NOT_SELF_CONTAINED,
     E_PKG_TOO_LARGE: GM.PACKAGE_TOO_LARGE,
     // Registry / install (PRD §8.13.3)
     E_REGISTRY_INVALID: GM.REGISTRY_UNAVAILABLE,
-    E_REGISTRY_URL: 'GM-4035',
+    E_REGISTRY_URL: GM.REGISTRY_URL,
     E_MARKET_DISABLED: GM.MARKET_DISABLED,
     E_NOT_IN_REGISTRY: GM.NOT_IN_REGISTRY,
     E_UNINSTALL_BUILTIN: GM.UNINSTALL_BUILTIN,
@@ -1308,9 +1350,11 @@
     E_INSTALL_IO: GM.INSTALL_IO,
     E_INSTALL_CORRUPT: GM.INSTALL_CORRUPT,
     // Storage / compatibility (PRD §8.13.4)
-    E_STORE_SCHEMA: 'GM-4098',
-    E_STORE_SCHEMA_NEWER: 'GM-4098',
+    E_STORE_SCHEMA: GM.SCHEMA_READ_TOO_NEW,
+    E_STORE_SCHEMA_NEWER: GM.SCHEMA_READ_TOO_NEW,
     E_STORE_PATH_ESCAPE: GM.STORE_PATH_ESCAPE,
+    E_COMPAT_SDK: GM.SDK_INCOMPATIBLE,
+    E_COMPAT_RUNTIME: GM.RUNTIME_INCOMPATIBLE,
   });
 
   /** Translate an internal `E_*` code to its public `GM-*` code (fallback: GM-5000). */
@@ -1619,12 +1663,172 @@
   function toGameError(error) {
     if (isGameError(error)) {
       if (error instanceof GameError) return error;
-      return new GameError(error.code, error.message, { retryable: error.retryable === true });
+      return new GameError(error.code, error.message, {
+        retryable: error.retryable === true,
+        details: error.details,
+      });
     }
     return new GameError(GM.INTERNAL, defaultMessageFor(GM.INTERNAL), { retryable: false });
   }
 
   return { GameError, createGameError, isGameError, toGameError };
+  })();
+
+  // module: packages/sdk/src/version.js
+  __mods["packages/sdk/src/version.js"] = (function () {
+  /**
+   * Tiny semver-subset helper used by the SDK version negotiation (PRD §8.3
+   * "版本协商" / docs/V1-CONTRACTS §8.6).
+   *
+   * The authoritative range implementation lives on the Host
+   * (`packages/host/src/semver.js`), but the SDK is inlined into a single-file
+   * game and may not import Host/Node code. This module only needs the grammar
+   * the Runtime emits in `init.supportedSdkRange` (`>=x <y` in V1, plus the
+   * ^ / ~ / exact forms for forward compatibility).
+   */
+
+  const VERSION_RE =
+    /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
+
+  /** @returns {{major:number,minor:number,patch:number,pre:string[],raw:string}|null} */
+  function parseVersion(value) {
+    if (typeof value !== 'string' || value.length > 64) return null;
+    const match = VERSION_RE.exec(value);
+    if (!match) return null;
+    const pre = match[4] ? match[4].split('.') : [];
+    for (const identifier of pre) {
+      if (/^\d+$/.test(identifier) && identifier.length > 1 && identifier.startsWith('0')) return null;
+    }
+    return {
+      major: Number(match[1]),
+      minor: Number(match[2]),
+      patch: Number(match[3]),
+      pre,
+      raw: value,
+    };
+  }
+
+  function comparePre(a, b) {
+    if (a.length === 0 && b.length === 0) return 0;
+    if (a.length === 0) return 1;
+    if (b.length === 0) return -1;
+    const max = Math.max(a.length, b.length);
+    for (let index = 0; index < max; index += 1) {
+      const left = a[index];
+      const right = b[index];
+      if (left === undefined) return -1;
+      if (right === undefined) return 1;
+      if (/^\d+$/.test(left) && /^\d+$/.test(right)) {
+        const diff = Number(left) - Number(right);
+        if (diff !== 0) return diff < 0 ? -1 : 1;
+      } else if (/^\d+$/.test(left) !== /^\d+$/.test(right)) {
+        return /^\d+$/.test(left) ? -1 : 1;
+      } else if (left !== right) {
+        return left < right ? -1 : 1;
+      }
+    }
+    return 0;
+  }
+
+  function compareVersions(a, b) {
+    const left = typeof a === 'string' ? parseVersion(a) : a;
+    const right = typeof b === 'string' ? parseVersion(b) : b;
+    if (!left || !right) return 0;
+    if (left.major !== right.major) return left.major < right.major ? -1 : 1;
+    if (left.minor !== right.minor) return left.minor < right.minor ? -1 : 1;
+    if (left.patch !== right.patch) return left.patch < right.patch ? -1 : 1;
+    return comparePre(left.pre, right.pre);
+  }
+
+  /** Parse one supported range form. @returns {object|null} */
+  function parseRange(value) {
+    if (typeof value !== 'string') return null;
+    const text = value.trim();
+    if (text.length === 0 || text.length > 120) return null;
+    if (text.startsWith('^')) {
+      const minimum = parseVersion(text.slice(1).trim());
+      return minimum ? { kind: 'caret', min: minimum } : null;
+    }
+    if (text.startsWith('~')) {
+      const minimum = parseVersion(text.slice(1).trim());
+      return minimum ? { kind: 'tilde', min: minimum } : null;
+    }
+    const bounded = /^>=([^\s]+)\s+<([^\s]+)$/.exec(text);
+    if (bounded) {
+      const minimum = parseVersion(bounded[1]);
+      const maximum = parseVersion(bounded[2]);
+      if (!minimum || !maximum || compareVersions(minimum, maximum) >= 0) return null;
+      return { kind: 'bounded', min: minimum, max: maximum };
+    }
+    const exact = parseVersion(text);
+    return exact ? { kind: 'exact', exact } : null;
+  }
+
+  /** @returns {boolean} */
+  function satisfiesRange(versionText, rangeText) {
+    const version = parseVersion(versionText);
+    const range = parseRange(rangeText);
+    if (!version || !range) return false;
+    if (version.pre.length > 0) {
+      return range.kind === 'exact' && range.exact.pre.length > 0 && compareVersions(version, range.exact) === 0;
+    }
+    if (range.kind === 'caret') {
+      return compareVersions(version, range.min) >= 0 && version.major === range.min.major;
+    }
+    if (range.kind === 'tilde') {
+      return (
+        compareVersions(version, range.min) >= 0 &&
+        version.major === range.min.major &&
+        version.minor === range.min.minor
+      );
+    }
+    if (range.kind === 'exact') return compareVersions(version, range.exact) === 0;
+    return compareVersions(version, range.min) >= 0 && compareVersions(version, range.max) < 0;
+  }
+
+  /**
+   * SDK-side check of the Runtime-advertised `supportedSdkRange` (PRD §8.3).
+   *
+   * - below the lower bound → the Runtime is older than this SDK: reject GM-5002.
+   * - above the upper bound → this SDK is ahead of the Runtime: keep going with
+   *   the "unknown fields ignored / unknown methods rejected" forward-compatible
+   *   policy and flag `sdkAhead` in diagnostics (PRD §8.3 step 2).
+   * - unparseable range → ignore the hint (the Runtime remains authoritative).
+   *
+   * @returns {{ok:boolean, ahead:boolean, checked:boolean}}
+   */
+  function negotiateSdkRange(sdkVersion, supportedRange) {
+    if (typeof supportedRange !== 'string' || supportedRange.trim().length === 0) {
+      return { ok: true, ahead: false, checked: false };
+    }
+    const range = parseRange(supportedRange);
+    const version = parseVersion(sdkVersion);
+    if (!range || !version) return { ok: true, ahead: false, checked: false };
+    if (version.pre.length > 0) {
+      return { ok: satisfiesRange(sdkVersion, supportedRange), ahead: false, checked: true };
+    }
+    if (range.kind === 'exact') {
+      return { ok: compareVersions(version, range.exact) === 0, ahead: false, checked: true };
+    }
+    if (range.kind === 'caret' || range.kind === 'tilde' || range.kind === 'bounded') {
+      if (compareVersions(version, range.min) < 0) return { ok: false, ahead: false, checked: true };
+      if (range.kind === 'caret') {
+        if (version.major === range.min.major) return { ok: true, ahead: false, checked: true };
+        return { ok: true, ahead: compareVersions(version, range.min) > 0, checked: true };
+      }
+      if (range.kind === 'tilde') {
+        if (version.major === range.min.major && version.minor === range.min.minor) {
+          return { ok: true, ahead: false, checked: true };
+        }
+        return { ok: true, ahead: true, checked: true };
+      }
+      if (compareVersions(version, range.max) < 0) return { ok: true, ahead: false, checked: true };
+      return { ok: true, ahead: true, checked: true };
+    }
+    return { ok: true, ahead: false, checked: false };
+  }
+
+  return { parseVersion, compareVersions, parseRange, satisfiesRange, negotiateSdkRange };
   })();
 
   // module: packages/sdk/src/bridge-client.js
@@ -1645,6 +1849,7 @@
   const validateBridgeMessage = __mods["packages/shared/src/protocol.js"].validateBridgeMessage;
   const createGameError = __mods["packages/sdk/src/errors.js"].createGameError;
   const toGameError = __mods["packages/sdk/src/errors.js"].toGameError;
+  const negotiateSdkRange = __mods["packages/sdk/src/version.js"].negotiateSdkRange;
   /**
    * iframe-side bridge client (PRD §8.4 postMessage protocol).
    *
@@ -1706,6 +1911,7 @@
     let readyResult = null;
     let requestSeq = 0;
     let invalidMessages = 0;
+    let sdkAhead = false;
     let readyTimeoutMs = TIMING.handshakeTimeoutMs;
     const pending = new Map();
 
@@ -1837,11 +2043,17 @@
         invalidMessages += 1;
         return;
       }
+      if (initData) return; // duplicate init after a successful handshake
       if (data.protocolVersion !== PROTOCOL_VERSION) {
         fail(createGameError(GM.PROTOCOL_MISMATCH, 'Unsupported bridge protocol version'));
         return;
       }
-      if (initData) return;
+      const sdkRange = negotiateSdkRange(SDK_VERSION, data.supportedSdkRange);
+      if (!sdkRange.ok) {
+        fail(createGameError(GM.PROTOCOL_MISMATCH, 'Game SDK version is not supported by this Runtime'));
+        return;
+      }
+      sdkAhead = sdkRange.ahead;
       initData = data;
       if (helloTimer !== null) {
         timers.clearTimeout(helloTimer);
@@ -1885,6 +2097,7 @@
       entry.reject(
         createGameError(errorPayload.code || GM.INTERNAL, errorPayload.message, {
           retryable: errorPayload.retryable === true,
+          details: errorPayload.details,
         })
       );
     }
@@ -2003,7 +2216,7 @@
         return { init: initData, result: readyResult };
       },
       getDiagnostics: function getDiagnostics() {
-        return { helloCount, invalidMessages, pending: pending.size };
+        return { helloCount, invalidMessages, pending: pending.size, sdkAhead };
       },
       start,
       ready: readyWithTimeout,
@@ -2176,6 +2389,9 @@
   /** `meta` is optional; `undefined`/`null` become `null`, never `undefined`. */
   function prepareScoreMeta(meta) {
     if (meta === undefined || meta === null) return null;
+    if (!meta || typeof meta !== 'object' || Array.isArray(meta)) {
+      throw createGameError(GM.INVALID_PARAM, 'Score meta must be a JSON object');
+    }
     const value = cloneValue(meta);
     assertJsonShape(value, 0);
     const bytes = jsonByteLength(value);
@@ -2266,17 +2482,39 @@
     return Object.freeze(view);
   }
 
+  const AGENT_STATES = Object.freeze(['idle', 'running', 'waiting-user', 'completed', 'error']);
+  const AGENT_SOURCES = Object.freeze(['turn', 'tool', 'approval', 'question', 'lifecycle', 'restore']);
+
   function normalizeAgentState(value) {
     if (!value || typeof value !== 'object') return null;
+    const state = AGENT_STATES.includes(value.state) ? value.state : 'idle';
+    const source = AGENT_SOURCES.includes(value.source) ? value.source : 'lifecycle';
     return {
-      state: value.state,
+      state,
       label: typeof value.label === 'string' ? value.label : '',
+      labelKey: typeof value.labelKey === 'string' ? value.labelKey : null,
       sessionId: value.sessionId === undefined ? null : value.sessionId,
-      updatedAt: value.updatedAt,
-      source: value.source,
-      seq: value.seq,
-      since: value.since,
+      updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : new Date().toISOString(),
+      source,
+      seq: Number.isFinite(value.seq) ? value.seq : 0,
+      since: typeof value.since === 'string' ? value.since : new Date().toISOString(),
       turnId: value.turnId === undefined ? null : value.turnId,
+      ...(typeof value.hostEpoch === 'string' ? { hostEpoch: value.hostEpoch } : {}),
+    };
+  }
+
+  function idleAgentSnapshot(now) {
+    const at = new Date(now()).toISOString();
+    return {
+      state: 'idle',
+      label: '',
+      labelKey: 'agent.state.idle',
+      sessionId: null,
+      updatedAt: at,
+      source: 'lifecycle',
+      seq: 0,
+      since: at,
+      turnId: null,
     };
   }
 
@@ -2301,7 +2539,9 @@
 
     let readyPromise = null;
     let backfillPromise = null;
-    let lastAgent = null;
+    let queuedWrites = 0;
+    let writeTail = Promise.resolve();
+    const MAX_QUEUED_WRITES = 32;
 
     function applyViewport(value) {
       runtimeState.viewport = normalizeViewport(value);
@@ -2349,12 +2589,12 @@
       if (name === 'agent-status') {
         const snapshot = normalizeAgentState(data);
         if (!snapshot) return;
-        lastAgent = snapshot;
-        hub.emit('agent-status', snapshot, { buffer: false });
+        hub.emit('agent-status', snapshot);
         return;
       }
       if (isLifecycleEvent(name)) {
-        hub.emit(name, data && typeof data === 'object' ? data : {});
+        const payload = data && typeof data === 'object' ? data : {};
+        hub.emit(name, { event: name, ...payload });
       }
     }
 
@@ -2399,6 +2639,34 @@
       return readyPromise;
     }
 
+    /**
+     * Writes are queued in call order on the SDK side too (PRD §8.3). The Runtime
+     * also serializes them; doing it here keeps ordering stable for older
+     * Runtime builds and gives games a bounded queue (32) with GM-4291.
+     */
+    function requestWrite(method, params, timeoutMs) {
+      if (queuedWrites >= MAX_QUEUED_WRITES) {
+        return Promise.reject(createGameError(GM.BACKPRESSURE, 'Too many queued game write requests'));
+      }
+      queuedWrites += 1;
+      // The first write goes out synchronously (same observable ordering as a
+      // direct call); later writes wait for the previous one to settle.
+      const run = queuedWrites === 1
+        ? bridge.request(method, params, timeoutMs)
+        : writeTail.then(function runWrite() {
+          return bridge.request(method, params, timeoutMs);
+        });
+      writeTail = run.then(
+        function onWriteDone() {
+          queuedWrites -= 1;
+        },
+        function onWriteFailed() {
+          queuedWrites -= 1;
+        }
+      );
+      return run;
+    }
+
     function ensureAgentBackfill() {
       if (backfillPromise) return backfillPromise;
       if (!hub.has('agent-status')) return null;
@@ -2407,7 +2675,6 @@
       }).then(function onStatus(snapshot) {
         const normalized = normalizeAgentState(snapshot);
         if (!normalized) return;
-        lastAgent = normalized;
         hub.emit('agent-status', normalized, { buffer: false });
       }).then(undefined, function ignore() {});
       return backfillPromise;
@@ -2417,7 +2684,7 @@
       requireReady();
       assertStorageKey(key);
       const prepared = prepareStorageValue(data);
-      return bridge.request(METHODS.STORAGE_SAVE, { key, data: prepared.value }, SDK_METHOD_TIMEOUTS['storage.save']);
+      return requestWrite(METHODS.STORAGE_SAVE, { key, data: prepared.value }, SDK_METHOD_TIMEOUTS['storage.save']);
     }
 
     async function storageLoad(key) {
@@ -2433,12 +2700,12 @@
     async function storageRemove(key) {
       requireReady();
       assertStorageKey(key);
-      return bridge.request(METHODS.STORAGE_REMOVE, { key }, SDK_METHOD_TIMEOUTS['storage.remove']);
+      return requestWrite(METHODS.STORAGE_REMOVE, { key }, SDK_METHOD_TIMEOUTS['storage.remove']);
     }
 
     async function sessionStart() {
       requireReady();
-      return bridge.request(METHODS.SESSION_START, {}, SDK_METHOD_TIMEOUTS['session.start']);
+      return requestWrite(METHODS.SESSION_START, {}, SDK_METHOD_TIMEOUTS['session.start']);
     }
 
     async function sessionEnd(endOptions) {
@@ -2451,14 +2718,14 @@
         assertScoreValue(input.score);
         score = input.score;
       }
-      return bridge.request(METHODS.SESSION_END, { outcome, score }, SDK_METHOD_TIMEOUTS['session.end']);
+      return requestWrite(METHODS.SESSION_END, { outcome, score }, SDK_METHOD_TIMEOUTS['session.end']);
     }
 
     async function scoreSubmit(score, meta) {
       requireReady();
       assertScoreValue(score);
       const preparedMeta = prepareScoreMeta(meta);
-      return bridge.request(
+      return requestWrite(
         METHODS.SCORE_SUBMIT,
         { score, meta: preparedMeta },
         SDK_METHOD_TIMEOUTS['score.submit']
@@ -2479,9 +2746,8 @@
       return bridge.request(METHODS.AGENT_GET_STATUS, {}, SDK_METHOD_TIMEOUTS['agent.getStatus']).then(function onStatus(
         snapshot
       ) {
-        const normalized = normalizeAgentState(snapshot);
-        if (normalized) lastAgent = normalized;
-        return normalized || snapshot;
+        const normalized = normalizeAgentState(snapshot) || idleAgentSnapshot(now);
+        return normalized;
       });
     }
 
@@ -2545,7 +2811,14 @@
     return Object.freeze(game);
   }
 
-  return { GameError, isGameError, createGameSDK };
+  /**
+   * Convenience singleton (`import { game } from '@dsh-game/sdk'`, PRD §8.3).
+   * Building it does not start the handshake: the first `ready()`/`on()` call
+   * does (PRD §8.3 implementation constraints).
+   */
+  const game = createGameSDK();
+
+  return { GameError, isGameError, createGameSDK, game };
   })();
 
   const __entry = __mods["packages/sdk/src/sdk.js"];

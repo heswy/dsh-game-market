@@ -1449,7 +1449,7 @@ interface AgentSnapshot {
 | `categories` | `["arcade"]` | `["arcade","action"]` | `["puzzle"]` | `["arcade"]` |
 | `capabilities` | `["storage","score"]` | 同左 | 同左 | 同左 |
 | `sdkVersion` / `runtimeVersion` | `^1.0.0` / `^1.0.0` | 同左 | 同左 | 同左 |
-| `viewport` | `960×540 contain` | 按游戏设计自定（以 manifest 为准） | `720×720 contain` | `960×540 contain` |
+| `viewport` | `960×540 contain` | `540×960 contain`（竖屏） | `720×720 contain` | `960×540 contain` |
 | `preferredTheme` | `game-defined` | `game-defined` | `game-defined` | `game-defined` |
 | `save.schemaVersion` | `1` | `1` | `1` | `1` |
 | `score` | higher-better，0–1,000,000，integer | 同左 | 同左 | 同左 |
