@@ -5053,6 +5053,23 @@ window.__ModuleLoader__.load({
       return promise;
     }
 
+    async function fetchCatalogPages(api) {
+      const items = [];
+      let cursor = null;
+      let first = null;
+      let pages = 0;
+      do {
+        const payload = await api.listGames({ limit: 50, cursor: cursor });
+        if (first === null) first = payload;
+        if (payload && Array.isArray(payload.items)) {
+          for (const item of payload.items) items.push(item);
+        }
+        cursor = payload && typeof payload.nextCursor === 'string' && payload.nextCursor.length > 0 ? payload.nextCursor : null;
+        pages += 1;
+      } while (cursor !== null && pages < 8);
+      return { payload: first, items: items };
+    }
+
     async function loadCatalogInternal(options) {
       const opts = options && typeof options === 'object' ? options : {};
       const target = opts.store;
@@ -5077,8 +5094,9 @@ window.__ModuleLoader__.load({
           });
       }
       try {
-        const payload = await api.listGames();
-        const items = normalizeCatalog(payload);
+        const page = await fetchCatalogPages(api);
+        const payload = page.payload;
+        const items = normalizeCatalog(page.items);
         const health = await healthPromise;
         if (health) target.dispatch(healthReady(health));
         const registry = (payload && payload.registry) || (health && health.registry) || null;

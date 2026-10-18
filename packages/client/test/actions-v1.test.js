@@ -106,6 +106,24 @@ test('loadCatalog normalizes games and records refresh time, registry and health
   assert.equal(state.health.registry.count, 1);
 });
 
+test('the catalog follows nextCursor pages until the list is complete', async function () {
+  const store = createStore();
+  const calls = [];
+  const api = fakeApi({
+    listGames: async function listGames(filter) {
+      calls.push(filter && filter.cursor ? filter.cursor : null);
+      if (calls.length === 1) {
+        return { items: [gameRecord('a'), gameRecord('b')], nextCursor: 'page-2', source: 'merged' };
+      }
+      return { items: [gameRecord('c')], nextCursor: null, source: 'merged' };
+    },
+  });
+  const result = await loadCatalog({ store: store, api: api, now: 1 });
+  assert.equal(result.ok, true);
+  assert.equal(store.getState().market.games.length, 3);
+  assert.deepEqual(calls, [null, 'page-2']);
+});
+
 test('an offline registry marks the catalog offline but keeps the data', async function () {
   const store = createStore();
   const api = fakeApi({
