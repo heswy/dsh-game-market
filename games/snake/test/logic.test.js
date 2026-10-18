@@ -68,6 +68,15 @@ test('setDirection turns the snake and starts a ready game', () => {
   assert.equal(moved.snake[0].y, ready.snake[0].y + 1);
 });
 
+test('startGame flips a ready board even when the first key equals the heading', () => {
+  const ready = createGame({ seed: 1 });
+  // Pressing the initial direction is a no-op for setDirection (no 180°/duplicate
+  // turn), so the game shell must still call startGame before running the loop.
+  assert.equal(setDirection(ready, 'right'), ready);
+  assert.equal(ready.status, 'ready');
+  assert.equal(startGame(ready).status, 'playing');
+});
+
 test('setDirection rejects a 180-degree reversal', () => {
   const state = playingGame();
   const unchanged = setDirection(state, 'left');
