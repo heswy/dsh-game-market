@@ -183,7 +183,9 @@ V0 必须包含（对应 PRD §7.1 / §11.2）：
 > 子智能体越界/契约缺口事项统一记在这里，由 Lead 在集成阶段处理；子智能体不要改这些文件。
 
 - **snake 报备（2026-10-18，方案 A 已裁决）**：`scripts/check.mjs` 仍硬编码 V0 `game.json.entry === 'dist/index.html'`，snake 源 manifest 暂留 `entry` 仅作构建期兼容，**构建时剔除、dist 内嵌 manifest 无 entry**（dist 严格 V1）。集成期 Lead 处理：① `scripts/check.mjs` 改为 V1 校验（内嵌 manifest + 自包含 + 构建确定性）并纳入新游戏构建；② `packages/shared/constants.js#BUILTIN_GAMES.version` `0.1.0 → 1.0.0`（snake manifest 同步 `1.0.0`）；③ 删除 `games/snake/game.json` 源 `entry`；④ 对齐 host 测试中 `0.1.0` 断言（`cases/games.js`、`cases/health.js`、`harness.js` expected 等）。
-- （其他子智能体的越界/契约缺口报告在此追加）
+- **M1c 验收与集成进度（2026-10-18）**：snake 分支 `b03a5b3`（5 commits，351/351，dist 127,975 B，manifest 614 B）与 breakout 分支 `370320e`（3 commits，374/374，dist 153,786 B，sha256 `5f1254…97c2`，两次构建一致）均已由 Lead 独立复跑 `npm run verify` + 范围检查，分别合入集成分支 `acdcd4c`（snake）、`f361374`（breakout）；集成分支 `npm run verify` **380/380 pass、CHECK OK (16)**，工作树干净；两款 headless 截图已抽查。
+- **breakout 裁决**：① P 暂停暂由游戏内处理（Runtime 键盘暂停仅 Escape，Escape 不拦截、平台 pause/resume 正常），V1 接受，后续 Runtime 若加 P 再去重；② manifest `score.max` 以 `10000000` 为准，集成阶段把 `docs/V1-GAME-ACCEPTANCE.md` §5.4/§6 的 `1,000,000` 对齐；③ breakout/jump/2048 的根构建/检查接入由 Lead 在集成阶段做（`scripts/build.mjs`、`scripts/check.mjs`）。
+- **（其他子智能体的越界/契约缺口报告在此追加）**
 
 **V1 不做 / 推迟 V1.5**：多文件游戏资源（图片/音效/zip）、服务端 Registry/账号/付费/云排行榜、游戏内多人、Windows 完整视觉验收（可做冒烟）、正式鲸鱼素材。
 
