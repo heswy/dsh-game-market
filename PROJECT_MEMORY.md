@@ -111,6 +111,17 @@ dsh-game-market/
 
 ---
 
+### 3.1 已核实的 Client 会话状态契约（2026-10-18，从本机 app.asar 源码核对）
+
+- `ui-session` 通过 `ctx.slots.provideRoot` 提供 root hooks：`sessions = ctx.sessions.list`、`sessionStatus = service.sessionStatus`。
+- Slot 组件标准 props 里：
+  - `useSessions(selector)`：selector hook，state 形如 `{ ids, byId, phase }`；`byId[sessionId]` 含 `running`、`retainedBy` 等。
+  - `useSessionStatus(selector)`：selector hook，state 是 `Map<sessionId, { running, pendingInteraction, completionUnread }>`。
+  - 当前主视图会话：`useSessions((s) => Object.values(s.byId).find((x) => (x.retainedBy?.mainView ?? 0) > 0)?.id)`。
+  - `pendingInteraction` 非空 → waiting-user；`completionUnread` → 完成未读；`running` → 运行中。
+- `ui-layout` 通过 `ctx.slots.provideRoot({ hooks: { panelInfo } })` 提供 `usePanelInfo`（仅 `activePanelId`）。
+- 因此 V0 的 chip / Sidebar 状态优先从这两个 hook 派生（即时、无轮询）；Host `agent-state` 快照用于 label 文案与游戏内鲸鱼，并保留 dev 模拟。轮询只作为降级路径。
+
 ## 4. 常用命令
 
 ```bash
@@ -159,6 +170,7 @@ npm run dev:disable
 > 规则：Lead 每完成一个阶段追加一条（日期、阶段、commit、结果、下一步）。历史细节以 git log 为准，本节只保留最近 10 条。
 
 - 2026-10-18 · 仓库初始化：`main` 从 `origin/main`（仅 LICENSE）建立；PRD v2.1 纳入仓库；建立本记忆文件与 V0 开发基座。下一步：搭 Bundle 基座并拆分分支。
+- 2026-10-18 · V0 基座完成：零依赖 bundle 骨架、shared 契约、构建/检查/开发态脚本、三份 feature worktree（host-core / client-shell / runtime-sdk-snake）已派出子智能体并行开发；Lead 在 `chore/v0-integration` 准备集成测试。
 - （待续）
 
 **当前阻塞/待用户确认**：

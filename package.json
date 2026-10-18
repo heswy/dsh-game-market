@@ -36,7 +36,8 @@
     "check": "node scripts/check.mjs",
     "test": "node --test",
     "dev:enable": "node scripts/dev-enable.mjs",
-    "dev:disable": "node scripts/dev-disable.mjs"
+    "dev:disable": "node scripts/dev-disable.mjs",
+    "verify": "node scripts/build.mjs && node scripts/check.mjs && node --test"
   },
   "dsh": {
     "manifestVersion": 1,
