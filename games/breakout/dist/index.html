@@ -4580,7 +4580,15 @@
     runtimePaused = true;
     stopLoop();
     if (state.status === 'playing') setPaused(state, true);
-    if (!overlay.kind || overlay.kind === 'paused') showPausedOverlay();
+    if (!overlay.kind || overlay.kind === 'paused') {
+      showPausedOverlay();
+    } else if (overlay.kind === 'boot' || overlay.kind === 'start') {
+      // Platform launched us in `resume-paused` mode (D-024): its modal is the
+      // single confirmation, so drop our own boot/Continue menu and show the
+      // paused state instead of a second prompt.
+      hideOverlay(false);
+      showPausedOverlay();
+    }
     if (state.status !== 'over' && state.status !== 'won') saveState('pause');
     renderOnce();
   }
@@ -4786,7 +4794,16 @@
       }
       ensureSession();
       setSaveStatus('idle', text('saveReady'));
-      showStartOverlay();
+      if (runtimePaused && state.status !== 'over' && state.status !== 'won') {
+        // Platform resume-paused launch: the platform modal is the only
+        // confirmation (D-024). Restore quietly into the paused state; the later
+        // `resume` event starts play (see onRuntimeResume).
+        if (state.status === 'playing') setPaused(state, true);
+        hideOverlay(false);
+        showPausedOverlay();
+      } else {
+        showStartOverlay();
+      }
       renderOnce();
       if (!runtimePaused) startLoop();
     }).catch(function onBootError(error) {
