@@ -27,6 +27,7 @@
 - 真机（同一版本 DSH 0.2.1-rc.2 的隔离 Web 宿主 + headless Chrome）：市场/等待入口/游戏运行/等待用户/完成提醒/继续游戏/跨重启恢复/多 Session/停用清理全部通过。
 - 2026-10-18 V0.1 反馈迭代：修复从“继续游戏”返回时棋盘停在 ready、失去键盘焦点的卡住问题（315 tests 通过）。
 - 2026-10-18 V0.2 反馈迭代：入口改为会话 tab 行常驻「游戏 / Game」tab（点击进入 Game Market）；返回游戏只保留平台一次确认并直接开玩（314 tests 通过）。
+- 2026-10-18 V0.3 修复：Host 改为订阅 DSH 真实 `session/event`，修复「Agent 完成任务后游戏内没有任何完成提醒」；真机验证真实 `turn/end(error)` 可到达 Host（314 tests 通过）。**此修复需要重启 DSH 才生效。**
 - 完整清单、截图与未覆盖项见 [`docs/V0-VERIFICATION.md`](./docs/V0-VERIFICATION.md)。
 
 ## 目录结构
@@ -106,6 +107,6 @@ curl -s -X POST http://127.0.0.1:56891/api/game-market/dev/agent-state \
 - 没有第三方游戏安装、Registry、开发者 CLI（V1 范围）。
 - 贪吃蛇是自包含单文件；多文件游戏资源要等 V1.5。
 - 平台提示音/静音、长期“少提醒”设置不在 V0。
-- Agent 等待态依赖 DSH `approval/asked` 等持久事件（Host 单测覆盖）；**真实 Agent 事件链路与提问（question）等待仍需真机 Spike（S-14/S-15）**；V0 验证用 dev-only 状态接口驱动 UI。
+- V0.3 起 Host 订阅真实 `session/event`（`turn/end`、`approval/*` 等），完成/等待提醒已在真机验证；审批/提问类真实事件与 question 投影仍需后续真机补测。
 - 保存失败重试退避、saveGap 提示、Windows/深色主题完整视觉复测列入 V1 前清单。
 - UI 自动化验证使用同版本 Web 宿主 + headless Chrome；桌面窗口视觉细节需在桌面端人工确认。

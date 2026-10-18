@@ -178,6 +178,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
   - V0-08（已部分被 V0-10 取代）：`resume-paused` 竞态修复（记录提前 resume、focusBoard）；V0.2 起不再保留游戏内的第二个开始入口。
   - V0-09：游戏入口 = 官方 `conversation.view` tab（id `game`, order 100），label 随语言「游戏 / Game」，**常驻不隐藏**；点击 tab 打开 Game Market 主面板并把会话 view 重置为 chat，返回后仍是正常对话。原 header/composer chip 方案与 `chip.js` 已删除；Sidebar Game Market 入口保留。
   - V0-10：恢复游戏只保留平台一次「已恢复上一局」确认；平台确认后游戏直接开始（含 saved `ready`，`resume.js` 仅 IGNORE/PLAY），不再显示游戏内第二个遮罩，并 focusBoard。Agent 快照在页面可见且绑定 session 时轮询，不再依赖 chip surface。
+  - V0-11：**真实 Agent 事件源必须是 `ctx.on('session/event', (session, event) => …)`**。`turn/end` / `tool/result` / `approval/*` / `assistant/message` 是 session log 事件，`ctx.on(type)` 在真实 DSH 中永不触发；Cordis 只有 `agent/pre-step` / `agent/disposed`。Host 映射：turn/end kind → completed/error/idle；approval/asked → waiting；approval/decided → running；tool/call → specific labels。V0.3 修复前“运行中”能显示而“完成/等待”永远不出现，就是此原因。
   - V0-06：entry 的 CSP `frame-ancestors` 在 V0 使用 `*`。原因：DSH Host 侧看到的请求 origin（`dsh.internal`）与嵌入页面实际 origin（loopback Web UI）可能不同，单一 origin 会阻止 iframe 加载；游戏是不可信静态内容且受 sandbox 隔离，V0 接受该放宽，V1 改为可配置 allowlist（PRD §8.10）。
 
 ---
@@ -195,11 +196,12 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · **V0.1 已发布**：`main` merge `55bc9f8`，tag `v0.0.1`；等待提示位置/动效/弹层对齐与 resume 卡住问题已修复，验证证据更新在 `docs/V0-VERIFICATION.md`。
 - 2026-10-18 · **V0.2 反馈修复**：入口改为会话 tab 行常驻「游戏 / Game」（conversation.view），点击进 Market；删除 chip 组件；恢复游戏只保留平台一次确认并直接开玩；轮询改为绑定 session 即可工作；全量 314 tests 通过。
 - 2026-10-18 · **V0.2 已发布**：`main` merge `3bfea76`，tag `v0.0.2`；验证见 `docs/V0-VERIFICATION.md`。
+- 2026-10-18 · **V0.3 修复**：Host 改订阅真实 `session/event`，修复 Agent 完成后游戏内无提示；真机验证真实 turn/end(error) 到达 Host；单测覆盖完成/取消/审批映射；全量 314 tests 通过。Host 改动需重启 DSH。
 - （待续）
 
 **当前状态 / 待用户确认**：
 
-- V0 代码与证据已完成并推送；V0.1 tag `v0.0.1`、V0.2 tag `v0.0.2` 均已推送（V0.2 merge `3bfea76`）。
+- V0 代码与证据已完成并推送；V0.1 tag `v0.0.1`、V0.2 tag `v0.0.2` 均已推送；V0.3（真实事件源修复）在 `fix/agent-completion-events` 验证中，合并后 tag `v0.0.3`。
 - 日常桌面端需用户自行 `npm run dev:enable -- --yes` 并重启 DSH；UI 客户端改动刷新页面即可。
 - 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复；用户桌面端版本已确认为 0.2.1-rc.2，与验证基线一致。
 - GitHub 推送权限：若 `git push` 失败，需要用户提供可用凭据或代为推送。
