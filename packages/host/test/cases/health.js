@@ -154,12 +154,12 @@ export function register() {
     );
   });
 
-  test('unknown event names do not abort apply or other listeners', async (t) => {
-    const host = await createHarness(t, { failingEvents: ['assistant/message'] });
+  test('event registration failures do not abort apply', async (t) => {
+    const host = await createHarness(t, { failingEvents: ['agent/pre-step'] });
     assert.equal(host.routes.has(ROUTES.HEALTH), true);
-    assert.equal(host.listeners.has('agent/pre-step'), true);
-    assert.equal(host.listeners.has('turn/end'), true);
-    assert.equal(host.listeners.has('assistant/message'), false);
+    assert.equal(host.listeners.has('agent/pre-step'), false);
+    assert.equal(host.listeners.has('agent/disposed'), true);
+    assert.equal(host.listeners.has('session/event'), true);
     assert.equal(
       host.logs.some((entry) => entry.includes('event-registration-failed')),
       true
