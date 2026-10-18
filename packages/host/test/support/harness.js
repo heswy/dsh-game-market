@@ -1,6 +1,10 @@
 /**
  * Test harness: a fake Cordis context captures exact Fetch routes and agent
  * event listeners; handlers are invoked with real `Request` objects (no server).
+ *
+ * `createHarness` boots through the real Cordis plugin (`apply`).
+ * `createHostHarness` builds the Host directly so tests can inject env,
+ * fetch/DNS stubs and expose the service graph.
  */
 
 import { promises as fs } from 'node:fs';
@@ -11,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { ROUTES } from '../../../shared/src/contracts.js';
 import { RUNTIME_VERSION, SDK_VERSION } from '../../../shared/src/constants.js';
 import { AGENT_EVENTS, AGENT_SESSION_EVENTS } from '../../src/agent-adapter.js';
+import { createHost } from '../../src/host.js';
 import { apply } from '../../src/plugin.js';
 
 export const FIXTURE_ROOT = path.resolve(fileURLToPath(new URL('../fixtures/games/', import.meta.url)));
@@ -97,30 +102,7 @@ export function createFakeContext({ knownEvents = [...AGENT_EVENTS, 'session/eve
   return { ctx, routes, listeners, effects, logs, logger, dispose, trigger };
 }
 
-export async function createHarness(
-  t,
-  {
-    config = {},
-    fixtureRoot = FIXTURE_ROOT,
-    knownEvents = [...AGENT_EVENTS, 'session/event'],
-    failingEvents = [],
-    withConnection = true,
-  } = {}
-) {
-  const directory = await fs.mkdtemp(path.join(tmpdir(), 'dsh-gm-host-'));
-  const dataRoot = path.join(directory, 'data');
-  const fake = createFakeContext({ knownEvents, failingEvents, withConnection });
-  try {
-    apply(fake.ctx, { dataRoot, builtinGamesRoot: fixtureRoot, ...config });
-  } catch (error) {
-    fake.logs.push(['error', 'apply-threw', error]);
-  }
-
-  t.after(async () => {
-    await fake.dispose();
-    await fs.rm(directory, { recursive: true, force: true });
-  });
-
+function createRequestHelpers(fake, directory, dataRoot) {
   async function request(pathname, options = {}) {
     const url = new URL(`${ORIGIN}${pathname}`);
     for (const [key, value] of Object.entries(options.query || {})) {
@@ -191,12 +173,18 @@ export async function createHarness(
     }
   }
 
+  async function pathExists(relativePath) {
+    try {
+      await fs.lstat(filePath(relativePath));
+      return true;
+    } catch (_error) {
+      return false;
+    }
+  }
+
   return {
-    ...fake,
     directory,
     dataRoot,
-    fixtureRoot,
-    config,
     request,
     requestJson,
     data,
@@ -205,6 +193,110 @@ export async function createHarness(
     readDataJson,
     writeDataFile,
     listDataFiles,
+    pathExists,
+  };
+}
+
+/** Fake DNS resolution so tests never touch the network. */
+export async function publicResolveHost() {
+  return [{ address: '203.0.113.7', family: 4 }];
+}
+
+export async function createHarness(
+  t,
+  {
+    config = {},
+    fixtureRoot = FIXTURE_ROOT,
+    knownEvents = [...AGENT_EVENTS, 'session/event'],
+    failingEvents = [],
+    withConnection = true,
+  } = {}
+) {
+  const directory = await fs.mkdtemp(path.join(tmpdir(), 'dsh-gm-host-'));
+  const dataRoot = path.join(directory, 'data');
+  const fake = createFakeContext({ knownEvents, failingEvents, withConnection });
+  try {
+    apply(fake.ctx, { dataRoot, builtinGamesRoot: fixtureRoot, ...config });
+  } catch (error) {
+    fake.logs.push(['error', 'apply-threw', error]);
+  }
+
+  t.after(async () => {
+    await fake.dispose();
+    await fs.rm(directory, { recursive: true, force: true });
+  });
+
+  return {
+    ...createRequestHelpers(fake, directory, dataRoot),
+    ...fake,
+    fixtureRoot,
+    config,
+  };
+}
+
+/**
+ * Build the Host directly (no Cordis shell) with injectable env/http so V1
+ * tests can exercise the Registry client and installer deterministically.
+ */
+export async function createHostHarness(
+  t,
+  {
+    config = {},
+    fixtureRoot = FIXTURE_ROOT,
+    env = {},
+    http = {},
+    now,
+    hostEpoch,
+    prepareDataRoot,
+  } = {}
+) {
+  const directory = await fs.mkdtemp(path.join(tmpdir(), 'dsh-gm-host-v1-'));
+  const dataRoot = path.join(directory, 'data');
+  const home = path.join(directory, 'home');
+  const fake = createFakeContext();
+  if (typeof prepareDataRoot === 'function') await prepareDataRoot(dataRoot, directory);
+  const httpOptions = {
+    resolveHost: publicResolveHost,
+    sleep: async () => undefined,
+    retries: 0,
+    installLockWaitMs: 500,
+    ...http,
+  };
+  const host = createHost({
+    config: { dataRoot, builtinGamesRoot: fixtureRoot, ...config },
+    env: { DSH_HOME: home, ...env },
+    logger: fake.logger,
+    http: httpOptions,
+    ...(now ? { now } : {}),
+    ...(hostEpoch ? { hostEpoch } : {}),
+  });
+  for (const route of host.routes) {
+    fake.routes.set(route.path, {
+      ...route,
+      fetch: (request) => host.router.handleRoute(route, request),
+    });
+  }
+
+  t.after(async () => {
+    try {
+      await host.maintenance.ready();
+      await host.registry.ready();
+      await host.storage.flush();
+    } catch (_error) {
+      // Cleanup is best effort.
+    }
+    await fake.dispose();
+    await fs.rm(directory, { recursive: true, force: true });
+  });
+
+  return {
+    ...createRequestHelpers(fake, directory, dataRoot),
+    ...fake,
+    host,
+    home,
+    fixtureRoot,
+    config,
+    http: httpOptions,
   };
 }
 

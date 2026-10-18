@@ -163,7 +163,11 @@ export function register() {
     const restarted = createHost({
       config: { builtinGamesRoot: host.fixtureRoot, dataRoot: host.dataRoot },
     });
-    t.after(() => restarted.storage.flush());
+    t.after(async () => {
+      await restarted.maintenance.ready();
+      await restarted.registry.ready();
+      await restarted.storage.flush();
+    });
     const running = await restarted.services.sessions.findRunning('snake');
     assert.equal(running.playSessionId, started.playSessionId);
     assert.equal(running.outcome, 'running');

@@ -134,6 +134,56 @@ export function isLegacyV0Range(value) {
 }
 
 /**
+ * Non-throwing compatibility snapshot stored in `installations.json`
+ * (V1-CONTRACTS §6.2 `compatibility`).
+ *
+ * @param {{capabilities?: string[], sdkVersion?: string|null, runtimeVersion?: string|null}} manifest
+ * @param {string} checkedAt ISO timestamp
+ */
+export function compatibilityFor(manifest, checkedAt) {
+  const capabilities = Array.isArray(manifest?.capabilities) ? manifest.capabilities : [];
+  const sdkRange = typeof manifest?.sdkVersion === 'string' ? manifest.sdkVersion : null;
+  const runtimeRange = typeof manifest?.runtimeVersion === 'string' ? manifest.runtimeVersion : null;
+  const reasons = [];
+  let status = 'ok';
+  for (const capability of capabilities) {
+    if (!SUPPORTED_CAPABILITIES.has(capability)) {
+      status = 'broken';
+      reasons.push(GM.MANIFEST_INVALID);
+    }
+  }
+  const checkRange = (range, current, code) => {
+    if (range === null) return;
+    let ok = false;
+    try {
+      ok = satisfies(current, range) || isLegacyV0Range(range);
+    } catch (_error) {
+      ok = false;
+    }
+    if (!ok) {
+      if (status === 'ok') status = 'incompatible';
+      reasons.push(code);
+    }
+  };
+  checkRange(runtimeRange, RUNTIME_VERSION, GM.RUNTIME_INCOMPATIBLE);
+  checkRange(sdkRange, SDK_VERSION, GM.SDK_INCOMPATIBLE);
+  return {
+    status,
+    sdkVersion: SDK_VERSION,
+    runtimeVersion: RUNTIME_VERSION,
+    ...(sdkRange === null ? {} : { sdkRange }),
+    ...(runtimeRange === null ? {} : { runtimeRange }),
+    checkedAt,
+    reasons,
+  };
+}
+
+/** True when a compatibility snapshot allows running/installing. */
+export function isCompatible(compatibility) {
+  return Boolean(compatibility) && compatibility.status === 'ok';
+}
+
+/**
  * Validate Runtime/SDK compatibility + supported capabilities for a manifest.
  * Missing ranges are tolerated (defensive V0 builtin catalog), malformed ones
  * are not.

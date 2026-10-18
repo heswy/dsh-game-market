@@ -34,6 +34,16 @@ function createLogger(ctx) {
   };
 }
 
+function settleWithin(promise, ms) {
+  return Promise.race([
+    promise.catch(() => undefined),
+    new Promise((resolve) => {
+      const timer = setTimeout(resolve, ms);
+      if (typeof timer.unref === 'function') timer.unref();
+    }),
+  ]);
+}
+
 function safeDispose(disposer, logger) {
   if (typeof disposer !== 'function') return;
   try {
@@ -93,6 +103,22 @@ function registerHttpRoutes(ctx, host, logger) {
           }
         }
         await Promise.allSettled(pending);
+        // Let background Registry refresh / startup maintenance settle so the
+        // storage root is quiescent before the plugin reports disposed.
+        try {
+          if (host.registry && typeof host.registry.ready === 'function') {
+            await settleWithin(host.registry.ready(), 2000);
+          }
+        } catch (error) {
+          logger.warn(LOG_PREFIX, 'registry-dispose-failed', `code=${error?.code || 'E_UNKNOWN'}`);
+        }
+        try {
+          if (host.maintenance && typeof host.maintenance.ready === 'function') {
+            await settleWithin(host.maintenance.ready(), 2000);
+          }
+        } catch (error) {
+          logger.warn(LOG_PREFIX, 'maintenance-dispose-failed', `code=${error?.code || 'E_UNKNOWN'}`);
+        }
         try {
           await host.storage.flush();
         } catch (error) {
