@@ -1,0 +1,52 @@
+{
+  "name": "dsh-game-market",
+  "version": "0.0.0",
+  "description": "Game market and runtime for DeepSeek Harness — play small games while the Agent works.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "icon.svg",
+    "locale/*.json",
+    "packages/host/**",
+    "packages/shared/**",
+    "packages/runtime/**",
+    "games/**",
+    "README.md"
+  ],
+  "icon": "./icon.svg",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "node": ">=20",
+    "dsh": ">=0.2.0 <0.3.0"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:client": "node scripts/build-client.mjs",
+    "build:snake": "node scripts/build-snake.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test",
+    "dev:enable": "node scripts/dev-enable.mjs",
+    "dev:disable": "node scripts/dev-disable.mjs"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": []
+    }
+  }
+}

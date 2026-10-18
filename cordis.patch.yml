@@ -1,0 +1,9 @@
+# dsh-game-market — Bundle layer.
+#
+# One row activates the Host half and, through `dsh.client`, the browser half.
+# Row id, package name and Client module id are intentionally the same:
+# "dsh-game-market" (also the main-panel key).
+- insert:
+    - id: dsh-game-market
+      name: 'dsh-game-market'
+      config: {}
