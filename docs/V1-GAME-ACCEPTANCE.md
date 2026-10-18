@@ -269,7 +269,7 @@ key：`current`；`schemaVersion`：`1`；建议大小：≤8 KiB（平台数组
 | 核心玩法 | 4×4 数字拼图：方向移动、同值合并、每步生成 2/4；达成 2048 可继续；无合法移动结束 |
 | 输入 | 方向键 / WASD；可选滑动手势（非验收必需）；`P` 暂停/恢复；空格/回车开始与重开 |
 | 动画 | 移动/合并/生成有反馈；不得因动画错误导致棋盘与逻辑不一致 |
-| 撤销（P1，可选） | 每局一次撤销；若实现，撤销恢复棋盘+分数+步数，崩溃/读档后不恢复撤销栈 |
+| 撤销（V1 实现） | 每局一次撤销；撤销恢复棋盘+分数+步数；**撤销状态持久化**（读档后恢复“剩 1 次/已用完”，V1 Lead 裁决） |
 
 ### 4.2 状态机
 
@@ -304,7 +304,7 @@ key：`current`；`schemaVersion`：`1`；建议大小：≤4 KiB（含一次 un
 
 | 项 | 定义 |
 |---|---|
-| 计分方向 | `higher-better`；`min:0`、`max:1000000`、`integer:true` |
+| 计分方向 | `higher-better`；`min:0`、`max:1000000000`、`integer:true`（V1 Lead 裁决：2048 取 1e9） |
 | 得分 | 合并生成值累加（2+2→4 得 4 分，以此类推） |
 | 结束条件 | 无合法移动 → `over`；达成 2048 记 `won` 但可继续 |
 | 提交时机 | `over` 时提交一次并 `session.end({outcome:'completed', score})`；`won` 不提交（继续冲分） |
@@ -396,7 +396,7 @@ key：`current`；`schemaVersion`：`1`；建议大小：≤8 KiB（砖块用行
 
 | 项 | 定义 |
 |---|---|
-| 计分方向 | `higher-better`；`min:0`、`max:1000000`、`integer:true` |
+| 计分方向 | `higher-better`；`min:0`、`max:10000000`、`integer:true`（V1 Lead 裁决：breakout 取 1e7） |
 | 得分 | 普通砖块 +10、坚硬砖块每击 +10（或击碎 +30）；过关奖励 `100 × 关卡序号`（数值自定但需单调、可复现） |
 | 结束条件 | 命 = 0 → `over`；最后一关清屏 → `won` |
 | 提交时机 | `over`/`won` 时提交一次并 `session.end({outcome:'completed', score})` |
@@ -447,7 +447,7 @@ key：`current`；`schemaVersion`：`1`；建议大小：≤8 KiB（砖块用行
 | manifest `sdkVersion`/`runtimeVersion` | `^1.0.0` / `^1.0.0` | 同左 | 同左 | 同左 |
 | 存档 key / schemaVersion | `current` / 1 | 同左 | 同左 | 同左 |
 | 纯逻辑测试目录 | `games/snake/test/`（保留） | `games/jump/test/` | `games/2048/test/` | `games/breakout/test/` |
-| 分数范围 | 0–1,000,000 整数 | 同左 | 同左 | 同左 |
+| 分数范围 | 0–1,000,000 整数 | 0–1,000,000 整数 | 0–1,000,000,000 整数 | 0–10,000,000 整数 |
 | 计分方向 | higher-better | higher-better | higher-better | higher-better |
 | 分发方式 | Bundle 内置 | Registry | Registry | Registry |
 | 验收记录位置 | `docs/V1-VERIFICATION.md` | 同左 | 同左 | 同左 |

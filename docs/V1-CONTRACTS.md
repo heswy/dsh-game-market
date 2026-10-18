@@ -630,7 +630,7 @@ interface RegistryGame {
 2. **整份索引严格校验、不做"跳过坏条目"**（PRD v2.2 §8.8.1）：任一条目的 id/version/sha256/size/url 非法、顶层结构非法、版本/时间戳非法、条目数 >500、重复 id → 整个索引拒绝（`E_REGISTRY_INVALID` → `GM-5032`）并回退到缓存；不接受宽容解析。
 3. Registry 元数据与包 manifest 的关系：安装时以 **manifest 为准**；`id`/`version` 必须一致（否则 `E_INSTALL_VERSION_MISMATCH` → `GM-4095`）；`name/description/author/categories/capabilities/sdkVersion/runtimeVersion` 不一致时以 manifest 覆盖并记录 warning，不阻断安装。
 4. `featured`/`quickPlay` 只影响排序/入口呈现。
-5. 预览资源（icon/cover/screenshots，**仅绝对 https URL**）**不直接交给 Renderer**：Host 下载/解码后写入 `preview-cache/`，由 `/preview` 提供；失败时降级为无图（详情页用 manifest `icon` data URI 或首字母占位）。
+5. 预览资源（icon/cover/screenshots，**仅绝对 https URL**）**不直接交给 Renderer**：Host 下载/解码后写入 `preview-cache/`，由 `/preview` 提供；失败时降级为无图（详情页用 manifest `icon` data URI 或首字母占位）。**下载策略（M1a 落地）**：预览素材只做绝对 https + 公网 IP/SSRF 校验，不套用包下载的 host allowlist；file Registry 不抓取远程预览（离线优先，`/preview` 由已安装 manifest icon 兜底）。
 6. `isUpdateAvailable(registryVersion, installedVersion)` 只表示"版本不同、需要新包"；Market 显示 Update 时 Host 用 semver 比较判定更高版本，降级仅允许回到 `previousVersion`（§6.4）。
 
 ### 5.2 包 URL 准入
@@ -646,7 +646,7 @@ interface RegistryGame {
 | U-05 | host | 默认 allowlist（精确、大小写不敏感）：`github.com`、`raw.githubusercontent.com`、`objects.githubusercontent.com`；或与 Registry 索引 `sourceUrl` 同 host；或 `config.allowedHosts` 追加 | `GM-4034` |
 | U-06 | file Registry 路径 | 安全相对路径：不以 `/` 开头、不含 `\\`、任一段不为 `..`/`.`，末段文件名匹配 | `GM-5032` |
 | U-07 | 长度 | 包 URL ≤1000 字符 | `GM-4034` |
-| U-08 | 重定向 | ≤5 跳（`PACKAGE_REDIRECTS_MAX`）；每跳重新执行 U-01..U-07；不得降级 http | `GM-4034` / `GM-5034` |
+| U-08 | 重定向 | ≤5 跳（`PACKAGE_REDIRECTS_MAX`）；初始 URL 执行 U-01..U-07；重定向逐跳复验 scheme/凭据/host/长度（文件名只校验初始 URL）；不得降级 http | `GM-4034` / `GM-5034` |
 | U-09 | 下载加固（Host） | 解析后 IP 拒绝回环/私网/链路本地（`devMode:true` 时允许 `127.0.0.1`/`localhost`）；禁止携带凭据；限制并发 | `GM-4034` / `GM-5034` |
 | U-10 | 大小/sha | `package.size` 与实际一致且 ≤20 MiB；sha256 与 `package.sha256` 一致（64 位小写 hex） | `GM-5037` / `GM-4135` / `GM-5015` |
 
@@ -804,7 +804,7 @@ interface InstallationRecord {
 2. `manifest` 快照保存 manifest 的 `icon` data URI（≤256 KiB，非权威快照）；Registry 封面/截图只在安装时记缓存文件名（`cover`），不内联；`installations.json` 读取上限 8 MiB。
 3. 顶层 `schemaVersion` 高于 `SUPPORTED_INSTALL_SCHEMA_VERSION` → 只读/拒绝（`E_STORE_SCHEMA_NEWER` → `GM-4098`），不迁移、不丢数据。
 4. 同一 id 只保留**当前版本 + 1 个旧版本**（`previousVersion`）；清理用 `versionsToPrune`（current + 1）。
-5. 内置游戏（`snake`）**不写** installations.json（TBD-09 裁决）；dev 游戏按 `source:'dev'` 写记录（`packagePath` 为 `<id>/<version>`，文件由 Host 从 devGameRoots 特判解析）；内置不可卸载/更新。
+5. 内置游戏（`snake`）**不写** installations.json（TBD-09 裁决）；dev 游戏**也不写** installations.json（与 §6.7 一致）：Host 扫描 `devGameRoots` 并在 `/games` 合成 `source:'dev'`、`dev:true` 条目，`/installed` 不含 dev；内置不可卸载/更新。
 6. 本地/dev 安装 `sha256:null`；V1 不对本地包做完整性承诺，Client 必须二次确认。
 
 ### 6.3 安装流程（`POST /install`，registry 来源）
@@ -1197,7 +1197,7 @@ type ScoreDirection = 'higher-better' | 'lower-better';
 interface GameRuntimeInfo {
   readonly sdkVersion: string;          // '1.0.0'
   readonly protocolVersion: number;     // 1
-  readonly runtimeVersion: string;      // '1.0.0'
+  readonly runtimeVersion: string | null; // '1.0.0'；ready 前为 null（PRD §8.3）
   readonly gameId: string;
   readonly gameVersion: string;
   readonly locale: string;              // 随 DSH 界面语言，如 'zh-CN' / 'en-US'
@@ -1262,11 +1262,12 @@ interface GameSDK {
   };
 }
 
+// 每个 payload 都带 `event` 字段（与 PRD §8.3 一致；V1 SDK 已实现，V0 兼容）。
 type LifecyclePayload =
-  | { reason: 'user' | 'hidden' | 'leave' | 'waiting-user'; at: number }   // pause
-  | { reason: 'user' | 'visible'; at: number }                            // resume
-  | { at: number }                                                        // hidden / visible
-  | { reason: string; deadlineMs: number };                               // before-save
+  | { event: 'pause'; reason: 'user' | 'hidden' | 'leave' | 'waiting-user'; at: number }
+  | { event: 'resume'; reason: 'user' | 'visible'; at: number }
+  | { event: 'hidden' | 'visible'; at: number }
+  | { event: 'before-save'; reason: string; deadlineMs: number };
 ```
 
 **V0 兼容附加项（不得移除）**：`game.onError(handler)`、`game.isGameError(error)` 继续存在；V1 规范不依赖它们，但 V0 游戏可能使用。
@@ -1448,7 +1449,7 @@ interface AgentSnapshot {
 | `categories` | `["arcade"]` | `["arcade","action"]` | `["puzzle"]` | `["arcade"]` |
 | `capabilities` | `["storage","score"]` | 同左 | 同左 | 同左 |
 | `sdkVersion` / `runtimeVersion` | `^1.0.0` / `^1.0.0` | 同左 | 同左 | 同左 |
-| `viewport` | `960×540 contain` | 同左 | 同左 | 同左 |
+| `viewport` | `960×540 contain` | 按游戏设计自定（以 manifest 为准） | `720×720 contain` | `960×540 contain` |
 | `preferredTheme` | `game-defined` | `game-defined` | `game-defined` | `game-defined` |
 | `save.schemaVersion` | `1` | `1` | `1` | `1` |
 | `score` | higher-better，0–1,000,000，integer | 同左 | 同左 | 同左 |
