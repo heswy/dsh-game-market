@@ -178,6 +178,13 @@ V0 必须包含（对应 PRD §7.1 / §11.2）：
 - **集成规则（不变）**：各分支完成后先合入 `chore/v1-integration`，在集成分支全量 `npm run verify` + 冲突处理（构建产物 client.js/snake dist 可能冲突，需重新构建），全部通过后再 `--no-ff` 合 `main`；合并由 Lead 执行，子智能体不合并。
 - **监控方式**：`git worktree list` / 各 worktree `git status,log` / 子智能体完成报告。
 
+### 2.1.8 M1 集成期待办（滚动记录）
+
+> 子智能体越界/契约缺口事项统一记在这里，由 Lead 在集成阶段处理；子智能体不要改这些文件。
+
+- **snake 报备（2026-10-18，方案 A 已裁决）**：`scripts/check.mjs` 仍硬编码 V0 `game.json.entry === 'dist/index.html'`，snake 源 manifest 暂留 `entry` 仅作构建期兼容，**构建时剔除、dist 内嵌 manifest 无 entry**（dist 严格 V1）。集成期 Lead 处理：① `scripts/check.mjs` 改为 V1 校验（内嵌 manifest + 自包含 + 构建确定性）并纳入新游戏构建；② `packages/shared/constants.js#BUILTIN_GAMES.version` `0.1.0 → 1.0.0`（snake manifest 同步 `1.0.0`）；③ 删除 `games/snake/game.json` 源 `entry`；④ 对齐 host 测试中 `0.1.0` 断言（`cases/games.js`、`cases/health.js`、`harness.js` expected 等）。
+- （其他子智能体的越界/契约缺口报告在此追加）
+
 **V1 不做 / 推迟 V1.5**：多文件游戏资源（图片/音效/zip）、服务端 Registry/账号/付费/云排行榜、游戏内多人、Windows 完整视觉验收（可做冒烟）、正式鲸鱼素材。
 
 ---
