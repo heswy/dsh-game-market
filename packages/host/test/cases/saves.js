@@ -240,6 +240,23 @@ export function register() {
     assert.ok(after.filter((file) => file.includes('.corrupt-')).length >= 2);
   });
 
+  test('a corrupt save is never reported as Continue-able', async (t) => {
+    const host = await createHarness(t);
+    await host.data(ROUTES.SAVE, { body: { gameId: 'snake', key: 'a', data: 1 } });
+    await host.data(ROUTES.SAVE, { body: { gameId: 'snake', key: 'b', data: 2 } });
+    await host.data(ROUTES.SESSION, {
+      body: { gameId: 'snake', action: 'start', dshSessionId: 'session-corrupt' },
+    });
+    const before = await host.data(ROUTES.INSTALLED);
+    assert.equal(before.items[0].canContinue, true);
+    await fs.writeFile(host.filePath('saves', 'snake', 'current.json'), '{broken', 'utf8');
+    await fs.writeFile(host.filePath('saves', 'snake', 'current.json.bak'), '{also broken', 'utf8');
+    const after = await host.data(ROUTES.INSTALLED);
+    assert.equal(after.items[0].canContinue, false);
+    const files = await host.listDataFiles(path.join('saves', 'snake'));
+    assert.ok(files.filter((file) => file.includes('.corrupt-')).length >= 2);
+  });
+
   test('unknown games and malformed bodies are rejected', async (t) => {
     const host = await createHarness(t);
     const unknown = await host.requestJson(ROUTES.SAVE, {
