@@ -5,7 +5,7 @@ const h = React.createElement;
 
 export const CSS = `
 .dgm-root,
-.dgm-chip-anchor {
+.dgm-entry-view {
   --dgm-bg: var(--dsw-alias-bg-base, #ffffff);
   --dgm-fg: var(--dsw-alias-label-primary, #1f2328);
   --dgm-fg-secondary: var(--dsw-alias-label-secondary, #5c6470);
@@ -26,6 +26,19 @@ export const CSS = `
   --dgm-focus-width: var(--dsw-focus-ring-width, 2px);
 }
 
+.dgm-entry-view {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  color: var(--dgm-fg-tertiary);
+  font: inherit;
+  font-size: 13px;
+}
+
+.dgm-entry-view p { margin: 0; }
+
 .dgm-root {
   position: relative;
   display: flex;
@@ -44,9 +57,9 @@ export const CSS = `
 .dgm-root *,
 .dgm-root *::before,
 .dgm-root *::after,
-.dgm-chip-anchor *,
-.dgm-chip-anchor *::before,
-.dgm-chip-anchor *::after { box-sizing: border-box; }
+.dgm-entry-view *,
+.dgm-entry-view *::before,
+.dgm-entry-view *::after { box-sizing: border-box; }
 
 .dgm-sr-only {
   position: absolute;
@@ -315,186 +328,6 @@ export const CSS = `
   border: 2px solid var(--dgm-border);
   border-top-color: var(--dgm-brand);
   animation: dgm-spin 900ms linear infinite;
-}
-
-.dgm-game-hint {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Cute, animated waiting hint that lives in the composer dock. */
-.dgm-hint-pill {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  height: 30px;
-  max-width: min(360px, 62vw);
-  padding: 0 13px 0 9px;
-  border: 1px solid color-mix(in srgb, var(--dgm-brand) 30%, var(--dgm-border));
-  border-radius: 999px;
-  background:
-    linear-gradient(120deg, color-mix(in srgb, var(--dgm-brand) 14%, var(--dgm-overlay)), var(--dgm-overlay) 64%);
-  color: var(--dgm-fg);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 16px;
-  cursor: pointer;
-  box-shadow:
-    0 4px 14px color-mix(in srgb, var(--dgm-brand) 14%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28);
-  animation: dgm-hint-enter 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
-  transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
-}
-.dgm-hint-pill::after { content: ''; position: absolute; inset: -2px; border-radius: 999px; }
-.dgm-hint-pill:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    0 7px 18px color-mix(in srgb, var(--dgm-brand) 20%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32);
-}
-.dgm-hint-pill:active { transform: translateY(0) scale(0.985); }
-.dgm-hint-pill:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 2px; }
-.dgm-hint-pill[data-status='waiting'] {
-  border-color: color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d97706) 42%, var(--dgm-border));
-  background:
-    linear-gradient(120deg, color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d97706) 16%, var(--dgm-overlay)), var(--dgm-overlay) 66%);
-  animation: dgm-hint-enter 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2), dgm-hint-glow 1.9s ease-in-out infinite;
-}
-.dgm-hint-pill[data-status='resume'] {
-  border-color: transparent;
-  background: var(--dgm-brand);
-  color: #fff;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--dgm-brand) 34%, transparent);
-}
-.dgm-hint-pill[data-status='resume'] .dgm-hint-icon { color: currentColor; }
-.dgm-hint-pill[data-status='resume'] .dgm-hint-spark { background: #fef3c7; }
-.dgm-hint-icon {
-  display: inline-flex;
-  flex: none;
-  color: var(--dgm-brand);
-  animation: dgm-hint-bob 2.8s ease-in-out infinite;
-  transform-origin: 50% 60%;
-}
-.dgm-hint-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dgm-hint-spark {
-  position: absolute;
-  top: 3px;
-  right: 11px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--dsw-alias-state-warn-primary, #f59e0b);
-  opacity: 0;
-  animation: dgm-hint-twinkle 2.4s ease-in-out infinite;
-}
-.dgm-hint-shine {
-  position: absolute;
-  inset: 1px;
-  border-radius: 999px;
-  background: linear-gradient(100deg, transparent 18%, rgba(255, 255, 255, 0.32) 45%, transparent 62%);
-  opacity: 0;
-  pointer-events: none;
-  animation: dgm-hint-shine 4.6s ease-in-out infinite;
-}
-
-@keyframes dgm-hint-enter {
-  from { opacity: 0; transform: translateY(5px) scale(0.94); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes dgm-hint-bob {
-  0%, 100% { transform: translateY(0) rotate(-2deg); }
-  50% { transform: translateY(-2px) rotate(2deg); }
-}
-@keyframes dgm-hint-glow {
-  0%, 100% { box-shadow: 0 4px 14px color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d97706) 16%, transparent); }
-  50% { box-shadow: 0 6px 20px color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d97706) 34%, transparent); }
-}
-@keyframes dgm-hint-twinkle {
-  0%, 100% { opacity: 0; transform: scale(0.6); }
-  40% { opacity: 0.95; transform: scale(1); }
-  70% { opacity: 0.35; transform: scale(0.8); }
-}
-@keyframes dgm-hint-shine {
-  0%, 55% { opacity: 0; transform: translateX(-40%); }
-  70% { opacity: 0.55; }
-  85%, 100% { opacity: 0; transform: translateX(40%); }
-}
-
-.dgm-chip-dot {
-  width: 5px;
-  height: 5px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--dgm-fg-secondary);
-}
-.dgm-hint-pill[data-status='waiting'] .dgm-chip-dot { background: var(--dsw-alias-state-warn-primary, #d97706); box-shadow: 0 0 0 2px var(--dgm-bg), 0 0 0 3px var(--dsw-alias-state-warn-primary, #d97706); }
-
-@media (prefers-reduced-motion: reduce) {
-  .dgm-hint-pill,
-  .dgm-hint-pill[data-status='waiting'],
-  .dgm-hint-icon,
-  .dgm-hint-spark,
-  .dgm-hint-shine { animation: none; }
-  .dgm-hint-shine { display: none; }
-}
-
-.dgm-menu,
-.dgm-popover {
-  position: fixed;
-  z-index: 40;
-  width: 248px;
-  max-height: 320px;
-  padding: 6px;
-  border: 1px solid var(--dgm-border);
-  border-radius: var(--dgm-radius-lg);
-  background: var(--dgm-overlay);
-  box-shadow: var(--dgm-shadow);
-  backdrop-filter: blur(12px);
-  animation: dgm-menu-in 140ms ease-out;
-}
-.dgm-popover { width: 236px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-.dgm-popover-title { margin: 0; font-size: 13px; font-weight: 600; color: var(--dgm-fg); }
-.dgm-popover-body { margin: 0; font-size: 12px; color: var(--dgm-fg-secondary); }
-.dgm-popover-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
-
-.dgm-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 36px;
-  padding: 6px 8px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--dgm-fg);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.dgm-menu-item:hover,
-.dgm-menu-item:focus-visible { background: var(--dgm-hover); outline: none; }
-.dgm-menu-item:focus-visible { box-shadow: inset 0 0 0 2px var(--dgm-focus); }
-.dgm-menu-icon { display: inline-flex; color: var(--dgm-fg-secondary); flex: none; }
-.dgm-menu-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.dgm-menu-label { font-size: 13px; }
-.dgm-menu-meta { color: var(--dgm-fg-tertiary); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.dgm-toast {
-  position: fixed;
-  z-index: 50;
-  padding: 6px 10px;
-  border-radius: 8px;
-  background: var(--dgm-overlay);
-  border: 1px solid var(--dgm-border);
-  box-shadow: var(--dgm-shadow);
-  color: var(--dgm-fg-secondary);
-  font-size: 12px;
-  animation: dgm-fade 120ms ease-out;
 }
 
 .dgm-runtime { position: relative; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; background: #0b0c0e; }
@@ -788,7 +621,6 @@ export const CSS = `
   .dgm-grid { grid-template-columns: 1fr; }
   .dgm-runtime-controls { left: 12px; right: 12px; }
   .dgm-presence { right: 16px; bottom: 16px; }
-  .dgm-hint-pill { max-width: 78vw; }
   .dgm-tab { padding: 0 8px; }
 }
 
@@ -803,9 +635,6 @@ export const CSS = `
   .dgm-whale-btn[data-state='running'] .dgm-whale,
   .dgm-whale-btn[data-state='waiting-user'] .dgm-whale-halo { animation: none !important; }
   .dgm-whale-btn[data-state='waiting-user'] .dgm-whale-halo { opacity: 1; }
-  .dgm-hint-pill,
-  .dgm-menu,
-  .dgm-popover,
   .dgm-whale-bubble { animation: none !important; }
 }
 `;

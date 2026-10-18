@@ -65,6 +65,8 @@ window.__ModuleLoader__.load({
       'mygames.action.play': '开始',
 
       'entry.chip.game': '游戏',
+      'entry.tab.game': '游戏',
+      'entry.tab.opening': '正在打开游戏…',
       'entry.chip.running.resume': 'Agent 正在工作 · 继续上一局',
       'entry.chip.running.choose': 'Agent 正在工作 · 来一局？',
       'entry.chip.resume': '继续游戏',
@@ -220,6 +222,8 @@ window.__ModuleLoader__.load({
       'mygames.action.play': 'Play',
 
       'entry.chip.game': 'Game',
+      'entry.tab.game': 'Game',
+      'entry.tab.opening': 'Opening games…',
       'entry.chip.running.resume': 'Agent working · Resume last game',
       'entry.chip.running.choose': 'Agent working · Play a round?',
       'entry.chip.resume': 'Resume game',
@@ -1705,8 +1709,8 @@ window.__ModuleLoader__.load({
     /**
      * Agent snapshot polling (PRD D-015 / 8.5 / 9.1.1).
      *
-     * - 1000ms while the page is visible and either the header chip is mounted or
-     *   the Game Market panel is showing the Runtime.
+     * - while the page is visible and a Session is bound (the persistent Game tab and
+     *   the in-game whale both need state even when no floating hint is mounted).
      * - stops on `document.hidden`; an immediate refresh happens on return.
      * - ETag/304 keeps the fresh timestamp without replacing the snapshot.
      * - failures back off 1s → 2s → 4s → 8s (shared TIMING cap).
@@ -1724,10 +1728,7 @@ window.__ModuleLoader__.load({
     /** Pure polling decision, also used by tests and the runtime view. */
     function shouldPollAgent(state, visibility) {
       if (!state || visibility !== 'visible') return false;
-      if (!pollingSessionId(state)) return false;
-      const surface = state.surface && typeof state.surface === 'object' ? state.surface : {};
-      if (surface.chip === true) return true;
-      return state.page === 'runtime' && surface.runtime === true;
+      return Boolean(pollingSessionId(state));
     }
 
     /** Exponential backoff for snapshot failures, capped by shared TIMING. */
@@ -2589,7 +2590,7 @@ window.__ModuleLoader__.load({
 
     const CSS = `
     .dgm-root,
-    .dgm-chip-anchor {
+    .dgm-entry-view {
       --dgm-bg: var(--dsw-alias-bg-base, #ffffff);
       --dgm-fg: var(--dsw-alias-label-primary, #1f2328);
       --dgm-fg-secondary: var(--dsw-alias-label-secondary, #5c6470);
@@ -2610,6 +2611,19 @@ window.__ModuleLoader__.load({
       --dgm-focus-width: var(--dsw-focus-ring-width, 2px);
     }
 
+    .dgm-entry-view {
+      display: flex;
+      flex: 1 1 auto;
+      align-items: center;
+      justify-content: center;
+      min-height: 180px;
+      color: var(--dgm-fg-tertiary);
+      font: inherit;
+      font-size: 13px;
+    }
+
+    .dgm-entry-view p { margin: 0; }
+
     .dgm-root {
       position: relative;
       display: flex;
@@ -2628,9 +2642,9 @@ window.__ModuleLoader__.load({
     .dgm-root *,
     .dgm-root *::before,
     .dgm-root *::after,
-    .dgm-chip-anchor *,
-    .dgm-chip-anchor *::before,
-    .dgm-chip-anchor *::after { box-sizing: border-box; }
+    .dgm-entry-view *,
+    .dgm-entry-view *::before,
+    .dgm-entry-view *::after { box-sizing: border-box; }
 
     .dgm-sr-only {
       position: absolute;
@@ -2899,186 +2913,6 @@ window.__ModuleLoader__.load({
       border: 2px solid var(--dgm-border);
       border-top-color: var(--dgm-brand);
       animation: dgm-spin 900ms linear infinite;
-    }
-
-    .dgm-game-hint {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Cute, animated waiting hint that lives in the composer dock. */
-    .dgm-hint-pill {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      height: 30px;
-      max-width: min(360px, 62vw);
-      padding: 0 13px 0 9px;
-      border: 1px solid color-mix(in srgb, var(--dgm-brand) 30%, var(--dgm-border));
-      border-radius: 999px;
-      background:
-        linear-gradient(120deg, color-mix(in srgb, var(--dgm-brand) 14%, var(--dgm-overlay)), var(--dgm-overlay) 64%);
-      color: var(--dgm-fg);
-      font: inherit;
-      font-size: 12px;
-      font-weight: 600;
-      line-height: 16px;
-      cursor: pointer;
-      box-shadow:
-        0 4px 14px color-mix(in srgb, var(--dgm-brand) 14%, transparent),
-        inset 0 1px 0 rgba(255, 255, 255, 0.28);
-      animation: dgm-hint-enter 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
-      transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
-    }
-    .dgm-hint-pill::after { content: ''; position: absolute; inset: -2px; border-radius: 999px; }
-    .dgm-hint-pill:hover {
-      transform: translateY(-1px);
-      box-shadow:
-        0 7px 18px color-mix(in srgb, var(--dgm-brand) 20%, transparent),
-        inset 0 1px 0 rgba(255, 255, 255, 0.32);
-    }
-    .dgm-hint-pill:active { transform: translateY(0) scale(0.985); }
-    .dgm-hint-pill:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 2px; }
-    .dgm-hint-pill[data-status='waiting'] {
-      border-color: color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d97706) 42%, var(--dgm-border));
-      background:
-        linear-gradient(120deg, color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d97706) 16%, var(--dgm-overlay)), var(--dgm-overlay) 66%);
-      animation: dgm-hint-enter 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2), dgm-hint-glow 1.9s ease-in-out infinite;
-    }
-    .dgm-hint-pill[data-status='resume'] {
-      border-color: transparent;
-      background: var(--dgm-brand);
-      color: #fff;
-      box-shadow: 0 4px 14px color-mix(in srgb, var(--dgm-brand) 34%, transparent);
-    }
-    .dgm-hint-pill[data-status='resume'] .dgm-hint-icon { color: currentColor; }
-    .dgm-hint-pill[data-status='resume'] .dgm-hint-spark { background: #fef3c7; }
-    .dgm-hint-icon {
-      display: inline-flex;
-      flex: none;
-      color: var(--dgm-brand);
-      animation: dgm-hint-bob 2.8s ease-in-out infinite;
-      transform-origin: 50% 60%;
-    }
-    .dgm-hint-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .dgm-hint-spark {
-      position: absolute;
-      top: 3px;
-      right: 11px;
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: var(--dsw-alias-state-warn-primary, #f59e0b);
-      opacity: 0;
-      animation: dgm-hint-twinkle 2.4s ease-in-out infinite;
-    }
-    .dgm-hint-shine {
-      position: absolute;
-      inset: 1px;
-      border-radius: 999px;
-      background: linear-gradient(100deg, transparent 18%, rgba(255, 255, 255, 0.32) 45%, transparent 62%);
-      opacity: 0;
-      pointer-events: none;
-      animation: dgm-hint-shine 4.6s ease-in-out infinite;
-    }
-
-    @keyframes dgm-hint-enter {
-      from { opacity: 0; transform: translateY(5px) scale(0.94); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes dgm-hint-bob {
-      0%, 100% { transform: translateY(0) rotate(-2deg); }
-      50% { transform: translateY(-2px) rotate(2deg); }
-    }
-    @keyframes dgm-hint-glow {
-      0%, 100% { box-shadow: 0 4px 14px color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d97706) 16%, transparent); }
-      50% { box-shadow: 0 6px 20px color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d97706) 34%, transparent); }
-    }
-    @keyframes dgm-hint-twinkle {
-      0%, 100% { opacity: 0; transform: scale(0.6); }
-      40% { opacity: 0.95; transform: scale(1); }
-      70% { opacity: 0.35; transform: scale(0.8); }
-    }
-    @keyframes dgm-hint-shine {
-      0%, 55% { opacity: 0; transform: translateX(-40%); }
-      70% { opacity: 0.55; }
-      85%, 100% { opacity: 0; transform: translateX(40%); }
-    }
-
-    .dgm-chip-dot {
-      width: 5px;
-      height: 5px;
-      flex: none;
-      border-radius: 50%;
-      background: var(--dgm-fg-secondary);
-    }
-    .dgm-hint-pill[data-status='waiting'] .dgm-chip-dot { background: var(--dsw-alias-state-warn-primary, #d97706); box-shadow: 0 0 0 2px var(--dgm-bg), 0 0 0 3px var(--dsw-alias-state-warn-primary, #d97706); }
-
-    @media (prefers-reduced-motion: reduce) {
-      .dgm-hint-pill,
-      .dgm-hint-pill[data-status='waiting'],
-      .dgm-hint-icon,
-      .dgm-hint-spark,
-      .dgm-hint-shine { animation: none; }
-      .dgm-hint-shine { display: none; }
-    }
-
-    .dgm-menu,
-    .dgm-popover {
-      position: fixed;
-      z-index: 40;
-      width: 248px;
-      max-height: 320px;
-      padding: 6px;
-      border: 1px solid var(--dgm-border);
-      border-radius: var(--dgm-radius-lg);
-      background: var(--dgm-overlay);
-      box-shadow: var(--dgm-shadow);
-      backdrop-filter: blur(12px);
-      animation: dgm-menu-in 140ms ease-out;
-    }
-    .dgm-popover { width: 236px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-    .dgm-popover-title { margin: 0; font-size: 13px; font-weight: 600; color: var(--dgm-fg); }
-    .dgm-popover-body { margin: 0; font-size: 12px; color: var(--dgm-fg-secondary); }
-    .dgm-popover-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
-
-    .dgm-menu-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-      min-height: 36px;
-      padding: 6px 8px;
-      border: 0;
-      border-radius: 8px;
-      background: transparent;
-      color: var(--dgm-fg);
-      font: inherit;
-      text-align: left;
-      cursor: pointer;
-    }
-    .dgm-menu-item:hover,
-    .dgm-menu-item:focus-visible { background: var(--dgm-hover); outline: none; }
-    .dgm-menu-item:focus-visible { box-shadow: inset 0 0 0 2px var(--dgm-focus); }
-    .dgm-menu-icon { display: inline-flex; color: var(--dgm-fg-secondary); flex: none; }
-    .dgm-menu-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-    .dgm-menu-label { font-size: 13px; }
-    .dgm-menu-meta { color: var(--dgm-fg-tertiary); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-    .dgm-toast {
-      position: fixed;
-      z-index: 50;
-      padding: 6px 10px;
-      border-radius: 8px;
-      background: var(--dgm-overlay);
-      border: 1px solid var(--dgm-border);
-      box-shadow: var(--dgm-shadow);
-      color: var(--dgm-fg-secondary);
-      font-size: 12px;
-      animation: dgm-fade 120ms ease-out;
     }
 
     .dgm-runtime { position: relative; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; background: #0b0c0e; }
@@ -3372,7 +3206,6 @@ window.__ModuleLoader__.load({
       .dgm-grid { grid-template-columns: 1fr; }
       .dgm-runtime-controls { left: 12px; right: 12px; }
       .dgm-presence { right: 16px; bottom: 16px; }
-      .dgm-hint-pill { max-width: 78vw; }
       .dgm-tab { padding: 0 8px; }
     }
 
@@ -3387,9 +3220,6 @@ window.__ModuleLoader__.load({
       .dgm-whale-btn[data-state='running'] .dgm-whale,
       .dgm-whale-btn[data-state='waiting-user'] .dgm-whale-halo { animation: none !important; }
       .dgm-whale-btn[data-state='waiting-user'] .dgm-whale-halo { opacity: 1; }
-      .dgm-hint-pill,
-      .dgm-menu,
-      .dgm-popover,
       .dgm-whale-bubble { animation: none !important; }
     }
     `;
@@ -7283,447 +7113,45 @@ window.__ModuleLoader__.load({
     return { GameMarketPanel };
     })();
 
-    // module: packages/client/src/components/chip.js
-    __mods["packages/client/src/components/chip.js"] = (function () {
+    // module: packages/client/src/components/game-entry-view.js
+    __mods["packages/client/src/components/game-entry-view.js"] = (function () {
     const __react = require('react');
     const React = __react;
-    const store = __mods["packages/client/src/store.js"].store;
-    const pageChanged = __mods["packages/client/src/store.js"].pageChanged;
-    const sessionBound = __mods["packages/client/src/store.js"].sessionBound;
-    const turnIgnored = __mods["packages/client/src/store.js"].turnIgnored;
-    const surfaceChanged = __mods["packages/client/src/store.js"].surfaceChanged;
-    const PAGES = __mods["packages/client/src/constants.js"].PAGES;
-    const CHIP_STATUS = __mods["packages/client/src/chip-state.js"].CHIP_STATUS;
-    const deriveChipState = __mods["packages/client/src/chip-state.js"].deriveChipState;
-    const beginGame = __mods["packages/client/src/actions.js"].beginGame;
-    const gameNameFromState = __mods["packages/client/src/actions.js"].gameNameFromState;
-    const refreshMarket = __mods["packages/client/src/actions.js"].refreshMarket;
     const makeT = __mods["packages/client/src/locale.js"].makeT;
     const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
-    const formatRelativeTime = __mods["packages/client/src/format.js"].formatRelativeTime;
-    const GamepadIcon = __mods["packages/client/src/icons.js"].GamepadIcon;
-    const PlayIcon = __mods["packages/client/src/icons.js"].PlayIcon;
-    const StyleTag = __mods["packages/client/src/styles.js"].StyleTag;
-    const backToConversation = __mods["packages/client/src/navigation.js"].backToConversation;
     const openGameMarket = __mods["packages/client/src/navigation.js"].openGameMarket;
-    const getApiClient = __mods["packages/client/src/api.js"].getApiClient;
-    const useActivePanel = __mods["packages/client/src/hooks.js"].useActivePanel;
-    const useClock = __mods["packages/client/src/hooks.js"].useClock;
-    const useSessionBinding = __mods["packages/client/src/hooks.js"].useSessionBinding;
-    const useStoreState = __mods["packages/client/src/hooks.js"].useStoreState;
+    const StyleTag = __mods["packages/client/src/styles.js"].StyleTag;
     /**
-     * Waiting-entry chip in `conversation.header.leading`.
+     * Persistent Game tab in the conversation tab strip.
      *
-     * Hard rules: never auto-open a game, never hide the chip behind a menu unless
-     * the user asked, ignore only the current turn, and keep Enter/Space/Escape focus
-     * behavior visible.
+     * The tab is the user's everyday entry into the game. Selecting it opens the
+     * Game Market main panel and resets the conversation view back to Chat, so the
+     * Back action from the market returns to the normal conversation.
      */
 
     const h = React.createElement;
 
-    function clampMenuPosition(rect) {
-      const width = 248;
-      const height = 320;
-      const viewportWidth = typeof window !== 'undefined' && typeof window.innerWidth === 'number' ? window.innerWidth : 1280;
-      const viewportHeight = typeof window !== 'undefined' && typeof window.innerHeight === 'number' ? window.innerHeight : 800;
-      // Keep the popup centered under the hint (header) and clamp it inside the
-      // viewport; when there is no room below, flip it above the trigger.
-      const left = Math.max(8, Math.min(rect.left + rect.width / 2 - width / 2, viewportWidth - width - 8));
-      const gap = 6;
-      const below = viewportHeight - rect.bottom - 8;
-      const preferredTop = below >= height ? rect.bottom + gap : rect.top - height - gap;
-      const top = Math.max(8, Math.min(preferredTop, viewportHeight - height - 8));
-      return { left: left, top: top };
-    }
-
-    function WaitEntryChip(props) {
-      const state = useStoreState();
-      const now = useClock(1000);
-      const diagnosticRef = React.useRef(false);
-      const activePanelId = useActivePanel(props, diagnosticRef);
-      const binding = useSessionBinding(props, diagnosticRef);
-      const locale = detectLocale();
-      const t = makeT(props && props.t, locale);
-
-      const triggerRef = React.useRef(null);
-      const rootRef = React.useRef(null);
-      const menuRef = React.useRef(null);
-      const popoverRef = React.useRef(null);
-      const [menuOpen, setMenuOpen] = React.useState(false);
-      const [waitingOpen, setWaitingOpen] = React.useState(false);
-      const [anchor, setAnchor] = React.useState({ left: 8, top: 64 });
-      const [toast, setToast] = React.useState(null);
-
-      const sessionId = binding.sessionId || state.bindingSessionId;
-      const view = sessionId === state.bindingSessionId ? state : { ...state, bindingSessionId: sessionId };
-      const chip = deriveChipState(view, now, { sessionId: sessionId, activePanelId: activePanelId });
-      const resumeGame =
-        chip.resumeGameId && state.market.games
-          ? state.market.games.find(function match(game) {
-              return game && game.id === chip.resumeGameId;
-            })
-          : null;
-      const resumeGameName = chip.resumeGameId ? gameNameFromState(state, chip.resumeGameId) : '';
-      const pausedAt =
-        state.pausedGame && state.pausedGame.gameId === chip.resumeGameId ? state.pausedGame.at : null;
-      const relativeTime =
-        typeof pausedAt === 'number'
-          ? formatRelativeTime(new Date(pausedAt).toISOString(), now, locale)
-          : resumeGame && typeof resumeGame.lastPlayedAt === 'string'
-            ? formatRelativeTime(resumeGame.lastPlayedAt, now, locale)
-            : '';
+    function GameEntryView(props) {
+      const t = makeT(props && props.t, detectLocale());
+      const openView = props && typeof props.openView === 'function' ? props.openView : null;
 
       React.useEffect(
-        function closeLayersOnStatusChange() {
-          if (chip.status !== CHIP_STATUS.RUNNING) setMenuOpen(false);
-          if (chip.status !== CHIP_STATUS.WAITING) setWaitingOpen(false);
+        function enterGameMarket() {
+          if (openView) openView('chat');
+          openGameMarket();
         },
-        [chip.status]
+        [openView]
       );
-
-      React.useEffect(
-        function ensureMarketCache() {
-          // The chip needs canContinue/lastPlayedAt to label the resume action even
-          // when the user has not opened the Market panel in this page session.
-          if (state.market.status === 'ready' || state.market.status === 'loading') return;
-          const api = getApiClient();
-          if (!api) return;
-          void refreshMarket({ store: store, api: api });
-        },
-        [state.market.status]
-      );
-
-      React.useEffect(
-        function bindChipSurface() {
-          store.dispatch(surfaceChanged('chip', true));
-          return function unmountChip() {
-            store.dispatch(surfaceChanged('chip', false));
-          };
-        },
-        []
-      );
-
-      React.useEffect(
-        function bindResolvedSession() {
-          if (binding.sessionId && binding.sessionId !== store.getState().bindingSessionId) {
-            store.dispatch(sessionBound(binding.sessionId));
-          }
-        },
-        [binding.sessionId]
-      );
-
-      React.useEffect(
-        function focusOpenedLayer() {
-          if (menuOpen && menuRef.current) {
-            const first = menuRef.current.querySelector('[role="menuitem"]');
-            if (first && typeof first.focus === 'function') first.focus();
-          }
-          if (waitingOpen && popoverRef.current) {
-            const primary = popoverRef.current.querySelector('button');
-            if (primary && typeof primary.focus === 'function') primary.focus();
-          }
-        },
-        [menuOpen, waitingOpen]
-      );
-
-      React.useEffect(
-        function closeOnOutsidePointer() {
-          if (!menuOpen && !waitingOpen) return undefined;
-          function onPointerDown(event) {
-            const root = rootRef.current;
-            if (root && event && event.target && root.contains(event.target)) return;
-            setMenuOpen(false);
-            setWaitingOpen(false);
-          }
-          document.addEventListener('pointerdown', onPointerDown);
-          return function cleanup() {
-            document.removeEventListener('pointerdown', onPointerDown);
-          };
-        },
-        [menuOpen, waitingOpen]
-      );
-
-      React.useEffect(
-        function clearToast() {
-          if (!toast) return undefined;
-          const timer = setTimeout(function hide() {
-            setToast(null);
-          }, 1600);
-          return function cleanup() {
-            clearTimeout(timer);
-          };
-        },
-        [toast]
-      );
-
-      function closeAll() {
-        setMenuOpen(false);
-        setWaitingOpen(false);
-        if (triggerRef.current && typeof triggerRef.current.focus === 'function') triggerRef.current.focus();
-      }
-
-      function measureAndOpen(open) {
-        const trigger = triggerRef.current;
-        if (!trigger) return;
-        const rect = trigger.getBoundingClientRect();
-        setAnchor(clampMenuPosition(rect));
-        open();
-      }
-
-      function resumePausedGame(gameId) {
-        if (!gameId) return;
-        setMenuOpen(false);
-        beginGame(store, { gameId: gameId, mode: 'resume-paused' });
-        openGameMarket();
-      }
-
-      function chooseGame() {
-        setMenuOpen(false);
-        store.dispatch(pageChanged(PAGES.MARKET));
-        openGameMarket();
-      }
-
-      function dismissTurn() {
-        if (!chip.turnKey) return;
-        store.dispatch(turnIgnored(chip.turnKey, sessionId));
-        setMenuOpen(false);
-        setToast(t('entry.toast.dismissed'));
-      }
-
-      function handleTriggerClick() {
-        if (chip.status === CHIP_STATUS.WAITING) {
-          // Idempotent: the header is already the Conversation in this state.
-          backToConversation();
-          measureAndOpen(function open() {
-            setMenuOpen(false);
-            setWaitingOpen(true);
-          });
-          return;
-        }
-        if (chip.status === CHIP_STATUS.RESUME) {
-          resumePausedGame(chip.resumeGameId);
-          return;
-        }
-        measureAndOpen(function open() {
-          setWaitingOpen(false);
-          setMenuOpen(function next(previous) {
-            return !previous;
-          });
-        });
-      }
-
-      function handleTriggerKeyDown(event) {
-        if (event.key === 'ArrowDown') {
-          event.preventDefault();
-          measureAndOpen(function open() {
-            setWaitingOpen(false);
-            setMenuOpen(true);
-          });
-        } else if (event.key === 'Escape') {
-          closeAll();
-        }
-      }
-
-      function handleMenuKeyDown(event) {
-        const menu = menuRef.current;
-        if (!menu) return;
-        const items = Array.prototype.slice.call(menu.querySelectorAll('[role="menuitem"]'));
-        if (items.length === 0) return;
-        const index = items.indexOf(document.activeElement);
-        if (event.key === 'ArrowDown') {
-          event.preventDefault();
-          items[(index + 1 + items.length) % items.length].focus();
-        } else if (event.key === 'ArrowUp') {
-          event.preventDefault();
-          items[(index - 1 + items.length) % items.length].focus();
-        } else if (event.key === 'Home') {
-          event.preventDefault();
-          items[0].focus();
-        } else if (event.key === 'End') {
-          event.preventDefault();
-          items[items.length - 1].focus();
-        } else if (event.key === 'Escape') {
-          event.preventDefault();
-          closeAll();
-        } else if (event.key === 'Tab') {
-          setMenuOpen(false);
-        }
-      }
-
-      function handlePopoverKeyDown(event) {
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          closeAll();
-        }
-      }
-
-      if (chip.status === CHIP_STATUS.HIDDEN) {
-        return h(
-          React.Fragment,
-          null,
-          h(StyleTag),
-          h('span', { className: 'dgm-sr-only', 'aria-live': 'polite' }),
-          null
-        );
-      }
-
-      const isWaiting = chip.status === CHIP_STATUS.WAITING;
-      const label = t('entry.chip.game');
-      const ariaLabel = isWaiting
-        ? t('entry.chip.a11y.waiting')
-        : chip.status === CHIP_STATUS.RESUME
-          ? t('entry.chip.a11y.resume')
-          : t('entry.chip.a11y.running');
-      const waitingBodyKey = chip.waitingKind === 'approval' ? 'entry.waiting.approval' : chip.waitingKind === 'question' ? 'entry.waiting.question' : 'entry.waiting.generic';
-      const hasResumeItem = Boolean(chip.resumeGameId);
-      const menuItems = [];
-      if (hasResumeItem) {
-        menuItems.push({
-          id: 'resume',
-          label: t('entry.menu.resume'),
-          meta: resumeGameName
-            ? relativeTime
-              ? t('entry.menu.resume.meta', { gameName: resumeGameName, relativeTime: relativeTime })
-              : resumeGameName
-            : '',
-          icon: h(PlayIcon),
-          run: function runResume() {
-            resumePausedGame(chip.resumeGameId);
-          },
-        });
-      }
-      menuItems.push({
-        id: 'choose',
-        label: t('entry.menu.choose'),
-        meta: '',
-        icon: h(GamepadIcon),
-        run: chooseGame,
-      });
-      if (chip.status === CHIP_STATUS.RUNNING) {
-        menuItems.push({
-          id: 'dismiss',
-          label: t('entry.menu.dismiss'),
-          meta: '',
-          icon: null,
-          run: dismissTurn,
-        });
-      }
 
       return h(
-        'span',
-        { className: 'dgm-chip-anchor dgm-game-hint', ref: rootRef },
+        'div',
+        { className: 'dgm-entry-view', role: 'status', 'aria-live': 'polite' },
         h(StyleTag),
-        h('span', { className: 'dgm-sr-only', 'aria-live': isWaiting ? 'assertive' : 'polite' }, isWaiting ? t('a11y.live.waiting') : ''),
-        h(
-          'button',
-          {
-            type: 'button',
-            ref: triggerRef,
-            className: 'dgm-chip dgm-hint-pill',
-            'data-status': chip.status,
-            'aria-label': ariaLabel,
-            'aria-haspopup': isWaiting ? 'dialog' : chip.status === CHIP_STATUS.RUNNING ? 'menu' : undefined,
-            'aria-expanded': isWaiting ? (waitingOpen ? 'true' : 'false') : chip.status === CHIP_STATUS.RUNNING ? (menuOpen ? 'true' : 'false') : undefined,
-            title: ariaLabel,
-            onClick: handleTriggerClick,
-            onKeyDown: handleTriggerKeyDown,
-          },
-          h('span', { className: 'dgm-hint-spark', 'aria-hidden': 'true' }),
-          h('span', { className: 'dgm-hint-icon', 'aria-hidden': 'true' }, h(GamepadIcon, { size: 15 })),
-          isWaiting ? h('span', { className: 'dgm-chip-dot' }) : null,
-          h('span', { className: 'dgm-chip-label dgm-hint-label' }, label),
-          h('span', { className: 'dgm-hint-shine', 'aria-hidden': 'true' })
-        ),
-        menuOpen
-          ? h(
-              'div',
-              {
-                className: 'dgm-menu',
-                ref: menuRef,
-                role: 'menu',
-                'aria-label': t('entry.menu.a11y'),
-                style: { left: anchor.left + 'px', top: anchor.top + 'px' },
-                onKeyDown: handleMenuKeyDown,
-              },
-              menuItems.map(function renderItem(item) {
-                return h(
-                  'button',
-                  {
-                    type: 'button',
-                    key: item.id,
-                    className: 'dgm-menu-item',
-                    role: 'menuitem',
-                    tabIndex: -1,
-                    onClick: item.run,
-                  },
-                  item.icon ? h('span', { className: 'dgm-menu-icon' }, item.icon) : null,
-                  h(
-                    'span',
-                    { className: 'dgm-menu-text' },
-                    h('span', { className: 'dgm-menu-label' }, item.label),
-                    item.meta ? h('span', { className: 'dgm-menu-meta' }, item.meta) : null
-                  )
-                );
-              })
-            )
-          : null,
-        waitingOpen
-          ? h(
-              'div',
-              {
-                className: 'dgm-popover',
-                ref: popoverRef,
-                role: 'dialog',
-                'aria-label': t('entry.waiting.title'),
-                style: { left: anchor.left + 'px', top: anchor.top + 'px' },
-                onKeyDown: handlePopoverKeyDown,
-              },
-              h('p', { className: 'dgm-popover-title' }, t('entry.waiting.title')),
-              h('p', { className: 'dgm-popover-body' }, t(waitingBodyKey)),
-              h(
-                'div',
-                { className: 'dgm-popover-actions' },
-                h(
-                  'button',
-                  {
-                    type: 'button',
-                    className: 'dgm-btn dgm-btn-quiet',
-                    onClick: function later() {
-                      setWaitingOpen(false);
-                    },
-                  },
-                  t('entry.waiting.later')
-                ),
-                h(
-                  'button',
-                  {
-                    type: 'button',
-                    className: 'dgm-btn dgm-btn-primary',
-                    onClick: function goBack() {
-                      setWaitingOpen(false);
-                      backToConversation();
-                    },
-                  },
-                  t('entry.waiting.action')
-                )
-              )
-            )
-          : null,
-        toast
-          ? h(
-              'span',
-              {
-                className: 'dgm-toast',
-                role: 'status',
-                style: { left: anchor.left + 'px', top: Math.max(8, anchor.top - 30) + 'px' },
-              },
-              toast
-            )
-          : null
+        h('p', null, t('entry.tab.opening'))
       );
     }
 
-    return { WaitEntryChip };
+    return { GameEntryView };
     })();
 
     // module: packages/client/src/components/sidebar-icon.js
@@ -7866,14 +7294,14 @@ window.__ModuleLoader__.load({
     const getApiClient = __mods["packages/client/src/api.js"].getApiClient;
     const createAgentPoller = __mods["packages/client/src/agent-polling.js"].createAgentPoller;
     const GameMarketPanel = __mods["packages/client/src/components/panel.js"].GameMarketPanel;
-    const WaitEntryChip = __mods["packages/client/src/components/chip.js"].WaitEntryChip;
+    const GameEntryView = __mods["packages/client/src/components/game-entry-view.js"].GameEntryView;
     const GameMarketSidebarIcon = __mods["packages/client/src/components/sidebar-icon.js"].GameMarketSidebarIcon;
     /**
      * DSH Client plugin entry.
      *
      * Verified registration forms (DSH Desktop 0.2.1-rc.2):
      *   - `main` keyed slot + `sidebar.panellist` row with the same id
-     *   - `conversation.session.header.actions` list slot for the cute Game hint
+     *   - `conversation.view` list slot for the persistent Game tab
      *   - `ctx.locale.register(ns, { zh, en })` inside `ctx.effect`
      *   - `ctx.layout.selectPanel(id | null)` for panel navigation
      */
@@ -7939,6 +7367,21 @@ window.__ModuleLoader__.load({
         return translate('zh', 'sidebar.label');
       }
 
+      function gameTabLabel() {
+        try {
+          if (boundTranslate === null && ctx.locale && typeof ctx.locale.bind === 'function') {
+            boundTranslate = ctx.locale.bind(NS);
+          }
+          if (typeof boundTranslate === 'function') {
+            const value = boundTranslate('entry.tab.game');
+            if (typeof value === 'string' && value.length > 0 && value !== 'entry.tab.game') return value;
+          }
+        } catch (error) {
+          reportDiagnostic('game-tab-label-failed', error);
+        }
+        return translate('zh', 'entry.tab.game');
+      }
+
       function injectSlot(slotName, callback) {
         try {
           if (!ctx.slots || typeof ctx.slots.inject !== 'function') {
@@ -7989,19 +7432,20 @@ window.__ModuleLoader__.load({
       });
       if (sidebarController === null) reportDiagnostic('sidebar-registration-failed');
 
-      const chipController = injectSlot('conversation.session.header.actions', function registerWaitEntryChip() {
+      const gameTabController = injectSlot('conversation.view', function registerGameTab() {
         return registerSlot(
           {
-            name: 'conversation.session.header.actions',
-            id: 'dsh-game-market-entry',
-            order: 10,
+            name: 'conversation.view',
+            id: 'game',
+            order: 100,
+            label: gameTabLabel,
             locale: NS,
           },
-          WaitEntryChip,
-          'conversation.session.header.actions'
+          GameEntryView,
+          'conversation.view'
         );
       });
-      if (chipController === null) reportDiagnostic('chip-registration-failed');
+      if (gameTabController === null) reportDiagnostic('game-tab-registration-failed');
 
       ctx.effect(
         function startAgentPolling() {

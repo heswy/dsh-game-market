@@ -3,7 +3,7 @@
  *
  * Verified registration forms (DSH Desktop 0.2.1-rc.2):
  *   - `main` keyed slot + `sidebar.panellist` row with the same id
- *   - `conversation.session.header.actions` list slot for the cute Game hint
+ *   - `conversation.view` list slot for the persistent Game tab
  *   - `ctx.locale.register(ns, { zh, en })` inside `ctx.effect`
  *   - `ctx.layout.selectPanel(id | null)` for panel navigation
  */
@@ -15,7 +15,7 @@ import { configureNavigation, backToConversation, openGameMarket } from './navig
 import { getApiClient } from './api.js';
 import { createAgentPoller } from './agent-polling.js';
 import { GameMarketPanel } from './components/panel.js';
-import { WaitEntryChip } from './components/chip.js';
+import { GameEntryView } from './components/game-entry-view.js';
 import { GameMarketSidebarIcon } from './components/sidebar-icon.js';
 
 export const inject = ['slots', 'layout', 'locale'];
@@ -79,6 +79,21 @@ export function apply(ctx) {
     return translate('zh', 'sidebar.label');
   }
 
+  function gameTabLabel() {
+    try {
+      if (boundTranslate === null && ctx.locale && typeof ctx.locale.bind === 'function') {
+        boundTranslate = ctx.locale.bind(NS);
+      }
+      if (typeof boundTranslate === 'function') {
+        const value = boundTranslate('entry.tab.game');
+        if (typeof value === 'string' && value.length > 0 && value !== 'entry.tab.game') return value;
+      }
+    } catch (error) {
+      reportDiagnostic('game-tab-label-failed', error);
+    }
+    return translate('zh', 'entry.tab.game');
+  }
+
   function injectSlot(slotName, callback) {
     try {
       if (!ctx.slots || typeof ctx.slots.inject !== 'function') {
@@ -129,19 +144,20 @@ export function apply(ctx) {
   });
   if (sidebarController === null) reportDiagnostic('sidebar-registration-failed');
 
-  const chipController = injectSlot('conversation.session.header.actions', function registerWaitEntryChip() {
+  const gameTabController = injectSlot('conversation.view', function registerGameTab() {
     return registerSlot(
       {
-        name: 'conversation.session.header.actions',
-        id: 'dsh-game-market-entry',
-        order: 10,
+        name: 'conversation.view',
+        id: 'game',
+        order: 100,
+        label: gameTabLabel,
         locale: NS,
       },
-      WaitEntryChip,
-      'conversation.session.header.actions'
+      GameEntryView,
+      'conversation.view'
     );
   });
-  if (chipController === null) reportDiagnostic('chip-registration-failed');
+  if (gameTabController === null) reportDiagnostic('game-tab-registration-failed');
 
   ctx.effect(
     function startAgentPolling() {

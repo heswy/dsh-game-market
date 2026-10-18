@@ -53,6 +53,8 @@ export const ZH = Object.freeze({
   'mygames.action.play': '开始',
 
   'entry.chip.game': '游戏',
+  'entry.tab.game': '游戏',
+  'entry.tab.opening': '正在打开游戏…',
   'entry.chip.running.resume': 'Agent 正在工作 · 继续上一局',
   'entry.chip.running.choose': 'Agent 正在工作 · 来一局？',
   'entry.chip.resume': '继续游戏',
@@ -208,6 +210,8 @@ export const EN = Object.freeze({
   'mygames.action.play': 'Play',
 
   'entry.chip.game': 'Game',
+  'entry.tab.game': 'Game',
+  'entry.tab.opening': 'Opening games…',
   'entry.chip.running.resume': 'Agent working · Resume last game',
   'entry.chip.running.choose': 'Agent working · Play a round?',
   'entry.chip.resume': 'Resume game',
