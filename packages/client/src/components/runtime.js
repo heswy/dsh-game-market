@@ -413,7 +413,12 @@ export function RuntimeView(props) {
       sessionId: sessionId,
     });
     const snapshot = view.agent;
-    const shouldAck = reason === 'view-result' && snapshot && snapshot.state === 'completed' && snapshot.sessionId;
+    const shouldAck =
+      target === 'conversation' &&
+      snapshot &&
+      snapshot.state === 'completed' &&
+      snapshot.sessionId &&
+      snapshot.sessionId === sessionId;
     leavingRef.current = true;
     setBusy(false);
     setSaveFailure(null);
