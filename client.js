@@ -3052,6 +3052,10 @@ window.__ModuleLoader__.load({
     .dgm-control-btn:disabled { opacity: 0.5; cursor: default; }
 
     .dgm-save-pill {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
       display: inline-flex;
       align-items: center;
       gap: 6px;

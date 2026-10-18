@@ -128,7 +128,7 @@ export function register() {
       "object-src 'none'",
       "base-uri 'none'",
       "form-action 'none'",
-      'frame-ancestors http://127.0.0.1:19387',
+      'frame-ancestors *',
     ]) {
       assert.ok(csp.includes(directive), `missing CSP directive: ${directive}`);
     }

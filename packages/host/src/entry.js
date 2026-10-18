@@ -30,7 +30,13 @@ import {
 const LAUNCH_MODES_SET = new Set(LAUNCH_MODES);
 
 export function buildContentSecurityPolicy(origin) {
-  const frameAncestors = typeof origin === 'string' && origin.length > 0 && origin !== 'null' ? origin : "'none'";
+  // V0 note: the Host can see a different internal origin than the embedding
+  // page (dsh.internal vs the loopback Web UI), so a single computed origin
+  // blocks the iframe. The game document is untrusted static content inside a
+  // sandboxed iframe, so V0 allows framing broadly; V1 narrows this with an
+  // explicit configured allowlist (PRD §8.10).
+  void origin;
+  const frameAncestors = '*';
   return [
     "default-src 'none'",
     "script-src 'unsafe-inline'",

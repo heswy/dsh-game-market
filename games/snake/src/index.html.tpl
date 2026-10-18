@@ -131,6 +131,7 @@
         display: flex;
         align-items: center;
         gap: 10px;
+        margin-left: auto;
       }
 
       .score-card {
@@ -334,7 +335,6 @@
   <body>
     <div id="app">
       <div class="hud" aria-hidden="true">
-        <div class="brand"><span class="dot"></span> __GAME_TITLE__ <span class="version">v__GAME_VERSION__</span></div>
         <div class="scores">
           <div class="score-card"><span>得分</span><b id="score">0</b></div>
           <div class="score-card best"><span>最高</span><b id="best">0</b></div>

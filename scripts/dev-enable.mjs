@@ -27,9 +27,9 @@ const profile = args.profile || process.env.DSH_PROFILE || 'desktop';
 const dshHome = process.env.DSH_HOME && process.env.DSH_HOME.trim()
   ? process.env.DSH_HOME.trim()
   : path.join(os.homedir(), '.dsh');
-const profileDir = process.env.DSH_PROFILE_DIR && process.env.DSH_PROFILE_DIR.trim()
-  ? process.env.DSH_PROFILE_DIR.trim()
-  : path.join(dshHome, 'profiles', profile);
+const profileDir = args.profileDir
+  || (process.env.DSH_PROFILE_DIR && process.env.DSH_PROFILE_DIR.trim())
+  || path.join(dshHome, 'profiles', profile);
 const patchPath = path.join(profileDir, 'cordis.patch.yml');
 
 const block = [
@@ -106,14 +106,19 @@ function upsertBlock(text, content) {
 }
 
 function parseArgs(argv) {
-  const out = { dryRun: false, yes: false, profile: null };
-  for (const arg of argv) {
+  const out = { dryRun: false, yes: false, profile: null, profileDir: null };
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
     if (arg === '--dry-run') out.dryRun = true;
     else if (arg === '--yes' || arg === '-y') out.yes = true;
     else if (arg.startsWith('--profile=')) out.profile = arg.slice('--profile='.length);
-    else if (arg === '--profile') out.profile = argv[argv.indexOf(arg) + 1] || null;
-    else if (arg === '--help' || arg === '-h') {
-      console.log('Usage: node scripts/dev-enable.mjs [--profile=desktop] [--dry-run] [--yes]');
+    else if (arg.startsWith('--profile-dir=')) out.profileDir = arg.slice('--profile-dir='.length);
+    else if (arg === '--profile-dir') { out.profileDir = argv[i + 1] || null; i += 1; }
+    else if (arg === '--profile') {
+      out.profile = argv[i + 1] || null;
+      i += 1;
+    } else if (arg === '--help' || arg === '-h') {
+      console.log('Usage: node scripts/dev-enable.mjs [--profile=desktop] [--profile-dir=<path>] [--dry-run] [--yes]');
       process.exit(0);
     } else {
       console.error(`[dev:enable] unknown argument: ${arg}`);
