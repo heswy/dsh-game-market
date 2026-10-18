@@ -185,13 +185,14 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · 仓库初始化：`main` 从 `origin/main`（仅 LICENSE）建立；PRD v2.1 纳入仓库；建立本记忆文件与 V0 开发基座。下一步：搭 Bundle 基座并拆分分支。
 - 2026-10-18 · V0 基座完成：零依赖 bundle 骨架、shared 契约、构建/检查/开发态脚本、三份 feature worktree（host-core / client-shell / runtime-sdk-snake）已派出子智能体并行开发；Lead 在 `chore/v0-integration` 准备集成测试。
 - 2026-10-18 · 三个子智能体交付并合并：`feat/host-core`（73 host tests）、`feat/client-shell`（52 client tests）、`feat/runtime-sdk-snake`（123 runtime/SDK/snake tests）；Lead 在 `chore/v0-integration` 完成接口对齐（shared api-client 可打包、错误码、CSP、评分/ack 语义、chip 市场缓存）。
-- 2026-10-18 · **V0 完成**：全量 `npm run verify` 通过（312 tests / 312 pass、严格 check 13 项、构建确定性）；隔离 DSH 0.2.1-rc.2 + headless Chrome 真机验证 V0-01～V0-15 核心链路；证据见 `docs/V0-VERIFICATION.md`。下一步：合并 `main`、打 `v0.0.0`、V1 规划。
+- 2026-10-18 · **V0 完成**：全量 `npm run verify` 通过（312 tests / 312 pass、严格 check 13 项、构建确定性）；隔离 DSH 0.2.1-rc.2 + headless Chrome 真机验证 V0-01～V0-15 核心链路；证据见 `docs/V0-VERIFICATION.md`。
+- 2026-10-18 · **V0 已发布**：`main` 合并提交 `bcdbbfc`，tag `v0.0.0` 已推送 GitHub；feature worktrees/分支已清理（main + origin/main）。下一步：日常桌面端自测（用户执行 dev:enable 并重启）→ V1 规划。
 - （待续）
 
 **当前状态 / 待用户确认**：
 
-- V0 代码与证据已完成，等待 Lead 合并 `main`、打 tag 并尝试推送远端。
-- 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复。
+- V0 代码与证据已完成，`main` + tag `v0.0.0` 已推送到 GitHub。
+- 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复；用户桌面端版本已确认为 0.2.1-rc.2，与验证基线一致。
 - GitHub 推送权限：若 `git push` 失败，需要用户提供可用凭据或代为推送。
 
 ---
