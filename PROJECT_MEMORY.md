@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**V1 M0（地基）完成**（分支 `feat/v1-foundation`，5 个提交，待合并）；V0 已验收；PRD v2.2（单文件包口径）与记忆已统一；下一步 M1a/M1b/M1c 并行；首发四款 = 贪吃蛇 + 跳跃 + 2048 + 打砖块
+- 当前目标：**V1 M0（地基）已合并 `main`**（merge `d81f473`，已推送 origin）；M1 按用户要求**搁置**，等用户明确指令再开；V0 已验收；PRD v2.2（单文件包口径）与记忆已统一；首发四款 = 贪吃蛇 + 跳跃 + 2048 + 打砖块
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2，2026-10-18 已按 V1 单文件包统一**；第 8–12 章为开发权威来源）
 - 开始记录：2026-10-18
 
@@ -302,12 +302,12 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · **V0 用户验收通过**：用户确认 V0.2 入口/恢复与 V0.3 完成提醒在真实桌面端正常工作；“v0 基本验收完毕”。V0 范围（V0-01～V0-15，含 V0.2/V0.3 调整）收官。
 - 2026-10-18 · **V1 计划锁定**：四条主线 + foundation；首发 `snake`/`jump`/`2048`/`breakout`；单文件；静态 Registry + 本地/远程包；Market 视觉与功能都做。分支/owner/write scope/验收见 §2.1。下一步：Lead 开 `feat/v1-foundation`。
 - 2026-10-18 · **V1 四项遗留裁决 + PRD v2.2 统一 + M0 开工**：用户确认 ①V1 包格式=单文件（V1.5 多文件）②P1 命名/路径由 Lead 统一并双向维护 PRD+记忆 ③首发只做四款，DSH-native Demo 用户亲自带人、不阻塞 V1 ④SDK 版本与 V0 遗留随迭代。已开分支 `feat/v1-foundation`，正在执行 M0（PRD v2.2、shared 契约/校验器/路由表、契约测试、四游戏验收清单）。下一步：M0 `npm run verify` 绿 → `chore/v1-integration` → 并行 M1a/M1b/M1c。
-- 2026-10-18 · **V1 M0 完成**：PRD v2.2（`1f019a9`）、M0 契约文档（`41191a0`：docs/V1-CONTRACTS.md + 四游戏验收 + 验证骨架）、shared 契约冻结（`7842abd`：manifest/registry/installation + SDK/Runtime 1.0.0 + 契约测试）、构建产物（`6b4e2b2`）。全量 `npm run verify` 通过（**345 tests / 345 pass**、check 16 项、构建字节可复现）；四项遗留闭环，TBD-03/05/07/09/10 裁决见 V1-14～V1-18。下一步：M0 合入 `chore/v1-integration`，并行 M1a/M1b/M1c。
+- 2026-10-18 · **V1 M0 已合并 main**：`chore/v1-integration` 合并 `b8aa17a` → `main` `git merge --no-ff` 为 `d81f473`；合并前后各跑一次 `npm run verify` 均 **345/345** 通过；`main` 已推送 origin（`28b75de..d81f473`）。未打 tag：`v1.0.0` 留到 V1 验收完成后。**M1 搁置**：用户要求等明确指令后再开 M1a/M1b/M1c，当前不新建工作树。
 - （待续）
 
 **当前状态 / 待用户确认**：
 
-- **V1 M0 已完成**（分支 `feat/v1-foundation`，5 个提交：`1f019a9`/`41191a0`/`7842abd`/`6b4e2b2` + 本记忆提交，待合并）；PRD v2.2 + 记忆 + M0 契约文档一致；`npm run verify` **345/345 通过**。下一步：M0 合入 `chore/v1-integration` → 并行 M1a（install/registry）/M1b（developer）/M1c（games）。
+- **V1 M0 已合并 `main`**（`d81f473`，已推送 origin；未打 tag，`v1.0.0` 留 V1 验收后）；集成分支 `chore/v1-integration` 保留供后续 M1 使用；M0 契约见 `docs/V1-CONTRACTS.md`。**M1 搁置中**：按用户指令暂停，等明确指令后再开 M1a/M1b/M1c。
 - 日常桌面端需用户自行 `npm run dev:enable -- --yes` 并重启 DSH；UI 客户端改动刷新页面即可。
 - 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复；用户桌面端版本已确认为 0.2.1-rc.2，与验证基线一致。
 - GitHub 推送权限：若 `git push` 失败，需要用户提供可用凭据或代为推送。
