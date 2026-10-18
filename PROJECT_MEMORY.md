@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**V1 M1 并行开发中（2026-10-18 用户指令：Lead 只做总调度）**。基础提交 `b84256b`；已建 7 个仓库外 worktree + 7 个 feature 分支，分别派 7 个子智能体在各自 worktree 内完成 M1a/M1b/M2/snake/jump/2048/breakout；Lead 不直接写业务代码，负责监控、验收与集成。V0 已验收；PRD v2.2 与 M0 契约已冻结；首发四款 = 贪吃蛇 + 跳跃 + 2048 + 打砖块
+- 当前目标：**V1 M1 已完成并合并 `main`**（merge `44cd7a8`；`npm run verify` 752/752、CHECK 21 项、构建可复现）；四条主线全部落地：静态 Registry + 安装/卸载/更新、SDK v1 + CLI/模板/Simulator、Market/My Games/详情/安装 UX（用 `frontend-design`+`ui-ux-pro-max`）、首发四款 `snake`/`jump`/`2048`/`breakout`。**下一步 M3**：隔离 DSH 0.2.1-rc.2 真机验收 + `docs/V1-VERIFICATION.md` 归档 → 通过后打 `v1.0.0`。V0 已验收；PRD v2.2 与 M0 契约冻结。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2，2026-10-18 已按 V1 单文件包统一**；第 8–12 章为开发权威来源）
 - 开始记录：2026-10-18
 
@@ -191,7 +191,8 @@ V0 必须包含（对应 PRD §7.1 / §11.2）：
 - **M1a 验收**：分支 `eeb3488`（31 个 host 文件，范围检查无越界；独立复跑 417/417；client/snake 构建字节一致）已合入 `b83abea`。实现完整：Registry https/file、ETag/TTL/离线、preview-cache、流式安装+sha256+自包含校验、原子落位、安装锁、`/install`/`/install-local`/`/uninstall`/`/registry-refresh`、`/games` 合并、`/launch` 完整性、CSP allowlist、启动清理。裁决：① file Registry 跳过远程预览抓取（离线优先，Market 用 icon/占位）；② 预览下载只做 https+公网 IP/SSRF 校验、不套 host allowlist（需同步文档）；③ 重定向只对初始 URL 校验文件名，逐跳只复验 scheme/凭据/host/长度（同步文档 U-08）；④ dev 游戏**不写** installations.json（修契约 §6.2 与 §6.7 矛盾）；⑤ API 形状变化：`author` 为对象、`/game` 顶层 `installed` 为 InstallationView|null、LaunchInfo 增 `protocolVersion/gameId/gameVersion/entrySha256`（同步 contracts 文档）。
 - **集成现状（2026-10-18 23:0x）**：已合入 snake/breakout/2048/developer/market-ux/install-registry（`acdcd4c`/`f361374`/`93b3da6`/`cf022a1`/`e454027`/`6a031ab`/`b83abea`）；`npm run verify` **722/722 pass、CHECK OK (16)**，工作树干净。仅剩 jump 未完成/未合并。
 - **集成收尾已执行（2026-10-18，jump 前）**：① shared `errors.js`：补 `GM-4228`/`GM-4230`–`GM-4248`/`GM-4035` 常量与默认文案、`E_COMPAT_*` 映射、`httpStatusFor` 修正（`995a1b3`）；② 根 `package.json` 加 `bin`（`dsh-game`/`create-dsh-game`）与 `files`（sdk/cli/templates），`scripts/build.mjs` 遍历 `games/*/build.mjs`，`scripts/check.mjs` 改为逐游戏 `validatePackageHtml` 校验（`38741b8`）；③ `BUILTIN_GAMES.version`→`1.0.0`、删除 snake 源 `entry`、重建 snake/2048/breakout dist 与 client.js（`7eed11d`）；④ 文档对齐（预览策略/重定向/dev 游戏/lifecycle event/runtimeVersion null/viewport/2048-1e9+撤销持久化/breakout-1e7，`56620d7`）。集成分支 `npm run verify` **722/722 pass、CHECK OK (20 checks)**，构建字节可复现、工作树干净。
-- **剩余**：jump 分支完成后（`games/jump/` 仍在实现中）→ 合并 → 用最终 SDK 重建 jump dist → 全量 verify → `--no-ff` 合 `main` → 推送 → 清理 worktree/分支 → 最终记忆。
+- **jump 验收 + M1 收尾**：分支 `b5871ad`（10 files，仅 `games/jump/**`；375/375；dist 198,887 B→合并后用最终 SDK 重建为 210,614 B，sha256 `3bb24f6…81d1`，两次构建一致）已合入 `f480aca`；根构建/检查已自动纳入（CHECK 21 项）。jump viewport 裁决为 **540×960 竖屏**，文档 A-12/§3.1 已同步（`ec9bac3`）。**M1 全量验收**：`chore/v1-integration` 最终 `npm run verify` **752/752 pass、CHECK OK (21)**、构建可复现、工作树干净；`--no-ff` 合并入 `main` 为 `44cd7a8`（合并前后各验一次 752/752）。7 个 feature worktree/分支已清理（§2.1.7），`chore/v1-integration` 分支保留。
+- **M1 遗留（M3 再做）**：真机隔离 DSH 0.2.1-rc.2 验收（U-01..U-15、DEV-01..07、FM/SEC、启动计时/真实 5 分钟/平台暂停遮挡）尚未执行，`docs/V1-VERIFICATION.md` 仍为空骨架；`v1.0.0` tag 待 M3 通过后再打。M2 UI 未在真实 DSH loader 下渲染过（静态 mock + bundle 测试替代）。
 - **（其他子智能体的越界/契约缺口报告在此追加）**
 
 **V1 不做 / 推迟 V1.5**：多文件游戏资源（图片/音效/zip）、服务端 Registry/账号/付费/云排行榜、游戏内多人、Windows 完整视觉验收（可做冒烟）、正式鲸鱼素材。
@@ -338,11 +339,12 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · **V1 四项遗留裁决 + PRD v2.2 统一 + M0 开工**：用户确认 ①V1 包格式=单文件（V1.5 多文件）②P1 命名/路径由 Lead 统一并双向维护 PRD+记忆 ③首发只做四款，DSH-native Demo 用户亲自带人、不阻塞 V1 ④SDK 版本与 V0 遗留随迭代。已开分支 `feat/v1-foundation`，正在执行 M0（PRD v2.2、shared 契约/校验器/路由表、契约测试、四游戏验收清单）。下一步：M0 `npm run verify` 绿 → `chore/v1-integration` → 并行 M1a/M1b/M1c。
 - 2026-10-18 · **V1 M0 已合并 main**：`chore/v1-integration` 合并 `b8aa17a` → `main` `git merge --no-ff` 为 `d81f473`；合并前后各跑一次 `npm run verify` 均 **345/345** 通过；`main` 已推送 origin（`28b75de..d81f473`）。未打 tag：`v1.0.0` 留到 V1 验收完成后。**M1 搁置**：用户要求等明确指令后再开 M1a/M1b/M1c，当前不新建工作树。
 - 2026-10-18 · **V1 M1 派发开工（总调度模式）**：按用户指令，Lead 不再直接写业务代码。已建 7 个仓库外 worktree + 7 个 feature 分支（基础 `b84256b`），并派 7 个子智能体各自在 worktree 内独立完成：M1a `feat/v1-install-registry`、M1b `feat/v1-developer`、M2 `feat/v1-market-ux`、snake `feat/game-snake-v1`、jump `feat/game-jump`、2048 `feat/game-2048`、breakout `feat/game-breakout`；M2 强制使用 `frontend-design`+`ui-ux-pro-max`，2048 两者都用，snake/jump/breakout 用 `ui-ux-pro-max`。派发细节见 §2.1.7。下一步：等各分支完成报告 → Lead 逐个验收 → 合并 `chore/v1-integration` → 全量verify → `--no-ff` 合 `main`。
+- 2026-10-18 · **V1 M1 完成并合并 main（总调度模式收官）**：7 个子智能体在各自 worktree 内完成全部 M1 任务，Lead 逐个独立验收（范围/测试/构建/截图）后合入 `chore/v1-integration`；集成期 Lead 完成 shared 错误码表、根构建/检查接入全部游戏、`BUILTIN_GAMES.version`/snake 源清理、文档对齐、全部 dist 重建。集成分支最终 `npm run verify` **752/752 pass、CHECK OK (21)**、构建字节可复现；`--no-ff` 合并为 `main` `44cd7a8`。7 个 feature worktree/分支已清理，`chore/v1-integration` 保留。**M1 范围完成**；真机验收与 `v1.0.0` tag 留 M3。
 - （待续）
 
 **当前状态 / 待用户确认**：
 
-- **V1 M1 并行进行中**：7 个 worktree/分支/子智能体已派发（见 §2.1.7），Lead 只做调度、验收与集成，不直接写业务代码；各分支完成后由 Lead 合入 `chore/v1-integration` 并全量 verify，再 `--no-ff` 合 `main`。M0 已合并 main（`d81f473`，未打 tag）。
+- **V1 M1 已完成并合并 `main`**（`44cd7a8`；`npm run verify` **752/752 pass、CHECK OK (21)**、构建可复现）；7 个 M1 分支/worktree 已清理。**M3 待办**：隔离 DSH 0.2.1-rc.2 真机验收（U/DEV/FM/SEC 全表 + 启动计时/5 分钟/平台暂停遮挡）、`docs/V1-VERIFICATION.md` 归档、通过后打 `v1.0.0` 并推送；M2 UI 需在真实 DSH loader 下补渲染验收。
 - 日常桌面端需用户自行 `npm run dev:enable -- --yes` 并重启 DSH；UI 客户端改动刷新页面即可。
 - 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复；用户桌面端版本已确认为 0.2.1-rc.2，与验证基线一致。
 - GitHub 推送权限：若 `git push` 失败，需要用户提供可用凭据或代为推送。
