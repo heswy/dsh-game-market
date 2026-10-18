@@ -19,7 +19,11 @@ import { createRequestService } from './requests.js';
 import { createSaveScheduler } from './scheduler.js';
 import { createStateMachine } from './state-machine.js';
 
-const SUPPORTED_SDK_RANGE = '>=0.1.0 <0.2.0';
+/**
+ * V1 = SDK 1.x. The lower bound keeps V0 games (SDK 0.1.x) runnable — the V0
+ * public surface is a subset of v1 (V1-07).
+ */
+const SUPPORTED_SDK_RANGE = '>=0.1.0 <2.0.0';
 const PAUSE_REASONS = Object.freeze(['user', 'hidden', 'leave', 'waiting-user']);
 const VIEWPORT_THROTTLE_MS = 200;
 const PING_TIMEOUT_MS = 2000;

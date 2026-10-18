@@ -50,6 +50,26 @@ export const GM = Object.freeze({
   HOST_UNAVAILABLE: 'GM-5031',
   REGISTRY_UNAVAILABLE: 'GM-5032',
   INSTALL_FAILED: 'GM-5033',
+  // V1 package / registry / install (PRD §8.13.2 / §8.13.3)
+  PACKAGE_INVALID: 'GM-4222',
+  ENTRY_NOT_SELF_CONTAINED: 'GM-4225',
+  MANIFEST_TOO_LARGE: 'GM-4229',
+  PACKAGE_TOO_LARGE: 'GM-4135',
+  INSTALL_URL_REJECTED: 'GM-4034',
+  MARKET_DISABLED: 'GM-4036',
+  STORE_PATH_ESCAPE: 'GM-4037',
+  UNINSTALL_BUILTIN: 'GM-4038',
+  NOT_IN_REGISTRY: 'GM-4044',
+  INSTALL_VERSION_CONFLICT: 'GM-4094',
+  INSTALL_VERSION_MISMATCH: 'GM-4095',
+  UPDATE_GAME_RUNNING: 'GM-4096',
+  UNINSTALL_BUSY: 'GM-4097',
+  INSTALL_DISK_FULL: 'GM-4142',
+  INSTALL_HASH_MISMATCH: 'GM-5015',
+  INSTALL_DOWNLOAD_FAILED: 'GM-5034',
+  INSTALL_DOWNLOAD_TIMEOUT: 'GM-5035',
+  INSTALL_IO: 'GM-5036',
+  INSTALL_CORRUPT: 'GM-5037',
 });
 
 const DEFAULT_MESSAGES = Object.freeze({
@@ -97,6 +117,25 @@ const DEFAULT_MESSAGES = Object.freeze({
   [GM.HOST_UNAVAILABLE]: 'Game Market Host is unavailable',
   [GM.REGISTRY_UNAVAILABLE]: 'Game registry is unavailable',
   [GM.INSTALL_FAILED]: 'Install failed',
+  [GM.PACKAGE_INVALID]: 'Package file is not valid UTF-8 HTML',
+  [GM.ENTRY_NOT_SELF_CONTAINED]: 'Game entry must be a self-contained single file',
+  [GM.MANIFEST_TOO_LARGE]: 'Inline manifest is too large',
+  [GM.PACKAGE_TOO_LARGE]: 'Game package exceeds the size limit',
+  [GM.INSTALL_URL_REJECTED]: 'Package URL is not allowed',
+  [GM.MARKET_DISABLED]: 'Game Market is disabled',
+  [GM.STORE_PATH_ESCAPE]: 'Path escapes the managed storage root',
+  [GM.UNINSTALL_BUILTIN]: 'Built-in games cannot be uninstalled',
+  [GM.NOT_IN_REGISTRY]: 'Game is not in the registry',
+  [GM.INSTALL_VERSION_CONFLICT]: 'Installed version conflicts with this install',
+  [GM.INSTALL_VERSION_MISMATCH]: 'Package version does not match the registry entry',
+  [GM.UPDATE_GAME_RUNNING]: 'Exit the game before updating',
+  [GM.UNINSTALL_BUSY]: 'Another install or uninstall is in progress',
+  [GM.INSTALL_DISK_FULL]: 'Not enough disk space for this install',
+  [GM.INSTALL_HASH_MISMATCH]: 'Package SHA-256 does not match the registry',
+  [GM.INSTALL_DOWNLOAD_FAILED]: 'Package download failed',
+  [GM.INSTALL_DOWNLOAD_TIMEOUT]: 'Package download timed out',
+  [GM.INSTALL_IO]: 'Install write failed',
+  [GM.INSTALL_CORRUPT]: 'Installed package is incomplete',
 });
 
 /** HTTP status for a GM code (PRD §8.5 mapping). */
@@ -106,12 +145,74 @@ export function httpStatusFor(gmCode) {
   if (gmCode === GM.INTERNAL) return 500;
   if (gmCode === GM.MANIFEST_INVALID) return 422;
   if (num >= 5000 && num < 6000) return num >= 5030 ? 503 : 500;
-  if (num >= 4000 && num < 5000) return Math.floor(num / 100);
+  if (num >= 4000 && num < 5000) return Math.floor(num / 10);
   return 500;
 }
 
 export function isGmCode(value) {
   return typeof value === 'string' && /^GM-\d{4}$/.test(value);
+}
+
+/**
+ * Internal `E_*` -> public `GM-*` map (PRD §8.13.2 / §8.13.3 / D-030).
+ * Shared validators (manifest/registry/installation) emit `E_*`; the Host and
+ * CLI must translate before crossing an API/bridge/user-visible boundary.
+ * Retired V1 codes (zip archive rules) are intentionally absent.
+ */
+export const INTERNAL_TO_GM = Object.freeze({
+  // Package / manifest (PRD §8.13.2) — names follow PRD v2.2 (single-file).
+  E_PKG_HTML_INVALID: GM.PACKAGE_INVALID,
+  E_PKG_MANIFEST_MISSING: GM.MANIFEST_INVALID,
+  E_PKG_MANIFEST_DUPLICATE: GM.MANIFEST_INVALID,
+  E_PKG_MANIFEST_JSON: 'GM-4228',
+  E_PKG_MANIFEST_TOO_LARGE: GM.MANIFEST_TOO_LARGE,
+  E_PKG_MANIFEST_VERSION: 'GM-4230',
+  E_PKG_FIELD_MISSING: 'GM-4231',
+  E_PKG_FIELD_TYPE: 'GM-4232',
+  E_PKG_FIELD_RANGE: 'GM-4233',
+  E_PKG_ID_INVALID: 'GM-4234',
+  E_PKG_ID_RESERVED: 'GM-4235',
+  E_PKG_VERSION_INVALID: 'GM-4236',
+  E_PKG_LEGACY_FIELD: 'GM-4237',
+  E_PKG_CATEGORY_UNKNOWN: 'GM-4238',
+  E_PKG_CAPABILITY_UNKNOWN: 'GM-4239',
+  E_PKG_CAPABILITY_UNSUPPORTED: 'GM-4240',
+  E_PKG_CAPABILITY_DUPLICATE: 'GM-4241',
+  E_PKG_PERMISSION_UNSUPPORTED: 'GM-4242',
+  E_PKG_SCORE_RANGE: 'GM-4243',
+  E_PKG_SAVE_SCHEMA: 'GM-4244',
+  E_PKG_RANGE_SYNTAX: 'GM-4245',
+  E_PKG_ICON_FORMAT: 'GM-4247',
+  E_PKG_ICON_TOO_LARGE: 'GM-4248',
+  E_PKG_ENTRY_NOT_SELF_CONTAINED: GM.ENTRY_NOT_SELF_CONTAINED,
+  E_PKG_TOO_LARGE: GM.PACKAGE_TOO_LARGE,
+  // Registry / install (PRD §8.13.3)
+  E_REGISTRY_INVALID: GM.REGISTRY_UNAVAILABLE,
+  E_REGISTRY_URL: 'GM-4035',
+  E_MARKET_DISABLED: GM.MARKET_DISABLED,
+  E_NOT_IN_REGISTRY: GM.NOT_IN_REGISTRY,
+  E_UNINSTALL_BUILTIN: GM.UNINSTALL_BUILTIN,
+  E_INSTALL_URL_REJECTED: GM.INSTALL_URL_REJECTED,
+  E_INSTALL_DISK_FULL: GM.INSTALL_DISK_FULL,
+  E_INSTALL_VERSION_CONFLICT: GM.INSTALL_VERSION_CONFLICT,
+  E_INSTALL_VERSION_MISMATCH: GM.INSTALL_VERSION_MISMATCH,
+  E_UPDATE_GAME_RUNNING: GM.UPDATE_GAME_RUNNING,
+  E_UNINSTALL_BUSY: GM.UNINSTALL_BUSY,
+  E_INSTALL_HASH_MISMATCH: GM.INSTALL_HASH_MISMATCH,
+  E_INSTALL_DOWNLOAD_FAILED: GM.INSTALL_DOWNLOAD_FAILED,
+  E_INSTALL_DOWNLOAD_TIMEOUT: GM.INSTALL_DOWNLOAD_TIMEOUT,
+  E_INSTALL_IO: GM.INSTALL_IO,
+  E_INSTALL_CORRUPT: GM.INSTALL_CORRUPT,
+  // Storage / compatibility (PRD §8.13.4)
+  E_STORE_SCHEMA: 'GM-4098',
+  E_STORE_SCHEMA_NEWER: 'GM-4098',
+  E_STORE_PATH_ESCAPE: GM.STORE_PATH_ESCAPE,
+});
+
+/** Translate an internal `E_*` code to its public `GM-*` code (fallback: GM-5000). */
+export function gmForInternal(code) {
+  if (isGmCode(code)) return code;
+  return INTERNAL_TO_GM[code] || GM.INTERNAL;
 }
 
 /**

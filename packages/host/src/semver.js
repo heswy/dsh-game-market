@@ -6,7 +6,7 @@
  * `GM-4260`/`GM-4261`.
  */
 
-import { RUNTIME_VERSION, SDK_VERSION } from '../../shared/src/constants.js';
+import { LEGACY_V0_VERSION, RUNTIME_VERSION, SDK_VERSION } from '../../shared/src/constants.js';
 import { GM } from '../../shared/src/errors.js';
 import { hostError } from './errors.js';
 
@@ -121,6 +121,19 @@ export function satisfies(versionText, rangeText) {
 }
 
 /**
+ * V0 games declared `sdkVersion`/`runtimeVersion` as 0.1.x ranges. V1 keeps the
+ * V0 SDK surface unchanged (V1-07), so those ranges stay accepted as a legacy
+ * compatibility window instead of forcing every old game to republish.
+ */
+export function isLegacyV0Range(value) {
+  const range = typeof value === 'string' ? parseRange(value) : null;
+  if (!range) return false;
+  const minimum = range.kind === 'exact' ? range.exact : range.min;
+  const legacy = parseVersion(LEGACY_V0_VERSION);
+  return Boolean(minimum && legacy && minimum.major === legacy.major && minimum.minor === legacy.minor);
+}
+
+/**
  * Validate Runtime/SDK compatibility + supported capabilities for a manifest.
  * Missing ranges are tolerated (defensive V0 builtin catalog), malformed ones
  * are not.
@@ -133,14 +146,14 @@ export function checkCompatibility(manifest) {
     }
   }
   if (manifest.runtimeVersion !== null && manifest.runtimeVersion !== undefined) {
-    if (!satisfies(RUNTIME_VERSION, manifest.runtimeVersion)) {
+    if (!satisfies(RUNTIME_VERSION, manifest.runtimeVersion) && !isLegacyV0Range(manifest.runtimeVersion)) {
       throw hostError(GM.RUNTIME_INCOMPATIBLE, 'Game requires a different Runtime version', {
         details: { required: manifest.runtimeVersion, actual: RUNTIME_VERSION },
       });
     }
   }
   if (manifest.sdkVersion !== null && manifest.sdkVersion !== undefined) {
-    if (!satisfies(SDK_VERSION, manifest.sdkVersion)) {
+    if (!satisfies(SDK_VERSION, manifest.sdkVersion) && !isLegacyV0Range(manifest.sdkVersion)) {
       throw hostError(GM.SDK_INCOMPATIBLE, 'Game requires a different SDK version', {
         details: { required: manifest.sdkVersion, actual: SDK_VERSION },
       });
