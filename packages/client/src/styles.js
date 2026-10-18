@@ -1826,7 +1826,6 @@ export const CSS = `
   .dgm-title { font-size: 14px; }
   .dgm-tabs { gap: 12px; margin-left: 0; height: 48px; }
   .dgm-tab { font-size: 11px; }
-  .dgm-local-install { display: none; }
   .dgm-page { padding: 14px 12px 32px; }
   .dgm-grid { grid-template-columns: minmax(0, 1fr); }
   .dgm-card-cover { aspect-ratio: 16 / 9; }
