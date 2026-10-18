@@ -62,10 +62,12 @@ source once the repository-level V0 checker stops requiring it.
 - The whole game is a 16:9 stage; HUD and overlays scale with the frame, so
   1440 px and 640 px windows keep the board visible without overlap or
   horizontal scroll.
-- Dark and light palettes are selected from `game.runtime.theme`; text/surface
-  pairs meet WCAG AA contrast.
+- Dark and light palettes are selected from `game.runtime.theme` and re-applied
+  if the Runtime changes it while a game is open; text/surface pairs meet WCAG AA
+  contrast.
 - `game.runtime.reducedMotion` (or `prefers-reduced-motion`) disables the food
-  pulse, score pops, death flash and CSS transitions.
+  pulse, score pops, death flash and CSS transitions, and is re-checked on every
+  frame so a mid-game setting change takes effect immediately.
 - `lifecycle.on('hidden')` stops the tick/render loop immediately;
   `lifecycle.on('visible')` restores rendering, while a platform pause keeps the
   loop stopped until the matching `resume` (no ticks are lost or replayed).

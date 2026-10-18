@@ -758,6 +758,7 @@ function saveState() {
 function frame(timestamp) {
   rafId = null;
   if (!loopRunning) return;
+  syncRuntimeAppearance();
   const nowMs_ = typeof timestamp === 'number' ? timestamp : nowMs();
   if (lastFrameTime === 0) lastFrameTime = nowMs_;
   const delta = Math.min(120, Math.max(0, nowMs_ - lastFrameTime));
@@ -884,6 +885,16 @@ function systemPrefersReducedMotion() {
   } catch (_error) {
     return false;
   }
+}
+
+// `game.runtime` is a live read-only view: the Runtime can push theme/reduced
+// motion changes after ready. Re-apply them on the next frame so an open game
+// follows the platform setting without a reload (A-14/A-16).
+function syncRuntimeAppearance() {
+  const nextTheme = game.runtime.theme === 'light' ? 'light' : 'dark';
+  if (nextTheme !== theme) applyTheme(nextTheme);
+  const nextReduced = game.runtime.reducedMotion === true || systemPrefersReducedMotion();
+  if (nextReduced !== reducedMotion) applyReducedMotion(nextReduced);
 }
 
 // ---------------------------------------------------------------------------
