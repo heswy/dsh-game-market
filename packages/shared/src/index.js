@@ -3,3 +3,6 @@ export * from './errors.js';
 export * from './protocol.js';
 export * from './contracts.js';
 export * from './api-client.js';
+export * from './manifest.js';
+export * from './registry.js';
+export * from './installation.js';

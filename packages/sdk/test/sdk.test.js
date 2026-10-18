@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createGameSDK, GameError, isGameError } from '../src/sdk.js';
 import { createClock, flushAsync } from '../../runtime/test/helpers/fakes.js';
+import { SDK_VERSION } from '../../shared/src/constants.js';
 import { GM } from '../../shared/src/errors.js';
 import { EVENTS, METHODS, createRequest, createResponse } from '../../shared/src/protocol.js';
 
@@ -146,7 +147,7 @@ test('ready performs the hello -> init -> ready handshake and exposes runtime in
   assert.equal(hello.data.instanceId, INSTANCE);
   assert.equal(hello.data.nonce, NONCE);
   assert.equal(hello.data.protocolVersion, 1);
-  assert.equal(hello.data.sdkVersion, '0.1.0');
+  assert.equal(hello.data.sdkVersion, SDK_VERSION);
   assert.equal(harness.sent[0].targetOrigin, '*');
 
   harness.deliver({ v: 1, kind: 'evt', event: EVENTS.INIT, data: makeInit() });

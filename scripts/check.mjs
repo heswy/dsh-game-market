@@ -14,6 +14,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { BUNDLE_ID, LIMITS } from '../packages/shared/src/constants.js';
+import { checkSelfContained } from '../packages/shared/src/manifest.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
@@ -119,18 +120,11 @@ if (gameManifestPath) {
 const entryAbs = path.join(root, 'games/snake/dist/index.html');
 if (fs.existsSync(entryAbs)) {
   const html = fs.readFileSync(entryAbs, 'utf8');
-  const violations = [
-    [/<script\b[^>]*\bsrc=/i, 'external <script src>'],
-    [/<link\b[^>]*\bhref=/i, 'external <link href>'],
-    [/@import\s/i, 'CSS @import'],
-    [/<iframe\b/i, 'nested iframe'],
-  ];
-  for (const [re, label] of violations) if (re.test(html)) fail(`snake entry is not self-contained: ${label}`);
+  for (const violation of checkSelfContained(html)) {
+    fail(`snake entry is not self-contained: ${violation.message}`);
+  }
   const bytes = Buffer.byteLength(html, 'utf8');
   if (bytes > LIMITS.entryBytes) fail(`snake entry too large: ${bytes} > ${LIMITS.entryBytes}`);
-  if (!html.includes(String(manifestVersionSafe()))) {
-    // Version marker is nice-to-have, not a failure.
-  }
   ok(`games/snake/dist/index.html (${bytes} bytes, self-contained)`);
 } else {
   requiredFile('games/snake/dist/index.html');
@@ -142,6 +136,10 @@ if (!allowMissing) {
   requiredFile('packages/client/src/main.js');
   requiredFile('packages/runtime/src/index.js');
   requiredFile('packages/sdk/src/sdk.js');
+  // V1 contract modules (M0): manifest/single-file package, Registry, install layout.
+  requiredFile('packages/shared/src/manifest.js');
+  requiredFile('packages/shared/src/registry.js');
+  requiredFile('packages/shared/src/installation.js');
 }
 
 function manifestVersionSafe() {

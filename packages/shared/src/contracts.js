@@ -1,6 +1,10 @@
 /**
- * Cross-module contracts for V0. This file is documentation-as-code: it has no
- * runtime exports beyond the frozen route table and a few guards.
+ * Cross-module contracts for V0 + V1. This file is documentation-as-code: it
+ * has no runtime exports beyond the frozen route table and a few guards.
+ *
+ * V1 additions (single-file packages, install/Registry, SDK v1) are frozen in
+ * M0; the implementation-level source of truth is docs/V1-CONTRACTS.md plus
+ * shared/manifest.js, shared/registry.js and shared/installation.js.
  *
  * Readers:
  *   - packages/host      implements HTTP endpoints + persistence + agent adapter
@@ -93,12 +97,16 @@ import { API_BASE, LIMITS, TIMING } from './constants.js';
  * @property {string} operationId
  */
 
-/** Host HTTP routes (exact pathname; GET/HEAD/POST only). */
+/** Host HTTP routes (exact pathname; GET/HEAD/POST only). V1 adds install/registry. */
 export const ROUTES = Object.freeze({
   HEALTH: `${API_BASE}/health`,
   GAMES: `${API_BASE}/games`,
   GAME: `${API_BASE}/game`,
   INSTALLED: `${API_BASE}/installed`,
+  INSTALL: `${API_BASE}/install`,
+  INSTALL_LOCAL: `${API_BASE}/install-local`,
+  UNINSTALL: `${API_BASE}/uninstall`,
+  REGISTRY_REFRESH: `${API_BASE}/registry-refresh`,
   SAVE: `${API_BASE}/save`,
   SESSION: `${API_BASE}/session`,
   SCORES: `${API_BASE}/scores`,
@@ -165,6 +173,34 @@ export const ROUTES = Object.freeze({
  * POST /dev/agent-state   (devMode only)
  *   body: { sessionId, state, label?, labelKey?, turnId? }
  *   data: AgentSnapshot
+ *
+ * V1 additions (frozen in M0; payload details live in docs/V1-CONTRACTS.md):
+ *
+ * GET  /games?q=&category=&cursor=&limit=
+ *   data: { items: GameRecord[], nextCursor: string|null, source: 'builtin'|'market'|'merged', refreshedAt }
+ * GET  /game?id=
+ *   data: { game, installed, canContinue, bestScore, activePlaySession, registry: RegistryGame|null }
+ * POST /install
+ *   body: { gameId, version?, operationId }
+ *   data: { gameId, version, sha256, installedAt, changed }
+ *   error: GM-4091 (install in progress), GM-4094/4095, GM-4135, GM-4034, GM-422*, GM-5015
+ * POST /install-local
+ *   raw body: text/html (<= 20 MiB), query: operationId
+ *   data: { gameId, version, installedAt, changed, source: 'local' }
+ *   error: GM-4150 (content-type), GM-4135, GM-422*
+ * POST /uninstall
+ *   body: { gameId, operationId, deleteData? }
+ *   data: { gameId, removed, dataDeleted }
+ * POST /registry-refresh
+ *   body: { force? }
+ *   data: { refreshedAt, count, etag, source }
+ *   error: GM-4290 (throttled), GM-5032
+ * GET  /entry?gameId&version&instance&nonce
+ *   serves packages/<id>/<version>/entry.html with CSP + no-store
+ *
+ * Install/update/uninstall persistence and file layout:
+ *   shared/installation.js (packages/<id>/<version>/entry.html, installations.json).
+ * Package/manifest validation: shared/manifest.js. Registry rules: shared/registry.js.
  */
 
 /** Host package exports (packages/host/src/plugin.js). */

@@ -1,6 +1,8 @@
 # PRD｜DSH Game Market
 
-> **文档状态**：v2.1 · 2026-10-18。第 0–7 章为产品定义与体验设计；第 8–12 章为可开发的实现级规格、界面交互规格、验收标准、任务拆解与决策日志。**两者冲突时以第 8–12 章为准**；已定决策见 12.1，待验证项见 12.2。v2.1 已按一轮独立一致性审查修复 P0/P1 问题（接口超时、容量模型、Session 字段、偏好模型、错误码、文案 key 等）。
+> **文档状态**：v2.2 · 2026-10-18。第 0–7 章为产品定义与体验设计；第 8–12 章为可开发的实现级规格、界面交互规格、验收标准、任务拆解与决策日志。**两者冲突时以第 8–12 章为准**；已定决策见 12.1，待验证项见 12.2。v2.1 已按一轮独立一致性审查修复 P0/P1 问题（接口超时、容量模型、Session 字段、偏好模型、错误码、文案 key 等）。
+>
+> **v2.2 修订（2026-10-18，用户决策锁定）**：包格式从「`.dshgame` zip 归档」改为**单文件自包含 HTML + 内嵌 manifest v1**（`<script type="application/json" id="dsh-game-manifest">`，全文恰好一处，manifest 文本 ≤64 KiB）；V1 不引入 zip/解压/文件列表/压缩炸弹等概念，多文件资源推迟到 V1.5。随之统一：安装目录为 `packages/<id>/<version>/entry.html`；Registry 索引为 `registry/games.json`（`registryVersion: 1`），条目 `package = { url, sha256, size, releasedAt }`；新增 Host `POST /install-local`（raw `text/html`，≤20 MiB，`source: 'local'`，Client 负责二次确认）；包 URL 准入改为 host allowlist（默认 `github.com`/`raw.githubusercontent.com`/`objects.githubusercontent.com`，可配置 `allowedHosts`），删除「只允许 `/releases/download/`」的硬限制；V1 首发锁定四款 `snake`/`jump`/`2048`/`breakout`，DSH-native Demo 从 V1 阻塞范围移除。包内 `entry`、`cover`、`screenshots` 字段退出 manifest：文件本身即入口，封面/截图仅作为 Registry 条目字段。决策记录见 12.1 D-034/D-035/D-036。
 >
 > **阅读路径**：
 > - 产品 / 设计：0–7 章 → 9 章（交互规格）→ 12 章（决策与风险）
@@ -141,7 +143,7 @@ Market 首页承担“发现游戏”的作用，但不需要做成传统大型�
 
 安装过程尽量保持一次点击完成。游戏安装后进入 My Games，并可以直接启动。
 
-Game Market 负责游戏的安装、更新和卸载。对于用户而言，不需要接触 `.dshgame` 文件、依赖或其他实现细节。
+Game Market 负责游戏的安装、更新和卸载。对于用户而言，不需要接触游戏包文件、依赖或其他实现细节。
 
 如果游戏请求额外能力，例如读取经过限制的当前任务上下文，需要在安装或首次使用时明确展示权限，不允许游戏绕过 Runtime 直接获得 DSH 权限。
 
@@ -236,7 +238,7 @@ Agent 完成任务时，不额外弹出大型 Modal，也不强制暂停或关�
 
 对于存在明确分数或结果的游戏，平台提供统一排行榜能力。
 
-第一阶段优先支持当前成绩、Personal Best、历史成绩和本地排行榜。排行榜入口既可以出现在游戏结束页面，也可以出现在游戏详情页。排序方向（越高越好/越低越好）由 `game.json` 的 `score.direction` 声明；V1 只做本地榜，不做登录与全球榜。具体数据模型见 8.2 与 8.6。
+第一阶段优先支持当前成绩、Personal Best、历史成绩和本地排行榜。排行榜入口既可以出现在游戏结束页面，也可以出现在游戏详情页。排序方向（越高越好/越低越好）由内嵌 manifest 的 `score.direction` 声明；V1 只做本地榜，不做登录与全球榜。具体数据模型见 8.2 与 8.6。
 
 开发者只需要向 Runtime 提交标准化结果，排行榜的存储、展示和排序由平台负责。
 
@@ -282,34 +284,33 @@ Host 侧负责游戏安装、Registry、存档、成绩、Agent 状态监听等�
 
 市场中的游戏不作为 DSH Plugin 安装，而使用独立的轻量 **Game Package**。
 
-因此游戏统一使用 `.dshgame` 包，例如：
+V1 的 Game Package 是**一个自包含的单文件 HTML**（D-034），例如：
 
 ```text
-snake.dshgame              # zip 归档
-├── game.json
-├── index.html             # 自包含：JS / CSS / 图片 / 字体内联
-└── preview/               # 可选：Market 用的图标、封面、截图
+snake-1.0.0.html           # UTF-8 无 BOM，≤20 MiB；JS / CSS / 图片 / 字体全部内联
 ```
 
-其中 `game.json` 描述游戏的基础信息和运行要求，例如：
+文件本身即游戏入口；游戏的基础信息与运行要求以**内嵌 manifest** 的形式写在 HTML 中：
 
-```json
+```html
+<script type="application/json" id="dsh-game-manifest">
 {
   "manifestVersion": 1,
   "id": "snake",
   "name": "Snake",
   "version": "1.0.0",
   "author": { "name": "orange" },
-  "entry": "index.html",
-  "sdkVersion": "^1.0.0",
-  "runtimeVersion": "^1.0.0",
+  "description": "经典贪吃蛇。",
   "categories": ["arcade"],
   "capabilities": ["storage", "score"],
+  "sdkVersion": "^1.0.0",
+  "runtimeVersion": "^1.0.0",
   "viewport": { "width": 960, "height": 540, "fit": "contain" }
 }
+</script>
 ```
 
-Game Package 本质上是一份已经构建完成的静态游戏资源。用户安装游戏时，Game Market 只下载、验证并保存资源，不在用户机器上执行第三方安装脚本。V1 要求 `entry` 是**自包含单文件**：所有 JS、CSS、图片、字体都内联进 `index.html`，游戏运行时不请求任何外部子资源；多文件资源能力在 V1.5 验证后再开放。完整字段、校验规则与包格式见 8.2：V1 的 `.dshgame` 是 zip 归档，单包 ≤20MB，安装阶段只做校验与解压。
+manifest 声明游戏的基础信息和运行要求；`icon` 使用 data URI，封面/截图等展示素材只存在于 Registry 条目，不进入游戏包。Game Package 本质上是一份已经构建完成的静态游戏资源。用户安装游戏时，Game Market 只下载、验证并保存这一个文件，不在用户机器上执行第三方安装脚本。V1 要求包是**自包含单文件**：所有 JS、CSS、图片、字体都内联进 HTML，游戏运行时不请求任何外部子资源；多文件资源能力在 V1.5 验证后再开放。完整字段、校验规则与包格式见 8.2：单文件 ≤20 MiB，安装阶段只做校验与落位。
 
 ### 4.3 Game SDK
 
@@ -393,7 +394,7 @@ dsh-game pack
 dsh-game publish
 ```
 
-最终生成独立 `.dshgame` 包。（CLI 各子命令的输入输出、校验项与退出码见 8.2；Registry 发布格式见 8.8。）
+最终生成独立的单文件 HTML 包 `dist/<id>-<version>.html`。（CLI 各子命令的输入输出、校验项与退出码见 8.2；Registry 发布格式见 8.8。）
 
 构建和依赖安装发生在开发者机器或 CI 中，最终用户只获得已经构建好的静态产物。
 
@@ -612,6 +613,7 @@ GET  /api/game-market/games
 GET  /api/game-market/game?id=
 GET  /api/game-market/installed
 POST /api/game-market/install
+POST /api/game-market/install-local
 POST /api/game-market/uninstall
 GET  /api/game-market/save?gameId=
 POST /api/game-market/save
@@ -623,7 +625,7 @@ POST /api/game-market/preferences
 GET  /api/game-market/agent-state?sessionId=
 POST /api/game-market/launch
 GET  /api/game-market/entry?gameId=&version=&instance=&nonce=
-GET  /api/game-market/preview?gameId=&file=
+GET  /api/game-market/preview?gameId=&version=&file=
 ```
 
 写接口一律使用 POST：`connection.fetch` 只允许 `GET/HEAD/POST`，且路径是精确匹配（无 `/:id` 模板），资源定位通过 query 与 body 完成。
@@ -662,7 +664,7 @@ Game Save 与 Session Record 也保持分离。
 
 Game Save 是当前可恢复状态；Session Record 是一次历史游玩记录。关闭 DSH 后，下一次启动仍然可以恢复上一局。
 
-`.dshgame` 本身包含图片、JS 等静态资源，因此不塞入数据库。Host 使用 Game Market 自己管理的 package 目录保存包内容，元数据与业务状态保存在上述 JSON 文件中。
+游戏包是单文件 HTML，本身包含图片、JS 等静态资源，因此不塞入数据库。Host 使用 Game Market 自己管理的 package 目录保存 `entry.html`，元数据与业务状态保存在上述 JSON 文件中。
 
 ### 5.8 Game Runtime 与安全沙箱
 
@@ -713,7 +715,7 @@ $DSH_HOME/storages/dsh-game-market/
 
 ### 5.9 Game Package 安装路径
 
-`.dshgame` 不使用 DSH 的：
+Game Package 不使用 DSH 的：
 
 ```text
 dsh plugin add
@@ -726,13 +728,13 @@ dsh plugin add
 ```text
 Registry
    ↓
-下载 .dshgame
+下载 <id>-<version>.html
    ↓
-校验 manifest
+校验 hash（sha256）
    ↓
-校验 hash
+解析 HTML 内嵌 manifest + 自包含校验
    ↓
-解压到 Game Market package directory
+落位到 packages/<id>/<version>/entry.html
    ↓
 记录 installation metadata
    ↓
@@ -749,7 +751,7 @@ postinstall
 任意游戏自定义脚本
 ```
 
-游戏必须在发布前已经构建成浏览器可运行的静态产物。
+游戏必须在发布前已经构建成单文件、浏览器可运行的静态产物。
 
 这也是 Game Package 相比 DSH Plugin 最核心的安全区别。（完整安装流程、校验与失败回滚见 8.7。）
 
@@ -761,13 +763,19 @@ Registry 可以先是一份远程索引：
 
 ```json
 {
+  "registryVersion": 1,
+  "generatedAt": "2026-10-18T00:00:00Z",
   "games": [
     {
       "id": "snake",
       "name": "Snake",
       "version": "1.0.0",
-      "package": "...",
-      "sha256": "...",
+      "package": {
+        "url": "https://github.com/example/dsh-game-snake/releases/download/v1.0.0/snake-1.0.0.html",
+        "sha256": "…",
+        "size": 921004,
+        "releasedAt": "2026-10-10T09:00:00Z"
+      },
       "sdkVersion": "^1.0.0"
     }
   ]
@@ -832,8 +840,9 @@ dsh-game-market/
 │
 ├── games/
 │   ├── snake/
+│   ├── jump/
 │   ├── 2048/
-│   └── demo/
+│   └── breakout/
 │
 ├── registry/
 │   └── games.json
@@ -1571,14 +1580,14 @@ V1 需要形成一个用户可以独立安装和持续使用的完整产品。
 
 #### Game Runtime
 
-V1 需要正式建立 `.dshgame` Package。
+V1 需要正式建立单文件 Game Package（自包含 HTML + 内嵌 manifest v1）。
 
 Runtime 至少完成：
 
 - Game Package 加载
 - Manifest 校验
 - iframe Sandbox
-- 单文件自包含 entry 与 CSP
+- 单文件自包含游戏包与 CSP
 - SDK Bridge
 - 生命周期管理
 - Save / Load
@@ -1659,7 +1668,7 @@ GitHub Repository
 +
 Release / 静态 Package
 +
-games.json
+registry/games.json
 ```
 
 支持从 Registry 发现和安装游戏即可。
@@ -1670,7 +1679,7 @@ games.json
 
 首发游戏的目标不是堆数量，而是证明不同类型游戏都能够正常运行在 Runtime 中。
 
-建议首发控制在 3～4 款。
+V1 首发名单已锁定为四款：`snake`（内置）、`jump`（跳跃）、`2048`、`breakout`（打砖块）；四款均计入“至少四个首发游戏”的验收范围（D-036）。
 
 **2048**
 
@@ -1695,27 +1704,15 @@ games.json
 
 同时也是最容易被用户理解的 Quick Play 游戏。
 
-**Tetris / Breakout**
+**Jump（跳跃）与 Breakout（打砖块）**
 
-用于验证更连续的游戏循环，以及 Agent 完成时“不强制打断”的体验。
+两款分别验证纵向平台跳跃与街机弹球循环：连续输入、无尽分数、多关卡与生命、球速变化，以及 Agent 完成时“不强制打断”的体验。
 
-**一个 DSH-native Demo**
+**DSH-native Demo（V1 不做，延后由用户主导）**
 
-首发至少需要一款能够体现 DSH Game Market 独特性的游戏。
+原计划的首发 DSH-native Demo 已从 V1 阻塞范围移除：由用户亲自带人后续推进，不阻塞 V1 验收与发布（D-036）。
 
-但不需要一开始就读取用户代码或 Workspace。
-
-可以采用非常轻的 Agent 联动，例如：
-
-> Agent 每完成一个有效 Step，游戏积累一点 Energy。
-
-或者：
-
-> Agent 完成任务后，游戏产生一个特殊奖励。
-
-其目的不是证明“AI 可以生成游戏内容”，而是让用户第一次就理解：
-
-> **这个游戏是真的知道 Agent 在工作。**
+V1 的首发四款统一走 V1 SDK/契约、单文件自包含，具备分数/最高分/暂停/自动保存/Continue；四款都通过平台统一的 Agent Presence（小鲸鱼）获得“游戏知道 Agent 在工作”的基础联动。
 
 ### 7.4 V1 不做什么
 
@@ -1816,7 +1813,7 @@ Local Preview
         ↓
 Build / Validate
         ↓
-生成 .dshgame
+生成单文件 HTML 包 `<id>-<version>.html`
         ↓
 在 Game Market 中安装运行
 ```
@@ -1859,7 +1856,7 @@ V2 可以考虑：
 
 **在线 Registry Backend**
 
-替代静态 `games.json`。
+替代静态 `registry/games.json`。
 
 **Developer Account / Console**
 
@@ -1967,8 +1964,8 @@ V2
 | **Client** | 插件浏览器半，注册 `main` 面板与 `conversation.header.leading` 入口，渲染 Market / My Games / Runtime 外壳 |
 | **Runtime** | Client 内的可信运行层：管理 iframe 生命周期、Bridge 服务端、Agent Presence、存档调度 |
 | **Bridge** | Runtime 与游戏 iframe 之间的 `postMessage` 协议层；SDK 是它在 iframe 内的客户端 |
-| **Game Package** | `.dshgame` 静态包，根目录含 `game.json`；格式与校验见 8.2/8.7 |
-| **Manifest** | `game.json`，声明 `id`、`version`、`entry`、`sdkVersion`、`runtimeVersion`、`capabilities` 等；字段定义以 8.2 为准 |
+| **Game Package** | 单文件自包含 HTML（UTF-8 无 BOM，≤20 MiB），内嵌 manifest v1；文件本身即入口；格式与校验见 8.2/8.7 |
+| **Manifest** | HTML 内嵌的 `<script type="application/json" id="dsh-game-manifest">`，声明 `id`、`version`、`sdkVersion`、`runtimeVersion`、`capabilities` 等；字段定义以 8.2 为准 |
 | **Play Session** | 一次游玩区间，由 SDK `game.session.start/end` 声明，Host 持久化为 Session Record |
 | **Game Save** | 游戏世界状态，按 `gameId` 隔离，单游戏上限 1MB（D-005） |
 | **Session Record** | Play Session 的持久记录：`playSessionId`、起止时间、`outcome`、`score`、耗时 |
@@ -1990,9 +1987,9 @@ V2
 | `playSessionId` | `ps_` + 24 位小写 hex | `ps_4d2a…` |
 | `requestId` | `req_` + 16 位小写 hex，Host 生成并回显 | — |
 | 能力名 | `^[a-z][a-z0-9-]{0,31}$` | `storage`、`score` |
-| 包内文件名 | 每段 `[A-Za-z0-9._-]+`，禁止 `..`、`\`、NUL、前导 `/`；总长 ≤180（与 8.2 一致） | `preview/cover.webp` |
+| 包文件名 | `<id>-<version>.html`，与 manifest 的 `id`/`version` 一致 | `snake-1.0.0.html` |
 
-包内文件名规则用于 zip 路径与 `preview/` 声明匹配；V1 资源路由只有 `/entry` 与 `/preview`，不按文件名注册，非 ASCII 文件名不再导致路由失败，但仍按 8.2 校验。
+包是单文件，不存在“包内路径”规则；V1 资源路由只有 `/entry`（固定文件 `packages/<id>/<version>/entry.html`）与 `/preview`（Registry 缓存素材），不按文件名注册，也不接受任何来自包的路径或文件名。
 
 #### 错误码
 
@@ -2048,63 +2045,56 @@ V2
 
 ### 8.2 Game Package 与 Manifest 规范
 
-> **游戏是一个包，不是一个插件。** 安装过程只搬运、校验、落位静态文件，任何阶段都不执行第三方代码。
+> **游戏是一个包，不是一个插件。** 安装过程只搬运、校验、落位一个静态文件，任何阶段都不执行第三方代码。
 
-#### 8.2.1 `.dshgame` 归档结构
+#### 8.2.1 单文件游戏包结构
 
-`.dshgame` 是 **zip 归档**（D-010），文件名即产物名，根目录直接放 `game.json`：
+V1 的 Game Package 是**一个自包含的单文件 HTML**（D-034），文件名规则为 `<id>-<version>.html`：
 
 ```text
-block-drop-1.2.0.dshgame          # zip, deflate
-├── game.json                     # 必需，归档根，UTF-8 无 BOM，≤ 64 KiB
-├── index.html                    # entry 指向的文件，必需；自包含（JS/CSS/图片/字体内联）
-├── preview/                      # 可选，仅供 Market UI 使用，不参与游戏运行
-│   ├── icon.png                  # 建议 256×256
-│   ├── cover.webp                # 建议 1280×720
-│   ├── shot-1.webp
-│   └── shot-2.webp
-├── LICENSE                       # 可选，非运行时文件
-└── README.md                     # 可选，非运行时文件
+block-drop-1.2.0.html            # UTF-8 无 BOM，≤20 MiB
+└── <html>                       # 文件本身即游戏入口
+    ├── <script type="application/json" id="dsh-game-manifest">…</script>   # 内嵌 manifest v1，恰好一处
+    └── <style> / <script> / <img src="data:…"> 等内联资源（可选）
 ```
 
-**V1 运行时只加载 `entry` 一个文件（D-023）。** sandbox iframe 是 opaque origin，宿主 `/api` 栅栏会拦截 iframe 发出的子资源请求（见 8.5、8.10），因此 `entry` 必须自包含：禁止外部 `<script src>`、`<link rel="stylesheet" href>`、`<img src>`、`@import`、外链字体/媒体，禁止 `<iframe>`；所有 JS/CSS/图片/字体必须内联（inline 或 `data:` URL）。`preview/` 只由 Market UI 在父页面中同源加载。S-10/S-11 验证通过后，V1.5 再开放多文件运行资源。
+- **文件本身即入口**：manifest 中不再有 `entry` 字段；Host 安装后固定落位为 `packages/<id>/<version>/entry.html`（§8.6.2），通过 `/entry` 路由提供给 sandbox iframe。
+- **manifest 内嵌**：以 `<script type="application/json" id="dsh-game-manifest">` 的形式写在 HTML 中，全文恰好一处，其文本内容（标签之间）≤64 KiB。
+- **单文件自包含**：所有 JS、CSS、图片、字体、音频都以 inline 或 `data:` URL 内联；运行时不得请求任何外部子资源（详见 8.2.4）。
+- **V1 没有 zip/归档/解压/文件列表/目录树**：包内不存在“其它文件”，多文件资源推迟到 V1.5 评估（S-04）。
+- `icon` 使用 data URI；封面/截图不是包内容，只存在于 Registry 条目（§8.8.1）。
 
-结构规则全部可机检，任一条违反即整包拒绝：
+结构规则全部可机检，任一条违反即整包拒绝（错误码见 8.2.7）：
 
 | 编号 | 规则 | 错误码 |
 |---|---|---|
-| PKG-R-01 | 归档根必须有 `game.json`；不得出现顶层包裹目录（`snake/game.json` 非法） | `E_PKG_STRUCTURE` |
-| PKG-R-02 | 条目路径以 `/` 分隔；不得以 `/` 开头，不得含 `\`、`\0`、`..` 段、空段（`//`） | `E_PKG_PATH_UNSAFE` |
-| PKG-R-03 | 只允许 regular file 与 directory；禁止符号链接、硬链接、设备文件、加密条目、多卷归档 | `E_PKG_ENTRY_UNSUPPORTED` |
-| PKG-R-04 | 只支持压缩方法 `0`（stored）与 `8`（deflate）；长度以 Central Directory 为准（允许 data descriptor） | `E_PKG_ZIP_UNSUPPORTED` |
-| PKG-R-05 | 禁止 `__MACOSX/`、`.DS_Store`、`Thumbs.db`、`.git/`、`node_modules/`、`*.ts`/`*.tsx` 源文件 | `E_PKG_JUNK_ENTRY` |
-| PKG-R-06 | 文件名按 NFC 规范化后比较，大小写敏感（`Index.html` ≠ `index.html`） | `E_PKG_ENTRY_MISSING` |
-| PKG-R-07 | 空目录条目忽略；空文件允许 | — |
-| PKG-R-08 | 所有文件路径与目录段只允许 ASCII `[A-Za-z0-9._-]`；非 ASCII、空格、`@`、`+`、`#`、`?` 等一律拒绝 | `E_PKG_PATH_UNSAFE` |
-| PKG-R-09 | 非运行时文件也必须在允许清单内（`game.json`、entry、`preview/**`、`LICENSE*`、`README*`）；其它顶层文件拒绝 | `E_PKG_JUNK_ENTRY` |
+| PKG-R-01 | 必须是合法 HTML 文件：UTF-8 无 BOM、非空、可解析；文件大小 ≤20 MiB | `E_PKG_HTML_INVALID` / `E_PKG_TOO_LARGE` |
+| PKG-R-02 | HTML 中必须存在且只存在一处 `<script type="application/json" id="dsh-game-manifest">…</script>` | `E_PKG_MANIFEST_MISSING` / `E_PKG_MANIFEST_DUPLICATE` |
+| PKG-R-03 | manifest 文本 ≤64 KiB，JSON 可解析（无重复键） | `E_PKG_MANIFEST_TOO_LARGE` / `E_PKG_MANIFEST_JSON` |
+| PKG-R-04 | manifest 通过 §8.2.3 字段校验（必填、类型、范围、枚举） | `E_PKG_FIELD_*` / `E_PKG_*` |
+| PKG-R-05 | 通过 §8.2.4 自包含校验：无外部子资源、无网络调用、无 `<iframe>` | `E_PKG_ENTRY_NOT_SELF_CONTAINED` |
+| PKG-R-06 | manifest 的 `id`/`version` 与 Registry 条目一致，且包文件名等于 `<id>-<version>.html` | `E_PKG_VERSION_INVALID` / `E_INSTALL_VERSION_MISMATCH` |
+| PKG-R-07 | 出现已废弃字段（`author` 字符串、`category` 单数、`entry`、`cover`、`screenshots`）一律拒绝 | `E_PKG_LEGACY_FIELD` |
+
+> 原归档模型下的 `E_PKG_STRUCTURE`、`E_PKG_PATH_UNSAFE`、`E_PKG_ENTRY_MISSING` 以及全部 `E_PKG_ZIP_*`/文件数/解压炸弹类错误码随 D-010/D-032 废止，V1 不再产生也不再分配（完整废弃清单见 §8.13.2）。
 
 #### 8.2.2 体积与内容上限
 
-D-010 已锁定 20 MB / 2000 文件 / 禁符号链接与绝对路径。下表是**在此之上不放松、只收紧**的实现上限：
+V1 的包是单文件，上限只针对这一个文件和其中内嵌的 manifest：
 
 | 限制项 | 阈值 | 理由 | 错误码 |
 |---|---|---|---|
-| 归档大小 | ≤ 20 MiB（20,971,520 B） | D-010 | `E_PKG_TOO_LARGE` |
-| 解压后总字节 | ≤ 60 MiB | 压缩比 > 3:1 视为解压炸弹 | `E_PKG_ZIP_BOMB` |
-| 文件数 | ≤ 2000 | D-010 | `E_PKG_TOO_MANY_FILES` |
-| 单文件解压后 | ≤ 12 MiB | 防止单个大资源拖死加载 | `E_PKG_FILE_TOO_LARGE` |
-| 路径长度 | ≤ 180 字符（相对根） | 跨平台文件名上限 | `E_PKG_PATH_TOO_LONG` |
-| 目录深度 | ≤ 6 | 遍历成本与可读性 | `E_PKG_PATH_TOO_DEEP` |
-| 单目录条目数 | ≤ 500 | 索引与列表渲染 | `E_PKG_DIR_TOO_WIDE` |
-| `game.json` | ≤ 64 KiB | 元数据不是内容 | `E_PKG_MANIFEST_TOO_LARGE` |
+| 包文件大小 | ≤ 20 MiB（20,971,520 B） | 单文件包体积预算，控制下载与加载成本 | `E_PKG_TOO_LARGE` |
+| manifest 文本 | ≤ 64 KiB | 元数据不是内容 | `E_PKG_MANIFEST_TOO_LARGE` |
+| `icon` data URI 解码后 | ≤ 256 KiB | 详情页图标，避免拖慢首屏 | `E_PKG_ICON_TOO_LARGE` |
 
-> 上限检查发生在**流式解压过程中**：累计字节、文件数、单文件字节任一越界立即中止并丢弃整个临时目录，不做"先解压后统计"。
+- 文件大小按**实际接收字节**计，不信任 `Content-Length`；下载/读取过程中边收边计数，越界立即中止并删除临时文件。
+- 内联的图片、音频、字体、data URI 共同占用 20 MiB 预算，没有单独的“单文件资源”上限。
+- 不再有解压后总量、文件数、单文件解压大小、路径长度、目录深度、单目录条目数、压缩比等限制——这些只属于 zip 模型，V1 不适用。
 
-V1 运行时只读取 `entry` 与 manifest 声明的 `preview` 文件，文件数上限不用于规划静态服务能力；§8.5 的入口路由只读取这两类文件。
+#### 8.2.3 内嵌 manifest 字段表
 
-#### 8.2.3 `game.json` 字段表
-
-`game.json` 是唯一权威 manifest。早期版本的 `author`（字符串）与 `category`（单数）已被废弃，V1 校验器按下表执行并报 `E_PKG_LEGACY_FIELD`（§8.2.7）。
+manifest 是唯一权威元数据，位于 HTML 的 `<script type="application/json" id="dsh-game-manifest">` 中。早期版本的 `author`（字符串）与 `category`（单数）已被废弃；`entry`、`cover`、`screenshots` 也不再是包字段。校验器按下表执行，历史字段报 `E_PKG_LEGACY_FIELD`（§8.2.7）。
 
 | 字段 | 类型 | 必填 | 默认 | 约束与校验 |
 |---|---|---|---|---|
@@ -2114,10 +2104,7 @@ V1 运行时只读取 `entry` 与 manifest 声明的 `preview` 文件，文件�
 | `version` | string | 是 | — | `MAJOR.MINOR.PATCH[-prerelease]`；无前导 0；**不允许** build metadata（`+` 后内容） |
 | `author` | object | 是 | — | `{ name, url? }`；`name` 1–64 字符；`url` 必须 `https://` 且 ≤ 300 字符 |
 | `description` | string | 是 | — | 1–280 字符；纯文本（禁止 HTML 标签、禁止 Markdown 链接语法）；换行归一为单个空格 |
-| `entry` | string | 是 | — | 相对路径，必须以 `.html` 结尾，必须存在于归档；规范化后须等于自身（禁 `./`、`//`）；不得含 `?`/`#`；不得越出包根 |
-| `icon` | string | 否 | `null` | 相对路径；存在时 PNG/WebP，≤ 256 KiB，建议 256×256 方图；缺失时 Market 用首字母占位 |
-| `cover` | string | 否 | `null` | 相对路径；PNG/WebP/JPEG，≤ 1 MiB，建议 16:9 / 1280×720；**Registry 上架时必填**（§8.8） |
-| `screenshots` | string[] | 否 | `[]` | ≤ 5 项；每项规则同 `cover`，单张 ≤ 2 MiB，建议 1280×720 |
+| `icon` | string | 否 | `null` | data URI（png/webp/jpeg）；解码后 ≤256 KiB，建议 256×256 方图；缺失时 Market 用首字母占位 |
 | `categories` | string[] | 是 | — | 1–3 项，枚举 `arcade` `puzzle` `card` `idle` `action` `strategy` `trivia` `sandbox`；去重；未知值 → `E_PKG_CATEGORY_UNKNOWN` |
 | `tags` | string[] | 否 | `[]` | ≤ 8 项，`^[a-z0-9][a-z0-9-]{0,23}$`；去重；用于本地搜索与筛选 |
 | `capabilities` | string[] | 是 | `[]` | V1 仅允许 `storage`、`score`；去重；其它值见 §8.2.5 的两类错误码 |
@@ -2142,7 +2129,11 @@ V1 运行时只读取 `entry` 与 manifest 声明的 `preview` 文件，文件�
 
 未知字段策略（向前兼容的基础）：顶层未知字段记 `W_PKG_UNKNOWN_FIELD` 警告，不阻断安装；以 `x-` 开头的顶层字段静默忽略；`score`/`save`/`i18n` 对象内的未知键同样只警告。**但 `capabilities` 的未知值是错误**，因为它是权限声明。
 
-#### 8.2.4 `id`、`version`、`entry`
+**封面/截图不是 manifest 字段：** `cover` 与 `screenshots` 只存在于 Registry 条目（§8.8.1）。Host 在 Registry 刷新时把外链素材缓存到 `preview-cache/<id>/<version>/`，Market 通过同源 `/preview` 加载；本地/开发安装没有 Registry 条目时，详情页用 manifest 的 `icon` data URI 或首字母占位，不显示截图区。
+
+#### 8.2.4 入口即文件本身、自包含校验
+
+**没有独立的入口文件字段。** 包文件本身就是入口；Host 将其落位为 `packages/<id>/<version>/entry.html`，通过 `/entry` 路由返回一次 HTML 响应，游戏在 sandbox iframe 中运行（属性与 CSP 见 §8.4、8.10）。平台不解析、不注入、不重写游戏 HTML 的正文，只读取内嵌 manifest 做校验。
 
 **`id`** 是数据目录的键（§8.6），因此比其它字段更严格：
 
@@ -2153,9 +2144,17 @@ V1 运行时只读取 `entry` 与 manifest 声明的 `preview` 文件，文件�
 
 **`version`** 使用严格 semver 子集：`^` range 匹配同 MAJOR，`~` 匹配同 MINOR，比较遵循 semver 优先级（预发布版本低于同版本正式版）。同一 `id` 的正式版本必须严格递增；**安装新版本只允许 ≥ 已装版本**，降级只能走 §8.11.7 的回滚通道。
 
-**`entry`** 必须是**自包含 HTML**（D-023），加载方式为 sandbox iframe（属性与 CSP 见 §8.4、8.10）。平台不解析、不注入、不重写 `entry` 的内容；`entry` 只用于构造 iframe 的 `src`。校验器对 entry 做静态检查：外部 `src`/`href`/`@import`、`<iframe>`、`fetch`/`XMLHttpRequest`/`WebSocket` 引用均拒绝（运行时也会被 CSP 阻断），报 `E_PKG_ENTRY_NOT_SELF_CONTAINED`。
+**自包含校验（静态检查，与运行时 CSP 双保险）。** 以下任一出现即拒绝，报 `E_PKG_ENTRY_NOT_SELF_CONTAINED`：
 
-`preview/` 图片资源统一规则：必须是 PNG/WebP/JPEG 静态图（拒绝 GIF、APNG、SVG）；平台渲染时固定 `width`/`height` 与 `object-fit: cover`，不信任解码尺寸，避免布局被异常比例破坏。运行时内联图片不受格式限制，但仍计入包体积上限。
+1. 外部子资源：`<script src>`、`<link rel="stylesheet" href>`、`<img src>`、`<audio>/<video>/<source src>`、`<object>/<embed data>` 等指向 `http(s):`、协议相对（`//`）、`file:` 或相对路径。
+2. 样式外链：`@import`、外链字体（`@font-face` 的远程 `src`）。
+3. 嵌入框架：`<iframe>`、`<frame>`、`<object>`、`<embed>`。
+4. 网络调用：`fetch`、`XMLHttpRequest`、`WebSocket`、`EventSource`、`navigator.sendBeacon`。
+5. 导航/弹窗：`window.open`、改写 `top.location` / `parent.location`（运行时 sandbox 也会阻断）。
+
+只放行 `data:` URL 与内联内容。运行时再由 CSP（`default-src 'none'`、`connect-src 'none'`、`frame-src 'none'` 等，见 §8.10）二次阻断；静态检查用于更早、更明确的报错，两者缺一不可。
+
+**运行时加载方式。** iframe 只加载 `/entry` 一次；游戏内联资源不产生子资源请求。`icon` 以 data URI 出现在 manifest 中，不由 `/entry` 之外的文件服务提供；包内不存在可供读取的图片路径。
 
 #### 8.2.5 `capabilities` 允许枚举
 
@@ -2180,6 +2179,8 @@ V1 **只允许两个 capability**，其它一切声明都拒绝：
 
 #### 8.2.6 完整示例
 
+（示例省略 HTML 外壳；实际以内嵌 `<script type="application/json" id="dsh-game-manifest">` 的形式写在单文件 HTML 中。）
+
 ```json
 {
   "manifestVersion": 1,
@@ -2188,10 +2189,7 @@ V1 **只允许两个 capability**，其它一切声明都拒绝：
   "version": "1.2.0",
   "author": { "name": "Orange", "url": "https://github.com/orange" },
   "description": "把下落的方块叠成完整横行，适合几十秒到几分钟的等待。",
-  "entry": "index.html",
-  "icon": "preview/icon.png",
-  "cover": "preview/cover.webp",
-  "screenshots": ["preview/shot-1.webp", "preview/shot-2.webp"],
+  "icon": "data:image/png;base64,iVBORw0KGgo…",
   "categories": ["puzzle", "arcade"],
   "tags": ["blocks", "keyboard", "short-run"],
   "capabilities": ["storage", "score"],
@@ -2220,23 +2218,22 @@ V1 **只允许两个 capability**，其它一切声明都拒绝：
 
 | 检查阶段 | 检查项 | 错误码 | CLI | 安装 | 启动 |
 |---|---|---|---|---|---|
-| 归档 | zip 可解析、方法受支持、无符号链接 | `E_PKG_ZIP_UNSUPPORTED` / `E_PKG_ENTRY_UNSUPPORTED` | ✓ | ✓ | — |
-| 归档 | 体积、文件数、路径、深度、压缩比 | `E_PKG_TOO_LARGE` 等 | ✓ | ✓ | — |
-| 归档 | 根 `game.json` 存在、无包裹目录 | `E_PKG_STRUCTURE` | ✓ | ✓ | — |
-| Manifest | JSON 可解析、无重复键、无 BOM | `E_PKG_MANIFEST_JSON` | ✓ | ✓ | ✓ |
+| 文件 | 大小 ≤20 MiB；UTF-8 无 BOM、非空、HTML 可解析 | `E_PKG_TOO_LARGE` / `E_PKG_HTML_INVALID` | ✓ | ✓ | ✓ |
+| Manifest | 内嵌 `<script id="dsh-game-manifest">` 存在且恰好一处 | `E_PKG_MANIFEST_MISSING` / `E_PKG_MANIFEST_DUPLICATE` | ✓ | ✓ | ✓ |
+| Manifest | 文本 ≤64 KiB | `E_PKG_MANIFEST_TOO_LARGE` | ✓ | ✓ | ✓ |
+| Manifest | JSON 可解析、无重复键 | `E_PKG_MANIFEST_JSON` | ✓ | ✓ | ✓ |
 | Manifest | `manifestVersion = 1` | `E_PKG_MANIFEST_VERSION` | ✓ | ✓ | ✓ |
 | Manifest | 必填字段、类型、长度、枚举 | `E_PKG_FIELD_MISSING` / `E_PKG_FIELD_TYPE` / `E_PKG_FIELD_RANGE` | ✓ | ✓ | ✓ |
 | Manifest | `id` 语法与保留字 | `E_PKG_ID_INVALID` / `E_PKG_ID_RESERVED` | ✓ | ✓ | ✓ |
-| Manifest | `version` 语法；与 Registry 声明一致 | `E_PKG_VERSION_INVALID` / `E_INSTALL_VERSION_MISMATCH` | ✓ | ✓ | — |
+| Manifest | `version` 语法；与 Registry 声明及包文件名一致 | `E_PKG_VERSION_INVALID` / `E_INSTALL_VERSION_MISMATCH` | ✓ | ✓ | — |
 | Manifest | `capabilities` 枚举与重复 | `E_PKG_CAPABILITY_*` | ✓ | ✓ | ✓ |
 | Manifest | `score` 范围合法、`save.schemaVersion` 合法 | `E_PKG_SCORE_RANGE` / `E_PKG_SAVE_SCHEMA` | ✓ | ✓ | ✓ |
-| 资源 | `entry`/`icon`/`cover`/`screenshots` 存在且格式正确 | `E_PKG_ASSET_MISSING` / `E_PKG_ASSET_FORMAT` | ✓ | ✓ | — |
-| 资源 | 图片大小、静态图、可解码 | `E_PKG_ASSET_TOO_LARGE` / `E_PKG_ASSET_ANIMATED` | ✓ | — | — |
-| 资源 | `entry` 自包含；`preview` 文件只出现在声明字段 | `E_PKG_ENTRY_NOT_SELF_CONTAINED` / `E_PKG_ASSET_MISSING` | ✓ | ✓ | ✓ |
+| Manifest | `icon` data URI 类型与解码后大小 | `E_PKG_ICON_FORMAT` / `E_PKG_ICON_TOO_LARGE` | ✓ | ✓ | — |
+| 自包含 | 无外部子资源、无网络调用、无 `<iframe>`（§8.2.4） | `E_PKG_ENTRY_NOT_SELF_CONTAINED` | ✓ | ✓ | ✓ |
 | 兼容 | `sdkVersion`/`runtimeVersion` 的范围语法（§8.11.2） | `E_PKG_RANGE_SYNTAX` | ✓ | ✓ | ✓ |
 | 兼容 | `sdkVersion`/`runtimeVersion` 满足当前 Runtime | `E_COMPAT_SDK` / `E_COMPAT_RUNTIME` | ✓ | ✓ | ✓ |
-| 一致性 | 磁盘 `game.json` 的 `id`/`version` 与记录一致 | `E_INSTALL_CORRUPT` | — | — | ✓ |
-| 兼容 | 旧字段（`author` 字符串、`category`） | `E_PKG_LEGACY_FIELD` | ✓ | ✓ | ✓ |
+| 一致性 | 运行前重新读取 `packages/<id>/<version>/entry.html` 的内嵌 manifest，`id`/`version` 与安装记录一致 | `E_INSTALL_CORRUPT` | — | — | ✓ |
+| 兼容 | 旧字段（`author` 字符串、`category`、`entry`、`cover`、`screenshots`） | `E_PKG_LEGACY_FIELD` | ✓ | ✓ | ✓ |
 
 > **错误码约定：** 本节与 §8.7.9 中的 `E_*` 是内部常量名；对外（HTTP API、Bridge、用户提示、日志的 `code` 字段）统一使用 `GM-*` 码，完整映射见 §8.13。`E_*` 只允许出现在代码常量与诊断日志的来源字段中。
 
@@ -2244,18 +2241,12 @@ V1 **只允许两个 capability**，其它一切声明都拒绝：
 
 | 错误码 | 含义 | 用户可见文案（zh） | 作者可修复 |
 |---|---|---|---|
-| `E_PKG_STRUCTURE` | 归档根结构不合法 | 安装包结构不正确，缺少 game.json | 是 |
-| `E_PKG_ZIP_UNSUPPORTED` | zip 使用了不支持的特性 | 安装包使用了不支持的压缩格式 | 是 |
-| `E_PKG_ENTRY_UNSUPPORTED` | 含符号链接/链接/加密条目 | 安装包包含不允许的文件类型 | 是 |
-| `E_PKG_PATH_UNSAFE` | 路径穿越或非法字符 | 安装包包含非法路径 | 是 |
-| `E_PKG_JUNK_ENTRY` | 系统垃圾文件或源文件 | 安装包包含多余文件（如 .DS_Store） | 是 |
-| `E_PKG_TOO_LARGE` | 超过 20 MiB | 安装包超过 20 MB 上限 | 是 |
-| `E_PKG_TOO_MANY_FILES` | 超过 2000 文件 | 安装包文件数超过 2000 | 是 |
-| `E_PKG_ZIP_BOMB` | 压缩比异常 | 安装包解压后体积异常，已终止 | 是 |
-| `E_PKG_FILE_TOO_LARGE` / `E_PKG_DIR_TOO_WIDE` / `E_PKG_PATH_TOO_LONG` / `E_PKG_PATH_TOO_DEEP` | 单文件/单目录/路径/深度越界 | 安装包内单个文件或路径超出限制 | 是 |
-| `E_PKG_ENTRY_MISSING` | `entry` 或声明资源在归档中不存在 | 安装包缺少入口文件 | 是 |
-| `E_PKG_MANIFEST_TOO_LARGE` | `game.json` 超过 64 KiB | game.json 体积过大 | 是 |
-| `E_PKG_MANIFEST_JSON` | JSON 语法错误或重复键 | game.json 格式错误 | 是 |
+| `E_PKG_HTML_INVALID` | 不是合法 UTF-8 HTML（空文件/非 UTF-8/含 BOM/无法解析） | 安装包不是有效的 HTML 文件 | 是 |
+| `E_PKG_TOO_LARGE` | 单文件超过 20 MiB | 安装包超过 20 MiB 上限 | 是 |
+| `E_PKG_MANIFEST_MISSING` | 未找到内嵌 manifest | 安装包缺少游戏清单 | 是 |
+| `E_PKG_MANIFEST_DUPLICATE` | 内嵌 manifest 多于一处 | 安装包包含多份游戏清单 | 是 |
+| `E_PKG_MANIFEST_TOO_LARGE` | manifest 文本超过 64 KiB | 游戏清单体积过大 | 是 |
+| `E_PKG_MANIFEST_JSON` | JSON 语法错误或重复键 | 游戏清单格式错误 | 是 |
 | `E_PKG_MANIFEST_VERSION` | manifestVersion ≠ 1 | 游戏清单版本不受支持 | 是 |
 | `E_PKG_FIELD_MISSING` / `E_PKG_FIELD_TYPE` / `E_PKG_FIELD_RANGE` | 字段缺失/类型错/越界 | 游戏清单字段 `{field}` 不合法 | 是 |
 | `E_PKG_ID_INVALID` / `E_PKG_ID_RESERVED` | id 语法错 / 保留字 | 游戏 id 不合法或与系统保留名冲突 | 是 |
@@ -2263,37 +2254,39 @@ V1 **只允许两个 capability**，其它一切声明都拒绝：
 | `E_PKG_VERSION_INVALID` | 版本号非 semver 子集 | 版本号格式不正确 | 是 |
 | `E_PKG_CAPABILITY_UNKNOWN` / `_UNSUPPORTED` / `_DUPLICATE` | 能力声明问题 | 见 §8.2.5 文案 | 是 |
 | `E_PKG_SCORE_RANGE` / `E_PKG_SAVE_SCHEMA` | 分数范围或存档版本非法 | 计分/存档配置不合法 | 是 |
-| `E_PKG_ASSET_MISSING` / `_FORMAT` / `_TOO_LARGE` / `_ANIMATED` | 资源缺失/格式/大小/动图 | 游戏封面或图标不可用 | 是 |
-| `E_PKG_ENTRY_NOT_SELF_CONTAINED` | entry 引用外部子资源或网络调用 | 游戏入口必须是自包含单文件，请使用官方模板重新打包 | 是 |
+| `E_PKG_ICON_FORMAT` / `E_PKG_ICON_TOO_LARGE` | icon data URI 格式或大小非法 | 游戏图标不可用 | 是 |
+| `E_PKG_ENTRY_NOT_SELF_CONTAINED` | 引用外部子资源或网络调用 | 游戏入口必须是自包含单文件，请使用官方模板重新打包 | 是 |
 | `E_PKG_PERMISSION_UNSUPPORTED` | 声明了非空 permissions | 该游戏请求了当前版本不支持的能力 | 是（V1 不支持） |
-| `E_PKG_LEGACY_FIELD` | 使用了已废弃字段 | 请使用 `author` 对象与 `categories` 数组 | 是 |
+| `E_PKG_LEGACY_FIELD` | 使用了已废弃字段 | 请使用 `author` 对象与 `categories` 数组，并移除 `entry`/`cover`/`screenshots` | 是 |
 | `E_COMPAT_SDK` / `E_COMPAT_RUNTIME` | 版本范围不满足 | 该游戏需要更新的 Game Market | 否（用户侧） |
 | `E_PKG_RANGE_SYNTAX` | 版本范围使用了不允许的形式 | 版本范围写法不受支持（仅支持 ^ ~ 精确或上下界） | 是 |
 
-输出契约：按上表阶段顺序输出；同阶段内按文件路径字典序；最多 50 条，超出置 `truncated: true`；`--json` 输出 `{ ok, errors[], warnings[], truncated }`，每项含 `code`/`path`/`message`/`hint`。**同一输入重复执行必须输出逐字节一致**（耗时字段仅在 `--verbose` 出现）。
+> **已废弃的 `E_*`（V1 不再产生、不再分配）：** `E_PKG_ZIP_*`（含 `E_PKG_ZIP_UNSUPPORTED`、`E_PKG_ZIP_BOMB`）、`E_PKG_ENTRY_UNSUPPORTED`、`E_PKG_JUNK_ENTRY`、`E_PKG_TOO_MANY_FILES`、`E_PKG_FILE_TOO_LARGE`、`E_PKG_DIR_TOO_WIDE`、`E_PKG_PATH_TOO_LONG`、`E_PKG_PATH_TOO_DEEP`、`E_PKG_ASSET_MISSING`、`E_PKG_ASSET_ANIMATED`。原归档模型下的 `E_PKG_STRUCTURE` / `E_PKG_PATH_UNSAFE` / `E_PKG_ENTRY_MISSING` 也一并退出，其语义由 `E_PKG_HTML_INVALID` / `E_PKG_MANIFEST_MISSING` / `E_PKG_MANIFEST_DUPLICATE` / `E_PKG_ENTRY_NOT_SELF_CONTAINED` 承接。这些常量只允许出现在历史代码与迁移说明中。
+
+输出契约：按上表阶段顺序输出；同阶段内按检查项在该表中的顺序；最多 50 条，超出置 `truncated: true`；`--json` 输出 `{ ok, errors[], warnings[], truncated }`，每项含 `code`/`path`/`message`/`hint`。**同一输入重复执行必须输出逐字节一致**（耗时字段仅在 `--verbose` 出现）。
 
 #### 8.2.8 CLI：build / validate / pack / publish
 
 | 命令 | 输入 | 输出 | 退出码 | 联网 |
 |---|---|---|---|---|
-| `dsh-game build` | 模板工程目录（含 `game.json` + `src/`） | `dist/index.html`（单文件自包含，JS/CSS/图片/字体内联；无 sourcemap） | 0 / 1 / 3 | 否 |
-| `dsh-game validate <path>` | `.dshgame` 或目录 | stdout 报告；`--json` 机器可读 | 0 / 1 / 2 | 否 |
-| `dsh-game pack` | 已构建目录 | `dist/<id>-<version>.dshgame` + `dist/<id>-<version>.dshgame.sha256` | 0 / 1 / 3 | 否 |
-| `dsh-game publish` | `.dshgame` | `registry-entry.json` 片段 + 上传清单 | 0 / 1 / 2 | 否（V1） |
+| `dsh-game build` | 模板工程目录（含 manifest 源与 `src/`） | `dist/index.html`（单文件自包含，内嵌 manifest v1；JS/CSS/图片/字体内联；无 sourcemap） | 0 / 1 / 3 | 否 |
+| `dsh-game validate <path>` | 单文件 `.html`（或模板工程目录，先 build 再校验） | stdout 报告；`--json` 机器可读 | 0 / 1 / 2 | 否 |
+| `dsh-game pack` | 已构建的 `dist/index.html` | `dist/<id>-<version>.html` + `dist/<id>-<version>.html.sha256` | 0 / 1 / 3 | 否 |
+| `dsh-game publish` | `dist/<id>-<version>.html` + `.sha256` | `registry/games.json` 条目（`package` 字段）+ 上传清单 + 人工审核 checklist | 0 / 1 / 2 | 否（V1） |
 
 退出码语义固定：`0` 成功；`1` 校验或兼容性失败（作者可修复）；`2` 用法/配置错误；`3` 内部错误（IO 或未预期异常）；`4` 网络或 Registry 错误（V1 只有 Host 安装流程使用，CLI 不使用）。
 
-**确定性打包**是硬要求，否则 Registry 的 `sha256` 无法复现：条目按路径 UTF-8 字节序排序；mtime 固定为 `1980-01-01T00:00:00Z`；权限位固定 `0644`；deflate level 9；不写 extra field 与 archive comment。验收方法：同一目录连续 `pack` 两次，`sha256` 必须相同。
+**确定性打包**是硬要求，否则 Registry 的 `sha256` 无法复现：同一构建输入连续构建两次，产出的 HTML 必须**逐字节一致**——内联资源按固定顺序拼接，不写时间戳、机器路径、随机 id；manifest 序列化稳定（键序固定、无多余空白）。验收方法：同一目录连续 `build`/`pack` 两次，`sha256` 必须相同。
 
 `sha256` 附属文件内容为 `shasum -a 256` 兼容格式：
 
 ```text
-3f9c…（64 位小写 hex）  block-drop-1.2.0.dshgame
+3f9c…（64 位小写 hex）  block-drop-1.2.0.html
 ```
 
-**单文件内联是 V1 硬要求：** `build` 必须把入口依赖合并进一个 HTML；`pack` 前由 validate 复查 entry 无外部子资源（§8.2.7）。
+**单文件内联是 V1 硬要求：** `build` 必须把 manifest、SDK、JS、CSS、图片、字体合并进一个 HTML；`pack` 前由 validate 复查内嵌 manifest 唯一性与自包含（§8.2.7）。
 
-V1 的 `publish` **不调用任何服务端 API**：它产出可直接粘进 `registry/games.json` 的条目、`.dshgame` 上传目标路径提示、以及一份人工审核 checklist。真正的上架仍是 PR（§8.8）。
+V1 的 `publish` **不调用任何服务端 API**：它产出可直接粘进 `registry/games.json` 的条目、`.html` 上传目标路径提示（建议 GitHub Releases）、以及一份人工审核 checklist。真正的上架仍是 PR（§8.8）。
 
 #### 8.2.9 模板必须预置的内容
 
@@ -2301,10 +2294,10 @@ V1 的 `publish` **不调用任何服务端 API**：它产出可直接粘进 `re
 
 | 模板 | 文件 | 说明 |
 |---|---|---|
-| Vanilla / Canvas | `game.json`、`index.html`、`src/main.js`、`src/render.js`、`src/storage.js`、`src/i18n.js`、`scripts/dev.mjs`、`README.md` | 无框架、无构建依赖；`<canvas>` + DPR 缩放 |
-| React | `game.json`、`index.html`、`vite.config.ts`、`src/App.tsx`、`src/game/loop.ts`、`src/game/storage.ts`、`src/sdk.ts`、`README.md` | Vite + React；游戏状态放 `useRef` 而不是 React state，避免每帧重渲染 |
+| Vanilla / Canvas | `manifest.json`、`index.html`、`src/main.js`、`src/render.js`、`src/storage.js`、`src/i18n.js`、`scripts/dev.mjs`、`README.md` | 无框架、无构建依赖；`<canvas>` + DPR 缩放 |
+| React | `manifest.json`、`index.html`、`vite.config.ts`、`src/App.tsx`、`src/game/loop.ts`、`src/game/storage.ts`、`src/sdk.ts`、`README.md` | Vite + React；游戏状态放 `useRef` 而不是 React state，避免每帧重渲染 |
 
-两个模板的 `build` 脚本都必须产出**单文件自包含**的 `dist/index.html`：Vanilla 用 esbuild 把 JS/CSS/资源内联；React 用 Vite + `vite-plugin-singlefile`。模板的 `pack` 前置 validate 会拒绝外部子资源。
+模板的 `manifest.json` 是**构建期源文件**：`build` 把它序列化后以内嵌 `<script type="application/json" id="dsh-game-manifest">` 的形式写入 `dist/index.html`，不产出独立的 manifest 文件。两个模板的 `build` 脚本都必须产出**单文件自包含**的 `dist/index.html`：Vanilla 用 esbuild 把 JS/CSS/资源内联；React 用 Vite + `vite-plugin-singlefile`。模板的 `pack` 前置 validate 会拒绝外部子资源、缺失/重复 manifest。
 
 两个模板都必须预置的行为（缺一项即模板不合格）：
 
@@ -2322,9 +2315,9 @@ V1 的 `publish` **不调用任何服务端 API**：它产出可直接粘进 `re
 
 #### 8.2.10 Game Package 与 DSH Plugin 的本质区别
 
-| 维度 | Game Package（`.dshgame`） | DSH Plugin（Bundle） |
+| 维度 | Game Package（单文件 HTML） | DSH Plugin（Bundle） |
 |---|---|---|
-| 载体 | zip 归档的静态资源 | npm 包目录 + `cordis.patch.yml` |
+| 载体 | 单文件自包含 HTML（内嵌 manifest v1） | npm 包目录 + `cordis.patch.yml` |
 | 安装者 | Game Market Host 自有安装器 | DSH `plugin_manager` / Plugins 页 |
 | 安装期执行代码 | **绝不**（无 `prepare`/`postinstall`/任意脚本） | 是，Host 半 `apply` 在进程内执行 |
 | 执行位置 | 浏览器 sandbox iframe（不可信） | Host Node 进程内 + Client 模块（可信） |
@@ -2332,7 +2325,7 @@ V1 的 `publish` **不调用任何服务端 API**：它产出可直接粘进 `re
 | 权限面 | 仅 SDK + `capabilities` | 全部注入的 DSH Service、文件、网络 |
 | 版本约束 | `runtimeVersion` / `sdkVersion` | `engines.dsh` |
 | 数据 | `saves/` `scores/`（平台定义外壳） | `ctx.storageDomain` 或自有目录 |
-| 卸载 | 删静态目录，可选留存档 | 从 profile 移除插件行 |
+| 卸载 | 删静态文件，可选留存档 | 从 profile 移除插件行 |
 | 更新 | 重新加载 iframe | client 热替换；host 需重启 |
 | 失败影响 | 单款游戏不可用 | 可能导致 DSH 启动异常 |
 
@@ -2650,7 +2643,7 @@ Runtime 是 Client 内的可信组件，负责加载 iframe、驱动状态机、
 | iframe 无响应 | 每 5s `ping`，连续 3 次无 `pong`（15s） | `GM-5012`；提示“游戏无响应”，重载或结束 |
 | 渲染进程崩溃 | `load` 后心跳同时中断，或浏览器 `error` 事件 | `GM-5013`；重载并恢复存档 |
 | 白屏但存活 | 心跳正常但无 `ready`/首帧信号 | 按握手超时处理，记 `firstFrameMs`。**待验证（Spike S-18）**：心跳+首帧能否覆盖“活着但空白”；降级为只保证“无响应可恢复” |
-| 入口损坏 | launch 前校验 entry 文件 SHA-256（安装时记录） | `GM-5014`；拒绝启动，提示重新安装 |
+| 入口损坏 | launch 前校验：registry 源比对安装记录的 entry SHA-256；local/dev 源无记录哈希，改为重新解析内嵌 manifest 并核对 id/version | `GM-5014` / `GM-5037`；拒绝启动，提示重新安装 |
 | 反复崩溃 | 5 分钟内重载 ≥3 次 | 停止自动重载，进 `error`，只保留手动“重试/返回” |
 
 恢复一律“重建 iframe + 读存档”，最多重试 2 次（0/1000ms）；不自动切游戏、不删存档。**游戏完成提醒不打断游戏**：`turn/end` 只改变小鲸鱼状态并触发一次保存，不暂停、不弹 Modal、不改 iframe。
@@ -2794,7 +2787,7 @@ export function apply(ctx) {
   "requestId": "req_9f2c41a0b7d38e16", "serverTime": "2026-10-18T08:00:00.000Z" }
 ```
 
-- 请求体必须是 JSON 对象；`content-type` 非 `application/json` → 415 `GM-4150`；解析失败 → 400 `GM-4001`；未知字段忽略，未知 method 400 `GM-4004`。
+- 除 `/install-local` 外，请求体必须是 JSON 对象；`content-type` 非 `application/json` → 415 `GM-4150`；解析失败 → 400 `GM-4001`；未知字段忽略，未知 method 400 `GM-4004`。`/install-local` 的请求体是 raw `text/html` 字节（`content-type: text/html; charset=utf-8`，其它类型同样 415）。
 - **GET 必须无副作用**：所有写操作只走 POST。这是安全要求，不是风格（见 8.10 的 CSRF/子资源侧信道）。
 - **日志与错误 `details` 不返回存档内容**，只返回字节数、key 名、revision。
 
@@ -2807,6 +2800,7 @@ export function apply(ctx) {
 | 游戏列表 | `GET /games` | `q?`、`category?`、`cursor?`、`limit?`（≤50） | `{ items, nextCursor, source, refreshedAt }` | 只读；2s |
 | 游戏详情 | `GET /game?id=` | `id` | `{ game, installed, canContinue, bestScore, activePlaySession }` | 只读；1s |
 | 安装 | `POST /install` | `{ gameId, version?, operationId }` | `{ gameId, version, sha256, installedAt, changed }` | 按 `operationId` 幂等；全局串行；**180s**（下载 120s + 校验/安装 60s） |
+| 本地安装 | `POST /install-local` | raw `text/html` 字节（≤20 MiB；`content-type: text/html; charset=utf-8`；**无 sha256 可校验**） | `{ gameId, version, sha256: null, installedAt, changed }` | 全局串行；60s；`source: 'local'`；Client 必须已完成二次确认（§8.7.7） |
 | 卸载 | `POST /uninstall` | `{ gameId, operationId, deleteData? }` | `{ gameId, removed, dataDeleted }`（默认 `deleteData:false` → 全部数据保留；为 true 时同时删除存档、成绩与未结束 Session） | 幂等；10s |
 | 已安装 | `GET /installed` | — | `{ items: [{ gameId, name, version, installedAt, lastPlayedAt, canContinue, bestScore }] }` | 只读；2s |
 | 读存档 | `GET /save?gameId=&include=` | `gameId`、`include=data?` | `{ gameId, keys, bytes, revision, updatedAt }`；`include=data` 时附 `data`（key→值） | 只读；不存在 404 `GM-4041` |
@@ -2822,11 +2816,11 @@ export function apply(ctx) {
 | 健康检查 | `GET /health` | — | `{ ok, version, hostEpoch, storage, registry, uptimeMs }` | 只读；1s |
 | 启动 | `POST /launch` | `{ gameId, version?, dshSessionId?, mode? }` | `{ instanceId, nonce, entryUrl, preview, runtimeVersion, capabilities, limits, viewport, hostEpoch }` | 每次生成新实例；8s |
 | 入口页 | `GET /entry` | `gameId`、`version`、`instance`、`nonce` | HTML 字节流（`text/html`） | 只读；`no-store`；1s |
-| 预览图 | `GET /preview` | `gameId`、`file`、`v?` | 图片字节流（`image/*`） | 只读；`immutable`；2s |
+| 预览图 | `GET /preview` | `gameId`、`version`、`file` | 图片字节流（`image/*`；来源为 Registry 缓存） | 只读；`immutable`；2s |
 
-`POST launch` 与 `POST agent-ack` 是 8.4/8.9 必需的补充端点：前者下发 iframe 入口与 nonce，后者把 completed 置回 idle。**体积上限：** 所有 JSON 请求体 ≤1MB（`save` 的 `data` 与信封合计），安装包 ≤20MB；响应体 ≤2MB，列表超出用 `nextCursor` 分页。错误码按 8.1 分段：读接口以 `GM-404x` 为主，写接口以 `GM-400x/409x/413x/429x/502x/503x` 为主，逐条以 handler 为准。
+`POST launch` 与 `POST agent-ack` 是 8.4/8.9 必需的补充端点：前者下发 iframe 入口与 nonce，后者把 completed 置回 idle。**体积上限：** 所有 JSON 请求体 ≤1MB（`save` 的 `data` 与信封合计）；单文件包 ≤20 MiB（下载与 `/install-local` 同）；响应体 ≤2MB，列表超出用 `nextCursor` 分页。错误码按 8.1 分段：读接口以 `GM-404x` 为主，写接口以 `GM-400x/409x/413x/429x/502x/503x` 为主，逐条以 handler 为准。
 
-**“不并发执行安装”的实现约束。** Host 维护一个全局安装锁（不是每游戏一把）：同一时刻只允许一个安装/更新任务；锁被占用时新请求立即返回 409 `GM-4091` 并附 `retryAfterMs`，不排队、不阻塞请求线程。安装任务包含下载、哈希校验、解压、Manifest 校验、原子落盘、写 metadata；任何一步失败都回滚到上一版本，不留下半安装目录。同 `operationId` 的重放返回上次结果，不重新执行。
+**“不并发执行安装”的实现约束。** Host 维护一个全局安装锁（不是每游戏一把）：同一时刻只允许一个安装/更新任务；锁被占用时新请求立即返回 409 `GM-4091` 并附 `retryAfterMs`，不排队、不阻塞请求线程。安装任务包含下载、哈希校验、HTML/内嵌 manifest 校验、原子落位、写 metadata；任何一步失败都回滚到上一版本，不留下半安装目录。同 `operationId` 的重放返回上次结果，不重新执行。
 
 #### 资源路由
 
@@ -2834,14 +2828,14 @@ V1 资源路由只有两条固定路径（D-023），不做逐文件注册：
 
 ```text
 GET|HEAD /api/game-market/entry?gameId=<id>&version=<ver>&instance=<32hex>&nonce=<32hex>
-GET|HEAD /api/game-market/preview?gameId=<id>&file=<preview/cover.webp|...>&v=<version>
+GET|HEAD /api/game-market/preview?gameId=<id>&version=<ver>&file=<cover.webp|shot-1.webp>
 ```
 
-- **entry。** 返回安装目录中的 `index.html`（`text/html; charset=utf-8`），同时设置 8.10 的 CSP、`cache-control: no-store`、`x-content-type-options: nosniff`、`referrer-policy: no-referrer`。`gameId`+`version` 必须与当前安装记录一致，否则 404 `GM-4042`；`instance`/`nonce` 只用于 URL 唯一性与诊断，不写入 HTML。
-- **preview。** 供 Market UI 在**父页面**（同源）加载封面/图标/截图，服务两个来源：① 已安装游戏：manifest 中 `icon`/`cover`/`screenshots` 声明的包内文件；② 未安装游戏：Host 在 Registry 刷新时缓存到 `preview-cache/<gameId>/<version>/` 的外链图片（§8.8.2）。`file` 必须与声明值逐字匹配（禁止任意路径拼接或目录遍历），扩展名白名单 png/webp/jpeg，返回 `image/*`、`cache-control: public, max-age=31536000, immutable`。未声明、未安装且无缓存返回 404 `GM-4043`。V1 不支持 Range（游戏不加载外部媒体），Client 不直接请求外链图片。
+- **entry。** 返回安装目录中的 `entry.html`（`packages/<id>/<version>/entry.html`，`text/html; charset=utf-8`），同时设置 8.10 的 CSP、`cache-control: no-store`、`x-content-type-options: nosniff`、`referrer-policy: no-referrer`。`gameId`+`version` 必须与当前安装记录一致，否则 404 `GM-4042`；`instance`/`nonce` 只用于 URL 唯一性与诊断，不写入 HTML。包是单文件，此路由不接受任何文件路径参数。
+- **preview。** 供 Market UI 在**父页面**（同源）加载封面/截图（以及 Registry 提供的图标），来源只有一个：Host 在 Registry 刷新时缓存到 `preview-cache/<gameId>/<version>/` 的素材（§8.8.2）——封面/截图不是包内容，本地/开发安装没有缓存。`file` 必须与缓存清单逐字匹配（禁止任意路径拼接或目录遍历），扩展名白名单 png/webp/jpeg，返回 `image/*`、`cache-control: public, max-age=31536000, immutable`。无缓存返回 404 `GM-4043`，Market 改用 manifest 的 `icon` data URI 或首字母占位。V1 不支持 Range（游戏不加载外部媒体），Client 不直接请求外链图片。
 - **为什么不逐文件注册。** `connection.fetch` 只支持精确 pathname；sandbox iframe 是 opaque origin，其子资源请求会被 `/api` 栅栏按 `sec-fetch-site` 拦截（S-10），逐文件注册无法解决认证问题。单文件 entry 让 iframe 只需一次由父页面发起的导航请求；多文件能力推迟到 V1.5（S-10/S-11 + `ctx.webServer.register` 或独立 origin 方案）。
-- **完整性。** `POST launch` 时 Host 重新计算 entry 文件 SHA-256 与安装记录比对，不符返回 409 `GM-5014`，不返回 HTML；preview 文件在安装时校验，不在每次请求时重复计算。
-- **响应头。** entry/preview 均 `x-content-type-options: nosniff`、`referrer-policy: no-referrer`；均由同源父页面发起，不需要 CORS。`content-length` 必须设置；preview 单文件 ≤2 MiB。
+- **完整性。** `POST launch` 时 Host 对 registry 源重新计算 entry 文件 SHA-256 与安装记录比对，不符返回 409 `GM-5014`；local/dev 源没有记录哈希，改为重新解析内嵌 manifest 并核对 `id`/`version`（不符 409 `GM-5037`）；均不返回 HTML。preview 素材在缓存时校验格式与大小，不在每次请求时重复计算。
+- **响应头。** entry/preview 均 `x-content-type-options: nosniff`、`referrer-policy: no-referrer`；均由同源父页面发起，不需要 CORS。`content-length` 必须设置；preview 单张 ≤2 MiB。
 
 #### 错误码 → HTTP 状态码
 
@@ -2971,10 +2965,10 @@ $DSH_HOME/storages/dsh-game-market/
 ├── installations.json          # 已安装游戏索引（唯一权威）
 ├── preferences.json            # 平台 UI 偏好
 ├── registry-cache.json         # Registry 拉取缓存
-├── preview-cache/<gameId>/<version>/  # Registry 封面/截图缓存（Market 未安装游戏）
+├── preview-cache/<gameId>/<version>/  # Registry 封面/截图缓存（Market 展示，与包无关）
 ├── packages/
 │   └── <gameId>/
-│       ├── 1.2.0/              # 解压后的静态产物（只读）
+│       ├── 1.2.0/              # 单文件包落位目录（只读），内含 entry.html
 │       └── 1.1.0/              # 保留 1 个旧版本用于回滚
 ├── saves/
 │   └── <gameId>/
@@ -2984,7 +2978,7 @@ $DSH_HOME/storages/dsh-game-market/
 │   └── <gameId>.json           # Session Record 列表（一次游玩一条）
 ├── scores/
 │   └── <gameId>.json           # Personal Best + 历史成绩
-├── staging/<jobId>/            # 下载/解压临时目录（启动时清理）
+├── staging/<jobId>/            # 下载临时目录（.part，启动时清理）
 ├── trash/<gameId>-<ts>/        # 卸载/回滚/失败残留（延迟删除）
 └── logs/market.log             # 可选诊断日志，1 MiB × 3 轮转
 ```
@@ -2995,7 +2989,7 @@ $DSH_HOME/storages/dsh-game-market/
 | `preferences.json` | Client 经 Host | Host | 永久 |
 | `registry-cache.json` | Host Registry 客户端 | Host | 可随时丢弃 |
 | `preview-cache/<id>/<version>/` | Host Registry 客户端 | Market UI（经 `/preview`） | 随 Registry 刷新更新，可随时丢弃 |
-| `packages/<id>/<version>/` | Host 安装器 | Runtime（`/entry`、`/preview`） | 卸载删除 |
+| `packages/<id>/<version>/entry.html` | Host 安装器 | Runtime（`/entry`） | 卸载删除 |
 | `saves/<id>/current.json` | Host（游戏提交） | Runtime → 游戏 | 卸载默认保留 |
 | `saves/<id>/meta.json` | Host | Market UI（Continue 判定） | 同上 |
 | `sessions/<id>.json` | Host Runtime | Market UI / 统计 | 同上 |
@@ -3017,18 +3011,18 @@ interface Installation {
   installedAt: string
   updatedAt: string
   source: 'registry' | 'local' | 'dev' | 'builtin'
-  packagePath: string                // 相对 packages/，如 "block-drop/1.2.0"
-  sha256: string                     // 64 位小写 hex；'dev' 源为 null
-  sizeBytes: number                  // 归档大小
+  packagePath: string                // 相对 packages/，固定为 "<id>/<version>"；该目录下只有 entry.html
+  sha256: string | null              // 64 位小写 hex；'registry' 源必填，'local'/'dev' 为 null
+  sizeBytes: number                  // 单文件包字节数（entry.html）
   previousVersion: string | null      // 回滚目标，最多 1 个
-  manifest: {                        // 展示用快照，非权威
+  manifest: {                        // 内嵌 manifest 解析快照，非权威
     name: string
     authorName: string
     description: string
     categories: string[]
     capabilities: string[]
-    icon: string | null
-    cover: string | null
+    icon: string | null              // data URI
+    cover: string | null             // Registry 缓存文件名（如 "cover.webp"），无则为 null
     viewport: { width: number; height: number; fit: 'contain' }
   }
   lastPlayedAt: string | null
@@ -3047,7 +3041,7 @@ interface Installation {
 }
 ```
 
-一致性规则：`manifest` 只是快照，**运行前必须重新读取 `packages/<id>/<version>/game.json`**，若其 `id`/`version` 与记录不一致，置 `compatibility.status = 'broken'` 并禁用 Play（`E_INSTALL_CORRUPT`），不自动修复。
+一致性规则：`manifest` 只是内嵌 manifest 的解析快照、**非权威**；**运行前必须重新读取 `packages/<id>/<version>/entry.html` 并解析其内嵌 manifest**，若 `id`/`version` 与记录不一致，置 `compatibility.status = 'broken'` 并禁用 Play（`E_INSTALL_CORRUPT`），不自动修复。
 
 ```json
 {
@@ -3070,8 +3064,8 @@ interface Installation {
         "description": "把下落的方块叠成完整横行。",
         "categories": ["puzzle", "arcade"],
         "capabilities": ["storage", "score"],
-        "icon": "preview/icon.png",
-        "cover": "preview/cover.webp"
+        "icon": "data:image/png;base64,iVBORw0KGgo…",
+        "cover": "cover.webp"
       },
       "lastPlayedAt": "2026-10-18T05:44:02.117Z",
       "playCount": 17,
@@ -3293,7 +3287,7 @@ async function writeJsonAtomic(file: string, value: unknown): Promise<void> {
 | Score history | 200 条 / 游戏 | 淘汰最旧；`best` 不淘汰 | — |
 | `registry-cache.json` | 2 MiB / 500 条 | 截断到 500 条并置 `truncated: true` | — |
 | `preview-cache/` | 单张 ≤2 MiB；合计 ≤128 MiB | 淘汰最旧版本/条目 | — |
-| 单游戏磁盘占用 | 解压后 60 MiB × 2 版本（归档 ≤20 MiB/版本） | 删除更旧的版本目录 | — |
+| 单游戏磁盘占用 | 单文件 ≤20 MiB × 2 版本（当前 + 1 个回滚版本，合计 ≤40 MiB） | 删除更旧的版本目录 | — |
 | 全部游戏占用 | 无硬上限 | 超过 2 GiB 时 Market 顶部提示"清理旧版本" | — |
 | 日志 | 1 MiB × 3 | 轮转 | — |
 
@@ -3394,45 +3388,39 @@ Host 半禁止 import `@deepseek-ai/*` 与任何第三方 npm 包（F-02），�
 |---|---|---|
 | HTTP 下载 | 全局 `fetch` + `AbortSignal.timeout()` | `axios`、`got`、`node-fetch` |
 | SHA-256 | `node:crypto` 的 `createHash` | 第三方哈希库 |
-| zip 解压 | `node:zlib` 的 `inflateRawSync/inflateRaw` + **自写 Central Directory 解析** | `adm-zip`、`unzipper`、`yauzl`、`tar` |
 | 文件系统 | `node:fs/promises` | 任何封装库 |
+| HTML 内嵌 manifest 定位与自包含静态检查 | 自有字符串/正则扫描（约百行，不引入解析库） | 第三方 HTML/DOM 库 |
 | 进度事件 | 自有回调 / Host 事件 | 第三方事件总线 |
 
-因此 V1 的 zip 读取器是一个约 200 行的自研模块，只支持 PKG-R-04 允许的子集；遇到 zip64、加密、多卷直接拒绝（`E_PKG_ZIP_UNSUPPORTED`），不做兼容尝试。
+因此 V1 的安装器只需要 `fetch` + `crypto` + `fs` 三个内置能力：下载字节流、算 sha256、写一个文件；**没有解压步骤**，也没有 zip/归档解析模块。
 
-> 待验证（Spike S-04）：自研 zip 读取器对 data descriptor、大文件流式解压、非 ASCII 文件名的处理是否正确；`inflateRawSync` 的峰值内存是否可接受（20 MiB 压缩 / 60 MiB 解压）。
-> 验证方法：用 20 个真实游戏包 + 10 个恶意构造包（zip slip、符号链接、压缩炸弹、重复条目、zip64、路径大小写冲突）跑解压测试，断言全部按预期拒绝或通过。
-> 降级方案：若流式解压内存不可控，改为"先落盘再解压"并在解压前用 Central Directory 的总长度做一次性准入判断。
+> 原 S-04（自研最小 zip 读取器）在 V1 **不需要**：单文件包没有归档与解压。该 Spike 保留为 V1.5 多文件资源方案的评估项（见 12.2）。
 
 #### 8.7.2 安装流程
 
 ```text
-Registry 解析 → 下载 → 临时目录 → SHA-256 → 安全解压 → manifest 校验
-      → 兼容性检查 → 原子移动到 packages/<id>/<version>/ → 更新 installations → 清理
+Registry 解析 → URL 准入 → 下载 .part（边下边算 sha256）→ 落位 → SHA-256 校验
+      → HTML 解析 / 内嵌 manifest 校验 / 自包含校验 → 兼容性检查
+      → 原子落位 packages/<id>/<version>/entry.html → 更新 installations → 清理
 ```
 
 | 步骤 | 行为 | 限制 / 超时 | 失败码 |
 |---|---|---|---|
-| 1 Registry 解析 | 从缓存或 Registry 取条目；校验 `id`/`version`/`sha256`/`package.url` | 缓存 TTL 6h（§8.8） | `E_REGISTRY_UNAVAILABLE` / `E_NOT_IN_REGISTRY` |
-| 2 URL 准入 | `https` + host 在 allowlist + 路径形如 `/releases/download/` | 只允许 Registry 声明的 URL | `E_INSTALL_URL_REJECTED` |
-| 3 下载 | 流式写入 `staging/<jobId>/package.dshgame.part`，边下边算 sha256 | 连接 10s / 整体 120s / 无数据 20s；≤20 MiB | `E_INSTALL_DOWNLOAD_FAILED` |
-| 4 重试 | 仅对网络错误、5xx、429 重试 2 次（退避 1s、3s） | **不做断点续传**，每次从头 | 同上传 |
-| 5 落位 | rename `.part` → `.dshgame` | 同目录 | `E_INSTALL_IO` |
-| 6 SHA-256 校验 | 与 Registry 的 `sha256` 逐字比较 | 不一致立即删除临时文件 | `E_INSTALL_HASH_MISMATCH` |
-| 7 安全解压 | 解压到 `staging/<jobId>/unpacked/`，逐条目校验 PKG-R-01～PKG-R-09 | 边解压边统计体积/文件数 | `E_PKG_*` |
-| 8 Manifest 校验 | 执行 §8.2.7 中"安装"列的全部检查 | 与 CLI 同一规则表 | `E_PKG_*` |
-| 9 兼容性检查 | `runtimeVersion`/`sdkVersion` 范围满足性 + capabilities 是否为当前 Runtime 的子集 | §8.11 | `E_COMPAT_*` |
-| 10 原子落位 | `rename(unpacked, packages/<id>/<version>)` | 目标已存在时：sha256 相同视为已装（幂等），不同则 `E_INSTALL_VERSION_CONFLICT` | `E_INSTALL_IO` |
-| 11 更新索引 | 单次原子写 `installations.json`（含 previousVersion 计算） | 持跨进程锁 | `E_STORE_IO` |
-| 12 清理 | 删除 `staging/<jobId>/`；按 §8.7.6 清理旧版本 | `finally` 必执行 | — |
+| 1 Registry 解析 | 从缓存或 Registry 取条目；校验 `id`/`version`/`sha256`/`package.url`/`size` | 缓存 TTL 6h（§8.8）；`size ≤20 MiB` | `E_REGISTRY_UNAVAILABLE` / `E_NOT_IN_REGISTRY` |
+| 2 URL 准入 | `https`（本地 file Registry 允许 Registry 目录内相对路径）+ host 在 allowlist 或与 Registry 同 host；重定向 ≤5 且不得降级为 http | 只允许 Registry 声明的 URL（§8.8.2） | `E_INSTALL_URL_REJECTED` |
+| 3 下载 | 流式写入 `staging/<jobId>/package.html.part`，边下边算 sha256 | 连接 10s / 整体 120s / 无数据 20s；≤20 MiB | `E_INSTALL_DOWNLOAD_FAILED` |
+| 4 重试 | 仅对网络错误、5xx、429 重试 2 次（退避 1s、3s） | **不做断点续传**，每次从头 | 同上 |
+| 5 落位 | rename `.part` → `package.html` | 同目录 | `E_INSTALL_IO` |
+| 6 SHA-256 校验 | 与 Registry 的 `sha256` 逐字比较（本地安装无此步） | 不一致立即删除临时文件 | `E_INSTALL_HASH_MISMATCH` |
+| 7 HTML/manifest 校验 | 执行 §8.2.7 中「安装」列的全部检查：HTML 可解析、内嵌 manifest 唯一且 ≤64 KiB、字段/自包含 | 与 CLI 同一规则表 | `E_PKG_*` |
+| 8 兼容性检查 | `runtimeVersion`/`sdkVersion` 范围满足性 + capabilities 是否为当前 Runtime 的子集 | §8.11 | `E_COMPAT_*` |
+| 9 原子落位 | 确保 `packages/<id>/<version>/` 存在，写入 `entry.html`（临时文件 + rename） | 目标已存在且 sha256 相同视为已装（幂等），不同则 `E_INSTALL_VERSION_CONFLICT` | `E_INSTALL_IO` |
+| 10 更新索引 | 单次原子写 `installations.json`（含 previousVersion 计算） | 持跨进程锁 | `E_STORE_IO` |
+| 11 清理 | 删除 `staging/<jobId>/`；按 §8.7.6 清理旧版本 | `finally` 必执行 | — |
 
-zip slip 的三层防御（缺一不可）：
+**路径安全（不依赖包内容）：** 目标目录 `packages/<id>/<version>/` 完全由 manifest 中通过正则校验的 `id`/`version` 构造，**不接受包内路径**；写入文件名固定为 `entry.html`，不接受任何来自包的路径或文件名。`staging/<jobId>/` 的 jobId 由 Host 生成，不来自用户输入。
 
-1. 条目名层面：拒 `..` 段、绝对路径、`\`、`\0`、Windows 盘符。
-2. `resolve(root, entryPath)` 之后 `relative(root, target)` 不得以 `..` 开头。
-3. 落盘前对目标父目录做一次 `realpath` 复核，防止前序条目通过符号链接改变目录含义（PKG-R-03 已禁符号链接，此为纵深防御）。
-
-大小炸弹防护：解压前用 Central Directory 的 `uncompressedSize` 总和做准入；解压中按实际写出字节二次计数；任一越界立即中止并删除整个 `staging/<jobId>/`。
+**不再有安全解压、zip slip、压缩炸弹步骤**：V1 不解析归档、不写多文件，安装器只处理一个字节流和一个目标文件；单文件大小上限（20 MiB）与流式计数即为资源防护。
 
 #### 8.7.3 安装状态机与用户可见进度
 
@@ -3459,7 +3447,7 @@ queued ──► downloading ──► verifying ──► installing ──► 
 - **幂等**：同一 `gameId` 已存在进行中的 job 时，重复安装请求返回同一 `jobId` 与当前状态，不新建任务。
 - **同一版本**：若已安装版本与目标版本相同且 `sha256` 相同 → 直接返回 `installed`（"已安装"），不重写磁盘。
 - **不同版本**：交由 §8.7.5 更新流程处理，同一时刻只允许一个安装/更新 job（V1 串行）。
-- **失败回滚**：步骤 10 已 rename 但步骤 11 失败 → 把 `packages/<id>/<version>` 移入 `trash/`；`installations.json` 因原子写不会出现半更新，因此"索引"与"磁盘"最多短暂不一致，启动扫描可修复（§8.6.8）。
+- **失败回滚**：步骤 9 已落位但步骤 10 失败 → 把 `packages/<id>/<version>` 移入 `trash/`；`installations.json` 因原子写不会出现半更新，因此"索引"与"磁盘"最多短暂不一致，启动扫描可修复（§8.6.8）。
 - **残留清理**：启动时删除 `staging/` 下全部内容；`trash/` 下超过 7 天的目录；`packages/<id>/` 下不在 `installations` 中且不是 `previousVersion` 的目录。
 
 #### 8.7.5 更新流程
@@ -3490,13 +3478,13 @@ queued ──► downloading ──► verifying ──► installing ──► 
 
 | 模式 | 入口 | 校验 | 落位 | 标记 |
 |---|---|---|---|---|
-| Registry 安装 | Market 详情页 Install | 全部（含 sha256） | `packages/<id>/<version>/` | `source: 'registry'` |
-| 本地文件安装 | 拖入 / 选择 `.dshgame` | 结构与 manifest 校验；**无 sha256 可校验** | 同上 | `source: 'local'` |
+| Registry 安装 | Market 详情页 Install | 全部（含 sha256） | `packages/<id>/<version>/entry.html` | `source: 'registry'` |
+| 本地文件安装 | 选择本地 `.html` 文件（拖入可选），raw bytes `POST /install-local` | 单文件大小 ≤20 MiB；HTML/内嵌 manifest/自包含校验；**无 sha256 可校验** | `packages/<id>/<version>/entry.html` | `source: 'local'` |
 | 开发模式 | 配置 `devGameRoots: string[]` | 只校验 manifest 结构与兼容性 | **不复制**，直接指向绝对路径 | `source: 'dev'` |
 
 边界条件必须显式：
 
-- 本地文件安装**必须二次确认**，文案明确"本地安装包未经验证，请只安装你信任的来源"；不显示作者认证徽章。
+- 本地文件安装**必须二次确认**，文案明确"本地安装包未经验证，请只安装你信任的来源"；确认后才读取文件并 raw bytes 上传（`POST /install-local`，`text/html`，≤20 MiB）；不显示作者认证徽章。
 - 本地安装不得覆盖 Registry 已安装的同 id 版本而不提示；覆盖时同样二次确认。
 - 开发模式默认关闭，需在 profile patch 显式配置；`devGameRoots` 变更后需要重新扫描；开发游戏不参与更新检查、不上架、卸载只移除记录不删目录。开发模式是本机开发开关，**不属于面向最终用户的能力**。
 
@@ -3511,6 +3499,7 @@ queued ──► downloading ──► verifying ──► installing ──► 
 | 步骤 | 规则 |
 |---|---|
 | 确认 | 必弹确认；若存在存档，确认框必须展示"将保留 1 个存档与最高分"，并给出"同时删除数据"选项（默认不勾） |
+| 内置游戏 | `source: 'builtin'` 的游戏（如 `snake`）**不可卸载**，也不提供"删除数据"；Host 拒绝并返回 403 `E_UNINSTALL_BUILTIN` |
 | 运行中 | 先执行 Pause + 强制 Save，等待写入完成（≤2s 超时）后再卸载；超时则提示"游戏未能保存，是否继续" |
 | 顺序 | **先更新索引，再动磁盘**；磁盘删除失败不影响"已卸载"状态，残留由启动清理处理 |
 | 已卸载但数据保留 | `saves/<id>/` 等目录独立存在，不影响任何逻辑；重装后自动继承 |
@@ -3525,16 +3514,17 @@ queued ──► downloading ──► verifying ──► installing ──► 
 | `E_INSTALL_URL_REJECTED` | 下载地址不被信任，已阻止 | 否 |
 | `E_INSTALL_DOWNLOAD_FAILED` | 下载失败，请稍后重试 | 是 |
 | `E_INSTALL_DOWNLOAD_TIMEOUT` | 下载超时，请检查网络 | 是 |
-| `E_PKG_TOO_LARGE` | 安装包超过 20 MB，无法安装 | 否 |
+| `E_PKG_TOO_LARGE` | 安装包超过 20 MiB，无法安装 | 否 |
 | `E_INSTALL_HASH_MISMATCH` | 文件校验失败，安装包可能已损坏 | 是 |
 | `E_INSTALL_VERSION_MISMATCH` | 安装包版本与市场记录不一致，请重试 | 是 |
-| `E_PKG_STRUCTURE` | 安装包结构不正确 | 否 |
-| `E_PKG_ZIP_UNSUPPORTED` / `E_PKG_ENTRY_UNSUPPORTED` | 安装包格式不受支持 | 否 |
+| `E_PKG_HTML_INVALID` / `E_PKG_MANIFEST_MISSING` / `E_PKG_MANIFEST_DUPLICATE` | 安装包不是有效的游戏文件 | 否 |
+| `E_PKG_ENTRY_NOT_SELF_CONTAINED` | 安装包引用了外部资源或网络，已阻止 | 否 |
 | `E_COMPAT_RUNTIME` / `E_COMPAT_SDK` | 该游戏需要更新的 Game Market（或更旧的 Runtime） | 否 |
 | `E_INSTALL_VERSION_CONFLICT` | 已安装其他版本，请先卸载或使用回滚 | 否 |
 | `E_INSTALL_DISK_FULL` | 磁盘空间不足，需要 {n} MB | 是 |
 | `E_UPDATE_GAME_RUNNING` | 游戏正在运行，退出后即可更新 | 是 |
 | `E_UNINSTALL_BUSY` | 有安装任务正在进行，请稍后 | 是 |
+| `E_UNINSTALL_BUILTIN` | 内置游戏不可卸载 | 否 |
 | `E_INSTALL_CORRUPT` | 游戏文件不完整，请重新安装 | 是 |
 | `E_INSTALL_IO` | 安装过程写入失败，请重试 | 是 |
 | `E_STORE_READONLY` / `E_STORE_IO` | 无法保存数据（存储不可写） | 是 |
@@ -3548,13 +3538,13 @@ queued ──► downloading ──► verifying ──► installing ──► 
 
 安装阶段的安全红线，全部可测：
 
-1. **绝不执行游戏代码**：不 `require`/`import` 包内任何文件，不启动子进程，不 `eval`，不解析 HTML。
+1. **绝不执行游戏代码**：不 `require`/`import` 包内任何文件，不启动子进程，不 `eval`；只做字符串级的 manifest 定位与自包含静态检查，不做 DOM 渲染或脚本执行。
 2. **绝不执行安装脚本**：不跑 `npm/pnpm install`、不跑 `prepare`/`postinstall`/`preinstall`、不识别 `package.json`（包里就算有也当普通文件）。
-3. **不跟随符号链接**：解压与后续静态服务都不允许 symlink 逃逸。
-4. **不接受任意路径**：入口与预览文件服务只按 `gameId + 声明文件名` 读取，`realpath` 后必须仍在 `packages/<id>/<version>/` 包根内（与 §8.6.11 同一套断言）。
-5. **不信任文件名**：入口与预览文件服务按扩展名设置 `content-type`，未知扩展名一律 `application/octet-stream` + `X-Content-Type-Options: nosniff`。
+3. **不跟随符号链接**：单文件包没有解压；写入 `entry.html` 前如目标已存在符号链接一律拒绝，后续静态服务也不允许 symlink 逃逸。
+4. **不接受任意路径**：入口服务只按 `gameId + version` 读取固定文件名 `entry.html`，`realpath` 后必须仍在 `packages/<id>/<version>/` 内（与 §8.6.11 同一套断言）；`/install-local` 由 Host 从 manifest 取 id/version 构造目标路径，不接受请求里的路径。
+5. **不信任文件名与扩展名**：入口固定为 `text/html; charset=utf-8`；preview 素材只按缓存清单中的 png/webp/jpeg 扩展名返回 `image/*`，其它一律 `application/octet-stream` + `X-Content-Type-Options: nosniff`。
 6. **不在安装期联网**（除下载本身）：不上报、不检查更新、不拉取远程图标。
-7. **权限位**：文件 `0644`、目录 `0755`，显式去除 setuid/setgid；不继承 zip 内的权限位。
+7. **权限位**：文件 `0644`、目录 `0755`，显式去除 setuid/setgid；不继承任何外部权限位。
 8. **失败不留残留**：任何失败路径都必须进入 `failed` 并清理 `staging/`。
 
 ### 8.8 Registry 与 Market 数据源
@@ -3582,13 +3572,13 @@ interface RegistryGame {
   sdkVersion: string
   runtimeVersion: string
   package: {
-    url: string                        // GitHub Release 绝对 URL
+    url: string                        // 包文件绝对 https URL；本地 file Registry 为目录内相对路径
     sha256: string                     // 64 位小写 hex
     size: number                       // 字节
     releasedAt: string
   }
-  icon?: string                        // 绝对 https URL 或包内相对路径
-  cover?: string                       // 上架必填
+  icon?: string                        // 绝对 https URL（Host 缓存到 preview-cache）
+  cover?: string                       // 绝对 https URL；上架必填
   screenshots?: string[]
   homepage?: string
   repository?: string
@@ -3620,14 +3610,14 @@ interface RegistryGame {
       "sdkVersion": "^1.0.0",
       "runtimeVersion": "^1.0.0",
       "package": {
-        "url": "https://github.com/example/dsh-game-block-drop/releases/download/v1.2.0/block-drop-1.2.0.dshgame",
+        "url": "https://github.com/example/dsh-game-block-drop/releases/download/v1.2.0/block-drop-1.2.0.html",
         "sha256": "3f9c1a…",
         "size": 4821339,
         "releasedAt": "2026-10-17T10:40:00Z"
       },
-      "icon": "preview/icon.png",
-      "cover": "https://github.com/example/dsh-game-block-drop/raw/v1.2.0/preview/cover.webp",
-      "screenshots": ["https://github.com/example/dsh-game-block-drop/raw/v1.2.0/preview/shot-1.webp"],
+      "icon": "https://raw.githubusercontent.com/example/dsh-game-block-drop/v1.2.0/assets/icon.png",
+      "cover": "https://github.com/example/dsh-game-block-drop/raw/v1.2.0/assets/cover.webp",
+      "screenshots": ["https://github.com/example/dsh-game-block-drop/raw/v1.2.0/assets/shot-1.webp"],
       "license": "MIT",
       "changelog": "修复撤销后分数不回滚；新增键盘 P 暂停。",
       "featured": true,
@@ -3646,12 +3636,12 @@ interface RegistryGame {
       "sdkVersion": "^1.0.0",
       "runtimeVersion": "^1.0.0",
       "package": {
-        "url": "https://github.com/example/dsh-game-snake/releases/download/v1.0.4/snake-1.0.4.dshgame",
+        "url": "https://github.com/example/dsh-game-snake/releases/download/v1.0.4/snake-1.0.4.html",
         "sha256": "9ab7…",
         "size": 921004,
         "releasedAt": "2026-10-10T09:00:00Z"
       },
-      "cover": "https://github.com/example/dsh-game-snake/raw/v1.0.4/preview/cover.webp",
+      "cover": "https://github.com/example/dsh-game-snake/raw/v1.0.4/assets/cover.webp",
       "quickPlay": true,
       "publishedAt": "2026-09-12T00:00:00Z",
       "updatedAt": "2026-10-10T09:00:00Z"
@@ -3660,26 +3650,33 @@ interface RegistryGame {
 }
 ```
 
-上限与校验：单文件 ≤ 2 MiB；超过 500 条时截断到 500 并置 `truncated: true`，Market 显示"仅展示前 500 款"。`id` 重复、`version` 非法、`sha256` 非 64 位 hex、`package.url` 不匹配规则 → 整份 Registry 视为无效并回退到缓存（不做"跳过坏条目"的宽容解析，否则坏一条会让排序与索引不稳定）。
+上限与校验：单文件 ≤ 2 MiB；`package.size` 必须为正整数且 ≤20 MiB；超过 500 条时截断到 500 并置 `truncated: true`，Market 显示"仅展示前 500 款"。`id` 重复、`version` 非法、`sha256` 非 64 位 hex、`package.size` 越界、`package.url` 不匹配规则 → 整份 Registry 视为无效并回退到缓存（不做"跳过坏条目"的宽容解析，否则坏一条会让排序与索引不稳定）。
 
 #### 8.8.2 托管方式与 URL 规则
 
 ```text
 dsh-game-market (repo)
 ├── registry/
-│   └── games.json                     # 纯文本索引，PR 即上架
-└── packages/<gameId>/<version>/       # 无：包不放主仓库
+│   └── games.json                     # 纯文本索引，PR 即上架（registryVersion: 1）
+└── packages/                          # 无：包不放主仓库；官方托管建议放 GitHub Releases
 
 每个游戏自己的仓库
 └── Releases
     └── v<version>/
-        └── <id>-<version>.dshgame
+        └── <id>-<version>.html
 ```
 
-- Registry 索引：`https://raw.githubusercontent.com/<owner>/dsh-game-market/main/registry/games.json`。
-- 包下载：只接受形如 `https://github.com/<owner>/<repo>/releases/download/<tag>/<file>.dshgame` 的 URL（正则强校验，`<file>` 必须等于 `<id>-<version>.dshgame`）。
-- 封面/截图：Registry 条目里允许 `https://github.com/.../raw/...` 外链，或包内相对路径（安装后使用）；不允许 `http://`、`data:`、`file:`。**V1 Client 不直接加载外链图片**：Host 在 Registry 刷新时按白名单下载 `icon/cover/screenshots` 到本地 `preview-cache/<gameId>/<version>/`（单张 ≤2MB，校验 content-type 与图片格式，失败则跳过并记录），Market UI 只从同源 `/preview` 路由加载；下载失败的条目使用首字母/纯色占位。
-- 允许的 host 白名单固定为：`github.com`、`raw.githubusercontent.com`、`objects.githubusercontent.com`（GitHub Release 302 之后的目标）。**不在白名单的 host 一律拒绝**，包括自建 CDN——V1 不为下载速度引入信任面。
+- Registry 索引：`https://raw.githubusercontent.com/<owner>/dsh-game-market/main/registry/games.json`（任意 https 静态地址均可，默认指向官方仓库）。
+- 包下载 URL 规则：
+  1. 必须是 `https`；本地 file Registry 例外，允许 Registry 目录内的相对路径。
+  2. host 必须属于 allowlist，**或与 Registry 索引同 host**（自建镜像/内网分发）。
+  3. URL 路径末段必须是 `<id>-<version>.html`（允许末尾带不改变文件名的 query，如缓存参数）。
+  4. 重定向 ≤5 次，且任何一跳都不得把 https 降级为 http。
+  5. 禁止 `data:`、`blob:`；`file:` 仅限本地 file Registry 场景。
+- 默认 allowlist：`github.com`、`raw.githubusercontent.com`、`objects.githubusercontent.com`。配置 `allowedHosts: string[]` 可追加自建/测试 host（仍要求 https）；allowlist 只影响下载准入，不改变校验与审核要求。
+- **不再要求 URL 形如 `/releases/download/`**：官方托管仍建议 GitHub Releases，但任何满足上述规则的 https 静态地址都可用。
+- 封面/截图（Registry 字段，不属于包）：允许 `https://` 外链，不允许 `http://`、`data:`、`file:`。**V1 Client 不直接加载外链图片**：Host 在 Registry 刷新时按 allowlist 下载 `icon/cover/screenshots` 到本地 `preview-cache/<gameId>/<version>/`（单张 ≤2 MiB，校验 content-type 与图片格式，失败则跳过并记录），Market UI 只从同源 `/preview` 路由加载；下载失败的条目使用 manifest 的 icon data URI 或首字母/纯色占位。
+- 本地 file Registry（开发/内网）：`package.url` 使用 Registry 目录内的相对路径；Host 解析 `realpath` 后必须仍在 Registry 目录内，越出即拒绝（`E_INSTALL_URL_REJECTED`）。
 
 > 待验证（Spike S-03）：桌面应用进程内 `fetch` 到 GitHub 的可达性、TLS、302 跳转、速率限制与代理环境。
 > 验证方法：在 Host 侧发起真实请求，记录状态码、重定向链、耗时、`Content-Length` 是否存在；分别在直连与系统代理下各跑一次。
@@ -3731,9 +3728,10 @@ interface RegistryCacheFile {
 | 字段 | 已安装游戏 | 未安装游戏 | 冲突胜者 |
 |---|---|---|---|
 | 是否安装 / 已装版本 | `installations` | 无 | installations |
-| 名称 / 简介 / 封面 | **已安装包的 manifest** | Registry | 已安装侧优先 |
+| 名称 / 简介 | **已安装包的内嵌 manifest** | Registry | 已安装侧优先 |
+| 图标 / 封面 / 截图 | 包内 manifest 的 `icon`（data URI）+ Registry 缓存素材 | Registry | 已安装侧优先，缺失时用 Registry 缓存 |
 | 最新版本 / 是否有更新 | Registry + 版本比较 | Registry | 计算得出 |
-| 能力 / 评分范围 | 已安装包 manifest | Registry | 已安装侧优先 |
+| 能力 / 评分范围 | 已安装包的内嵌 manifest | Registry | 已安装侧优先 |
 | 最近游玩 / 游玩次数 / 最高分 | 本地数据 | 无 | installations |
 | 排序权重（featured/quickPlay） | Registry | Registry | Registry |
 | 存档状态（可否 Continue） | 本地 `save/meta.json` | 无 | installations |
@@ -3997,19 +3995,19 @@ frame-ancestors <hostOrigin>;
 
 安全相关的最小集合（完整 Manifest 规则见 8.2、安装流水线见 8.7）：
 
-1. zip 解析拒绝：绝对路径、`..`、`\`、NUL、符号链接、硬链接、加密条目、嵌套 zip、重复文件名、大小写冲突。
-2. 压缩包 ≤20 MiB；解压总量 ≤60 MiB；文件数 ≤2000；单文件解压后 ≤12 MiB；压缩比 >3:1 视为解压炸弹（与 8.2.2 一致）。
-3. 根目录必须有 `game.json` 与 `entry` 指向的文件；`entry` 必须在根内、扩展名 `.html`，且通过自包含检查（无外部子资源，见 8.2.7）。
-4. Manifest 严格校验：未知字段允许但记录；`id`/`version`/`capabilities`/`sdkVersion`/`runtimeVersion` 类型与取值必须合法；`capabilities` 只允许 V1 白名单。
-5. 文件名必须满足 8.1 的 ASCII 字符集（`[A-Za-z0-9._-]`），否则安装拒绝。
-6. **不静态审查 HTML/JS**：V1 不做代码扫描，沙箱是边界；审核只做人工清单（见下）。
-7. 安装阶段**不执行**任何脚本：不跑 `npm/pnpm`、不跑 `postinstall/prepare`、不启动浏览器、不 `eval` 包内容。只做解压、哈希、Manifest 解析与原子落盘。
-8. 启动前校验 entry 文件 SHA-256（安装时记录）；不符 `GM-5014`，拒绝启动。
+1. 单文件校验拒绝：空文件、非 UTF-8、含 BOM、HTML 不可解析（`E_PKG_HTML_INVALID`）。
+2. 单文件 ≤20 MiB；manifest 文本 ≤64 KiB；`icon` data URI 解码后 ≤256 KiB（与 8.2.2 一致）。
+3. 内嵌 manifest 必须存在且全文恰好一处（`E_PKG_MANIFEST_MISSING` / `E_PKG_MANIFEST_DUPLICATE`），解析后按 §8.2.3 严格校验字段。
+4. 自包含静态检查：禁止外部 `script/link/img/audio/video/source` 的 `src`/`href` 指向 `http(s)`/协议相对/`file:`/相对路径，禁止 `@import`、`<iframe>`，禁止 `fetch`/XHR/WebSocket/EventSource/`sendBeacon` 等网络调用（`E_PKG_ENTRY_NOT_SELF_CONTAINED`）。
+5. Manifest 严格校验：未知字段允许但记录；`id`/`version`/`capabilities`/`sdkVersion`/`runtimeVersion` 类型与取值必须合法；`capabilities` 只允许 V1 白名单；旧字段（`author` 字符串、`category`、`entry`、`cover`、`screenshots`）拒绝（`E_PKG_LEGACY_FIELD`）。
+6. **不静态审查 HTML/JS 逻辑**：V1 不做代码扫描与语义分析，沙箱是边界；静态检查只服务于 manifest 定位与自包含判定，审核只做人工清单（见下）。
+7. 安装阶段**不执行**任何脚本：不跑 `npm/pnpm`、不跑 `postinstall/prepare`、不启动浏览器、不 `eval` 包内容。只做哈希、HTML/manifest 解析、自包含检查与原子落盘。
+8. 启动前重新读取 `entry.html` 的内嵌 manifest 并复核 `id`/`version`（§8.2.7）；registry 源同时校验 entry 文件 SHA-256（安装时记录），local/dev 源无记录哈希、只做 manifest 一致性复核；不符 `GM-5014` / `GM-5037`，拒绝启动。
 
 #### Registry 与更新完整性
 
-- Registry 与包只经 HTTPS 获取；V1 固定 GitHub Release 的静态地址（8.8），Host 不接受请求参数里的任意 URL。
-- 下载后先校验 Registry 给出的 SHA-256，再解压；哈希不符立即删除临时文件并保留旧版本（fail-closed）。
+- Registry 与包只经 HTTPS 获取（本地 file Registry 除外）；host 受 allowlist 或「与 Registry 同 host」规则约束（8.8），Host 不接受请求参数里的任意 URL。
+- 下载后先校验 Registry 给出的 SHA-256，再做 HTML/内嵌 manifest 解析；哈希不符立即删除临时文件并保留旧版本（fail-closed）。
 - 更新前校验 `runtimeVersion`/`sdkVersion` 兼容（8.11）；不兼容不自动升级。
 - V1 不允许静默降级；显式安装旧版本仅作为开发/回滚手段，并在 UI 标注。
 - Registry 不可达时，已安装游戏仍可离线启动；Market 列表用最近缓存并标注“可能不是最新”。
@@ -4045,11 +4043,11 @@ frame-ancestors <hostOrigin>;
 
 #### 发布审查清单（V1 人工逐项）
 
-- [ ] `game.json` 通过 8.2 校验；`id` 与包名一致；版本合法且无 `+`。
-- [ ] 包内无符号链接、无绝对路径、无 `..`、无嵌套 zip、无加密条目。
-- [ ] 文件数与解压总量在上限内；无压缩炸弹特征。
-- [ ] `entry` 存在且是 HTML；所有资源相对路径可解析。
-- [ ] 文件名满足 `[A-Za-z0-9._-]`；无空格/非 ASCII/`@`/`+`。
+- [ ] 内嵌 manifest 通过 8.2 校验；`id` 与包文件名 `<id>-<version>.html` 一致；版本合法且无 `+`。
+- [ ] 单文件包 ≤20 MiB；UTF-8 无 BOM；manifest 文本 ≤64 KiB 且全文恰好一处。
+- [ ] 自包含检查通过：无外部子资源、无网络调用、无 `<iframe>`；所有资源为 inline 或 `data:` URL。
+- [ ] `icon` 为 data URI；封面/截图只存在于 Registry 条目，不引用包内文件。
+- [ ] Manifest 使用 `author` 对象与 `categories` 数组；无 `entry`/`cover`/`screenshots` 旧字段。
 - [ ] `capabilities` 只含 `storage`/`score`；无网络代码（`fetch`/XHR/WebSocket）。
 - [ ] 无 `parent.document`、无 `top.location`、无 `window.open`、无 `eval` 依赖。
 - [ ] 音频在首次手势前静音；暂停时停止循环与声音。
@@ -4066,7 +4064,7 @@ frame-ancestors <hostOrigin>;
 
 #### 已知限制与 V2 方向
 
-**V1 已知限制：** 不扫描 JS；无签名；Host 单点；无法阻止资源耗尽；无法检测“活着但白屏”；无联网；只支持单文件自包含 entry。
+**V1 已知限制：** 不扫描 JS；无签名；Host 单点；无法阻止资源耗尽；无法检测“活着但白屏”；无联网；只支持单文件自包含 HTML 包。
 
 **V2 方向：** 包签名（Ed25519，Registry 公钥）与发布者身份；静态扫描 + 动态沙箱观测；每游戏独立 origin/进程（更强隔离）；CSP report-only 收集违规；网络能力作为显式 Capability 重新评审（D-014）；多文件资源服务（若宿主提供公开静态路由或独立 origin）。
 
@@ -4078,8 +4076,9 @@ frame-ancestors <hostOrigin>;
 | 网络外联 | 游戏内 `fetch('https://example.com')`、`new WebSocket`、`sendBeacon`、`<img src=https://…>` | 全部被 CSP 阻断；无 DNS/连接 |
 | Cookie 窃取 | 游戏读 `document.cookie`、`localStorage` | 空/抛错；不得出现宿主 Cookie |
 | 越权存档 | 调 `storage.save` 时伪造 `gameId`/路径；或未声明 `storage` | 请求被 Host 忽略/拒绝 `GM-4032`；A 游戏读不到 B 游戏 |
-| zip slip | 构造含 `../../evil` 的包 | 安装拒绝 `GM-4222`，无文件写出 |
-| 压缩炸弹 | 20MB zip 解压 2GB | 安装拒绝，内存/磁盘不爆 |
+| 外部资源/网络调用 | 构造引用 CDN 脚本、外链图片、`fetch`/WebSocket 的包 | 安装拒绝 `GM-4225`；运行时 CSP 阻断 |
+| 超大单文件 | 构造 21 MiB HTML | 安装拒绝 `GM-4135`，不落盘 |
+| 伪造多份 manifest | 在 HTML 中放置多份 `id="dsh-game-manifest"` | 安装拒绝 `GM-4221`，不落盘 |
 | Registry 篡改 | 替换包但保留旧 hash | 校验失败，拒绝安装，旧版本仍可用 |
 | 原型污染 | 存档含 `__proto__`/`constructor` | 写入拒绝 `GM-4134`；宿主对象原型不变 |
 | 消息伪造 | 其它 frame 发 `init`/`storage.save`；旧 nonce 重放 | 丢弃并计数；无副作用 |
@@ -4095,21 +4094,21 @@ frame-ancestors <hostOrigin>;
 ```text
 DSH 0.2.x                     ← engines.dsh（插件包的约束）
    │
-Game Market / Runtime 1.0.x   ← RUNTIME_VERSION（平台自身）
+Game Market / Runtime 1.x     ← RUNTIME_VERSION（平台自身，V1 为 1.x）
    │  ├─ Adapter（DSH 适配层，随 Runtime 一起发版）
    │
-Game SDK 1.0.x                ← SDK_VERSION（游戏可见的 API 面）
+Game SDK 1.x                  ← SDK_VERSION（游戏可见的 API 面，V1 为 1.x）
    │
-Game 1.2.0                    ← game.json 的 version + 声明的 range
+Game 1.2.0                    ← 内嵌 manifest 的 version + 声明的 range
 ```
 
 | 层 | 版本来源 | 谁检查 | 检查失败的表现 |
 |---|---|---|---|
 | DSH ↔ Game Market | `package.json` 的 `engines.dsh` | DSH 安装/启动 | 插件不加载（DSH 自身机制） |
 | Game Market Runtime ↔ SDK | `RUNTIME_VERSION` 与 `SDK_VERSION` 常量 | Runtime 启动时自检 | Host 拒绝服务，日志 `E_COMPAT_INTERNAL` |
-| Game ↔ Runtime/SDK | `game.json` 的 `runtimeVersion`/`sdkVersion` | 安装、启动、更新 | Play 禁用 + 原因 |
+| Game ↔ Runtime/SDK | 内嵌 manifest 的 `runtimeVersion`/`sdkVersion` | 安装、启动、更新 | Play 禁用 + 原因 |
 
-`engines.dsh` 是唯一由 DSH 自己执行的检查（§5.1）；其余两层都由 Game Market 自己执行，因为 DSH 不认识 `.dshgame`。
+`engines.dsh` 是唯一由 DSH 自己执行的检查（§5.1）；其余两层都由 Game Market 自己执行，因为 DSH 不认识 Game Package（单文件 HTML）。
 
 #### 8.11.2 semver 范围规则
 
@@ -4229,8 +4228,8 @@ Adapter 是 `host/` 中唯一 import DSH 服务、监听 DSH 事件、读写 DSH
 回滚后必须重新跑兼容性检查：若旧版本的 `runtimeVersion` 不满足当前 Runtime，回滚同样被禁用并说明原因。
 
 > 待验证（Spike S-06）：保留旧版本的"回滚"在真实运行时是否可用——包括 iframe 静态资源是否会被浏览器缓存串版本、`previousVersion` 目录在更新清理中是否会被误删、回滚后存档备份能否正常还原。
-> 验证方法：装 1.1.3 → 更新 1.2.0 → 连续回滚/再更新 10 次，每次断言 iframe 加载的 `game.json` 版本与预期一致（对比网络面板的 `x-game-version` 响应头或静态资源哈希），并断言 `packages/` 下始终只剩 2 个版本目录。
-> 降级方案：若缓存无法可靠失效，回滚后给包目录加内容哈希作为静态路径前缀（`packages/<id>/<version>-<hash8>/`），以 URL 变化强制失效缓存。
+> 验证方法：装 1.1.3 → 更新 1.2.0 → 连续回滚/再更新 10 次，每次断言 iframe 加载的内嵌 manifest 版本与预期一致（对比网络面板的 `x-game-version` 响应头或 entry 文件哈希），并断言 `packages/` 下始终只剩 2 个版本目录。
+> 降级方案：若缓存无法可靠失效，回滚后在 `/entry` 的 URL 上追加内容哈希参数（如 `&h=<sha256 前 8 位>`），以 URL 变化强制失效缓存。
 
 
 #### 8.11.8 兼容性矩阵
@@ -4329,7 +4328,7 @@ DSH 版本与插件的关系：
 
 | 区域 | 内容 |
 |---|---|
-| 包信息 | `gameId`、版本、包来源（bundled/registry/local）、包 SHA-256 前 12 位、文件数、总字节 |
+| 包信息 | `gameId`、版本、包来源（registry/local/dev/builtin）、包 SHA-256 前 12 位、单文件字节 |
 | 启动 | `launch` 耗时、`firstFrameMs`、握手耗时、`init`/`ready` 原文（脱敏、可折叠） |
 | Bridge | 最近 50 条消息摘要：方向、method/event、id、耗时、结果码、payload 字节；**不含 payload 内容** |
 | 存档 | 最近保存时间、耗时、字节、`revision`、失败次数、`autoSaveSkipped` 次数 |
@@ -4395,15 +4394,11 @@ DSH 版本与插件的关系：
 
 | 内部常量 | 对外 GM | 含义 | HTTP |
 |---|---|---|---|
-| `E_PKG_STRUCTURE` | `GM-4221` | 归档根结构不合法 | 422 |
-| `E_PKG_PATH_UNSAFE` | `GM-4222` | 路径穿越/非法字符/非 ASCII 文件名 | 422 |
-| `E_PKG_ZIP_UNSUPPORTED` | `GM-4223` | zip 使用了不支持的特性 | 422 |
-| `E_PKG_ENTRY_UNSUPPORTED` | `GM-4224` | 符号链接/加密条目/设备文件等 | 422 |
-| `E_PKG_ENTRY_NOT_SELF_CONTAINED` | `GM-4225` | entry 引用外部子资源或网络调用 | 422 |
-| `E_PKG_ENTRY_MISSING` | `GM-4226` | entry 或声明资源缺失 | 422 |
-| `E_PKG_JUNK_ENTRY` | `GM-4227` | 系统垃圾文件/源文件/不允许的顶层文件 | 422 |
-| `E_PKG_MANIFEST_JSON` | `GM-4228` | game.json 语法错误或重复键 | 422 |
-| `E_PKG_MANIFEST_TOO_LARGE` | `GM-4229` | game.json 超过 64 KiB | 422 |
+| `E_PKG_HTML_INVALID` | `GM-4222` | 文件不是合法 UTF-8 HTML（空文件/非 UTF-8/含 BOM/不可解析） | 422 |
+| `E_PKG_MANIFEST_MISSING` | `GM-4221` | 未找到内嵌 manifest | 422 |
+| `E_PKG_MANIFEST_DUPLICATE` | `GM-4221` | 内嵌 manifest 出现多于一处 | 422 |
+| `E_PKG_MANIFEST_JSON` | `GM-4228` | manifest JSON 语法错误或重复键 | 422 |
+| `E_PKG_MANIFEST_TOO_LARGE` | `GM-4229` | manifest 文本超过 64 KiB | 422 |
 | `E_PKG_MANIFEST_VERSION` | `GM-4230` | manifestVersion 不受支持 | 422 |
 | `E_PKG_FIELD_MISSING` | `GM-4231` | 必填字段缺失 | 422 |
 | `E_PKG_FIELD_TYPE` | `GM-4232` | 字段类型错误 | 422 |
@@ -4411,7 +4406,7 @@ DSH 版本与插件的关系：
 | `E_PKG_ID_INVALID` | `GM-4234` | id 语法不合法 | 422 |
 | `E_PKG_ID_RESERVED` | `GM-4235` | id 与系统保留名冲突 | 422 |
 | `E_PKG_VERSION_INVALID` | `GM-4236` | 版本号非允许的 semver 子集 | 422 |
-| `E_PKG_LEGACY_FIELD` | `GM-4237` | 使用已废弃字段（author 字符串/category） | 422 |
+| `E_PKG_LEGACY_FIELD` | `GM-4237` | 使用已废弃字段（author 字符串/category/entry/cover/screenshots） | 422 |
 | `E_PKG_CATEGORY_UNKNOWN` | `GM-4238` | categories 含未知枚举 | 422 |
 | `E_PKG_CAPABILITY_UNKNOWN` | `GM-4239` | 未知 capability 名 | 422 |
 | `E_PKG_CAPABILITY_UNSUPPORTED` | `GM-4240` | 已知但当前版本未开放的 capability | 422 |
@@ -4420,17 +4415,14 @@ DSH 版本与插件的关系：
 | `E_PKG_SCORE_RANGE` | `GM-4243` | 分数范围配置非法 | 422 |
 | `E_PKG_SAVE_SCHEMA` | `GM-4244` | 存档 schemaVersion 非法 | 422 |
 | `E_PKG_RANGE_SYNTAX` | `GM-4245` | 版本范围写法不支持 | 422 |
-| `E_PKG_ASSET_MISSING` | `GM-4246` | preview 资源缺失 | 422 |
-| `E_PKG_ASSET_FORMAT` | `GM-4247` | preview 图片格式不受支持 | 422 |
-| `E_PKG_ASSET_TOO_LARGE` | `GM-4248` | preview 图片超过限制 | 422 |
-| `E_PKG_ASSET_ANIMATED` | `GM-4249` | preview 使用了动图 | 422 |
-| `E_PKG_TOO_LARGE` | `GM-4135` | 包超过 20 MiB | 413 |
-| `E_PKG_TOO_MANY_FILES` | `GM-4136` | 文件数超过 2000 | 413 |
-| `E_PKG_FILE_TOO_LARGE` | `GM-4137` | 单文件超过 12 MiB | 413 |
-| `E_PKG_ZIP_BOMB` | `GM-4138` | 解压比异常/解压总量超限 | 413 |
-| `E_PKG_DIR_TOO_WIDE` | `GM-4139` | 单目录条目数超限 | 413 |
-| `E_PKG_PATH_TOO_LONG` | `GM-4140` | 路径长度超限 | 413 |
-| `E_PKG_PATH_TOO_DEEP` | `GM-4141` | 目录深度超限 | 413 |
+| `E_PKG_ICON_FORMAT` | `GM-4247` | icon data URI 类型不受支持 | 422 |
+| `E_PKG_ICON_TOO_LARGE` | `GM-4248` | icon 解码后超过 256 KiB | 422 |
+| `E_PKG_ENTRY_NOT_SELF_CONTAINED` | `GM-4225` | 引用外部子资源或网络调用 | 422 |
+| `E_PKG_TOO_LARGE` | `GM-4135` | 单文件包超过 20 MiB | 413 |
+
+> **已废弃、V1 不再产生也不再分配的 `E_*`：** `E_PKG_ZIP_*`（含 `E_PKG_ZIP_UNSUPPORTED`、`E_PKG_ZIP_BOMB`）、`E_PKG_ENTRY_UNSUPPORTED`、`E_PKG_JUNK_ENTRY`、`E_PKG_TOO_MANY_FILES`、`E_PKG_FILE_TOO_LARGE`、`E_PKG_DIR_TOO_WIDE`、`E_PKG_PATH_TOO_LONG`、`E_PKG_PATH_TOO_DEEP`、`E_PKG_ASSET_MISSING`、`E_PKG_ASSET_ANIMATED`；原归档模型下的 `E_PKG_STRUCTURE`、`E_PKG_PATH_UNSAFE`、`E_PKG_ENTRY_MISSING` 也一并退出。它们只能出现在历史代码与迁移说明中。
+>
+> **随之退役的 GM 号：** `GM-4223`（原 zip 不支持）、`GM-4224`（原归档条目类型）、`GM-4226`（原 entry 缺失）、`GM-4227`（原垃圾条目）、`GM-4246`/`GM-4249`（原资源缺失/动图）、`GM-4136`–`GM-4141`（原文件数/单文件/压缩炸弹/目录宽度/路径长度/深度）。这些 GM 号不再产生新语义，也不复用于其它错误。
 
 #### 8.13.3 安装、更新、卸载与 Registry（对应 §8.7、§8.8）
 
@@ -4444,6 +4436,7 @@ DSH 版本与插件的关系：
 | `E_INSTALL_VERSION_MISMATCH` | `GM-4095` | 包版本与 Registry 记录不一致 | 409 |
 | `E_UPDATE_GAME_RUNNING` | `GM-4096` | 游戏运行中禁止更新 | 409 |
 | `E_UNINSTALL_BUSY` | `GM-4097` | 有安装/卸载任务进行中 | 409 |
+| `E_UNINSTALL_BUILTIN` | `GM-4038` | 内置游戏不可卸载 | 403 |
 | `E_INSTALL_DISK_FULL` | `GM-4142` | 磁盘空间不足 | 413 |
 | `E_INSTALL_HASH_MISMATCH` | `GM-5015` | 包 SHA-256 与 Registry 不符 | 500 |
 | `E_INSTALL_IO` | `GM-5036` | 安装写入/落盘失败 | 503 |
@@ -4474,7 +4467,7 @@ DSH 版本与插件的关系：
 - HTTP 状态由 GM 码前三位决定（`GM-4xxx` → 4xx，`GM-50xx`/`GM-502x`/`GM-503x` → 5xx，`GM-501x` 见 §8.5 表）；个别码的例外以 §8.5 表为准。
 - 用户文案键按 GM 码登记，见 9.8；`E_*` 不进入文案表。
 - 测试断言应**同时**断言 GM 码与 HTTP 状态；只断言 `E_*` 的测试视为未覆盖对外契约。
-- 8.10 安全测试中的 `GM-4222`（zip slip）与本表 `E_PKG_PATH_UNSAFE` 对应；不得为同一语义分配第二个 GM 码。
+- 8.10 安全测试中的自包含类攻击（外部子资源/网络调用）对应 `E_PKG_ENTRY_NOT_SELF_CONTAINED`（`GM-4225`）；超大单文件对应 `E_PKG_TOO_LARGE`（`GM-4135`）；非法 manifest 对应 `E_PKG_MANIFEST_*`（`GM-4221`）；不得为同一语义分配第二个 GM 码。
 
 ## 9 界面与交互规格（实现级）
 
@@ -4769,7 +4762,7 @@ New
 - 无结果：“没有找到相关游戏” + “清除搜索”按钮；搜索框保持焦点。
 - `Esc` 第一次清空，第二次失焦；`/` 在非输入状态下聚焦搜索框（DSH 内不抢占已聚焦的输入框）。
 - 搜索框状态：默认 placeholder；聚焦 2px ring + `--dsw-alias-bg-layer-1`；有输入时显示清除按钮；无结果见空态；不提供禁用态。
-- 分类筛选：`全部` + Manifest `categories` 枚举（Arcade / Puzzle / Card / Idle / Action / Strategy / Trivia / Sandbox），单选 chip，作用于“全部游戏”。`DSH-native` 不是分类，用 tag 表达。选中态用背景 + 文字 + 左侧 4px 指示条三重表达，不只靠颜色。
+- 分类筛选：`全部` + Manifest `categories` 枚举（Arcade / Puzzle / Card / Idle / Action / Strategy / Trivia / Sandbox），单选 chip，作用于“全部游戏”。`DSH-native` 类内容 V1 不在首发名单（见 7.3），暂不设分类。选中态用背景 + 文字 + 左侧 4px 指示条三重表达，不只靠颜色。
 - 分类 chip 键盘：左右箭头移动，`Enter/Space` 选中，`Home/End` 首尾。
 
 #### 9.3.6 加载、空、离线与错误
@@ -4847,6 +4840,7 @@ New
 - 弹窗内提供勾选项“同时删除存档与成绩”，默认**不勾选**；勾选后正文追加“此操作不可撤销”，主按钮文案变为“卸载并删除数据”。
 - **删除游戏数据**：菜单 →“删除游戏数据…”，弹窗标题“删除《{gameName}》的游戏数据？”、正文“存档、最高分和历史成绩将被永久删除，无法恢复。”；主按钮“永久删除”，二次点击才执行。
 - **更新**：点击后按钮进入“更新中…”，行内显示百分比；成功后 1600ms toast“《{gameName}》已更新至 {version}”；失败恢复“更新”按钮并显示“更新失败”文字 4s。
+- **内置游戏**（如 `snake`）：菜单不显示“卸载/删除游戏数据”，或显示为禁用并注明“内置游戏不可卸载”。
 - 菜单键盘：`Shift+F10` 或右方向键打开，`Esc` 关闭并把焦点还给菜单按钮。
 
 #### 9.4.5 空、加载、错误与键盘
@@ -4884,7 +4878,7 @@ Hero：16:9 或 21:9 封面，最高 320px，底部 64px 渐隐遮罩
 |---|---|---|---|
 | 未安装 | **安装**（填充） | 无 | 点击立即开始安装，不弹确认（V1 无危险权限） |
 | 安装中（下载） | **取消安装**（同一按钮变描边，右侧显示百分比） | 无 | 按钮不可再次触发安装；进度条在按钮下方 2px |
-| 安装中（校验/解压） | **取消安装** | 无 | 取消后清理半成品目录 |
+| 安装中（校验/落位） | **取消安装** | 无 | 取消后清理半成品目录 |
 | 安装失败 | **重试** | “查看原因”（ghost） | 显示失败阶段与诊断编号 |
 | 已安装、无未结束 Session | **开始游戏** | 更多菜单：卸载、删除数据 | — |
 | 已安装、有未结束 Session + 存档 | **继续游戏** | 更多菜单：重新开始 | 重新开始必须二次确认 |
@@ -4902,6 +4896,7 @@ Hero：16:9 或 21:9 封面，最高 320px，底部 64px 渐隐遮罩
 3. 主按钮不因 Hover 放大；悬停提亮一档，按下压暗 4%。
 4. 禁用按钮对比度 ≥ 4.5:1，且必须同时给出原因文本。
 5. 安装动作不得自动开始游戏，完成后由用户点“开始游戏”。
+6. 内置游戏（`source: 'builtin'`）不提供卸载与删除数据入口，详情页只保留“开始游戏/继续游戏”。
 
 #### 9.5.3 安装流程与阶段
 
@@ -4910,12 +4905,12 @@ Hero：16:9 或 21:9 封面，最高 320px，底部 64px 渐隐遮罩
 | 准备 | “准备中…” | 不确定 | 10s（等安装锁） |
 | 下载 | “下载中 {percent}%” | 有 `Content-Length` 时确定；否则“下载中…” | 总 120s；20s 无字节增长 → 失败 |
 | 校验 | “校验中…” | 不确定 | 15s |
-| 解压 | “正在安装…” | 不确定 | 30s |
+| 落位 | “正在安装…” | 不确定 | 30s |
 | 完成 | 按钮变“开始游戏” | 100% 停留 240ms | — |
 
 - 进度条用 `transform: scaleX()` 而非 `width`，避免布局；数字每 200ms 最多更新一次。
-- 下载阶段可取消；校验与解压阶段取消按钮仍可用，但文案变为“取消并清理”。
-- 安装失败文案按阶段区分：“下载中断，请重试”／“文件校验未通过”／“安装包无法解压”；保留诊断编号。
+- 下载阶段可取消；校验与落位阶段取消按钮仍可用，但文案变为“取消并清理”。
+- 安装失败文案按阶段区分：“下载中断，请重试”／“文件校验未通过”／“安装包写入失败”；保留诊断编号。
 - 安装进度不弹全局通知或 Modal。
 - **待验证 Spike S-24**：Host 下载是否提供字节级进度回调。没有时全部阶段显示不确定进度，并用“正在下载…”替代百分比，总时长按包大小给出“约 {size} / 预计 {seconds} 秒”。
 
@@ -5224,7 +5219,7 @@ Esc 规则（必须精确，否则会与游戏冲突）：
 | `detail.back` | 返回 | Back | 详情顶栏 | — |
 | `detail.action.install` | 安装 | Install | 主按钮 | — |
 | `detail.action.cancelInstall` | 取消安装 | Cancel install | 主按钮 | — |
-| `detail.install.cancelCleanup` | 取消并清理 | Cancel and clean up | 校验/解压阶段取消 | — |
+| `detail.install.cancelCleanup` | 取消并清理 | Cancel and clean up | 校验/落位阶段取消 | — |
 | `detail.action.play` | 开始游戏 | Play | 主按钮 | — |
 | `detail.action.continue` | 继续游戏 | Continue | 主按钮 | — |
 | `detail.action.update` | 更新 | Update | 主按钮 | — |
@@ -5257,13 +5252,13 @@ Esc 规则（必须精确，否则会与游戏冲突）：
 | `detail.install.stage.downloading` | 下载中 {percent}% | Downloading {percent}% | 安装阶段 | `{percent}`；无进度时用 `detail.install.stage.downloadingUnknown` |
 | `detail.install.stage.downloadingUnknown` | 下载中… | Downloading… | 安装阶段 | 无 Content-Length |
 | `detail.install.stage.verifying` | 校验中… | Verifying… | 安装阶段 | — |
-| `detail.install.stage.extracting` | 正在安装… | Installing… | 安装阶段 | — |
+| `detail.install.stage.installing` | 正在安装… | Installing… | 安装阶段 | — |
 | `detail.install.done` | 《{gameName}》已安装 | {gameName} installed | Toast | `{gameName}` |
 | `detail.install.done.action` | 开始游戏 | Play | Toast 行动 | — |
 | `detail.install.failed` | 安装失败 | Installation failed | 错误块 | — |
 | `detail.install.failed.download` | 下载中断，请重试 | Download interrupted. Try again. | 失败原因 | — |
 | `detail.install.failed.verify` | 文件校验未通过 | File verification failed | 失败原因 | — |
-| `detail.install.failed.extract` | 安装包无法解压 | Could not unpack the game | 失败原因 | — |
+| `detail.install.failed.write` | 安装包写入失败 | Could not write the game package | 失败原因 | — |
 | `runtime.loading` | 正在加载《{gameName}》 | Loading {gameName} | 加载态 | `{gameName}` |
 | `runtime.loading.cancel` | 取消 | Cancel | 加载态 | — |
 | `runtime.loading.slow` | 加载时间有点久 | This is taking a while | 10s | — |
@@ -5478,7 +5473,7 @@ Esc 规则（必须精确，否则会与游戏冲突）：
 
 **Windows 专项检查（V1 前必须补跑）：** 文件权限位与 `rename` 原子性、路径分隔符与大小写不敏感、CSP/iframe 行为、窗口失焦/最小化时的 `visibilitychange`、以及无 macOS 拖拽带时的顶部布局。macOS 专属项（`--dsh-frame-top-clearance`、drag 带）不要求 Windows 复现。
 
-**测试数据。** 准备以下固定夹具：一个 3–5 秒完成的短任务、一个 ≥30 秒的长任务、一个会触发审批的任务、一个会触发提问的任务、一个会失败的任务、两个并发 Session、一个 5MB/15MB/21MB 的测试游戏包（正常/边界/超限）、一个含路径穿越条目的恶意测试包。
+**测试数据。** 准备以下固定夹具：一个 3–5 秒完成的短任务、一个 ≥30 秒的长任务、一个会触发审批的任务、一个会触发提问的任务、一个会失败的任务、两个并发 Session、一个 5 MiB/19 MiB/21 MiB 的单文件测试游戏包（正常/边界/超限）、一个引用外部子资源/网络调用的恶意测试包、一个 manifest 缺失或重复的测试包。
 
 ### 10.2 V0 验收清单
 
@@ -5533,9 +5528,9 @@ V0 只证明一条链路：**Agent 工作 → 进入游戏 → Agent 找你 → 
 | DEV-01 | 在空目录执行 `npx create-dsh-game my-game --template vanilla` | 生成可运行项目；含 SDK、manifest、生命周期与自动保存示例、README；无需任何 DSH 配置 |
 | DEV-02 | 本地启动 Runtime Simulator | 可切换 running / waiting-user / completed / paused / resume / clear-save；Bridge 消息可观察；游戏不依赖真实 Agent |
 | DEV-03 | 修改游戏逻辑后本地预览 | 热更新或刷新后生效；控制台无 SDK 报错 |
-| DEV-04 | 执行 `dsh-game build && dsh-game validate && dsh-game pack` | 产出单文件自包含 `dist/index.html` 与 `.dshgame`；校验器能明确指出 manifest/体积/路径/自包含/版本错误；退出码非 0 时错误可读 |
+| DEV-04 | 执行 `dsh-game build && dsh-game validate && dsh-game pack` | 产出单文件自包含 `dist/index.html` 与 `dist/<id>-<version>.html`；校验器能明确指出内嵌 manifest/包大小/自包含/版本错误；退出码非 0 时错误可读 |
 | DEV-05 | 将包放入测试 Registry 并在 Market 安装 | 安装后可玩；Save/Score/Continue 均正常；SDK 握手版本正确 |
-| DEV-06 | 故意制作违规包（缺 entry、路径穿越、超 20MB、错误 capability） | validate 或安装阶段拒绝，并给出可操作的错误信息；不产生部分安装残留 |
+| DEV-06 | 故意制作违规包（缺 manifest、多份 manifest、外部子资源、超 20 MiB、错误 capability、旧字段） | validate 或安装阶段拒绝，并给出可操作的错误信息；不产生部分安装残留 |
 | DEV-07 | 以外部开发者身份（非项目作者）从零完成到发布一个游戏 | 记录总耗时与卡点；目标 ≤30 分钟完成模板游戏到安装运行（P1） |
 
 ### 10.5 性能与资源预算
@@ -5546,16 +5541,16 @@ V0 只证明一条链路：**Agent 工作 → 进入游戏 → Agent 找你 → 
 |---|---|---|
 | Market 面板首屏可交互 | ≤500ms（本地已缓存） | 从点击图标到首屏可见/可点击的时间戳 |
 | Registry 刷新 | ≤2s（本地网络） | 从打开 Market 到列表更新 |
-| 游戏包安装（5MB） | ≤5s | 点击 Install 到 installed 状态 |
+| 游戏包安装（5 MiB） | ≤5s | 点击 Install 到 installed 状态 |
 | 2048 加载到可操作 | ≤1500ms；Snake ≤2000ms（与 8.12 的 `loadMs` 对齐） | 面板切换 → 首帧可操作 |
 | 面板切换 | ≤200ms 完成视觉切换 | Performance API / 录屏逐帧 |
 | Agent 状态延迟 | 入口 ≤5.5s；完成/等待提醒 ≤1.5s | Agent 事件时间 → UI 变化时间 |
 | 自动保存（≤1MB） | ≤300ms（p95，与 8.12 的 `saveMs` 对齐），无明显掉帧 | 保存期间录制帧率与主线程长任务 |
-| 游戏帧率 | ≥50 FPS（首发 3 款，参考机） | 连续 60 秒采样 |
+| 游戏帧率 | ≥50 FPS（首发四款，参考机） | 连续 60 秒采样 |
 | 暂停时 CPU | 游戏 iframe 暂停后插件空闲 CPU ≤2% | Activity Monitor/Profiler |
 | 插件 Client 内存增量 | ≤50MB（不含游戏 iframe） | 关闭/打开面板对比 |
 | 单游戏 iframe 内存 | ≤150MB（首发游戏） | 30 分钟游玩采样 |
-| 存档容量 | 单游戏 ≤1 MiB（≤32 key、单值 ≤256 KiB）；单游戏磁盘占用 ≤120 MiB（当前版本 + 1 个回滚版本，各解压后 ≤60 MiB，见 8.6.10） | 文件系统检查 |
+| 存档容量 | 单游戏 ≤1 MiB（≤32 key、单值 ≤256 KiB）；单游戏磁盘占用 ≤40 MiB（当前版本 + 1 个回滚版本，单文件 ≤20 MiB，见 8.6.10） | 文件系统检查 |
 
 ### 10.6 失败模式与恢复测试
 
@@ -5565,7 +5560,7 @@ V0 只证明一条链路：**Agent 工作 → 进入游戏 → Agent 找你 → 
 | FM-02 | 下载中断/超时 | 安装失败并可重试；临时文件清理；不产生半安装 |
 | FM-03 | SHA-256 不匹配 | 拒绝安装；提示完整性错误；保留旧版本 |
 | FM-04 | Manifest 非法 | 安装前拒绝；给出字段级错误 |
-| FM-05 | 包含路径穿越/符号链接/超大文件 | 安全拒绝；记录日志；不写入目标目录以外任何位置 |
+| FM-05 | 非自包含（外部子资源/网络调用）、超大单文件、非法 manifest | 安装阶段拒绝；记录日志；不写入目标目录以外任何位置 |
 | FM-06 | Runtime/SDK 版本不兼容 | 安装拒绝或 Play 禁用并说明；不自动降级/升级 |
 | FM-07 | 存档写入失败（磁盘满/权限） | 游戏内可见提示；重试；阻止无提示地离开；保留上一份存档 |
 | FM-08 | 存档损坏/半写 | 优先 `.bak` 恢复；失败则提供"重置存档"并保留损坏副本供诊断 |
@@ -5584,7 +5579,7 @@ V0 只证明一条链路：**Agent 工作 → 进入游戏 → Agent 找你 → 
 | SEC-02 | 游戏尝试 `fetch`/XHR/WebSocket 访问外网或宿主 API | 被 CSP 与沙箱阻止；无网络请求成功 |
 | SEC-03 | 游戏尝试读写宿主 `localStorage`/Cookie/IndexedDB | 不可达（隔离源） |
 | SEC-04 | 游戏伪造 `postMessage`（错误 source/nonce/格式） | Runtime 丢弃并记录；不触发任何动作 |
-| SEC-05 | 恶意包：路径穿越、符号链接、zip bomb、超大文件 | 安装阶段拒绝；无文件写出目标目录 |
+| SEC-05 | 恶意包：外部子资源/网络调用、超大单文件、非法 manifest/非法 id | 安装阶段拒绝；无文件写出目标目录 |
 | SEC-06 | 篡改包内容但复用旧 hash | 校验失败拒绝 |
 | SEC-07 | 游戏伪造平台 UI（审批/完成提醒/小鲸鱼） | 平台级 UI 始终由 Runtime 渲染；游戏无法覆盖或伪造 |
 | SEC-08 | 诊断导出/日志包含 Prompt、路径、工具参数 | 检查日志与导出文件，确认已脱敏/不含敏感内容 |
@@ -5650,7 +5645,7 @@ V0/V1 本质上是在验证一个产品假设，建议在内部试用中记录�
 | 编号 | 任务 | 工作流 | 依赖 | 规模 |
 |---|---|---|---|---|
 | V1-T01 | Registry 客户端：拉取、校验、6h 缓存、离线回退、手动刷新 | W1 | V0-T04 | M |
-| V1-T02 | 安装器：下载、SHA-256、安全解压、manifest 校验、原子安装、失败回滚 | W1 | V1-T01/V0-T05 | L |
+| V1-T02 | 安装器：下载、SHA-256、HTML/内嵌 manifest 校验、原子落位、失败回滚 | W1 | V1-T01/V0-T05 | L |
 | V1-T03 | 卸载 / 更新 / 版本回滚 / 并发锁 | W1 | V1-T02 | M |
 | V1-T04 | 存档与 Session 完整模型：Session start/end、Continue 判定、配额、恢复 | W1 | V0-T05 | M |
 | V1-T05 | 成绩与本地排行榜：Personal Best、历史成绩、排序方向 | W1 | V1-T04 | S |
@@ -5661,29 +5656,29 @@ V0/V1 本质上是在验证一个产品假设，建议在内部试用中记录�
 | V1-T10 | SDK V1 定稿 + 错误码 + 版本协商 + 类型声明 + 文档 | W3 | V0-T10 | M |
 | V1-T11 | Runtime V1：暂停菜单、错误覆盖、崩溃恢复、焦点、减少动效、主题传递 | W3 | V0-T09 | L |
 | V1-T12 | `create-dsh-game` 模板（Vanilla/Canvas、React） | W5 | V1-T10 | M |
-| V1-T13 | `dsh-game` CLI：build / validate / pack / publish + 校验器 | W5 | V1-T10 | L |
+| V1-T13 | `dsh-game` CLI：build / validate / pack / publish + 校验器（单文件 HTML 产物） | W5 | V1-T10 | L |
 | V1-T14 | Local Runtime Simulator | W5 | V1-T10 | M |
-| V1-T15 | 首发游戏：Snake、Tetris/Breakout、DSH-native Demo（2048 复用 V0） | W5 | V1-T10 | L |
+| V1-T15 | 首发游戏：snake（内置打磨）、jump、2048、breakout 四款（DSH-native Demo 不阻塞 V1） | W5 | V1-T10 | L |
 | V1-T16 | 安全加固：CSP、sandbox、消息校验、路径防护、安全测试 | W6 | V1-T02/V0-T09 | M |
 | V1-T17 | 性能与无障碍达标（10.5/10.3 U-13/U-14/U-15） | W6 | V1-T11 | M |
-| V1-T18 | Registry 托管（games.json + Releases）+ 安装文档 + 发布说明 | W7 | V1-T01/V1-T13 | S |
+| V1-T18 | Registry 托管（registry/games.json + Releases 单文件 .html）+ 安装文档 + 发布说明 | W7 | V1-T01/V1-T13 | S |
 | V1-T19 | V1 验收：10.3/10.4 全表 + 证据归档 | W6 | 全部 | M |
 
 ### 11.4 Spike 验证任务
 
-Spike 是"先花半天确认能不能做"，不是功能。每个 Spike 必须在对应实现任务开始前完成，结论写回 12.2。**S-10、S-11、S-17 属于 V1.5 前置，不阻塞 V1**（V1 用单文件自包含 entry 规避了 iframe 子资源问题；SSE 由 S-17 评估）。
+Spike 是"先花半天确认能不能做"，不是功能。每个 Spike 必须在对应实现任务开始前完成，结论写回 12.2。**S-04、S-10、S-11、S-17 属于 V1.5 前置，不阻塞 V1**（V1 用单文件自包含包规避了多文件与解压问题；S-04 归档方案、S-10/S-11 多文件能力留待 V1.5；SSE 由 S-17 评估）。
 
 | 编号 | 问题 | 最晚完成时机 |
 |---|---|---|
 | S-01 | 存储根目录、`DSH_HOME`、写权限与 profile 共享 | V0-T05 前 |
 | S-02 | 原子写 / `.bak` 恢复在 macOS、Windows 的行为 | V0-T05 前 |
 | S-03 | GitHub Release 包下载可达性、TLS、302、限速、代理 | V1-T01 前 |
-| S-04 | 自研最小 zip 读取器（node:zlib）对 data descriptor、大文件、非 ASCII 的处理 | V1-T02 前 |
+| S-04 | （V1 不需要）原 zip 读取器验证；V1 为单文件包、无解压步骤，V1.5 多文件资源时再评估归档方案 | V1.5 前 |
 | S-05 | 用户对"卸载默认保留数据"的预期与二次确认措辞 | V1.5（V1 按 D-019 执行） |
 | S-06 | 保留旧版本与回滚在真实运行时是否可用 | V1-T03 前 |
 | S-07 | Registry 缓存 TTL 与本地合并规则 | V1-T01 前 |
 | S-08 | 本地数据 schemaVersion 迁移策略 | V1-T04 前 |
-| S-09 | 20MB 包与单文件 entry 的加载性能 | V1-T02 前 |
+| S-09 | 20 MiB 单文件包加载性能 | V1-T02 前 |
 | S-10 | sandbox iframe 子资源请求能否通过 `/api` 栅栏（多文件能力） | V1.5 前 |
 | S-11 | 逐文件精确路由的注册开销（多文件能力） | V1.5 前 |
 | S-12 | 从侧栏/Market 直接进入时如何确定"当前 DSH Session" | V0-T06 前 |
@@ -5727,7 +5722,7 @@ M4 V1 发布验收（约 1 周）
 - **M0**：空壳插件可安装、可切面板、可返回、Host 路由与存储 smoke 通过。
 - **M1**：V0 验收 10.2 全过；可录一条 2 分钟完整演示（Agent 工作 → 2048 → 完成提醒 → 返回 → 继续）。
 - **M2**：V1 用户链路 U-01–U-15 过；Market/My Games/详情可用。
-- **M3**：开发者链路 DEV-01–DEV-07 过；首发 4 款游戏可在 Market 安装运行。
+- **M3**：开发者链路 DEV-01–DEV-07 过；首发四款（snake/jump/2048/breakout）可在 Market 安装运行。
 - **M4**：性能、无障碍、安全测试达标；发布说明与已知问题清单完成。
 
 ---
@@ -5747,20 +5742,20 @@ M4 V1 发布验收（约 1 周）
 | D-007 | V0 用简化占位 SVG 小鲸鱼 | 不阻塞状态机与动效开发 | 用户 | 已定 |
 | D-008 | UI↔Host 使用 `connection.fetch` HTTP 路由，不用 `ctx.remote` | 第三方 bundle 无法新增 Remote（本机已验证结论） | 技术修正 | 已定 |
 | D-009 | Host 使用自有存储目录 + JSON 原子写；V1 不依赖 `storageDomain` | `storageDomain.defineDomain` 对第三方未验证 | 技术修正 | 已定 |
-| D-010 | `.dshgame` 为 zip；单包 ≤20MB、≤2000 文件；SHA-256 校验 | 静态产物、易校验、控制安装成本 | 技术取舍 | 已定 |
+| D-010 | `.dshgame` 为 zip；单包 ≤20MB、≤2000 文件；SHA-256 校验 | 静态产物、易校验、控制安装成本 | 技术取舍 | 已由 D-034 取代 |
 | D-011 | SDK 只开放 ready/storage/session/score/lifecycle/agent/runtime | 保持开发者心智简单，减少攻击面 | 技术取舍 | 已定 |
 | D-012 | V0 只做内置 2048，不做真实安装/Registry/CLI | 先验证核心体验，避免提前造平台 | 产品取舍 | 已定 |
-| D-013 | V1 Registry 用 `games.json` + GitHub Releases | 无需后端即可验证分发 | 产品取舍 | 已定 |
+| D-013 | V1 Registry 用 `registry/games.json` + GitHub Releases 单文件 `.html` 包 | 无需后端即可验证分发 | 产品取舍 | 已定 |
 | D-014 | V1 不开放游戏联网（CSP `connect-src 'none'`） | 降低安全与审核成本；联网未来作为显式 Capability | 安全取舍 | 已定 |
 | D-015 | Agent 状态由 Host 维护快照，游戏页 1 秒轮询；SSE 作为后续优化 | 已验证通道下最稳的 MVP 方案；接口语义不依赖传输 | 技术取舍 | 已定；SSE 由 S-17 在 V1.5 评估 |
 | D-016 | 注册 `main` key + `sidebar.panellist`；`selectPanel` 进入，`selectPanel(null)` 返回 | 本机参考实现已跑通 | 技术事实 | 已定 |
 | D-017 | Client 文案走 `ctx.locale`，V1 提供 zh/en | 符合 DSH 插件惯例，避免硬编码 | 技术取舍 | 已定 |
 | D-018 | 第 8–12 章为开发权威来源，与第 0–7 章冲突时以第 8–12 章为准 | 避免产品叙事与实现规格互相打架 | 文档约定 | 已定 |
 | D-019 | 卸载默认保留存档与成绩，另提供"同时删除数据" | 存档很小，保留利于重装后继续；删除需显式确认 | 产品取舍 | 已定 |
-| D-020 | 排行榜方向由 `game.json` 的 `score.direction` 声明；V1 只做本地 | 不同游戏"高分"定义不同；全球榜不在 V1 | 产品取舍 | 已定 |
+| D-020 | 排行榜方向由内嵌 manifest 的 `score.direction` 声明；V1 只做本地 | 不同游戏"高分"定义不同；全球榜不在 V1 | 产品取舍 | 已定 |
 | D-021 | 同一时间只允许一个安装任务；安装串行化 | 简化状态与磁盘竞争 | 技术取舍 | 已定 |
 | D-022 | 安装阶段绝不执行游戏代码或安装脚本 | 第三方内容不可信 | 安全原则 | 已定 |
-| D-023 | V1 游戏 entry 必须自包含单文件（JS/CSS/图片/字体内联）；Host 只服务 entry 与 preview 文件 | sandbox opaque origin 下多文件子资源无法稳定通过 `/api` 栅栏；单文件最稳、可验证 | 技术取舍（S-10/S-11 后 V1.5 再评估多文件） | 已定 |
+| D-023 | V1 游戏包必须是自包含单文件 HTML（JS/CSS/图片/字体内联）；Host 只服务 entry 与 Registry 缓存 preview 素材 | sandbox opaque origin 下多文件子资源无法稳定通过 `/api` 栅栏；单文件最稳、可验证 | 技术取舍（S-10/S-11 后 V1.5 再评估多文件） | 已定 |
 | D-024 | 从"处理 Agent / 查看结果"返回游戏时默认停在暂停遮罩，由用户点击继续；首次进入正常自动开始 | 避免突然出声或计时；符合"用户决定何时继续" | 产品取舍 | 已定 |
 | D-025 | Market / My Games / 详情在 waiting-user 时显示 32px 顶部提示条 | 用户不在游戏内时仍需最高优先级提醒，但不抢注意力 | 产品取舍 | 已定 |
 | D-026 | V1 不提供平台级静音，暂停菜单只给说明 | iframe 跨域无法可靠控制游戏音量；要求游戏自带开关 | 技术限制 | 已定；V1.5 评估 |
@@ -5769,24 +5764,27 @@ M4 V1 发布验收（约 1 周）
 | D-029 | 关闭 DSH 时尽力保存；进程被强杀时最多丢 30 秒 | pagehide 无法保证 1MB 同步落盘 | 能力边界 | 已定，写入 8.4 |
 | D-030 | 对外错误码统一 `GM-*`；`E_*` 仅作内部常量并在 §8.13 映射 | 避免两套错误码进入 API/文案 | 一致性 | 已定 |
 | D-031 | 宿主基线版本统一为 **0.2.1-rc.2** | 本机实际安装版本；0.2.x 插件契约一致 | 事实 | 已定 |
-| D-032 | zip 解压由 Host 自研最小读取器（node:zlib，stored/deflate）完成；全包路径强制 ASCII | Host 不能 import 第三方包；文件名需可寻址 | 技术取舍 | 已定 |
+| D-032 | zip 解压由 Host 自研最小读取器（node:zlib，stored/deflate）完成；全包路径强制 ASCII | Host 不能 import 第三方包；文件名需可寻址 | 技术取舍 | V1 不需要（单文件包），V1.5 多文件时重新评估 |
 | D-033 | 多 profile 共享 `$DSH_HOME/storages/dsh-game-market/`，用跨进程锁串行化写入 | 实测 storage 在 profile 目录之外；共享体验更好 | 技术取舍 | 已定；S-01 复核 |
+| D-034 | V1 包格式 = 单文件自包含 HTML + 内嵌 manifest v1（`<script type="application/json" id="dsh-game-manifest">`，全文恰好一处、文本 ≤64 KiB）；不引入 zip/归档/解压；取代 D-010/D-032 | 单文件最易校验、运行最稳；多文件资源 V1.5 再评估 | 用户决策（2026-10-18） | 已定 |
+| D-035 | 目录/命名统一：`packages/<id>/<version>/entry.html`；Registry 索引 `registry/games.json`（`registryVersion: 1`）；保留当前 + 1 个 previousVersion；Registry 包 URL host allowlist（`github.com`/`raw.githubusercontent.com`/`objects.githubusercontent.com` + 可配置 `allowedHosts`），重定向 ≤5 且不得降级 http | 统一契约、避免实现分歧 | 用户决策（2026-10-18） | 已定 |
+| D-036 | V1 首发只做四款：`snake`（内置）/`jump`/`2048`/`breakout`；DSH-native Demo 由用户亲自带人后续推进，不阻塞 V1 验收/发布 | 收敛范围、保证首发质量 | 用户决策（2026-10-18） | 已定 |
 
 ### 12.2 待验证项（Spike 清单）
 
-> S-10、S-11、S-17 是 V1.5 前置，不阻塞 V1；其余在对应任务前完成。每个 Spike 的结论必须回填本表（通过/降级/失败）。
+> S-04、S-10、S-11、S-17 是 V1.5 前置，不阻塞 V1；其余在对应任务前完成。每个 Spike 的结论必须回填本表（通过/降级/失败）。
 
 | 编号 | 待验证问题 | 影响 | 验证方法 | 通过标准 | 未通过降级 |
 |---|---|---|---|---|---|
 | S-01 | `DSH_HOME` 是否在所有启动路径设置、目录可写、profile 共享 | 持久化根基 | 探针插件记录 env、realpath、写权限；desktop/web 各跑一次 | 可写、路径稳定、重启后存在 | 只读模式 + 明确提示；可配置存储根 |
 | S-02 | fsync + rename + `.bak` 在 macOS/Windows 的行为 | 存档可靠性 | 写入中断/杀进程/断电模拟 | 不出现损坏主存档 | 校验和 + 双份轮换 |
-| S-03 | GitHub Release 下载可达性、超时、代理 | 安装可用性 | 国内网络下载 5/20MB 包 | 超时/错误可预期 | 镜像或本地导入 |
-| S-04 | 自研 zip 读取器边界（data descriptor、大文件、非 ASCII） | 安装可用性 | 构造边界包 + 20MB 压测 | 正确解析、峰值内存可接受 | 限制为 stored 或引入固定清单 |
+| S-03 | GitHub Release 下载可达性、超时、代理 | 安装可用性 | 国内网络下载 5/20 MiB 包 | 超时/错误可预期 | 镜像或本地导入 |
+| S-04 | （V1 不需要）多文件资源/归档方案；V1 为单文件包、无解压 | V1.5 多文件 | 归档方案对比 + 20 MiB 内压测 | 方案可维护、加载可控 | 保持单文件 |
 | S-05 | 用户对"卸载默认保留数据"的预期 | 产品决策 | 5 人可用性测试 + 文案理解 | ≥4 人理解并认可 | 改为卸载前逐游戏询问 |
 | S-06 | 保留旧版本 + 回滚 | 更新恢复 | 装 v1→v2→回滚 10 次 | 回滚可用、存档兼容 | 不提供回滚，只允许重装 |
 | S-07 | Registry 缓存 TTL 与合并 | 离线体验 | 断网/改 index/版本更新 | 离线可用、更新可见 | 延长 TTL + 手动刷新 |
 | S-08 | 本地数据 schemaVersion 迁移 | 升级兼容 | 构造旧格式文件 | 可迁移或明确报错 | 版本号 + 拒绝未知版本 |
-| S-09 | 20MB 单文件 entry 加载性能 | 首帧体验 | 大包加载计时 | ≤2s 首帧（参考机） | 降低包体上限 |
+| S-09 | 20 MiB 单文件包加载性能 | 首帧体验 | 大包加载计时 | ≤2s 首帧（参考机） | 降低包体上限 |
 | S-10 | sandbox iframe 子资源是否通过 `/api` 栅栏 | V1.5 多文件 | 构造多文件游戏，观察 403/401 | 子资源可加载且不泄露宿主 | 保持单文件；或公开静态路由/独立 origin |
 | S-11 | 逐文件精确路由注册开销（2000 文件） | V1.5 多文件 | 注册/teardown 计时与内存 | 注册 ≤500ms、无泄漏 | 限制可服务文件 ≤512 |
 | S-12 | 从侧栏/Market 直接进入时的当前 Session 归属 | 多 Session 绑定 | 两个 Session 下从 Market 进入 | 绑定正确 | 回退"最近一次 chip 捕获"，再回退 null |
@@ -5811,8 +5809,8 @@ M4 V1 发布验收（约 1 周）
 | R-01 | waiting-user 状态观测不可靠，用户错过 Agent 等待 | 中/高 | 双通道（Host seam + Client pending）；S-14；降级为"可能存在等待"提示 + 侧栏状态点；验收覆盖 U-06 |
 | R-02 | sandbox iframe 的 CSP 不生效或 `/entry` 被栅栏拒绝 | 中/高 | V1 单文件 entry 已规避子资源问题；S-16 在 V0 前验证；备选 srcdoc 注入或去掉 frame-ancestors |
 | R-03 | 切走游戏导致 Conversation 卸载，用户感到中断 | 高/中 | 明确草稿/滚动由宿主恢复；返回游戏走重载+存档；UI 给出"游戏已暂停并保存"提示；不承诺 DOM 选区 |
-| R-04 | 没有第三方游戏供给，市场空转 | 中/高 | 首发 4 款官方游戏；模板与文档；V1.5 指标是"首个外部开发者发布" |
-| R-05 | 大型引擎（Three.js）包体与首帧超标；单文件内联放大体积 | 中/中 | V1 不首发大引擎模板；20MB 上限；首帧预算与 S-09 |
+| R-04 | 没有第三方游戏供给，市场空转 | 中/高 | 首发四款官方游戏（snake/jump/2048/breakout）；模板与文档；V1.5 指标是"首个外部开发者发布" |
+| R-05 | 大型引擎（Three.js）包体与首帧超标；单文件内联放大体积 | 中/中 | V1 不首发大引擎模板；20 MiB 上限；首帧预算与 S-09 |
 | R-06 | 用户根本不玩，等待场景假设不成立 | 中/高 | 10.8 指标监控；V0 先验证再扩；不提前造平台 |
 | R-07 | DSH 升级 breaking change | 中/高 | Adapter 隔离；engines.dsh；8.11 兼容策略与回归清单 |
 | R-08 | 存档损坏/丢失（含强杀进程最多丢 30 秒） | 低/高 | 原子写 + `.bak` + 校验和；FM-07/FM-08；D-029 写入文档 |

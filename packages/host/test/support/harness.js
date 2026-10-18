@@ -9,6 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { ROUTES } from '../../../shared/src/contracts.js';
+import { RUNTIME_VERSION, SDK_VERSION } from '../../../shared/src/constants.js';
 import { AGENT_EVENTS, AGENT_SESSION_EVENTS } from '../../src/agent-adapter.js';
 import { apply } from '../../src/plugin.js';
 
@@ -249,8 +250,8 @@ export const expected = Object.freeze({
   gameId: 'snake',
   name: 'Snake',
   version: '0.1.0',
-  runtimeVersion: '0.1.0',
-  sdkVersion: '0.1.0',
+  runtimeVersion: RUNTIME_VERSION,
+  sdkVersion: SDK_VERSION,
   viewport: { width: 960, height: 540, fit: 'contain' },
   limits: {
     saveBytes: 1024 * 1024,

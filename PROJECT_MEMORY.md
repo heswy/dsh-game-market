@@ -8,8 +8,8 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：V0 已验收完成；按 PRD v2.1 进入 **V1（Market 产品化）**；首发四款 = 贪吃蛇 + 跳跃 + 2048 + 打砖块
-- 权威规格：`PRD｜DSH Game Market.md`（第 8–12 章为开发权威来源）
+- 当前目标：**V1 M0（地基）完成**（分支 `feat/v1-foundation`，5 个提交，待合并）；V0 已验收；PRD v2.2（单文件包口径）与记忆已统一；下一步 M1a/M1b/M1c 并行；首发四款 = 贪吃蛇 + 跳跃 + 2048 + 打砖块
+- 权威规格：`PRD｜DSH Game Market.md`（**v2.2，2026-10-18 已按 V1 单文件包统一**；第 8–12 章为开发权威来源）
 - 开始记录：2026-10-18
 
 ---
@@ -82,6 +82,7 @@ V0 必须包含（对应 PRD §7.1 / §11.2）：
 ## 2.1 V1 范围与开发计划（2026-10-18 锁定）
 
 > 用户决策已锁定：四条主线（Market 前端/体验、首发游戏、开发者、安装/Registry/卸载）全部做；**贪吃蛇计入“至少四个首发游戏”**；V1 游戏继续**单文件**，多文件资源推迟到 **V1.5**；Registry 采用**静态索引 + 本地/远程安装包**（不做服务端）；Market **视觉成品感与功能完整度都要**。
+> 2026-10-18 二次确认：PRD 已升级 **v2.2** 并全篇统一到单文件包口径（包格式/Registry/安装/错误码/CLI/验收/首发名单），本节与 PRD 不再存在方向性冲突；契约细节以 M0 产出的 `docs/V1-CONTRACTS.md` + `packages/shared` 为准。
 
 ### 2.1.1 V1 目标
 
@@ -103,15 +104,18 @@ V0 必须包含（对应 PRD §7.1 / §11.2）：
 
 共同要求：自包含单文件 HTML（内联 SDK/样式/脚本/图标 data URI）；无第三方依赖、无外部网络；启动 ≤1.5s；键盘可玩；暂停/恢复/离开自动保存；个人最高分；同一游戏一个未结束 Session 可 Continue；save ≤1MB。
 
-### 2.1.3 游戏包 / Registry / 安装模型（V1 设计决策）
+**V1 首发名单锁定**：只做上表四款；PRD §7.3 原「DSH-native Demo（Agent 联动）」**移出 V1 阻塞范围**，由用户亲自带人后续推进，不纳入 V1 验收与发布门槛（V1-12 / D-036）。
 
-- **包格式**：单文件 `.html`，内嵌 `<script type="application/json" id="dsh-game-manifest">`（manifest v1）+ 内联 SDK/资源；不引入 zip（V1.5 才做多文件）。
-- **静态 Registry**：`registry.json`（配置可为 HTTPS URL 或本地路径），条目 `{schemaVersion, generatedAt, games:[{id, version, url, sha256, size, name, ...}]}`；url 可为相对 Registry 的包路径。Host 拉取、校验、缓存；HTTPS-only（远程），重定向限制；本地路径仅 dev/明确配置。
-- **安装**：Host 下载/读取包 → 校验 sha256/大小/HTML-only → 解析内嵌 manifest → 校验 id/version/sdkVersion → 写 `$DSH_HOME/storages/dsh-game-market/installed/<id>/<version>/entry.html` → 更新 `installations.json`。安装目录与存档目录（`saves/`）分离，卸载不删存档。
-- **卸载**：仅删安装目录与 installation 记录；内置游戏不可卸载；运行中 Session 先结束/提示。
-- **更新**：Registry 版本更高 → Market 显示“更新”；更新安装保留存档；同 id 多版本可保留当前版本，旧的升级后清理。
-- **本地安装**：Market 支持选择本地 `.html` 文件（读入 ≤4MB，客户端 POST bytes 或 Host 接受 base64）用于开发/离线分发；CLI 打包产物可直接导入。
-- **安全**：sha256 强制；仅 `text/html`；大小上限；id/version 正则；路径穿越拒绝；sandbox/CSP 沿用 V0；V1 同时把 `frame-ancestors *` 收紧为可配置 allowlist（V0-06）。
+### 2.1.3 游戏包 / Registry / 安装模型（V1 设计决策，2026-10-18 v2.2 统一后）
+
+- **包格式**：单文件自包含 `.html`（UTF-8 无 BOM，≤20 MiB；Registry 包名 `<id>-<version>.html`），内嵌 `<script type="application/json" id="dsh-game-manifest">`（manifest v1，≤64 KiB，全文件恰好一处）+ 内联 SDK/样式/脚本/图标 data URI；**不引入 zip/归档/解压**（多文件资源 V1.5）。
+- **manifest v1**：必填 `manifestVersion/id/name/version/author/description/categories/capabilities/sdkVersion/runtimeVersion`；可选 `icon`(data URI ≤256 KiB)/`tags`/`preferredTheme`/`viewport`/`score`/`save`/`permissions`(仅省略或 `{}`)/`homepage`/`repository`/`license`/`i18n`。**无 `entry`/`cover`/`screenshots`**（后两者仅 Registry 条目字段）。V1 `capabilities` 仅 `storage`、`score`。
+- **静态 Registry**：索引 `registry/games.json`，`{registryVersion:1, generatedAt, games:[{id, version, …, package:{url, sha256, size, releasedAt}}]}`；`url` 必须 https、路径末段 `<id>-<version>.html`，或（仅本地 file Registry）Registry 目录内相对路径。默认 allowlist = `github.com`/`raw.githubusercontent.com`/`objects.githubusercontent.com`，可配置 `allowedHosts`；包 host 必须在 allowlist 或与索引同 host；重定向 ≤5 且不降级 http；缓存 `registry-cache.json`（TTL 6h、陈旧上限 14 天、离线回退、≤500 条/≤2 MiB）。
+- **安装**：Host 下载/读取包（连接 10s / 整体 120s / 无数据 20s，边下边算 sha256）→ 校验 sha256/大小 → 解析 HTML 内嵌 manifest → 校验 id/version/sdkVersion/runtimeVersion/自包含 → 原子写 `packages/<id>/<version>/entry.html` → 原子写 `installations.json`。安装目录与 `saves/` 分离，卸载不删存档。
+- **更新 / 回滚**：Registry 版本更高 → Market 显示“更新”；保留 `current + 1 previousVersion` 供回滚，装第 3 个版本时删 previous；运行中禁止更新；新版本 `save.schemaVersion` 更高时需用户确认；不兼容版本不自动升级。
+- **卸载**：仅删 package 目录与 installation 记录；内置游戏不可卸载；默认保留存档/成绩，`deleteData:true` 二次确认后删除；运行中先暂停保存再卸载。
+- **本地安装**：Market 选择本地 `.html`（raw `text/html` POST，≤20 MiB，`source:'local'`，无 sha256，必须二次确认）；CLI 打包产物可直接导入；开发模式 `devGameRoots` 只校验 manifest、不复制目录。
+- **安全**：sha256 强制；仅 HTML；大小/id/version 正则/文件名规则；目标目录由 id/version 构造、不接受包内路径；sandbox/CSP 沿用 V0；`frame-ancestors` 由 V0 的 `*` 收紧为可配置 allowlist（V0-06）。
 - **内置游戏**：`snake` 仍以 `games/snake` 内置；Registry 示例可同时有 `snake` 包用于安装流程测试。
 
 ### 2.1.4 分支 / worktree / owner 计划
@@ -145,6 +149,17 @@ V0 必须包含（对应 PRD §7.1 / §11.2）：
 5. 安全：sha256 不匹配拒绝；超大/非 HTML/非法 id 拒绝；卸载清理完整；`frame-ancestors` 收紧为配置 allowlist。
 6. 全量 `npm run verify` 通过；真机验收记录进 `docs/V1-VERIFICATION.md`。
 
+### 2.1.6 M0 契约冻结记录（2026-10-18，已完成）
+
+- **PRD 已升级 v2.2**（commit `1f019a9`）：§4/§5/§7/§8/§10/§11/§12 中包格式、Registry、安装、错误码、CLI、验收、首发名单全部改为单文件口径；zip 相关规范在 §12.1 标注废弃（D-010/D-032 已被 D-034 取代）。
+- **统一命名（D-035）**：安装目录 `packages/<id>/<version>/entry.html`；Registry `registry/games.json` + `registryVersion:1`；缓存 `registry-cache.json`；保留 current+1 回滚版本；Registry host allowlist（默认 GitHub 三家）+ 同 host 规则 + 可配置 `allowedHosts`。
+- **首发名单（D-036）**：V1 只做 `snake`/`jump`/`2048`/`breakout`；DSH-native Demo 移出 V1 阻塞范围，由用户亲自带人后续推进。
+- **M0 代码契约**（commit `7842abd`）：`packages/shared` 新增 `manifest.js`（内嵌 manifest v1 解析/校验/自包含）、`registry.js`（索引 schema、URL 准入、缓存）、`installation.js`（存储布局、installations.json、回滚窗口）；版本升 `SDK/Runtime 1.0.0`、`protocolVersion 1`；`errors.js` 补 V1 GM 码与 `E_*→GM-*` 映射；`contracts.js` 补 V1 路由；Host semver 接受 V0 `^0.1.x` legacy 窗口；运行时声明 `>=0.1.0 <2.0.0`。
+- **文档**（commit `41191a0`）：`docs/V1-CONTRACTS.md`（约 1500 行实现级契约）、`docs/V1-GAME-ACCEPTANCE.md`（四款验收清单）、`docs/V1-VERIFICATION.md`（空证据骨架）。
+- **TBD 裁决（V1-14～V1-18）**：Registry 预览仅 https + 整份严格校验；CSP `frame-ancestors` 配置键与默认值；安装全局锁 `staging/.install.lock`；内置游戏不写 installations.json；`/entry` 绑定 TTL 10 分钟。
+- **验证**：全量 `npm run verify` 通过（**345 tests / 345 pass**、严格 check 16 项、构建字节可复现）；新增共享契约测试 `packages/shared/test/*.test.js`（29 个）与 `tests/v1-contracts.test.js`。
+- **滚动项**：SDK 版本协商与 V0 遗留（保存失败退避、审批/question 真机补测、Windows/暗色复测）随 M1/M2 处理，不阻塞 M0。
+
 **V1 不做 / 推迟 V1.5**：多文件游戏资源（图片/音效/zip）、服务端 Registry/账号/付费/云排行榜、游戏内多人、Windows 完整视觉验收（可做冒烟）、正式鲸鱼素材。
 
 ---
@@ -160,7 +175,7 @@ dsh-game-market/
 ├── icon.svg
 ├── locale/{zh,en}.json     # Bundle 显示元数据
 ├── packages/
-│   ├── shared/             # 跨 Host/Client/Runtime/SDK 的纯 JS 契约（无 Node/browser 全局依赖）
+│   ├── shared/             # 跨 Host/Client/Runtime/SDK 的纯 JS 契约（含 V1 manifest/registry/installation 校验器，无 Node/browser 全局依赖）
 │   ├── host/               # DSH Host：路由、存储、Session/Score、Agent Adapter、内置游戏服务
 │   ├── client/             # dsh.client：main 面板、Sidebar、等待 chip、Market/MyGames、小鲸鱼
 │   ├── runtime/            # 可信 Runtime：iframe 加载、Bridge、自动保存、暂停恢复
@@ -236,7 +251,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - D-028：写接口一律 POST。
 - D-030：对外错误码统一 `GM-*`，内部常量 `E_*` 映射。
 - D-031：DSH 基线 0.2.1-rc.2。
-- D-032：zip 读取器自研（V1 安装阶段需要；V0 不涉及）。
+- D-032（已被 D-034 取代）：原计划 V1 自研 zip 读取器（V0 不涉及）；V1 改为单文件包后不需要 zip，V1.5 评估多文件时再重新评估。
 - D-033：多 profile 共享 `$DSH_HOME/storages/dsh-game-market/`，跨进程写锁。
 - V0 本地新增：
   - V0-01：V0 不接真实 Registry/安装；内置游戏以 `games/snake` 目录 + `installations.json` 中的 builtin 记录呈现。
@@ -260,6 +275,15 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - V1-07：SDK v1 必须向后兼容 V0 游戏；`snake` 迁移到 v1 但保持契约兼容。
 - V1-08：V1 分支计划见 §2.1.4；Lead 独占 `shared`/根配置/记忆，新增子智能体 A（install-registry）、B（developer）、C/D（games）、E（market-ux）。
 - V1-09：V1 安全底线：sha256 强制、HTML-only、大小/路径/版本校验、下载超时/重定向限制、CSP frame-ancestors 收紧为 allowlist。
+- V1-10：PRD 已升级 **v2.2** 并全篇统一到单文件包口径；后续契约以 PRD v2.2 + 本节 + `docs/V1-CONTRACTS.md` 为准，不再保留旧 zip 规范。
+- V1-11：命名统一（D-035）：`packages/<id>/<version>/entry.html`、`registry/games.json`（`registryVersion:1`）、`registry-cache.json`、current+1 回滚版本、Registry allowlist（默认 GitHub 三家 + 可配置 `allowedHosts` + 同 host 规则）。
+- V1-12：V1 首发只做锁定四款；DSH-native Demo 由用户亲自带人后续推进，不纳入 V1 验收/发布门槛（D-036）。
+- V1-13：SDK/Runtime v1 = `1.0.0`，`protocolVersion` 仍为 1；SDK v1 公开面沿用 PRD §8.3；snake 在 M1c 迁移到 `sdkVersion ^1.0.0`；V0 遗留按滚动项处理。
+- V1-14：Registry 预览图仅**绝对 https URL**（Host 缓存 `preview-cache/`，`/preview` 同源提供）；包内 manifest `icon` 用 data URI，仅用于已安装/本地/开发来源。Registry 索引**整份严格校验**，不做"跳过坏条目"，任一条目非法即整份拒绝并回退缓存（E_REGISTRY_INVALID → GM-5032）。
+- V1-15：CSP `frame-ancestors` 配置键 `config.security.frameAncestors: string[]`，默认 `["'self'","http://127.0.0.1:*","http://localhost:*"]` + Host 按绑定地址追加 loopback origin；V0 的 `*` 不再使用；真机不符时只能配置追加、不回落 `*`（S-16 复核）。
+- V1-16：安装全局串行 = 进程内队列 + 跨进程锁 `staging/.install.lock`（心跳 5s、30s 无心跳可接管）；等锁 10s 后 `GM-4091`；安装/卸载互斥 `GM-4097`。
+- V1-17：内置游戏**不写** `installations.json`，由 `games/snake` 直接服务并在 Market 列表合成 `source:'builtin'`；不可安装/更新/卸载。
+- V1-18：`/entry` 实例绑定 TTL = 10 分钟（`TIMING.entryBindingTtlMs`），退出/卸载/超时即失效；Host 仅在内存维护 launch 绑定。
 
 ---
 
@@ -277,11 +301,13 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · **V0.3 已发布**：`main` merge `c476266`，tag `v0.0.3` 已推送；验证见 `docs/V0-VERIFICATION.md`。
 - 2026-10-18 · **V0 用户验收通过**：用户确认 V0.2 入口/恢复与 V0.3 完成提醒在真实桌面端正常工作；“v0 基本验收完毕”。V0 范围（V0-01～V0-15，含 V0.2/V0.3 调整）收官。
 - 2026-10-18 · **V1 计划锁定**：四条主线 + foundation；首发 `snake`/`jump`/`2048`/`breakout`；单文件；静态 Registry + 本地/远程包；Market 视觉与功能都做。分支/owner/write scope/验收见 §2.1。下一步：Lead 开 `feat/v1-foundation`。
+- 2026-10-18 · **V1 四项遗留裁决 + PRD v2.2 统一 + M0 开工**：用户确认 ①V1 包格式=单文件（V1.5 多文件）②P1 命名/路径由 Lead 统一并双向维护 PRD+记忆 ③首发只做四款，DSH-native Demo 用户亲自带人、不阻塞 V1 ④SDK 版本与 V0 遗留随迭代。已开分支 `feat/v1-foundation`，正在执行 M0（PRD v2.2、shared 契约/校验器/路由表、契约测试、四游戏验收清单）。下一步：M0 `npm run verify` 绿 → `chore/v1-integration` → 并行 M1a/M1b/M1c。
+- 2026-10-18 · **V1 M0 完成**：PRD v2.2（`1f019a9`）、M0 契约文档（`41191a0`：docs/V1-CONTRACTS.md + 四游戏验收 + 验证骨架）、shared 契约冻结（`7842abd`：manifest/registry/installation + SDK/Runtime 1.0.0 + 契约测试）、构建产物（`6b4e2b2`）。全量 `npm run verify` 通过（**345 tests / 345 pass**、check 16 项、构建字节可复现）；四项遗留闭环，TBD-03/05/07/09/10 裁决见 V1-14～V1-18。下一步：M0 合入 `chore/v1-integration`，并行 M1a/M1b/M1c。
 - （待续）
 
 **当前状态 / 待用户确认**：
 
-- **V0 已完成并通过用户验收**（tag `v0.0.0`～`v0.0.3` 已推送）；**V1 计划已锁定**（见 §2.1），尚未开分支/写代码。下一步：Lead 开 `feat/v1-foundation` 冻结包格式/Registry/SDK v1 契约，然后并行 M1a/M1b/M1c。
+- **V1 M0 已完成**（分支 `feat/v1-foundation`，5 个提交：`1f019a9`/`41191a0`/`7842abd`/`6b4e2b2` + 本记忆提交，待合并）；PRD v2.2 + 记忆 + M0 契约文档一致；`npm run verify` **345/345 通过**。下一步：M0 合入 `chore/v1-integration` → 并行 M1a（install/registry）/M1b（developer）/M1c（games）。
 - 日常桌面端需用户自行 `npm run dev:enable -- --yes` 并重启 DSH；UI 客户端改动刷新页面即可。
 - 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复；用户桌面端版本已确认为 0.2.1-rc.2，与验证基线一致。
 - GitHub 推送权限：若 `git push` 失败，需要用户提供可用凭据或代为推送。
