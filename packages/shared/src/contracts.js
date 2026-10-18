@@ -259,8 +259,8 @@ export const HOST_PLUGIN_EXPORTS = Object.freeze({
  *   packages/sdk/src/sdk.js          ESM entry exporting { createGameSDK }
  *
  * Build contract (scripts/build-snake.mjs):
- *   - bundles packages/sdk/src/sdk.js into an expression assigning global DSH_GAME_SDK
- *     (exports of the SDK entry), then appends games/snake/src/game.js
+ *   - bundles packages/sdk/src/sdk.js into an expression assigned to global DSH_GAME_SDK
+ *   - bundles games/snake/src/game.js (ESM, may import ./logic.js) and appends it
  *   - inlines everything into dist/index.html; no external script/link/img/URLs
  *   - game code must read `DSH_GAME_SDK.createGameSDK()`.
  *

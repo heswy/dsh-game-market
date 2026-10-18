@@ -5,7 +5,8 @@
  *
  * Contract (packages/shared/src/contracts.js):
  *   - SDK entry: packages/sdk/src/sdk.js exports { createGameSDK }
- *   - Game source: games/snake/src/game.js uses global `DSH_GAME_SDK`
+ *   - Game entry: games/snake/src/game.js (ESM, may import ./logic.js) uses the
+ *     global `DSH_GAME_SDK`; it is bundled together with the SDK below
  *   - Template: games/snake/src/index.html.tpl with __INLINE_SCRIPT__,
  *     __GAME_TITLE__, __GAME_VERSION__ placeholders.
  */
@@ -43,8 +44,8 @@ if (manifest.entry !== 'dist/index.html') {
 }
 
 const sdkCode = bundleExpression({ entry: path.relative(root, sdkEntry), root });
-const gameCode = fs.readFileSync(gameSourcePath, 'utf8');
-const combined = `var DSH_GAME_SDK = ${sdkCode};\n\n${gameCode}`;
+const gameCode = bundleExpression({ entry: path.relative(root, gameSourcePath), root });
+const combined = `var DSH_GAME_SDK = ${sdkCode};\n\n${gameCode};`;
 const safeScript = combined.replace(/<\/script/gi, '<\\/script');
 
 const template = fs.readFileSync(templatePath, 'utf8');
