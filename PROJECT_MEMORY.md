@@ -173,7 +173,8 @@ V0 的真机 UI 验证不依赖用户日常 profile：
   - V0-02：Agent 状态 V0 以真实 DSH 事件为主，另提供 **dev-only** `POST /api/game-market/dev/agent-state` 便于无 Agent 时验证 UI（仅 `config.devMode === true` 时注册）。
   - V0-03：V0 label 先用中文固定模板（zh-first），labelKey 机制推迟到 V1；SDK 仍不解析 label。
   - V0-04：Client 构建使用零依赖自研 bundler（`scripts/bundle-lib.mjs`），只支持受限 ESM 子集；不支持动态 import/循环依赖。
-  - V0-05：没有浏览器自动化工具；UI 验收由用户在 DSH 内按 README 步骤执行，自动化覆盖 Host/API/Runtime 纯逻辑/SDK 协议/游戏逻辑。
+  - V0-05：UI 验收通过隔离 DSH 宿主 + headless Chrome 完成；自动化覆盖 Host/API/Runtime 纯逻辑/SDK 协议/游戏逻辑。
+  - V0-06：entry 的 CSP `frame-ancestors` 在 V0 使用 `*`。原因：DSH Host 侧看到的请求 origin（`dsh.internal`）与嵌入页面实际 origin（loopback Web UI）可能不同，单一 origin 会阻止 iframe 加载；游戏是不可信静态内容且受 sandbox 隔离，V0 接受该放宽，V1 改为可配置 allowlist（PRD §8.10）。
 
 ---
 

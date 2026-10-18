@@ -74,3 +74,4 @@ npm test          → 312 tests / 312 pass / 0 fail
 4. **保存失败重试 backoff / saveGap 提示**：V0 简化为失败即提示 + `saveStale` 确认，未实现 PRD 的三次退避与“上次未保存”提示。
 5. **桌面窗口**：使用同版本 Web 宿主验证；桌面 Electron 窗口的 chrome/拖拽带不影响本次新增 UI 逻辑。
 6. **原子写跨进程 CAS**：单 Host 进程场景验证通过；多 profile 并发写同一存档仍是 last-write-wins（V0 无影响，V1 前再收敛）。
+7. **CSP `frame-ancestors *`**：V0 为兼容 Host 实际看到的内部 origin 而放宽；游戏内容不可信且受 sandbox 隔离，V1 改为配置化 allowlist（见项目记忆 V0-06）。
