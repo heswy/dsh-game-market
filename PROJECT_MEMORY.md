@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**V1 M1 已完成并合并 `main`**（merge `44cd7a8`；`npm run verify` 752/752、CHECK 21 项、构建可复现）；四条主线全部落地：静态 Registry + 安装/卸载/更新、SDK v1 + CLI/模板/Simulator、Market/My Games/详情/安装 UX（用 `frontend-design`+`ui-ux-pro-max`）、首发四款 `snake`/`jump`/`2048`/`breakout`。**下一步 M3**：隔离 DSH 0.2.1-rc.2 真机验收 + `docs/V1-VERIFICATION.md` 归档 → 通过后打 `v1.0.0`。V0 已验收；PRD v2.2 与 M0 契约冻结。
+- 当前目标：**V1 M1 已完成并合并 `main`**（merge `44cd7a8`，`npm run verify` 754/754；用户桌面端验收进行中，白屏 hotfix `b933fe4` 已推送）；四条主线全部落地：静态 Registry + 安装/卸载/更新、SDK v1 + CLI/模板/Simulator、Market/My Games/详情/安装 UX（用 `frontend-design`+`ui-ux-pro-max`）、首发四款 `snake`/`jump`/`2048`/`breakout`。**下一步 M3**：隔离 DSH 0.2.1-rc.2 真机验收 + `docs/V1-VERIFICATION.md` 归档 → 通过后打 `v1.0.0`。V0 已验收；PRD v2.2 与 M0 契约冻结。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2，2026-10-18 已按 V1 单文件包统一**；第 8–12 章为开发权威来源）
 - 开始记录：2026-10-18
 
@@ -340,11 +340,12 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · **V1 M0 已合并 main**：`chore/v1-integration` 合并 `b8aa17a` → `main` `git merge --no-ff` 为 `d81f473`；合并前后各跑一次 `npm run verify` 均 **345/345** 通过；`main` 已推送 origin（`28b75de..d81f473`）。未打 tag：`v1.0.0` 留到 V1 验收完成后。**M1 搁置**：用户要求等明确指令后再开 M1a/M1b/M1c，当前不新建工作树。
 - 2026-10-18 · **V1 M1 派发开工（总调度模式）**：按用户指令，Lead 不再直接写业务代码。已建 7 个仓库外 worktree + 7 个 feature 分支（基础 `b84256b`），并派 7 个子智能体各自在 worktree 内独立完成：M1a `feat/v1-install-registry`、M1b `feat/v1-developer`、M2 `feat/v1-market-ux`、snake `feat/game-snake-v1`、jump `feat/game-jump`、2048 `feat/game-2048`、breakout `feat/game-breakout`；M2 强制使用 `frontend-design`+`ui-ux-pro-max`，2048 两者都用，snake/jump/breakout 用 `ui-ux-pro-max`。派发细节见 §2.1.7。下一步：等各分支完成报告 → Lead 逐个验收 → 合并 `chore/v1-integration` → 全量verify → `--no-ff` 合 `main`。
 - 2026-10-18 · **V1 M1 完成并合并 main（总调度模式收官）**：7 个子智能体在各自 worktree 内完成全部 M1 任务，Lead 逐个独立验收（范围/测试/构建/截图）后合入 `chore/v1-integration`；集成期 Lead 完成 shared 错误码表、根构建/检查接入全部游戏、`BUILTIN_GAMES.version`/snake 源清理、文档对齐、全部 dist 重建。集成分支最终 `npm run verify` **752/752 pass、CHECK OK (21)**、构建字节可复现；`--no-ff` 合并为 `main` `44cd7a8`。7 个 feature worktree/分支已清理，`chore/v1-integration` 保留。**M1 范围完成**；真机验收与 `v1.0.0` tag 留 M3。
+- 2026-10-18 · **用户验收发现 Market 白屏 → 已修复（`b933fe4`）**：用户在桌面端验收时打开 Market 白屏。用隔离 DSH 0.2.1-rc.2 宿主 + 复制用户真实 storage（V0 saves/scores/sessions）复现：Market Hero 的“继续游戏”分支调用 `coverTone()` 但 `market-home.js` 未 import（空 Hero 路径的单测覆盖不到），React 抛 `ReferenceError` 卸载整个 main slot → 白屏；同批还发现 `detail.js` 缺 `initialFor`/`resolvePermissions` import。已修复并新增 `packages/client/test/component-imports.test.js` 源码级回归（组件不能直接渲染测试：零依赖测试环境无 react）。修复后 `npm run verify` **754/754**，隔离宿主 + 真实数据 headless 流程复测 Market 首页/详情正常、0 console error；client.js 已重建并推送 main。
 - （待续）
 
 **当前状态 / 待用户确认**：
 
-- **V1 M1 已完成并合并 `main`**（`44cd7a8`；`npm run verify` **752/752 pass、CHECK OK (21)**、构建可复现）；7 个 M1 分支/worktree 已清理。**M3 待办**：隔离 DSH 0.2.1-rc.2 真机验收（U/DEV/FM/SEC 全表 + 启动计时/5 分钟/平台暂停遮挡）、`docs/V1-VERIFICATION.md` 归档、通过后打 `v1.0.0` 并推送；M2 UI 需在真实 DSH loader 下补渲染验收。
+- **V1 M1 已完成并合并 `main`**（`44cd7a8`；M1 收官 752/752；`npm run verify` 现 754/754、CHECK OK (21)）。**用户正在做桌面端人工验收**；首个问题（Market 白屏）已定位修复并推送（`b933fe4`，client-only，刷新页面即可生效）。**M3 待办**：隔离 DSH 0.2.1-rc.2 真机验收（U/DEV/FM/SEC 全表 + 启动计时/5 分钟/平台暂停遮挡）、`docs/V1-VERIFICATION.md` 归档、通过后打 `v1.0.0` 并推送；M2 组件此前只做过逻辑/静态渲染测试，**真实 loader 渲染验收仍是 M3 必做项**。
 - 日常桌面端需用户自行 `npm run dev:enable -- --yes` 并重启 DSH；UI 客户端改动刷新页面即可。
 - 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复；用户桌面端版本已确认为 0.2.1-rc.2，与验证基线一致。
 - GitHub 推送权限：若 `git push` 失败，需要用户提供可用凭据或代为推送。
