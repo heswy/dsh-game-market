@@ -190,11 +190,13 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · **V0 完成**：全量 `npm run verify` 通过（312 tests / 312 pass、严格 check 13 项、构建确定性）；隔离 DSH 0.2.1-rc.2 + headless Chrome 真机验证 V0-01～V0-15 核心链路；证据见 `docs/V0-VERIFICATION.md`。
 - 2026-10-18 · **V0 已发布**：`main` 合并提交 `bcdbbfc`，tag `v0.0.0` 已推送 GitHub；feature worktrees/分支已清理（main + origin/main）。下一步：日常桌面端自测（用户执行 dev:enable 并重启）→ V1 规划。
 - 2026-10-18 · **V0.1 反馈修复**：等待提示移至会话头标题右侧并本地化「游戏/Game」+ 可爱动效；弹层居中/翻转；修复继续游戏后 ready 状态静止棋盘 + 键盘焦点丢失（新增 `resume.js` 策略与 3 个测试）；dev-enable 兼容空数组 `[]` profile patch；全量 315 tests 通过。
+- 2026-10-18 · **V0.1 已发布**：`main` merge `55bc9f8`，tag `v0.0.1`；等待提示位置/动效/弹层对齐与 resume 卡住问题已修复，验证证据更新在 `docs/V0-VERIFICATION.md`。
 - （待续）
 
 **当前状态 / 待用户确认**：
 
-- V0 代码与证据已完成并推送；V0.1 反馈修复在 `fix/v0-feedback` 分支验证中，合并后推 `main` + tag `v0.0.1`。
+- V0 代码与证据已完成并推送；V0.1 反馈修复已合并 `main`（merge commit `55bc9f8`），tag `v0.0.1` 待推送。
+- 日常桌面端需用户自行 `npm run dev:enable -- --yes` 并重启 DSH；UI 客户端改动刷新页面即可。
 - 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复；用户桌面端版本已确认为 0.2.1-rc.2，与验证基线一致。
 - GitHub 推送权限：若 `git push` 失败，需要用户提供可用凭据或代为推送。
 
