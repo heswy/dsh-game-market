@@ -2,16 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { RESUME_PLAN, planResume } from '../src/resume.js';
 
-test('a running board resumes motion', function () {
+test('resume starts playing, including an unstarted board', function () {
   assert.equal(planResume('ready', 'playing'), RESUME_PLAN.PLAY);
   assert.equal(planResume('paused', 'playing'), RESUME_PLAN.PLAY);
   assert.equal(planResume('boot', 'playing'), RESUME_PLAN.PLAY);
-});
-
-test('an unstarted board keeps its own prompt', function () {
-  assert.equal(planResume('ready', 'ready'), RESUME_PLAN.PROMPT);
-  assert.equal(planResume('paused', 'ready'), RESUME_PLAN.PROMPT);
-  assert.equal(planResume('boot', 'ready'), RESUME_PLAN.PROMPT);
+  assert.equal(planResume('ready', 'ready'), RESUME_PLAN.PLAY);
+  assert.equal(planResume('paused', 'ready'), RESUME_PLAN.PLAY);
+  assert.equal(planResume('boot', 'ready'), RESUME_PLAN.PLAY);
 });
 
 test('finished or broken games ignore resume', function () {

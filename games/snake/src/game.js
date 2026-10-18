@@ -7,7 +7,7 @@
  * Runtime sends `pause` and only a later `resume` event restarts the loop.
  */
 
-import { BOARD_COLS, BOARD_ROWS, CELL_SIZE, SCORE_PER_FOOD, advance, createGame, deserialize, normalizeDirection, restartGame, serialize, setDirection, tickMsFor } from './logic.js';
+import { BOARD_COLS, BOARD_ROWS, CELL_SIZE, SCORE_PER_FOOD, advance, createGame, deserialize, normalizeDirection, restartGame, serialize, setDirection, startGame, tickMsFor } from './logic.js';
 import { RESUME_PLAN, planResume } from './resume.js';
 
 const LOGICAL_WIDTH = 960;
@@ -225,19 +225,13 @@ function beginPlayingFromResume() {
   resumeRequested = false;
   const plan = planResume(mode, state.status);
   if (plan === RESUME_PLAN.IGNORE) return;
-  if (plan === RESUME_PLAN.PLAY) {
-    hideOverlay();
-    mode = 'playing';
-    moving = true;
-    startLoop();
-    focusBoard();
-    return;
-  }
-  // The board was saved before the first direction key (or the game was paused
-  // on its own prompt). Keep an explicit affordance instead of a static board.
-  mode = 'ready';
-  if (restoredSave) showContinueOverlay();
-  else showStartOverlay();
+  // The platform modal is the single confirmation; start immediately and put
+  // keyboard focus back on the board, so there is no second prompt and no static
+  // ready board. A board saved before its first key simply starts moving.
+  hideOverlay();
+  mode = 'playing';
+  if (state.status === 'ready' || state.status === 'playing') state = startGame(state);
+  moving = true;
   startLoop();
   focusBoard();
 }
