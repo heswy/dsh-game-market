@@ -1,10 +1,17 @@
 /**
- * Runtime stub — replaced by the runtime implementation branch.
- * Kept on main so packages/client can build/test against the documented
- * RuntimeController contract before the runtime branch merges.
+ * Game Runtime entry (RuntimeController contract, packages/shared/src/contracts.js).
+ *
+ * `createGameRuntime({ container, api, environment, onEvent })` returns the
+ * controller used by the Client. Runtime owns the sandbox iframe, the
+ * postMessage bridge and the save scheduling; it never imports Client modules.
  */
-export const RUNTIME_STUB = true;
 
-export function createGameRuntime() {
-  throw new Error('Game Runtime is not implemented in this checkout yet');
+import { createGameController } from './controller.js';
+import { RUNTIME_STATES } from './state-machine.js';
+
+export function createGameRuntime(options = {}) {
+  return createGameController(options);
 }
+
+/** Introspection list for the Client / tests; not part of the controller API. */
+export const RUNTIME_STATE_NAMES = RUNTIME_STATES;

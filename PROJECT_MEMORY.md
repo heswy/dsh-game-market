@@ -32,7 +32,7 @@
    - scope 示例：`host`、`client`、`runtime`、`sdk`、`snake`、`repo`、`scripts`
    - 正文用 `-` 列要点；必须写清"做了什么 + 怎么验证"；涉及 PRD 的注明章节（如 `PRD §8.5`）
    - 一个提交只做一件事；不提交生成缓存、`.DS_Store`、`.prd-draft/`
-6. 合并：Lead 在 feature 分支完成后执行 `git merge --no-ff` 到 `main`；禁止快进合并到 `main`；合并前必须跑通 `npm run build && npm run check && npm test`。
+6. 合并：feature 分支先合入 Lead 的集成分支 `chore/<milestone>-integration`，全量验证后再由 Lead `git merge --no-ff` 到 `main`；禁止快进合并到 `main`；合并前必须跑通 `npm run verify`（build + check + test）。`main` 只保留可发布提交。
 7. 禁止 `git push --force` 到 `main`；禁止改写已推送历史；不 `git reset`/`clean` 丢掉用户改动。
 8. 推送：`main` 与 tag 由 Lead 推送；feature 分支默认只在本地，除非需要协作。推送失败（凭据/网络）不阻塞本地开发，但必须记录在"状态"里。
 9. 版本 tag：V0 完成打 `v0.0.0`；之后按 `v<major>.<minor>.<patch>`。
@@ -111,6 +111,17 @@ dsh-game-market/
 
 ---
 
+### 3.1 已核实的 Client 会话状态契约（2026-10-18，从本机 app.asar 源码核对）
+
+- `ui-session` 通过 `ctx.slots.provideRoot` 提供 root hooks：`sessions = ctx.sessions.list`、`sessionStatus = service.sessionStatus`。
+- Slot 组件标准 props 里：
+  - `useSessions(selector)`：selector hook，state 形如 `{ ids, byId, phase }`；`byId[sessionId]` 含 `running`、`retainedBy` 等。
+  - `useSessionStatus(selector)`：selector hook，state 是 `Map<sessionId, { running, pendingInteraction, completionUnread }>`。
+  - 当前主视图会话：`useSessions((s) => Object.values(s.byId).find((x) => (x.retainedBy?.mainView ?? 0) > 0)?.id)`。
+  - `pendingInteraction` 非空 → waiting-user；`completionUnread` → 完成未读；`running` → 运行中。
+- `ui-layout` 通过 `ctx.slots.provideRoot({ hooks: { panelInfo } })` 提供 `usePanelInfo`（仅 `activePanelId`）。
+- 因此 V0 的 chip / Sidebar 状态优先从这两个 hook 派生（即时、无轮询）；Host `agent-state` 快照用于 label 文案与游戏内鲸鱼，并保留 dev 模拟。轮询只作为降级路径。
+
 ## 4. 常用命令
 
 ```bash
@@ -134,6 +145,18 @@ npm run dev:disable
 
 ---
 
+## 4.1 验证环境（本机，可复用）
+
+V0 的真机 UI 验证不依赖用户日常 profile：
+
+1. 从本机安装包（与用户桌面端一致的 DSH **0.2.1-rc.2**）只读解出运行时代码到 `/tmp/dsh-asar-extract`；
+2. 用隔离 `DSH_HOME=/tmp/dsh-verify-home` 启动 `dsh web --no-open --port 57999 --host 127.0.0.1`；
+3. 用 `npm run dev:enable -- --profile-dir=/tmp/dsh-verify-home/profiles/web --yes` 写入 dev 行，重启临时宿主；
+4. 用 headless Chrome（CDP 9333）加载宿主 URL，通过 `Runtime.evaluate` / 截图验证 UI；Agent 状态用 dev-only `/api/game-market/dev/agent-state` 模拟；
+5. 该流程**不修改** `~/.dsh/profiles/desktop`；验证记录与截图见 `docs/V0-VERIFICATION.md`。
+
+> 注意：不要在未确认时对用户日常 profile 执行 `dev:enable`；如误写，脚本会先备份，可用备份恢复。dev 脚本支持 `--profile-dir` 以避免环境变量歧义。
+
 ## 5. 关键技术决策（增量，完整见 PRD §12.1）
 
 - D-023：V1（含 V0）游戏 entry 必须是自包含单文件；V0 只服务 entry/preview。
@@ -150,7 +173,8 @@ npm run dev:disable
   - V0-02：Agent 状态 V0 以真实 DSH 事件为主，另提供 **dev-only** `POST /api/game-market/dev/agent-state` 便于无 Agent 时验证 UI（仅 `config.devMode === true` 时注册）。
   - V0-03：V0 label 先用中文固定模板（zh-first），labelKey 机制推迟到 V1；SDK 仍不解析 label。
   - V0-04：Client 构建使用零依赖自研 bundler（`scripts/bundle-lib.mjs`），只支持受限 ESM 子集；不支持动态 import/循环依赖。
-  - V0-05：没有浏览器自动化工具；UI 验收由用户在 DSH 内按 README 步骤执行，自动化覆盖 Host/API/Runtime 纯逻辑/SDK 协议/游戏逻辑。
+  - V0-05：UI 验收通过隔离 DSH 宿主 + headless Chrome 完成；自动化覆盖 Host/API/Runtime 纯逻辑/SDK 协议/游戏逻辑。
+  - V0-06：entry 的 CSP `frame-ancestors` 在 V0 使用 `*`。原因：DSH Host 侧看到的请求 origin（`dsh.internal`）与嵌入页面实际 origin（loopback Web UI）可能不同，单一 origin 会阻止 iframe 加载；游戏是不可信静态内容且受 sandbox 隔离，V0 接受该放宽，V1 改为可配置 allowlist（PRD §8.10）。
 
 ---
 
@@ -159,11 +183,15 @@ npm run dev:disable
 > 规则：Lead 每完成一个阶段追加一条（日期、阶段、commit、结果、下一步）。历史细节以 git log 为准，本节只保留最近 10 条。
 
 - 2026-10-18 · 仓库初始化：`main` 从 `origin/main`（仅 LICENSE）建立；PRD v2.1 纳入仓库；建立本记忆文件与 V0 开发基座。下一步：搭 Bundle 基座并拆分分支。
+- 2026-10-18 · V0 基座完成：零依赖 bundle 骨架、shared 契约、构建/检查/开发态脚本、三份 feature worktree（host-core / client-shell / runtime-sdk-snake）已派出子智能体并行开发；Lead 在 `chore/v0-integration` 准备集成测试。
+- 2026-10-18 · 三个子智能体交付并合并：`feat/host-core`（73 host tests）、`feat/client-shell`（52 client tests）、`feat/runtime-sdk-snake`（123 runtime/SDK/snake tests）；Lead 在 `chore/v0-integration` 完成接口对齐（shared api-client 可打包、错误码、CSP、评分/ack 语义、chip 市场缓存）。
+- 2026-10-18 · **V0 完成**：全量 `npm run verify` 通过（312 tests / 312 pass、严格 check 13 项、构建确定性）；隔离 DSH 0.2.1-rc.2 + headless Chrome 真机验证 V0-01～V0-15 核心链路；证据见 `docs/V0-VERIFICATION.md`。下一步：合并 `main`、打 `v0.0.0`、V1 规划。
 - （待续）
 
-**当前阻塞/待用户确认**：
+**当前状态 / 待用户确认**：
 
-- 是否允许执行 `npm run dev:enable` 修改本机 `~/.dsh/profiles/desktop/cordis.patch.yml`（需要的话，Lead 会先备份；改 Host 需重启 DSH）。
+- V0 代码与证据已完成，等待 Lead 合并 `main`、打 tag 并尝试推送远端。
+- 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复。
 - GitHub 推送权限：若 `git push` 失败，需要用户提供可用凭据或代为推送。
 
 ---

@@ -17,9 +17,9 @@ const profile = args.profile || process.env.DSH_PROFILE || 'desktop';
 const dshHome = process.env.DSH_HOME && process.env.DSH_HOME.trim()
   ? process.env.DSH_HOME.trim()
   : path.join(os.homedir(), '.dsh');
-const profileDir = process.env.DSH_PROFILE_DIR && process.env.DSH_PROFILE_DIR.trim()
-  ? process.env.DSH_PROFILE_DIR.trim()
-  : path.join(dshHome, 'profiles', profile);
+const profileDir = args.profileDir
+  || (process.env.DSH_PROFILE_DIR && process.env.DSH_PROFILE_DIR.trim())
+  || path.join(dshHome, 'profiles', profile);
 const patchPath = path.join(profileDir, 'cordis.patch.yml');
 
 if (!fs.existsSync(patchPath)) {
@@ -62,13 +62,15 @@ console.log(`[dev:disable] removed managed block. Backup: ${backup}`);
 console.log('[dev:disable] restart DSH to unload the Host half.');
 
 function parseArgs(argv) {
-  const out = { dryRun: false, yes: false, profile: null };
+  const out = { dryRun: false, yes: false, profile: null, profileDir: null };
   for (const arg of argv) {
     if (arg === '--dry-run') out.dryRun = true;
     else if (arg === '--yes' || arg === '-y') out.yes = true;
     else if (arg.startsWith('--profile=')) out.profile = arg.slice('--profile='.length);
+    else if (arg.startsWith('--profile-dir=')) out.profileDir = arg.slice('--profile-dir='.length);
+    else if (arg === '--profile-dir') { out.profileDir = argv[i + 1] || null; i += 1; }
     else if (arg === '--help' || arg === '-h') {
-      console.log('Usage: node scripts/dev-disable.mjs [--profile=desktop] [--dry-run] [--yes]');
+      console.log('Usage: node scripts/dev-disable.mjs [--profile=desktop] [--profile-dir=<path>] [--dry-run] [--yes]');
       process.exit(0);
     } else {
       console.error(`[dev:disable] unknown argument: ${arg}`);
