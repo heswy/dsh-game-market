@@ -297,6 +297,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
   - V0-07（已被 V0-09 取代）：等待提示曾放在 `conversation.session.header.actions`；用户随后要求入口在会话 tab 行且常驻，已改为 conversation.view tab。
   - V0-08（已部分被 V0-10 取代）：`resume-paused` 竞态修复（记录提前 resume、focusBoard）；V0.2 起不再保留游戏内的第二个开始入口。
   - V0-09：游戏入口 = 官方 `conversation.view` tab（id `game`, order 100），label 随语言「游戏 / Game」，**常驻不隐藏**；点击 tab 打开 Game Market 主面板并把会话 view 重置为 chat，返回后仍是正常对话。原 header/composer chip 方案与 `chip.js` 已删除；Sidebar Game Market 入口保留。
+  - V0-09（V1-19 更新）：同一 Session 内**首次**点该 tab 进 Market；玩过并返回工作后再次点 tab 直接**恢复该游戏**（平台暂停确认），不再回 Market；Market 改从 Sidebar 或游戏内「返回市场」进入。
   - V0-10：恢复游戏只保留平台一次「已恢复上一局」确认；平台确认后游戏直接开始（含 saved `ready`，`resume.js` 仅 IGNORE/PLAY），不再显示游戏内第二个遮罩，并 focusBoard。Agent 快照在页面可见且绑定 session 时轮询，不再依赖 chip surface。
   - V0-11：**真实 Agent 事件源必须是 `ctx.on('session/event', (session, event) => …)`**。`turn/end` / `tool/result` / `approval/*` / `assistant/message` 是 session log 事件，`ctx.on(type)` 在真实 DSH 中永不触发；Cordis 只有 `agent/pre-step` / `agent/disposed`。Host 映射：turn/end kind → completed/error/idle；approval/asked → waiting；approval/decided → running；tool/call → specific labels。V0.3 修复前“运行中”能显示而“完成/等待”永远不出现，就是此原因。
   - V0-06：entry 的 CSP `frame-ancestors` 在 V0 使用 `*`。原因：DSH Host 侧看到的请求 origin（`dsh.internal`）与嵌入页面实际 origin（loopback Web UI）可能不同，单一 origin 会阻止 iframe 加载；游戏是不可信静态内容且受 sandbox 隔离，V0 接受该放宽，V1 改为可配置 allowlist（PRD §8.10）。
@@ -319,6 +320,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - V1-16：安装全局串行 = 进程内队列 + 跨进程锁 `staging/.install.lock`（心跳 5s、30s 无心跳可接管）；等锁 10s 后 `GM-4091`；安装/卸载互斥 `GM-4097`。
 - V1-17：内置游戏**不写** `installations.json`，由 `games/snake` 直接服务并在 Market 列表合成 `source:'builtin'`；不可安装/更新/卸载。
 - V1-18：`/entry` 实例绑定 TTL = 10 分钟（`TIMING.entryBindingTtlMs`），退出/卸载/超时即失效；Host 仅在内存维护 launch 绑定。
+- V1-19：会话 tab 游戏入口按 **Session** 记忆：首次点击 → Market；在该 Session 玩过游戏并返回工作后，再点 tab → 恢复该游戏（`resume-paused` 确认）。记忆在 module store（`sessionGames`，随页面生命周期）；是否跨刷新持久化留 M3 再定。Market 浏览入口保留在 Sidebar 与游戏内「返回市场」。
 
 ---
 
@@ -341,6 +343,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · **V1 M1 派发开工（总调度模式）**：按用户指令，Lead 不再直接写业务代码。已建 7 个仓库外 worktree + 7 个 feature 分支（基础 `b84256b`），并派 7 个子智能体各自在 worktree 内独立完成：M1a `feat/v1-install-registry`、M1b `feat/v1-developer`、M2 `feat/v1-market-ux`、snake `feat/game-snake-v1`、jump `feat/game-jump`、2048 `feat/game-2048`、breakout `feat/game-breakout`；M2 强制使用 `frontend-design`+`ui-ux-pro-max`，2048 两者都用，snake/jump/breakout 用 `ui-ux-pro-max`。派发细节见 §2.1.7。下一步：等各分支完成报告 → Lead 逐个验收 → 合并 `chore/v1-integration` → 全量verify → `--no-ff` 合 `main`。
 - 2026-10-18 · **V1 M1 完成并合并 main（总调度模式收官）**：7 个子智能体在各自 worktree 内完成全部 M1 任务，Lead 逐个独立验收（范围/测试/构建/截图）后合入 `chore/v1-integration`；集成期 Lead 完成 shared 错误码表、根构建/检查接入全部游戏、`BUILTIN_GAMES.version`/snake 源清理、文档对齐、全部 dist 重建。集成分支最终 `npm run verify` **752/752 pass、CHECK OK (21)**、构建字节可复现；`--no-ff` 合并为 `main` `44cd7a8`。7 个 feature worktree/分支已清理，`chore/v1-integration` 保留。**M1 范围完成**；真机验收与 `v1.0.0` tag 留 M3。
 - 2026-10-18 · **用户验收发现 Market 白屏 → 已修复（`b933fe4`）**：用户在桌面端验收时打开 Market 白屏。用隔离 DSH 0.2.1-rc.2 宿主 + 复制用户真实 storage（V0 saves/scores/sessions）复现：Market Hero 的“继续游戏”分支调用 `coverTone()` 但 `market-home.js` 未 import（空 Hero 路径的单测覆盖不到），React 抛 `ReferenceError` 卸载整个 main slot → 白屏；同批还发现 `detail.js` 缺 `initialFor`/`resolvePermissions` import。已修复并新增 `packages/client/test/component-imports.test.js` 源码级回归（组件不能直接渲染测试：零依赖测试环境无 react）。修复后 `npm run verify` **754/754**，隔离宿主 + 真实数据 headless 流程复测 Market 首页/详情正常、0 console error；client.js 已重建并推送 main。
+- 2026-10-18 · **Game tab 会话内行为调整（`a6885fd`）**：用户要求“同一 session 首次点游戏去 Market，玩过并返回工作后再点游戏应回到该游戏”。已实现 per-session `sessionGames` 记忆 + `selectGameEntry` 决策 + `entryGameSpace` 纯逻辑（新增 `entry-flow.js` 与 5 个单测）；`npm run verify` **765/765**。待用户在桌面端点验：刷新后新 session 首次进 Market → 玩一局 → 保存并返回工作 → 再点游戏应直接回该游戏。
 - （待续）
 
 **当前状态 / 待用户确认**：
