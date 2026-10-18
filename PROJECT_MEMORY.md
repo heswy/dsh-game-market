@@ -199,7 +199,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 
 **当前状态 / 待用户确认**：
 
-- V0 代码与证据已完成并推送；V0.1 已推送（tag `v0.0.1`）；V0.2 修复在 `fix/v0.2-tab-entry` 分支验证中，合并后推 `main` + tag `v0.0.2`。
+- V0 代码与证据已完成并推送；V0.1 tag `v0.0.1`、V0.2 tag `v0.0.2` 均已推送（V0.2 merge `3bfea76`）。
 - 日常桌面端需用户自行 `npm run dev:enable -- --yes` 并重启 DSH；UI 客户端改动刷新页面即可。
 - 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复；用户桌面端版本已确认为 0.2.1-rc.2，与验证基线一致。
 - GitHub 推送权限：若 `git push` 失败，需要用户提供可用凭据或代为推送。
