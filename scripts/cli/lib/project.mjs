@@ -304,6 +304,8 @@ function injectSdk(html, config) {
   if (config.sdk === false) return html;
   const script = `<script>\nvar DSH_GAME_SDK = ${safeInlineScript(sdkExpression())};\n</script>`;
   if (/<head\b[^>]*>/i.test(html)) return html.replace(/<head\b[^>]*>/i, (tag) => `${tag}\n${script}`);
+  if (/<body\b[^>]*>/i.test(html)) return html.replace(/<body\b[^>]*>/i, (tag) => `${tag}\n${script}`);
+  if (/<html\b[^>]*>/i.test(html)) return html.replace(/<html\b[^>]*>/i, (tag) => `${tag}\n${script}`);
   return `${script}\n${html}`;
 }
 
