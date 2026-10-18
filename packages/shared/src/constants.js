@@ -13,9 +13,15 @@ export const API_BASE = '/api/game-market';
 export const LOG_PREFIX = '[game-market]';
 
 /** Bumped together when the Runtime/SDK contract changes. */
-export const RUNTIME_VERSION = '0.1.0';
-export const SDK_VERSION = '0.1.0';
+export const RUNTIME_VERSION = '1.0.0';
+export const SDK_VERSION = '1.0.0';
 export const PROTOCOL_VERSION = 1;
+
+/**
+ * V0 games stay runnable on V1 (V1-07). Their manifests declare 0.1.x ranges;
+ * 0.1.x majors are accepted as the legacy compatibility window.
+ */
+export const LEGACY_V0_VERSION = '0.1.0';
 
 export const LIMITS = Object.freeze({
   /** Total bytes of one game's save (envelope included). PRD D-005. */
@@ -33,7 +39,17 @@ export const LIMITS = Object.freeze({
   /** Max session records per game. */
   sessionRecords: 100,
   /** Max entry HTML bytes served to the sandbox iframe. */
-  entryBytes: 24 * 1024 * 1024,
+  entryBytes: 20 * 1024 * 1024,
+  /** Max bytes of one single-file game package (PRD §8.2.2). */
+  packageBytes: 20 * 1024 * 1024,
+  /** Max bytes of the inline manifest script (PRD §8.2.2). */
+  manifestBytes: 64 * 1024,
+  /** Max bytes of the static Registry index. */
+  registryBytes: 2 * 1024 * 1024,
+  /** Max games accepted from one Registry index. */
+  registryGames: 500,
+  /** Max decoded bytes of a manifest `icon` data URI. */
+  iconBytes: 256 * 1024,
   /** Max preview image bytes served to Market UI. */
   previewBytes: 2 * 1024 * 1024,
 });
@@ -59,6 +75,23 @@ export const TIMING = Object.freeze({
   agentStaleMs: 5000,
   /** Runtime polling backoff cap. */
   pollBackoffMaxMs: 8000,
+  /** Registry index cache TTL (PRD §8.8.3). */
+  registryTtlMs: 6 * 60 * 60 * 1000,
+  /** Stale Registry cache hard limit (PRD §8.8.3). */
+  registryStaleMs: 14 * 24 * 60 * 60 * 1000,
+  /** Minimum interval between user-triggered Registry refreshes. */
+  registryRefreshThrottleMs: 5 * 60 * 1000,
+  /** Install download: connect / total / idle-no-data budgets (PRD §8.7.2). */
+  downloadConnectMs: 10000,
+  downloadTotalMs: 120000,
+  downloadIdleMs: 20000,
+  /** Install verification + atomic move budget. */
+  installVerifyMs: 15000,
+  installMoveMs: 30000,
+  /** How long the install lock queues before returning INSTALL_IN_PROGRESS. */
+  installLockWaitMs: 10000,
+  /** How long a /entry launcher binding stays valid (TBD-10). */
+  entryBindingTtlMs: 10 * 60 * 1000,
   /** UI animation durations (ms). */
   motion: Object.freeze({
     panel: 240,
