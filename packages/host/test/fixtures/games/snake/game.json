@@ -1,0 +1,19 @@
+{
+  "manifestVersion": 1,
+  "id": "snake",
+  "name": "Snake",
+  "version": "0.1.0",
+  "author": { "name": "DSH" },
+  "description": "A tiny built-in snake used by host tests.",
+  "entry": "dist/index.html",
+  "icon": "preview/icon.png",
+  "cover": null,
+  "screenshots": [],
+  "categories": ["arcade"],
+  "capabilities": ["storage", "score"],
+  "sdkVersion": "^0.1.0",
+  "runtimeVersion": "^0.1.0",
+  "viewport": { "width": 960, "height": 540, "fit": "contain" },
+  "score": { "direction": "higher-better", "min": 0, "max": 1000000, "integer": true },
+  "save": { "schemaVersion": 1 }
+}
