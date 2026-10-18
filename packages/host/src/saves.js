@@ -83,13 +83,17 @@ export function createSavesService({ storage, catalog, logger = null, now }) {
     };
   }
 
-  /** Lightweight metadata for list/Continue; falls back to current.json. */
+  /**
+   * Metadata for list/Continue. `meta.json` is preferred, but the current save
+   * is still validated because Continue must never point at a quarantined or
+   * corrupt save. V0 keeps one built-in game, so the extra read is cheap.
+   */
   async function meta(gameId) {
     validateGameId(gameId);
-    const stored = await readMeta(gameId);
-    if (stored) return stored;
     const current = await readCurrent(gameId);
-    return current ? deriveMeta(gameId, current) : null;
+    if (!current) return null;
+    const stored = await readMeta(gameId);
+    return stored || deriveMeta(gameId, current);
   }
 
   async function revision(gameId) {
