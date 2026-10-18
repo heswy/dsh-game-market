@@ -21,7 +21,7 @@
 | A-09 | 存档 ≤1 MiB | 单键值 ≤256 KiB、总 ≤1 MiB、key ≤32；目标：单游戏存档 ≤32 KiB | `/save` 返回 bytes + 文件体积 | 是 |
 | A-10 | 无外网 | CSP `connect-src 'none'`；代码无 fetch/XHR/WebSocket/EventSource/sendBeacon；运行 5 分钟 Network 无外联 | Network 面板 + 校验器 | 是 |
 | A-11 | 5 分钟无崩溃 | 连续游玩/暂停/恢复/切后台 5 分钟；无未捕获异常、无白屏、无卡死；runtime 无 error 状态 | 控制台日志 + 录屏 | 是 |
-| A-12 | 1440 宽可用 | 宿主内容区 1440×900 下 960×540 `contain` 正确缩放、居中、无裁切/溢出 | 截图 | 是 |
+| A-12 | 1440 宽可用 | 宿主内容区 1440×900 下按各游戏 manifest `viewport`（如 960×540 / 540×960 / 720×720）`contain` 正确缩放、居中、无裁切/溢出 | 截图 | 是 |
 | A-13 | 窄窗可用 | 宿主内容区宽 640–756px 时仍完整可见、可操作；无横向滚动、无遮挡 | 截图 | 是 |
 | A-14 | 暗色主题可用 | 读取 `game.runtime.theme`；light/dark 两套配色均通过可读性检查（文字/背景对比度可辨，无"看不见"元素） | 双主题截图 | 是 |
 | A-15 | 纯键盘可达 | 全流程（Market → 游戏 → 暂停 → 返回）仅键盘可达，焦点可见且位置合理，Esc 行为一致 | 纯键盘实录 | 是 |
@@ -170,7 +170,7 @@ key：`current`；`schemaVersion`：`1`；建议大小：0.5–2 KiB（单 key�
 | 项 | 定义 |
 |---|---|
 | 核心玩法 | 纵向平台跳跃（Doodle Jump 类）：自动弹跳，左右移动落到平台；越高分越高；踩空/掉出屏幕结束 |
-| 画布 | 960×540 逻辑分辨率，`contain` 缩放；世界坐标向上无限延伸 |
+| 画布 | **540×960 竖屏**逻辑分辨率（V1 裁决），`contain` 缩放；世界坐标向上无限延伸 |
 | 平台 | 程序化生成；至少 2 种类型（普通、易碎/移动二选一或更多）；间距保证可达 |
 | 输入 | `←`/`→` 或 `A`/`D` 水平移动；空格/回车开始与重开；`P` 暂停/恢复 |
 | 物理 | 固定步长或 delta 上限（避免切后台后跳变）；重力/弹跳参数可调 |
@@ -269,7 +269,7 @@ key：`current`；`schemaVersion`：`1`；建议大小：≤8 KiB（平台数组
 | 核心玩法 | 4×4 数字拼图：方向移动、同值合并、每步生成 2/4；达成 2048 可继续；无合法移动结束 |
 | 输入 | 方向键 / WASD；可选滑动手势（非验收必需）；`P` 暂停/恢复；空格/回车开始与重开 |
 | 动画 | 移动/合并/生成有反馈；不得因动画错误导致棋盘与逻辑不一致 |
-| 撤销（P1，可选） | 每局一次撤销；若实现，撤销恢复棋盘+分数+步数，崩溃/读档后不恢复撤销栈 |
+| 撤销（V1 实现） | 每局一次撤销；撤销恢复棋盘+分数+步数；**撤销状态持久化**（读档后恢复“剩 1 次/已用完”，V1 Lead 裁决） |
 
 ### 4.2 状态机
 
@@ -304,7 +304,7 @@ key：`current`；`schemaVersion`：`1`；建议大小：≤4 KiB（含一次 un
 
 | 项 | 定义 |
 |---|---|
-| 计分方向 | `higher-better`；`min:0`、`max:1000000`、`integer:true` |
+| 计分方向 | `higher-better`；`min:0`、`max:1000000000`、`integer:true`（V1 Lead 裁决：2048 取 1e9） |
 | 得分 | 合并生成值累加（2+2→4 得 4 分，以此类推） |
 | 结束条件 | 无合法移动 → `over`；达成 2048 记 `won` 但可继续 |
 | 提交时机 | `over` 时提交一次并 `session.end({outcome:'completed', score})`；`won` 不提交（继续冲分） |
@@ -396,7 +396,7 @@ key：`current`；`schemaVersion`：`1`；建议大小：≤8 KiB（砖块用行
 
 | 项 | 定义 |
 |---|---|
-| 计分方向 | `higher-better`；`min:0`、`max:1000000`、`integer:true` |
+| 计分方向 | `higher-better`；`min:0`、`max:10000000`、`integer:true`（V1 Lead 裁决：breakout 取 1e7） |
 | 得分 | 普通砖块 +10、坚硬砖块每击 +10（或击碎 +30）；过关奖励 `100 × 关卡序号`（数值自定但需单调、可复现） |
 | 结束条件 | 命 = 0 → `over`；最后一关清屏 → `won` |
 | 提交时机 | `over`/`won` 时提交一次并 `session.end({outcome:'completed', score})` |
@@ -447,7 +447,7 @@ key：`current`；`schemaVersion`：`1`；建议大小：≤8 KiB（砖块用行
 | manifest `sdkVersion`/`runtimeVersion` | `^1.0.0` / `^1.0.0` | 同左 | 同左 | 同左 |
 | 存档 key / schemaVersion | `current` / 1 | 同左 | 同左 | 同左 |
 | 纯逻辑测试目录 | `games/snake/test/`（保留） | `games/jump/test/` | `games/2048/test/` | `games/breakout/test/` |
-| 分数范围 | 0–1,000,000 整数 | 同左 | 同左 | 同左 |
+| 分数范围 | 0–1,000,000 整数 | 0–1,000,000 整数 | 0–1,000,000,000 整数 | 0–10,000,000 整数 |
 | 计分方向 | higher-better | higher-better | higher-better | higher-better |
 | 分发方式 | Bundle 内置 | Registry | Registry | Registry |
 | 验收记录位置 | `docs/V1-VERIFICATION.md` | 同左 | 同左 | 同左 |

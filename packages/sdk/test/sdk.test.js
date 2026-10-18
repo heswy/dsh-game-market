@@ -17,9 +17,9 @@ function makeInit(overrides = {}) {
     nonce: NONCE,
     gameId: 'snake',
     gameVersion: '0.1.0',
-    runtimeVersion: '0.1.0',
-    sdkVersion: '0.1.0',
-    supportedSdkRange: '>=0.1.0 <0.2.0',
+    runtimeVersion: '1.0.0',
+    sdkVersion: '1.0.0',
+    supportedSdkRange: '>=1.0.0 <2.0.0',
     locale: 'zh',
     theme: 'dark',
     reducedMotion: false,
@@ -32,9 +32,9 @@ function makeInit(overrides = {}) {
 
 function makeRuntimeInfo(overrides = {}) {
   return {
-    sdkVersion: '0.1.0',
+    sdkVersion: '1.0.0',
     protocolVersion: 1,
-    runtimeVersion: '0.1.0',
+    runtimeVersion: '1.0.0',
     gameId: 'snake',
     gameVersion: '0.1.0',
     locale: 'zh',
@@ -345,6 +345,7 @@ test('score.submit validates input and returns best/isBest', async () => {
     harness.game.score.submit(10, { blob: 'x'.repeat(3000) }),
     (error) => error.code === GM.INVALID_PARAM
   );
+  await assert.rejects(harness.game.score.submit(10, 5), (error) => error.code === GM.INVALID_PARAM);
   const pending = harness.game.score.submit(40, { level: 2 });
   const request = harness.requests(METHODS.SCORE_SUBMIT)[0];
   assert.deepEqual(request.params, { score: 40, meta: { level: 2 } });
@@ -488,4 +489,186 @@ test('isGameError recognises SDK errors and plain GM-shaped errors', () => {
   assert.equal(isGameError({ code: GM.SAVE_NOT_FOUND, message: 'x', retryable: false }), true);
   assert.equal(isGameError(new Error('plain')), false);
   assert.equal(isGameError(null), false);
+});
+
+// ---------------------------------------------------------------------------
+// V1 additions: version negotiation, write serialization, error details,
+// agent payload fields and the lazy package singleton (PRD §8.3).
+// ---------------------------------------------------------------------------
+
+test('ready rejects with GM-5002 when the Runtime SDK range excludes this SDK', async () => {
+  const harness = createHarness();
+  const pending = harness.game.ready();
+  harness.deliver({ v: 1, kind: 'evt', event: EVENTS.INIT, data: makeInit({ supportedSdkRange: '>=2.0.0 <3.0.0' }) });
+  await assert.rejects(pending, (error) => error.code === GM.PROTOCOL_MISMATCH);
+  assert.equal(harness.requests(METHODS.READY).length, 0);
+});
+
+test('an SDK ahead of supportedSdkRange continues (forward-compatible policy)', async () => {
+  const harness = createHarness();
+  const pending = harness.game.ready();
+  harness.deliver({ v: 1, kind: 'evt', event: EVENTS.INIT, data: makeInit({ supportedSdkRange: '>=0.1.0 <1.0.0' }) });
+  const readyRequest = harness.requests(METHODS.READY)[0];
+  assert.ok(readyRequest, 'ready is still sent');
+  harness.respond(readyRequest, makeRuntimeInfo());
+  const info = await pending;
+  assert.equal(info.ready, true);
+});
+
+test('a larger ready() timeout never extends the 10s handshake budget', async () => {
+  const harness = createHarness();
+  const pending = harness.game.ready(60000);
+  harness.clock.tick(10000);
+  await assert.rejects(pending, (error) => error.code === GM.HANDSHAKE_TIMEOUT);
+});
+
+test('ready() returns the same promise on repeated calls', async () => {
+  const harness = createHarness();
+  const first = harness.game.ready();
+  assert.equal(harness.game.ready(), first);
+  harness.deliver({ v: 1, kind: 'evt', event: EVENTS.INIT, data: makeInit() });
+  harness.respond(harness.requests(METHODS.READY)[0], makeRuntimeInfo());
+  await first;
+});
+
+test('write operations are serialized in call order by the SDK', async () => {
+  const harness = createHarness();
+  await harness.handshake();
+  const first = harness.game.storage.save('current', { step: 1 });
+  const second = harness.game.storage.save('current', { step: 2 });
+  const requests = harness.requests(METHODS.STORAGE_SAVE);
+  assert.equal(requests.length, 1, 'only the first write is in flight');
+  assert.deepEqual(requests[0].params.data, { step: 1 });
+
+  harness.respond(requests[0], { key: 'current', bytes: 10, revision: 1, updatedAt: null });
+  await flushAsync();
+  const afterFirst = harness.requests(METHODS.STORAGE_SAVE);
+  assert.equal(afterFirst.length, 2, 'the second write is sent after the first settles');
+  assert.deepEqual(afterFirst[1].params.data, { step: 2 });
+  harness.respond(afterFirst[1], { key: 'current', bytes: 10, revision: 2, updatedAt: null });
+
+  assert.deepEqual(await first, { key: 'current', bytes: 10, revision: 1, updatedAt: null });
+  assert.deepEqual(await second, { key: 'current', bytes: 10, revision: 2, updatedAt: null });
+});
+
+test('the SDK write queue rejects the 33rd queued write with GM-4291', async () => {
+  const harness = createHarness();
+  await harness.handshake();
+  const writes = [];
+  for (let index = 0; index < 32; index += 1) writes.push(harness.game.storage.save(`k${index}`, { index }));
+  await assert.rejects(
+    harness.game.storage.save('overflow', { index: 99 }),
+    (error) => error.code === GM.BACKPRESSURE
+  );
+  for (let index = 0; index < 32; index += 1) {
+    const request = harness.requests(METHODS.STORAGE_SAVE)[index];
+    assert.ok(request, `write ${index} was sent`);
+    harness.respond(request, { key: request.params.key, bytes: 1, revision: index, updatedAt: null });
+    await flushAsync();
+  }
+  const results = await Promise.all(writes);
+  assert.equal(results.length, 32);
+  assert.equal(harness.requests(METHODS.STORAGE_SAVE).length, 32);
+});
+
+test('bridge errors preserve retryable and details', async () => {
+  const harness = createHarness();
+  await harness.handshake();
+  const pending = harness.game.storage.save('current', 1);
+  harness.deliver({
+    v: 1,
+    id: harness.requests(METHODS.STORAGE_SAVE)[0].id,
+    kind: 'res',
+    ok: false,
+    error: {
+      code: GM.STORAGE_QUOTA,
+      message: 'quota',
+      retryable: true,
+      details: { limit: 1048576, reason: 'game-total' },
+    },
+  });
+  await assert.rejects(pending, (error) => {
+    assert.equal(error.code, GM.STORAGE_QUOTA);
+    assert.equal(error.retryable, true);
+    assert.deepEqual(error.details, { limit: 1048576, reason: 'game-total' });
+    return true;
+  });
+});
+
+test('unknown GM-shaped bridge errors fall back to GM-5000', async () => {
+  const harness = createHarness();
+  await harness.handshake();
+  const pending = harness.game.storage.save('current', 1);
+  harness.respondError(harness.requests(METHODS.STORAGE_SAVE)[0], 'NOT-A-GM-CODE', 'weird', false);
+  await assert.rejects(pending, (error) => error.code === GM.INTERNAL);
+});
+
+test('agent snapshots keep labelKey and hostEpoch, and pre-ready events are buffered', async () => {
+  const harness = createHarness();
+  const statuses = [];
+  harness.game.agent.on('status', (status) => statuses.push(status));
+  const pending = harness.game.ready();
+  harness.deliver({ v: 1, kind: 'evt', event: EVENTS.INIT, data: makeInit() });
+  harness.deliver({
+    v: 1,
+    kind: 'evt',
+    event: EVENTS.AGENT_STATUS,
+    data: {
+      state: 'waiting-user',
+      label: '需要你确认',
+      labelKey: 'agent.state.waiting.approval',
+      sessionId: 's1',
+      updatedAt: '2026-10-18T00:00:00.000Z',
+      source: 'approval',
+      seq: 7,
+      since: '2026-10-18T00:00:00.000Z',
+      turnId: null,
+      hostEpoch: 'he_0000000000000001',
+    },
+  });
+  assert.equal(statuses.length, 0, 'buffered until ready');
+  harness.respond(harness.requests(METHODS.READY)[0], makeRuntimeInfo());
+  await pending;
+  assert.equal(statuses.length, 1);
+  assert.equal(statuses[0].labelKey, 'agent.state.waiting.approval');
+  assert.equal(statuses[0].hostEpoch, 'he_0000000000000001');
+  assert.equal(statuses[0].seq, 7);
+});
+
+test('agent.getStatus synthesizes an idle snapshot when the Runtime returns null', async () => {
+  const harness = createHarness();
+  await harness.handshake();
+  const pending = harness.game.agent.getStatus();
+  harness.respond(harness.requests(METHODS.AGENT_GET_STATUS)[0], null);
+  const status = await pending;
+  assert.equal(status.state, 'idle');
+  assert.equal(status.sessionId, null);
+  assert.equal(status.labelKey, 'agent.state.idle');
+});
+
+test('lifecycle payloads include the event name plus the Runtime payload', async () => {
+  const harness = createHarness();
+  await harness.handshake();
+  const seen = [];
+  harness.game.lifecycle.on('pause', (payload) => seen.push(payload));
+  harness.deliver({ v: 1, kind: 'evt', event: EVENTS.PAUSE, data: { reason: 'waiting-user', at: 123 } });
+  assert.deepEqual(seen[0], { event: 'pause', reason: 'waiting-user', at: 123 });
+});
+
+test('storage.remove maps onto the bridge protocol', async () => {
+  const harness = createHarness();
+  await harness.handshake();
+  const pending = harness.game.storage.remove('current');
+  const request = harness.requests(METHODS.STORAGE_REMOVE)[0];
+  assert.equal(request.params.key, 'current');
+  harness.respond(request, { key: 'current', removed: true, revision: 9 });
+  assert.deepEqual(await pending, { key: 'current', removed: true, revision: 9 });
+});
+
+test('the package exports a lazy game singleton', async () => {
+  const { game } = await import('../src/index.js');
+  assert.equal(typeof game.ready, 'function');
+  assert.equal(game.runtime.ready, false);
+  assert.equal(game.runtime.capabilities.length, 0);
+  assert.equal(game.runtime.runtimeVersion, null);
 });

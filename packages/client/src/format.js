@@ -62,3 +62,68 @@ export function formatCategory(categories) {
   if (!first) return '';
   return first.charAt(0).toUpperCase() + first.slice(1);
 }
+
+/** Locale-normalized category id: lowercase, validated against the enum. */
+export function normalizeCategory(value) {
+  if (typeof value !== 'string') return '';
+  const normalized = value.trim().toLowerCase();
+  return normalized.length > 0 ? normalized : '';
+}
+
+/** Human byte size for the detail metadata row (1.4 MB / 482 KB / 912 B). */
+export function formatBytes(value, locale) {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return '';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let size = value;
+  let index = 0;
+  while (size >= 1024 && index < units.length - 1) {
+    size /= 1024;
+    index += 1;
+  }
+  const maximumFractionDigits = index === 0 ? 0 : size >= 100 ? 0 : 1;
+  try {
+    return new Intl.NumberFormat(locale || preferredLocale(), {
+      maximumFractionDigits: maximumFractionDigits,
+      minimumFractionDigits: 0,
+    }).format(size) + ' ' + units[index];
+  } catch (_error) {
+    return String(Math.round(size)) + ' ' + units[index];
+  }
+}
+
+/** Absolute date used only in `title` tooltips (PRD 9.4.2). */
+export function formatAbsoluteTime(iso, locale) {
+  if (typeof iso !== 'string' || iso.length === 0) return '';
+  const value = Date.parse(iso);
+  if (!Number.isFinite(value)) return '';
+  try {
+    return new Intl.DateTimeFormat(locale || preferredLocale(), {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(new Date(value));
+  } catch (_error) {
+    try {
+      return new Date(value).toISOString();
+    } catch (_inner) {
+      return '';
+    }
+  }
+}
+
+/** Integer count for result lines and metadata. */
+export function formatCount(value, locale) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return '';
+  try {
+    return new Intl.NumberFormat(locale || preferredLocale(), { maximumFractionDigits: 0 }).format(value);
+  } catch (_error) {
+    return String(Math.round(value));
+  }
+}
+
+/** Clamp a percentage into 0..100, or return null when unknown. */
+export function clampPercent(value) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+  if (value <= 0) return 0;
+  if (value >= 100) return 100;
+  return Math.round(value);
+}

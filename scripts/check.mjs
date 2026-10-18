@@ -14,7 +14,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { BUNDLE_ID, LIMITS } from '../packages/shared/src/constants.js';
-import { checkSelfContained } from '../packages/shared/src/manifest.js';
+import { validatePackageHtml } from '../packages/shared/src/manifest.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
@@ -101,33 +101,58 @@ if (fs.existsSync(clientAbs)) {
   requiredFile('client.js');
 }
 
-// 4. Snake entry
-const gameManifestPath = requiredFile('games/snake/game.json');
-if (gameManifestPath) {
-  try {
-    const manifest = JSON.parse(fs.readFileSync(gameManifestPath, 'utf8'));
-    for (const field of ['manifestVersion', 'id', 'name', 'version', 'entry']) {
-      if (manifest[field] === undefined) fail(`games/snake/game.json missing field: ${field}`);
-    }
-    if (manifest.id !== 'snake') fail('games/snake/game.json id must be "snake"');
-    if (manifest.entry !== 'dist/index.html') fail('games/snake/game.json entry must be "dist/index.html"');
-    ok('games/snake/game.json');
-  } catch (error) {
-    fail(`games/snake/game.json invalid: ${error.message}`);
-  }
-}
-
-const entryAbs = path.join(root, 'games/snake/dist/index.html');
-if (fs.existsSync(entryAbs)) {
-  const html = fs.readFileSync(entryAbs, 'utf8');
-  for (const violation of checkSelfContained(html)) {
-    fail(`snake entry is not self-contained: ${violation.message}`);
-  }
-  const bytes = Buffer.byteLength(html, 'utf8');
-  if (bytes > LIMITS.entryBytes) fail(`snake entry too large: ${bytes} > ${LIMITS.entryBytes}`);
-  ok(`games/snake/dist/index.html (${bytes} bytes, self-contained)`);
+// 4. V1 single-file game packages (games/<id>/game.json + dist/index.html)
+const gamesDir = path.join(root, 'games');
+if (!fs.existsSync(gamesDir)) {
+  fail('missing games/ directory');
 } else {
-  requiredFile('games/snake/dist/index.html');
+  for (const entry of fs.readdirSync(gamesDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const dir = path.join(gamesDir, entry.name);
+    const manifestPath = path.join(dir, 'game.json');
+    const distPath = path.join(dir, 'dist/index.html');
+    const relManifest = `games/${entry.name}/game.json`;
+    if (!fs.existsSync(manifestPath)) {
+      fail(`missing ${relManifest}`);
+      continue;
+    }
+    let source;
+    try {
+      source = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    } catch (error) {
+      fail(`${relManifest} invalid: ${error.message}`);
+      continue;
+    }
+    for (const field of ['manifestVersion', 'id', 'name', 'version', 'sdkVersion', 'runtimeVersion']) {
+      if (source[field] === undefined) fail(`${relManifest} missing field: ${field}`);
+    }
+    if (source.id !== entry.name) fail(`${relManifest} id must match directory name "${entry.name}"`);
+    if (!fs.existsSync(distPath)) {
+      fail(`missing games/${entry.name}/dist/index.html (run npm run build)`);
+      continue;
+    }
+    const html = fs.readFileSync(distPath, 'utf8');
+    const bytes = Buffer.byteLength(html, 'utf8');
+    const result = validatePackageHtml(html);
+    if (!result.ok) {
+      for (const error of result.errors.slice(0, 5)) {
+        fail(`games/${entry.name}/dist/index.html invalid: ${error.code} ${error.message}`);
+      }
+      continue;
+    }
+    if (result.manifest.id !== source.id) {
+      fail(`games/${entry.name}/dist manifest id "${result.manifest.id}" != source "${source.id}"`);
+    }
+    if (result.manifest.version !== source.version) {
+      fail(
+        `games/${entry.name}/dist manifest version "${result.manifest.version}" != source "${source.version}"`,
+      );
+    }
+    if (bytes > LIMITS.packageBytes) {
+      fail(`games/${entry.name}/dist/index.html too large: ${bytes} > ${LIMITS.packageBytes}`);
+    }
+    ok(`games/${entry.name}/dist/index.html (${bytes} bytes, V1 single-file package)`);
+  }
 }
 
 // 5. Required module entry points (strict mode only)
@@ -136,18 +161,14 @@ if (!allowMissing) {
   requiredFile('packages/client/src/main.js');
   requiredFile('packages/runtime/src/index.js');
   requiredFile('packages/sdk/src/sdk.js');
+  requiredFile('packages/sdk/src/index.d.ts');
+  requiredFile('scripts/cli/dsh-game.mjs');
+  requiredFile('scripts/cli/create-dsh-game.mjs');
+  requiredFile('templates/vanilla/manifest.json');
   // V1 contract modules (M0): manifest/single-file package, Registry, install layout.
   requiredFile('packages/shared/src/manifest.js');
   requiredFile('packages/shared/src/registry.js');
   requiredFile('packages/shared/src/installation.js');
-}
-
-function manifestVersionSafe() {
-  try {
-    return JSON.parse(fs.readFileSync(gameManifestPath, 'utf8')).version || '';
-  } catch (_error) {
-    return '';
-  }
 }
 
 function collectJs(dir, out) {

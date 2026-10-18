@@ -20,7 +20,7 @@ function assertSnakeRecord(item, { installed = true } = {}) {
   assert.equal(item.name, 'Snake');
   assert.equal(item.version, '0.1.0');
   assert.equal(item.description, 'A tiny built-in snake used by host tests.');
-  assert.equal(item.author, 'DSH');
+  assert.deepEqual(item.author, { name: 'DSH' });
   assert.deepEqual(item.categories, ['arcade']);
   assert.deepEqual(item.capabilities, ['storage', 'score']);
   assert.equal(item.builtin, true);
@@ -52,8 +52,11 @@ export function register() {
     assert.equal(installed.items.length, 1);
     assertSnakeRecord(installed.items[0]);
     const game = await host.data(ROUTES.GAME, { query: { id: 'snake' } });
-    assertSnakeRecord(game);
-    assert.equal(game.activePlaySession, null);
+    // V1 `/game` returns a GameDetail under `game` plus a flat legacy record.
+    assertSnakeRecord(game.game);
+    assert.equal(game.game.activePlaySession, null);
+    assert.equal(game.installed, null);
+    assert.equal(game.registry, null);
     const started = await host.data(ROUTES.SESSION, {
       body: { gameId: 'snake', action: 'start', dshSessionId: 'session-1', operationId: 'op-start' },
     });
@@ -97,6 +100,7 @@ export function register() {
     const game = await host.requestJson(ROUTES.GAME, { query: { id: 'snake' } });
     assert.equal(game.response.status, 200);
     assert.equal(game.payload.data.issue, 'entry-missing');
+    assert.equal(game.payload.data.game.issue, 'entry-missing');
   });
 
   test('preview serves only manifest-declared files', async (t) => {

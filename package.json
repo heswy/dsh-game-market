@@ -19,9 +19,17 @@
     "packages/host/**",
     "packages/shared/**",
     "packages/runtime/**",
+    "packages/sdk/**",
+    "scripts/cli/**",
+    "templates/**",
+    "docs/developer*.md",
     "games/**",
     "README.md"
   ],
+  "bin": {
+    "dsh-game": "./scripts/cli/dsh-game.mjs",
+    "create-dsh-game": "./scripts/cli/create-dsh-game.mjs"
+  },
   "icon": "./icon.svg",
   "license": "MIT",
   "private": true,

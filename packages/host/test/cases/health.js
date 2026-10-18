@@ -125,6 +125,10 @@ export function register() {
       ROUTES.GAMES,
       ROUTES.GAME,
       ROUTES.INSTALLED,
+      ROUTES.INSTALL,
+      ROUTES.INSTALL_LOCAL,
+      ROUTES.UNINSTALL,
+      ROUTES.REGISTRY_REFRESH,
       ROUTES.SAVE,
       ROUTES.SESSION,
       ROUTES.SCORES,
@@ -209,6 +213,8 @@ export function register() {
       }
     );
     host.availability.available = true;
+    await host.maintenance.ready();
+    await host.registry.ready();
     const unknownPath = await host.router.handle(
       new Request('http://127.0.0.1:19387/api/game-market/not-a-route')
     );

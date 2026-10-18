@@ -27,6 +27,46 @@ export function useClock(intervalMs) {
 }
 
 /**
+ * True only after `active` has been true for `delayMs` (PRD 9.3.6: skeletons
+ * appear after 300ms so a fast response never flashes a placeholder).
+ */
+export function useDelayedFlag(active, delayMs) {
+  const [visible, setVisible] = React.useState(active === true && delayMs <= 0);
+  React.useEffect(
+    function schedule() {
+      if (active !== true) {
+        setVisible(false);
+        return undefined;
+      }
+      if (delayMs <= 0) {
+        setVisible(true);
+        return undefined;
+      }
+      const timer = setTimeout(function reveal() {
+        setVisible(true);
+      }, delayMs);
+      return function cleanup() {
+        clearTimeout(timer);
+      };
+    },
+    [active, delayMs]
+  );
+  return visible;
+}
+
+/** Latest-value ref for event handlers that should not re-subscribe. */
+export function useLatest(value) {
+  const ref = React.useRef(value);
+  React.useEffect(
+    function keepLatest() {
+      ref.current = value;
+    },
+    [value]
+  );
+  return ref;
+}
+
+/**
  * Resolve the current DSH Session id from the slot's standard hooks.
  * Any hook failure degrades to null and records one diagnostic; it never throws
  * out of render. The hook call order is fixed by the registration kit.

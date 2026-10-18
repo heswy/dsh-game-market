@@ -53,17 +53,39 @@ function createRuntimeView(state) {
   return Object.freeze(view);
 }
 
+const AGENT_STATES = Object.freeze(['idle', 'running', 'waiting-user', 'completed', 'error']);
+const AGENT_SOURCES = Object.freeze(['turn', 'tool', 'approval', 'question', 'lifecycle', 'restore']);
+
 function normalizeAgentState(value) {
   if (!value || typeof value !== 'object') return null;
+  const state = AGENT_STATES.includes(value.state) ? value.state : 'idle';
+  const source = AGENT_SOURCES.includes(value.source) ? value.source : 'lifecycle';
   return {
-    state: value.state,
+    state,
     label: typeof value.label === 'string' ? value.label : '',
+    labelKey: typeof value.labelKey === 'string' ? value.labelKey : null,
     sessionId: value.sessionId === undefined ? null : value.sessionId,
-    updatedAt: value.updatedAt,
-    source: value.source,
-    seq: value.seq,
-    since: value.since,
+    updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : new Date().toISOString(),
+    source,
+    seq: Number.isFinite(value.seq) ? value.seq : 0,
+    since: typeof value.since === 'string' ? value.since : new Date().toISOString(),
     turnId: value.turnId === undefined ? null : value.turnId,
+    ...(typeof value.hostEpoch === 'string' ? { hostEpoch: value.hostEpoch } : {}),
+  };
+}
+
+function idleAgentSnapshot(now) {
+  const at = new Date(now()).toISOString();
+  return {
+    state: 'idle',
+    label: '',
+    labelKey: 'agent.state.idle',
+    sessionId: null,
+    updatedAt: at,
+    source: 'lifecycle',
+    seq: 0,
+    since: at,
+    turnId: null,
   };
 }
 
@@ -88,7 +110,9 @@ export function createGameSDK(options = {}) {
 
   let readyPromise = null;
   let backfillPromise = null;
-  let lastAgent = null;
+  let queuedWrites = 0;
+  let writeTail = Promise.resolve();
+  const MAX_QUEUED_WRITES = 32;
 
   function applyViewport(value) {
     runtimeState.viewport = normalizeViewport(value);
@@ -136,12 +160,12 @@ export function createGameSDK(options = {}) {
     if (name === 'agent-status') {
       const snapshot = normalizeAgentState(data);
       if (!snapshot) return;
-      lastAgent = snapshot;
-      hub.emit('agent-status', snapshot, { buffer: false });
+      hub.emit('agent-status', snapshot);
       return;
     }
     if (isLifecycleEvent(name)) {
-      hub.emit(name, data && typeof data === 'object' ? data : {});
+      const payload = data && typeof data === 'object' ? data : {};
+      hub.emit(name, { event: name, ...payload });
     }
   }
 
@@ -186,6 +210,34 @@ export function createGameSDK(options = {}) {
     return readyPromise;
   }
 
+  /**
+   * Writes are queued in call order on the SDK side too (PRD §8.3). The Runtime
+   * also serializes them; doing it here keeps ordering stable for older
+   * Runtime builds and gives games a bounded queue (32) with GM-4291.
+   */
+  function requestWrite(method, params, timeoutMs) {
+    if (queuedWrites >= MAX_QUEUED_WRITES) {
+      return Promise.reject(createGameError(GM.BACKPRESSURE, 'Too many queued game write requests'));
+    }
+    queuedWrites += 1;
+    // The first write goes out synchronously (same observable ordering as a
+    // direct call); later writes wait for the previous one to settle.
+    const run = queuedWrites === 1
+      ? bridge.request(method, params, timeoutMs)
+      : writeTail.then(function runWrite() {
+        return bridge.request(method, params, timeoutMs);
+      });
+    writeTail = run.then(
+      function onWriteDone() {
+        queuedWrites -= 1;
+      },
+      function onWriteFailed() {
+        queuedWrites -= 1;
+      }
+    );
+    return run;
+  }
+
   function ensureAgentBackfill() {
     if (backfillPromise) return backfillPromise;
     if (!hub.has('agent-status')) return null;
@@ -194,7 +246,6 @@ export function createGameSDK(options = {}) {
     }).then(function onStatus(snapshot) {
       const normalized = normalizeAgentState(snapshot);
       if (!normalized) return;
-      lastAgent = normalized;
       hub.emit('agent-status', normalized, { buffer: false });
     }).then(undefined, function ignore() {});
     return backfillPromise;
@@ -204,7 +255,7 @@ export function createGameSDK(options = {}) {
     requireReady();
     assertStorageKey(key);
     const prepared = prepareStorageValue(data);
-    return bridge.request(METHODS.STORAGE_SAVE, { key, data: prepared.value }, SDK_METHOD_TIMEOUTS['storage.save']);
+    return requestWrite(METHODS.STORAGE_SAVE, { key, data: prepared.value }, SDK_METHOD_TIMEOUTS['storage.save']);
   }
 
   async function storageLoad(key) {
@@ -220,12 +271,12 @@ export function createGameSDK(options = {}) {
   async function storageRemove(key) {
     requireReady();
     assertStorageKey(key);
-    return bridge.request(METHODS.STORAGE_REMOVE, { key }, SDK_METHOD_TIMEOUTS['storage.remove']);
+    return requestWrite(METHODS.STORAGE_REMOVE, { key }, SDK_METHOD_TIMEOUTS['storage.remove']);
   }
 
   async function sessionStart() {
     requireReady();
-    return bridge.request(METHODS.SESSION_START, {}, SDK_METHOD_TIMEOUTS['session.start']);
+    return requestWrite(METHODS.SESSION_START, {}, SDK_METHOD_TIMEOUTS['session.start']);
   }
 
   async function sessionEnd(endOptions) {
@@ -238,14 +289,14 @@ export function createGameSDK(options = {}) {
       assertScoreValue(input.score);
       score = input.score;
     }
-    return bridge.request(METHODS.SESSION_END, { outcome, score }, SDK_METHOD_TIMEOUTS['session.end']);
+    return requestWrite(METHODS.SESSION_END, { outcome, score }, SDK_METHOD_TIMEOUTS['session.end']);
   }
 
   async function scoreSubmit(score, meta) {
     requireReady();
     assertScoreValue(score);
     const preparedMeta = prepareScoreMeta(meta);
-    return bridge.request(
+    return requestWrite(
       METHODS.SCORE_SUBMIT,
       { score, meta: preparedMeta },
       SDK_METHOD_TIMEOUTS['score.submit']
@@ -266,9 +317,8 @@ export function createGameSDK(options = {}) {
     return bridge.request(METHODS.AGENT_GET_STATUS, {}, SDK_METHOD_TIMEOUTS['agent.getStatus']).then(function onStatus(
       snapshot
     ) {
-      const normalized = normalizeAgentState(snapshot);
-      if (normalized) lastAgent = normalized;
-      return normalized || snapshot;
+      const normalized = normalizeAgentState(snapshot) || idleAgentSnapshot(now);
+      return normalized;
     });
   }
 
@@ -331,3 +381,10 @@ export function createGameSDK(options = {}) {
 
   return Object.freeze(game);
 }
+
+/**
+ * Convenience singleton (`import { game } from '@dsh-game/sdk'`, PRD §8.3).
+ * Building it does not start the handshake: the first `ready()`/`on()` call
+ * does (PRD §8.3 implementation constraints).
+ */
+export const game = createGameSDK();
