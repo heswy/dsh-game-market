@@ -11,6 +11,10 @@ function assertErrorEnvelope(payload, code) {
   assert.equal(payload.error.code, code);
 }
 
+function sessionEvent(host, sessionId, type, data) {
+  host.trigger('session/event', [{ id: sessionId }, { type, data }]);
+}
+
 async function agentState(host, sessionId) {
   return host.data(ROUTES.AGENT_STATE, { query: { sessionId } });
 }
@@ -88,10 +92,10 @@ export function register() {
     assert.equal(regular.routes.has(ROUTES.DEV_AGENT_STATE), false);
   });
 
-  test('real event mapping: running → tool label → completed/error → ack', async (t) => {
+  test('real session events: running → tool label → completed/error → ack', async (t) => {
     const host = await createHarness(t);
     const sessionId = 'ses-event-1';
-    host.trigger('agent/pre-step', { sessionId, turnId: 'turn-1' });
+    sessionEvent(host, sessionId, 'turn/start', { turn: 1 });
     const running = await agentState(host, sessionId);
     assert.equal(running.state, 'running');
     assert.equal(running.labelKey, AGENT_LABEL_KEYS.running);
@@ -100,7 +104,7 @@ export function register() {
     assert.equal(running.seq, 1);
     const runningSince = running.since;
 
-    host.trigger('tool/result', { sessionId, toolName: 'run_tests', turnId: 'turn-1' });
+    sessionEvent(host, sessionId, 'tool/call', { turn: 1, step: 1, name: 'run_tests' });
     const testing = await agentState(host, sessionId);
     assert.equal(testing.state, 'running');
     assert.equal(testing.labelKey, AGENT_LABEL_KEYS.test);
@@ -109,70 +113,73 @@ export function register() {
     assert.equal(testing.seq, 2);
     assert.equal(testing.since, runningSince);
 
-    host.trigger('tool/result', { sessionId, toolName: 'bash', turnId: 'turn-1' });
+    sessionEvent(host, sessionId, 'tool/call', { turn: 1, step: 1, name: 'bash' });
     const command = await agentState(host, sessionId);
     assert.equal(command.labelKey, AGENT_LABEL_KEYS.command);
     assert.equal(command.seq, 3);
     assert.equal(command.since, runningSince);
 
-    host.trigger('assistant/message', { sessionId, turnId: 'turn-1' });
-    const unchanged = await agentState(host, sessionId);
-    assert.equal(unchanged.state, 'running');
-    assert.equal(unchanged.seq, 3);
+    sessionEvent(host, sessionId, 'assistant/message', { turn: 1, step: 2, message: { role: 'assistant', content: [] } });
+    const responding = await agentState(host, sessionId);
+    assert.equal(responding.state, 'running');
+    assert.equal(responding.seq, 4);
 
-    host.trigger('turn/end', { sessionId, turnId: 'turn-1', outcome: 'completed' });
+    sessionEvent(host, sessionId, 'turn/end', { turn: 1, reason: { kind: 'completed' } });
     const completed = await agentState(host, sessionId);
     assert.equal(completed.state, 'completed');
     assert.equal(completed.label, AGENT_LABELS_ZH.completed);
-    assert.equal(completed.seq, 4);
+    assert.equal(completed.seq, 5);
     assert.equal(completed.since, completed.updatedAt);
     assert.ok(Date.parse(completed.since) >= Date.parse(runningSince));
 
-    host.trigger('tool/result', { sessionId, toolName: 'bash' });
-    host.trigger('assistant/message', { sessionId });
+    sessionEvent(host, sessionId, 'tool/result', { turn: 1, step: 1, message: { role: 'tool', content: [] } });
+    sessionEvent(host, sessionId, 'assistant/message', { turn: 1, step: 2, message: { role: 'assistant', content: [] } });
     const stillCompleted = await agentState(host, sessionId);
     assert.equal(stillCompleted.state, 'completed');
-    assert.equal(stillCompleted.seq, 4);
+    assert.equal(stillCompleted.seq, 5);
 
     const acked = await host.data(ROUTES.AGENT_ACK, {
       body: { sessionId, seq: completed.seq },
     });
-    assert.deepEqual(acked, { state: 'idle', seq: 5 });
+    assert.deepEqual(acked, { state: 'idle', seq: 6 });
     const idle = await agentState(host, sessionId);
     assert.equal(idle.state, 'idle');
     assert.equal(idle.turnId, null);
-    const ackAgain = await host.data(ROUTES.AGENT_ACK, { body: { sessionId, seq: 5 } });
-    assert.deepEqual(ackAgain, { state: 'idle', seq: 5 });
+    const ackAgain = await host.data(ROUTES.AGENT_ACK, { body: { sessionId, seq: 6 } });
+    assert.deepEqual(ackAgain, { state: 'idle', seq: 6 });
 
-    host.trigger('agent/pre-step', { sessionId, turnId: 'turn-2' });
+    sessionEvent(host, sessionId, 'turn/start', { turn: 2 });
     const newTurn = await agentState(host, sessionId);
     assert.equal(newTurn.state, 'running');
     assert.equal(newTurn.turnId, 'turn-2');
-    assert.equal(newTurn.seq, 6);
+    assert.equal(newTurn.seq, 7);
 
-    host.trigger('turn/end', { sessionId, turnId: 'turn-2', error: { code: 'E_MODEL' } });
+    sessionEvent(host, sessionId, 'turn/end', {
+      turn: 2,
+      reason: { kind: 'error', error: { code: 'E_MODEL' } },
+    });
     const error = await agentState(host, sessionId);
     assert.equal(error.state, 'error');
     assert.equal(error.labelKey, AGENT_LABEL_KEYS.error);
     assert.equal(error.label, AGENT_LABELS_ZH.error);
-    assert.equal(error.seq, 7);
+    assert.equal(error.seq, 8);
   });
 
   test('waiting-user has highest priority and survives lower-priority events', async (t) => {
     const host = await createHarness(t);
     const sessionId = 'ses-wait-1';
-    host.trigger('agent/pre-step', { sessionId });
-    host.trigger('approval/asked', { sessionId, turnId: 'turn-w' });
+    sessionEvent(host, sessionId, 'turn/start', { turn: 2 });
+    sessionEvent(host, sessionId, 'approval/asked', { id: 'ap-1', toolName: 'bash' });
     const waiting = await agentState(host, sessionId);
     assert.equal(waiting.state, 'waiting-user');
     assert.equal(waiting.labelKey, AGENT_LABEL_KEYS['waiting-approval']);
     assert.equal(waiting.source, 'approval');
-    assert.equal(waiting.turnId, 'turn-w');
+    assert.equal(waiting.turnId, 'turn-2');
     assert.equal(waiting.seq, 2);
 
-    host.trigger('tool/result', { sessionId, toolName: 'bash' });
-    host.trigger('turn/end', { sessionId, outcome: 'completed' });
-    host.trigger('assistant/message', { sessionId });
+    sessionEvent(host, sessionId, 'tool/result', { turn: 2, step: 1, message: { role: 'tool', content: [] } });
+    sessionEvent(host, sessionId, 'turn/end', { turn: 2, reason: { kind: 'completed' } });
+    sessionEvent(host, sessionId, 'assistant/message', { turn: 2, step: 1, message: { role: 'assistant', content: [] } });
     const stillWaiting = await agentState(host, sessionId);
     assert.equal(stillWaiting.state, 'waiting-user');
     assert.equal(stillWaiting.seq, 2);
@@ -183,34 +190,34 @@ export function register() {
     });
     assert.deepEqual(ackWhileWaiting, { state: 'waiting-user', seq: 2 });
 
-    host.trigger('approval/decided', { sessionId });
+    sessionEvent(host, sessionId, 'approval/decided', { id: 'ap-1', outcome: 'allowed-once' });
     const resumed = await agentState(host, sessionId);
     assert.equal(resumed.state, 'running');
     assert.equal(resumed.source, 'approval');
-    assert.equal(resumed.turnId, 'turn-w');
+    assert.equal(resumed.turnId, 'turn-2');
     assert.equal(resumed.seq, 3);
   });
 
-  test('turn/end error detection tolerates multiple payload field names', async (t) => {
+  test('turn/end reason kinds map to completed, idle or error', async (t) => {
     const host = await createHarness(t);
     const cases = [
-      [{ status: 'cancelled' }, 'error'],
-      [{ ok: false }, 'error'],
-      [{ result: { error: { code: 'X' } } }, 'error'],
-      [{ isError: true }, 'error'],
-      [{ outcome: 'completed' }, 'completed'],
-      [{}, 'completed'],
+      [{ kind: 'completed' }, 'completed'],
+      [{ kind: 'max-tokens' }, 'completed'],
+      [{ kind: 'error', error: { code: 'E_MODEL' } }, 'error'],
+      [{ kind: 'aborted', reason: { kind: 'user' } }, 'idle'],
+      [{ kind: 'interrupted' }, 'idle'],
+      [{ kind: 'blocked' }, 'idle'],
+      [{ kind: 'forked' }, 'idle'],
     ];
     let index = 0;
-    for (const [payload, expectedState] of cases) {
-      const sessionId = `ses-err-${index}`;
+    for (const [reason, expectedState] of cases) {
+      const sessionId = `ses-reason-${index}`;
       index += 1;
-      host.trigger('agent/pre-step', { sessionId });
-      host.trigger('turn/end', { sessionId, ...payload });
+      sessionEvent(host, sessionId, 'turn/start', { turn: 1 });
+      sessionEvent(host, sessionId, 'turn/end', { turn: 1, reason: reason });
       const snapshot = await agentState(host, sessionId);
       assert.equal(snapshot.state, expectedState);
     }
-    host.trigger('turn/end', { prompt: 'no session id here' });
   });
 
   test('dedupe, label-only changes, stale ack and pre-step waterfall', async (t) => {
@@ -230,14 +237,14 @@ export function register() {
     assert.equal(nextCalled, 1);
     assert.deepEqual(returns, ['next-result']);
 
-    host.trigger('tool/result', { sessionId, toolName: 'read_file' });
+    sessionEvent(host, sessionId, 'tool/call', { turn: 1, step: 1, name: 'read_file' });
     const read = await agentState(host, sessionId);
     assert.equal(read.state, 'running');
     assert.equal(read.labelKey, AGENT_LABEL_KEYS.read);
     assert.equal(read.seq, first.seq + 1);
     assert.equal(read.since, first.since);
 
-    host.trigger('tool/result', { sessionId, toolName: 'web_search' });
+    sessionEvent(host, sessionId, 'tool/call', { turn: 1, step: 1, name: 'web_search' });
     const search = await agentState(host, sessionId);
     assert.equal(search.labelKey, AGENT_LABEL_KEYS.search);
     assert.equal(search.seq, read.seq + 1);
@@ -262,12 +269,12 @@ export function register() {
       prompt: canary,
       messages: [{ role: 'user', content: canary }],
     });
-    host.trigger('tool/result', {
-      sessionId,
-      toolName: 'bash',
+    sessionEvent(host, sessionId, 'tool/call', {
+      turn: 1,
+      step: 1,
+      name: 'bash',
       command: `echo ${canary}`,
-      toolArguments: { command: canary },
-      result: { stdout: canary },
+      arguments: JSON.stringify({ command: canary }),
     });
     const snapshot = await agentState(host, sessionId);
     assert.equal(snapshot.state, 'running');

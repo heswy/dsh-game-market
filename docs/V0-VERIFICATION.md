@@ -45,7 +45,7 @@ npm test          → 312 tests / 312 pass / 0 fail
 | V0-06 | Sidebar 状态点 | **通过** | running / waiting / completed 均出现对应状态点（截图 05/08/10） |
 | V0-07 | 游戏加载与键盘 | **通过** | sandbox iframe 正常加载；点击画布后方向键可移动蛇、吃食物逻辑运行（截图 04） |
 | V0-08 | Agent Presence 运行态 | **通过** | 鲸鱼 aria-label `Agent 状态：正在工作…。按下返回工作`；完成后切换完成态 |
-| V0-09 | 完成提醒不打断 | **通过** | 游戏继续运行，鲸鱼展示 `任务完成啦 / 查看结果`（截图 08），未暂停/关闭游戏 |
+| V0-09 | 完成提醒不打断 | **通过（V0.3 修复真实事件源）** | 游戏继续运行，鲸鱼展示 `任务完成啦 / 查看结果`；V0.3 前 Host 订阅了错误的 Cordis 事件名，真实 DSH 完成事件收不到，已改为 `session/event` |
 | V0-10 | 需要用户 / 返回游戏 | **通过（V0.2 调整）** | 鲸鱼等待态 → 暂停存档 → 回到 Conversation；再次进入游戏时**只保留平台的一次「已恢复上一局」确认**，确认后直接开始游戏（不再出现游戏内第二个遮罩） |
 | V0-11 | 自动保存 / Continue / 跨重启 | **通过** | 存档文件 revision 递增、`.bak` 存在；退出→市场显示 Continue；重启 Host 后 Continue 仍可恢复 |
 | V0-12 | 存档原子性与恢复 | **通过（自动化）** | Host 测试覆盖 tmp→fsync→.bak、损坏恢复、只读模式；Live 额外观测到多次 revision 与备份文件 |
@@ -100,9 +100,30 @@ npm test          → 312 tests / 312 pass / 0 fail
 
 自动化：`npm test` → **314 tests / 314 pass**。
 
+## 4.3 V0.3 修复（2026-10-18 晚第三次）
+
+**现象**：Agent 在真实 DSH 中完成任务后，游戏内没有任何完成提醒。
+
+**根因**：Host 的 agent 状态来自 `ctx.on('turn/end' / 'tool/result' / 'approval/asked' …)`，但 DSH 中这些是 **session log 事件**，不是 Cordis 事件总线事件；真实宿主上这些监听永远不会触发。Cordis 层可用的只有 `agent/pre-step` / `agent/disposed`，所以此前“Agent 正在工作”能出现，而“完成/等待”永远收不到。
+
+**修复**：Host 增加 `ctx.on('session/event', (session, event) => …)` 桥接，按真实 payload 映射：
+- `turn/end` 的 `reason.kind`：`completed` / `max-tokens` → completed；`error` → error；`aborted` / `interrupted` / `blocked` / `forked` → idle
+- `approval/asked` → waiting-user（approval），`approval/decided` → running
+- `turn/start` / `tool/call` / `tool/result` / `assistant/message` → running（tool/call 保留具体工具 label）
+- 保留 `agent/pre-step`（Cordis waterfall）与 `agent/disposed`
+
+**验证**：
+- 真机（隔离 DSH 0.2.1-rc.2）：发送一条没有模型凭据的消息触发真实 `turn/end(error)`，Host agent-state 在约 6s 内返回 `state=error, seq=2, source=turn`（修复前会一直 idle）。
+- 单测覆盖 session-event 的完成/错误/取消/等待审批/工具 label/ack 全链路；鲸鱼完成提醒 UI 继续由 dev 状态与集成测试覆盖（截图）。
+- **注意**：本次改的是 Host 半，需要重启 DSH 才生效。
+
+| 截图 | 内容 |
+|---|---|
+| ![v0.3-completed-reminder](./verification/v0/v0.3-completed-reminder.png) | 游戏内完成提醒（鲸鱼气泡） |
+
 ## 5. 未覆盖项与已知限制
 
-1. **真实 Agent 事件链路**：验证环境没有模型凭据，无法真实触发 Agent 长任务/审批；UI 用 dev-only 状态接口驱动。Host Adapter 对真实 DSH 事件的映射有单测（含防御式 payload），但 **S-14/S-15 仍需真机验证**。
+1. **真实 Agent 事件链路**：V0.3 起 Host 已改订阅 `session/event`，并在真机验证了真实 `turn/end(error)` 的映射；审批/提问类真实事件仍主要靠单测与 dev 模拟（question 投影未接），仍需真机补测。
 2. **提问（question）等待**：V0 只保证 approval 类等待可识别；`userQuestions` 投影未接（PRD S-14），等待态通过 dev 路由验证。
 3. **深色主题 / Windows**：平台 UI 全部使用 DSH token；Live 仅验证浅色 + macOS Web 宿主。深色主题与 Windows 复测列入 V1 前检查（PRD §10.1）。
 4. **保存失败重试 backoff / saveGap 提示**：V0 简化为失败即提示 + `saveStale` 确认，未实现 PRD 的三次退避与“上次未保存”提示。

@@ -9,7 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { ROUTES } from '../../../shared/src/contracts.js';
-import { AGENT_EVENTS } from '../../src/agent-adapter.js';
+import { AGENT_EVENTS, AGENT_SESSION_EVENTS } from '../../src/agent-adapter.js';
 import { apply } from '../../src/plugin.js';
 
 export const FIXTURE_ROOT = path.resolve(fileURLToPath(new URL('../fixtures/games/', import.meta.url)));
@@ -18,9 +18,9 @@ export const BROKEN_FIXTURE_ROOT = path.resolve(
 );
 export const ORIGIN = 'http://127.0.0.1:19387';
 
-export { ROUTES, AGENT_EVENTS };
+export { ROUTES, AGENT_EVENTS, AGENT_SESSION_EVENTS };
 
-export function createFakeContext({ knownEvents = AGENT_EVENTS, failingEvents = [], withConnection = true } = {}) {
+export function createFakeContext({ knownEvents = [...AGENT_EVENTS, 'session/event'], failingEvents = [], withConnection = true } = {}) {
   const routes = new Map();
   const listeners = new Map();
   const effects = [];
@@ -88,7 +88,8 @@ export function createFakeContext({ knownEvents = AGENT_EVENTS, failingEvents = 
 
   function trigger(name, payload, next) {
     const returns = [];
-    for (const listener of listeners.get(name) || []) returns.push(listener(payload, next));
+    const args = Array.isArray(payload) ? [...payload, next] : [payload, next];
+    for (const listener of listeners.get(name) || []) returns.push(listener(...args));
     return returns;
   }
 
@@ -100,7 +101,7 @@ export async function createHarness(
   {
     config = {},
     fixtureRoot = FIXTURE_ROOT,
-    knownEvents = AGENT_EVENTS,
+    knownEvents = [...AGENT_EVENTS, 'session/event'],
     failingEvents = [],
     withConnection = true,
   } = {}

@@ -29,12 +29,24 @@ const LABEL_KEYS = new Set(Object.values(AGENT_LABEL_KEYS));
 /** DSH event names subscribed by the Host half. */
 export const AGENT_EVENTS = Object.freeze([
   'agent/pre-step',
-  'tool/result',
+  'agent/disposed',
+]);
+
+/**
+ * Live session-log event types observed through `session/event`.
+ *
+ * `turn/end`, `tool/result`, `approval/*` and `assistant/message` are session
+ * events, not Cordis agent events; subscribing them via `ctx.on(type)` never
+ * fires in real DSH. This list is the real completion/waiting signal path.
+ */
+export const AGENT_SESSION_EVENTS = Object.freeze([
+  'turn/start',
   'turn/end',
+  'tool/call',
+  'tool/result',
+  'assistant/message',
   'approval/asked',
   'approval/decided',
-  'assistant/message',
-  'agent/disposed',
 ]);
 
 function defaultKeyForState(state) {
@@ -333,6 +345,125 @@ export function createAgentAdapter({ hostEpoch, now, logger = null, maxSessions 
     }
   }
 
+  /**
+   * Map one live session event to the per-session agent snapshot.
+   *
+   * Real DSH payloads differ from the flattened shapes the old Cordis
+   * subscriptions assumed: `turn/end` carries `{ turn, reason: { kind } }` and
+   * `approval/asked` carries the approval request fields directly.
+   */
+  function ingestSessionEvent(session, event) {
+    try {
+      const sessionId = session && typeof session.id === 'string' ? session.id : null;
+      if (!sessionId || !isPlainObject(event) || typeof event.type !== 'string') return null;
+      if (!AGENT_SESSION_EVENTS.includes(event.type)) return null;
+      const data = isPlainObject(event.data) ? event.data : {};
+      const snapshot = ensureSnapshot(sessionId);
+      const rawTurn = data.turn;
+      const turnId =
+        typeof rawTurn === 'number' && Number.isFinite(rawTurn)
+          ? `turn-${rawTurn}`
+          : extractTurnId(data) || snapshot.turnId;
+
+      switch (event.type) {
+        case 'turn/start':
+          if (snapshot.state === 'waiting-user') return cloneSnapshot(snapshot);
+          return apply(sessionId, {
+            state: 'running',
+            labelKey: AGENT_LABEL_KEYS.running,
+            source: 'turn',
+            turnId: turnId,
+          });
+        case 'turn/end': {
+          if (
+            snapshot.state === 'waiting-user' ||
+            snapshot.state === 'completed' ||
+            snapshot.state === 'error'
+          ) {
+            return cloneSnapshot(snapshot);
+          }
+          const kind = isPlainObject(data.reason) && typeof data.reason.kind === 'string' ? data.reason.kind : 'completed';
+          if (kind === 'aborted' || kind === 'interrupted' || kind === 'blocked' || kind === 'forked') {
+            return apply(sessionId, {
+              state: 'idle',
+              labelKey: AGENT_LABEL_KEYS.idle,
+              source: 'lifecycle',
+              turnId: null,
+            });
+          }
+          const failed = kind === 'error';
+          return apply(sessionId, {
+            state: failed ? 'error' : 'completed',
+            labelKey: failed ? AGENT_LABEL_KEYS.error : AGENT_LABEL_KEYS.completed,
+            source: 'turn',
+            turnId: turnId,
+          });
+        }
+        case 'tool/call': {
+          if (snapshot.state === 'waiting-user' || snapshot.state === 'completed' || snapshot.state === 'error') {
+            return cloneSnapshot(snapshot);
+          }
+          return apply(sessionId, {
+            state: 'running',
+            labelKey: toolLabelKey(data),
+            source: 'tool',
+            turnId: turnId,
+          });
+        }
+        case 'tool/result': {
+          if (snapshot.state === 'waiting-user' || snapshot.state === 'completed' || snapshot.state === 'error') {
+            return cloneSnapshot(snapshot);
+          }
+          return apply(sessionId, {
+            state: 'running',
+            labelKey: toolLabelKey(data),
+            source: 'tool',
+            turnId: snapshot.turnId,
+          });
+        }
+        case 'assistant/message': {
+          if (snapshot.state === 'waiting-user' || snapshot.state === 'completed' || snapshot.state === 'error') {
+            return cloneSnapshot(snapshot);
+          }
+          return apply(sessionId, {
+            state: 'running',
+            labelKey: AGENT_LABEL_KEYS.running,
+            source: 'turn',
+            turnId: turnId,
+          });
+        }
+        case 'approval/asked': {
+          return apply(sessionId, {
+            state: 'waiting-user',
+            labelKey: AGENT_LABEL_KEYS['waiting-approval'],
+            source: 'approval',
+            turnId: turnId,
+          });
+        }
+        case 'approval/decided': {
+          if (snapshot.state === 'completed' || snapshot.state === 'error' || snapshot.state === 'idle') {
+            return cloneSnapshot(snapshot);
+          }
+          return apply(sessionId, {
+            state: 'running',
+            labelKey: AGENT_LABEL_KEYS.running,
+            source: 'approval',
+            turnId: snapshot.turnId,
+          });
+        }
+        default:
+          return null;
+      }
+    } catch (error) {
+      logger?.warn?.(
+        '[game-market/host] agent-session-ingest-failed',
+        `event=${String(event && event.type)}`,
+        `code=${error && error.code ? error.code : 'E_UNKNOWN'}`
+      );
+      return null;
+    }
+  }
+
   function ack({ sessionId, seq } = {}) {
     const id = validateDshSessionIdRequired(sessionId);
     let expected = null;
@@ -386,6 +517,7 @@ export function createAgentAdapter({ hostEpoch, now, logger = null, maxSessions 
   return {
     get,
     ingest,
+    ingestSessionEvent,
     ack,
     devSet,
     etag,

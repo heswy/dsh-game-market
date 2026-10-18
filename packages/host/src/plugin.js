@@ -104,6 +104,33 @@ function registerHttpRoutes(ctx, host, logger) {
   );
 }
 
+function registerAgentSessionEvents(ctx, host, logger) {
+  ctx.effect(
+    function gameMarketAgentSessionEvents() {
+      if (typeof ctx.on !== 'function') return () => {};
+      let disposer;
+      try {
+        disposer = ctx.on('session/event', function onGameMarketSessionEvent(session, event) {
+          try {
+            host.services.agent.ingestSessionEvent(session, event);
+          } catch (_error) {
+            // Mapping is defensive; never let it break the session append.
+          }
+        });
+      } catch (error) {
+        logger.warn(
+          LOG_PREFIX,
+          'session-event-registration-failed',
+          `code=${error?.code || 'E_UNKNOWN'}`
+        );
+        return () => {};
+      }
+      return () => safeDispose(disposer, logger);
+    },
+    'dsh-game-market: session events'
+  );
+}
+
 function registerAgentEvents(ctx, host, logger) {
   for (const eventName of host.services.agent.eventNames) {
     ctx.effect(
@@ -144,6 +171,7 @@ export function apply(ctx, config) {
     const host = createHost({ config, logger });
     registerHttpRoutes(ctx, host, logger);
     registerAgentEvents(ctx, host, logger);
+  registerAgentSessionEvents(ctx, host, logger);
     logger.info(LOG_PREFIX, 'applied', `hostEpoch=${host.hostEpoch}`);
   } catch (error) {
     logger.error(LOG_PREFIX, 'apply-failed', `code=${error?.code || 'E_UNKNOWN'}`);
