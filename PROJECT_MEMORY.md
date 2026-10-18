@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：按 PRD v2.1 完成 **V0**；V0 验证小游戏 = **贪吃蛇（snake）**
+- 当前目标：V0 已验收完成；按 PRD v2.1 进入 **V1（Market 产品化）**；首发四款 = 贪吃蛇 + 跳跃 + 2048 + 打砖块
 - 权威规格：`PRD｜DSH Game Market.md`（第 8–12 章为开发权威来源）
 - 开始记录：2026-10-18
 
@@ -55,7 +55,7 @@
 
 ---
 
-## 2. V0 范围（当前目标）
+## 2. V0 范围（已完成，保留为历史基线）
 
 **只证明核心链路**：Agent 工作 → 用户进入游戏（贪吃蛇）→ Agent 完成/需要用户 → 用户自主返回工作；游戏进度跨多次等待保留。
 
@@ -76,6 +76,76 @@ V0 必须包含（对应 PRD §7.1 / §11.2）：
 **V0 明确不做**：真实安装/Registry/搜索/排行榜 UI/开发者 CLI/多游戏/多文件游戏资源/正式鲸鱼素材/平台静音/长期少提醒设置。
 
 新增决策：V0 验证游戏用 snake 替代 PRD 示例中的 2048（用户指定，2026-10-18）。该决定仅影响 V0 示例游戏，不改变 Runtime/SDK 契约。
+
+---
+
+## 2.1 V1 范围与开发计划（2026-10-18 锁定）
+
+> 用户决策已锁定：四条主线（Market 前端/体验、首发游戏、开发者、安装/Registry/卸载）全部做；**贪吃蛇计入“至少四个首发游戏”**；V1 游戏继续**单文件**，多文件资源推迟到 **V1.5**；Registry 采用**静态索引 + 本地/远程安装包**（不做服务端）；Market **视觉成品感与功能完整度都要**。
+
+### 2.1.1 V1 目标
+
+把 V0 的“内置单游戏 + 开发态加载”升级为可分发、可安装、可开发的小游戏市场：
+
+1. **Market 产品化**：浏览/搜索/分类/详情/安装/更新/卸载/我的游戏，安装态与错误反馈完整；视觉打磨到可对外演示。
+2. **首发四款游戏**：`snake`（内置，V1 打磨）、`jump`（跳跃）、`2048`、`breakout`（打砖块）；全部走 V1 SDK/契约，单文件自包含，具备分数/最高分/暂停/自动保存/Continue。
+3. **开发者体系**：SDK v1（向后兼容 V0）、零依赖 CLI、模板、开发/打包/发布静态索引的文档与示例。
+4. **安装/Registry/卸载**：Host 侧静态 Registry 客户端、安装包校验与落盘、版本管理、卸载清理；Client 侧安装流程；本地/远程两种来源。
+
+### 2.1.2 首发游戏名单（4 款）
+
+| id | 名称（zh/en） | 类型/核心玩法 | 输入 | V1 验收要点 |
+|---|---|---|---|---|
+| `snake` | 贪吃蛇 / Snake | 经典街机（已有） | 方向键 / WASD | 迁移到 V1 SDK；视觉/手感打磨；现有测试保持 |
+| `jump` | 跳跃 / Jump | 纵向平台跳跃（Doodle Jump 类） | ←/→ + 空格（或自动弹跳+左右） | 程序化平台、无尽分数、失误结算、存档/Continue |
+| `2048` | 2048 / 2048 | 数字拼图 | 方向键 / WASD（可加鼠标滑动） | 撤销一次？、分数/最高分、棋盘存档、动画反馈 |
+| `breakout` | 打砖块 / Breakout | 街机弹球 | 鼠标 / 方向键 | 多关卡、砖块类型、生命/分数、球速变化 |
+
+共同要求：自包含单文件 HTML（内联 SDK/样式/脚本/图标 data URI）；无第三方依赖、无外部网络；启动 ≤1.5s；键盘可玩；暂停/恢复/离开自动保存；个人最高分；同一游戏一个未结束 Session 可 Continue；save ≤1MB。
+
+### 2.1.3 游戏包 / Registry / 安装模型（V1 设计决策）
+
+- **包格式**：单文件 `.html`，内嵌 `<script type="application/json" id="dsh-game-manifest">`（manifest v1）+ 内联 SDK/资源；不引入 zip（V1.5 才做多文件）。
+- **静态 Registry**：`registry.json`（配置可为 HTTPS URL 或本地路径），条目 `{schemaVersion, generatedAt, games:[{id, version, url, sha256, size, name, ...}]}`；url 可为相对 Registry 的包路径。Host 拉取、校验、缓存；HTTPS-only（远程），重定向限制；本地路径仅 dev/明确配置。
+- **安装**：Host 下载/读取包 → 校验 sha256/大小/HTML-only → 解析内嵌 manifest → 校验 id/version/sdkVersion → 写 `$DSH_HOME/storages/dsh-game-market/installed/<id>/<version>/entry.html` → 更新 `installations.json`。安装目录与存档目录（`saves/`）分离，卸载不删存档。
+- **卸载**：仅删安装目录与 installation 记录；内置游戏不可卸载；运行中 Session 先结束/提示。
+- **更新**：Registry 版本更高 → Market 显示“更新”；更新安装保留存档；同 id 多版本可保留当前版本，旧的升级后清理。
+- **本地安装**：Market 支持选择本地 `.html` 文件（读入 ≤4MB，客户端 POST bytes 或 Host 接受 base64）用于开发/离线分发；CLI 打包产物可直接导入。
+- **安全**：sha256 强制；仅 `text/html`；大小上限；id/version 正则；路径穿越拒绝；sandbox/CSP 沿用 V0；V1 同时把 `frame-ancestors *` 收紧为可配置 allowlist（V0-06）。
+- **内置游戏**：`snake` 仍以 `games/snake` 内置；Registry 示例可同时有 `snake` 包用于安装流程测试。
+
+### 2.1.4 分支 / worktree / owner 计划
+
+| 阶段 | 分支 | owner | write scope | 依赖 |
+|---|---|---|---|---|
+| M0 | `feat/v1-foundation` | Lead | `packages/shared`、契约文档、`scripts`、`tests/v1-*`、根配置；不写业务 UI | 无 |
+| M1a | `feat/v1-install-registry` | 子智能体 A | `packages/host/src/*`、`packages/host/test/*`、Registry 夹具 | M0 |
+| M1b | `feat/v1-developer` | 子智能体 B | `packages/sdk/*`、`scripts/cli/*`、`templates/*`、`docs/developer*` | M0；发布协议对 M1a 只依赖契约 |
+| M1c | `feat/game-jump` / `feat/game-2048` / `feat/game-breakout` / `feat/game-snake-v1` | 子智能体 C/D（两两分） | `games/<id>/*` 各自目录 | M0（SDK v1 冻结） |
+| M2 | `feat/v1-market-ux` | 子智能体 E | `packages/client/src/components|styles|locale`、安装/详情 UI；避免改 Host 契约 | M1a 安装 API 冻结；视觉可提前出方案 |
+| M3 | `chore/v1-integration` | Lead | 集成、跨模块测试、文档、记忆 | 全部 feature |
+| 发布 | `main` + tag `v1.0.0` | Lead | 只合并、验证、打 tag、推送 | M3 验收通过 |
+
+- 并行上限：M1 同时 3～4 个工作树；每个分支一个 owner；共享文件（`shared`、根构建、`main`、记忆）由 Lead 独占。
+- 合并顺序：`foundation → install/registry → market-ux → games（随时）→ developer → integration`；Market UX 必须在 install API 冻结后合并，避免反复改安装态。
+- 禁止跨分支直接 cherry-pick 未合并提交；契约变更走 M0/Lead。
+
+### 2.1.5 里程碑与验收
+
+- **M0（地基）**：包格式/manifest v1/schema、Registry schema、安装数据模型、路由表、SDK v1 API、四游戏验收清单落文档 + 契约测试；`npm run verify` 绿。
+- **M1（并行）**：安装/Registry Host 完成（含校验/卸载/版本）；CLI init/build/publish 可跑；四游戏 alpha 可玩且通过单游戏测试；Market 视觉方案评审。
+- **M2（Market UX）**：搜索/分类/详情/安装态/更新/卸载/我的游戏完整；视觉与空态/错误态打磨；暗色主题与窄宽度可用。
+- **M3（集成验收）**：全量测试 + 隔离 DSH 0.2.1-rc.2 真机验证 + 用户桌面验收；更新 README、验证文档、记忆；打 `v1.0.0`。
+
+**V1 验收（必须全部满足）**：
+1. 静态 Registry（本地 + HTTPS 各一次）能安装 `jump`/`2048`/`breakout`，Market 显示已安装/可更新/可卸载；卸载后入口消失且存档保留。
+2. 四款首发游戏（含内置 snake）可玩 5 分钟无崩溃；分数/最高分/暂停/自动保存/Continue 全可用。
+3. Market：搜索、分类、详情页（作者/版本/大小/预览）、安装进度/失败重试、我的游戏、空态/错误态、键盘焦点/暗色主题。
+4. 开发者 CLI：在空目录 `init` → `build` → `publish` 更新本地 Registry → Market 可安装/运行模板游戏；文档步骤 executable。
+5. 安全：sha256 不匹配拒绝；超大/非 HTML/非法 id 拒绝；卸载清理完整；`frame-ancestors` 收紧为配置 allowlist。
+6. 全量 `npm run verify` 通过；真机验收记录进 `docs/V1-VERIFICATION.md`。
+
+**V1 不做 / 推迟 V1.5**：多文件游戏资源（图片/音效/zip）、服务端 Registry/账号/付费/云排行榜、游戏内多人、Windows 完整视觉验收（可做冒烟）、正式鲸鱼素材。
 
 ---
 
@@ -180,6 +250,16 @@ V0 的真机 UI 验证不依赖用户日常 profile：
   - V0-10：恢复游戏只保留平台一次「已恢复上一局」确认；平台确认后游戏直接开始（含 saved `ready`，`resume.js` 仅 IGNORE/PLAY），不再显示游戏内第二个遮罩，并 focusBoard。Agent 快照在页面可见且绑定 session 时轮询，不再依赖 chip surface。
   - V0-11：**真实 Agent 事件源必须是 `ctx.on('session/event', (session, event) => …)`**。`turn/end` / `tool/result` / `approval/*` / `assistant/message` 是 session log 事件，`ctx.on(type)` 在真实 DSH 中永不触发；Cordis 只有 `agent/pre-step` / `agent/disposed`。Host 映射：turn/end kind → completed/error/idle；approval/asked → waiting；approval/decided → running；tool/call → specific labels。V0.3 修复前“运行中”能显示而“完成/等待”永远不出现，就是此原因。
   - V0-06：entry 的 CSP `frame-ancestors` 在 V0 使用 `*`。原因：DSH Host 侧看到的请求 origin（`dsh.internal`）与嵌入页面实际 origin（loopback Web UI）可能不同，单一 origin 会阻止 iframe 加载；游戏是不可信静态内容且受 sandbox 隔离，V0 接受该放宽，V1 改为可配置 allowlist（PRD §8.10）。
+- V1 用户锁定决策（2026-10-18）：
+  - V1-01：首发游戏四款 = `snake`（内置，计入）+ `jump`（跳跃）+ `2048` + `breakout`（打砖块）。其中 `jump` 为用户指定，`2048`/`breakout` 由 Lead 按“好玩/吸引人/单文件可实现”选型锁定。
+  - V1-02：V1 继续单文件自包含游戏；多文件资源（图片/音效/zip）放 V1.5。
+  - V1-03：Registry = 静态索引 + 本地/远程安装包；不做服务端 Registry（用户无服务可托管）。
+  - V1-04：Market 前端“视觉成品感”和“功能完整度”都要做，不二选一。
+- V1-05：包格式 = 单文件 HTML 内嵌 manifest v1（`<script type="application/json" id="dsh-game-manifest">`）；Registry 仅存 URL/sha256/元数据；不引入 zip。
+- V1-06：安装模型：`installed/<id>/<version>/entry.html` + `installations.json`；存档与安装分离；卸载不删存档；内置游戏不可卸载。
+- V1-07：SDK v1 必须向后兼容 V0 游戏；`snake` 迁移到 v1 但保持契约兼容。
+- V1-08：V1 分支计划见 §2.1.4；Lead 独占 `shared`/根配置/记忆，新增子智能体 A（install-registry）、B（developer）、C/D（games）、E（market-ux）。
+- V1-09：V1 安全底线：sha256 强制、HTML-only、大小/路径/版本校验、下载超时/重定向限制、CSP frame-ancestors 收紧为 allowlist。
 
 ---
 
@@ -187,9 +267,6 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 
 > 规则：Lead 每完成一个阶段追加一条（日期、阶段、commit、结果、下一步）。历史细节以 git log 为准，本节只保留最近 10 条。
 
-- 2026-10-18 · 仓库初始化：`main` 从 `origin/main`（仅 LICENSE）建立；PRD v2.1 纳入仓库；建立本记忆文件与 V0 开发基座。下一步：搭 Bundle 基座并拆分分支。
-- 2026-10-18 · V0 基座完成：零依赖 bundle 骨架、shared 契约、构建/检查/开发态脚本、三份 feature worktree（host-core / client-shell / runtime-sdk-snake）已派出子智能体并行开发；Lead 在 `chore/v0-integration` 准备集成测试。
-- 2026-10-18 · 三个子智能体交付并合并：`feat/host-core`（73 host tests）、`feat/client-shell`（52 client tests）、`feat/runtime-sdk-snake`（123 runtime/SDK/snake tests）；Lead 在 `chore/v0-integration` 完成接口对齐（shared api-client 可打包、错误码、CSP、评分/ack 语义、chip 市场缓存）。
 - 2026-10-18 · **V0 完成**：全量 `npm run verify` 通过（312 tests / 312 pass、严格 check 13 项、构建确定性）；隔离 DSH 0.2.1-rc.2 + headless Chrome 真机验证 V0-01～V0-15 核心链路；证据见 `docs/V0-VERIFICATION.md`。
 - 2026-10-18 · **V0 已发布**：`main` 合并提交 `bcdbbfc`，tag `v0.0.0` 已推送 GitHub；feature worktrees/分支已清理（main + origin/main）。下一步：日常桌面端自测（用户执行 dev:enable 并重启）→ V1 规划。
 - 2026-10-18 · **V0.1 反馈修复**：等待提示移至会话头标题右侧并本地化「游戏/Game」+ 可爱动效；弹层居中/翻转；修复继续游戏后 ready 状态静止棋盘 + 键盘焦点丢失（新增 `resume.js` 策略与 3 个测试）；dev-enable 兼容空数组 `[]` profile patch；全量 315 tests 通过。
@@ -198,12 +275,13 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · **V0.2 已发布**：`main` merge `3bfea76`，tag `v0.0.2`；验证见 `docs/V0-VERIFICATION.md`。
 - 2026-10-18 · **V0.3 修复**：Host 改订阅真实 `session/event`，修复 Agent 完成后游戏内无提示；真机验证真实 turn/end(error) 到达 Host；单测覆盖完成/取消/审批映射；全量 314 tests 通过。Host 改动需重启 DSH。
 - 2026-10-18 · **V0.3 已发布**：`main` merge `c476266`，tag `v0.0.3` 已推送；验证见 `docs/V0-VERIFICATION.md`。
-- 2026-10-18 · **V0 用户验收通过**：用户确认 V0.2 入口/恢复与 V0.3 完成提醒在真实桌面端正常工作；“v0 基本验收完毕”。V0 范围（V0-01～V0-15，含 V0.2/V0.3 调整）收官。下一步进入 V1 规划。
+- 2026-10-18 · **V0 用户验收通过**：用户确认 V0.2 入口/恢复与 V0.3 完成提醒在真实桌面端正常工作；“v0 基本验收完毕”。V0 范围（V0-01～V0-15，含 V0.2/V0.3 调整）收官。
+- 2026-10-18 · **V1 计划锁定**：四条主线 + foundation；首发 `snake`/`jump`/`2048`/`breakout`；单文件；静态 Registry + 本地/远程包；Market 视觉与功能都做。分支/owner/write scope/验收见 §2.1。下一步：Lead 开 `feat/v1-foundation`。
 - （待续）
 
 **当前状态 / 待用户确认**：
 
-- **V0 已完成并通过用户验收**：`main` 已推送，tag `v0.0.0`/`v0.0.1`/`v0.0.2`/`v0.0.3` 均已推送；V0.3 Host 修复需重启 DSH，用户已确认生效。下一步：V1 需求拆解（安装/Registry/CLI/多文件游戏等）。
+- **V0 已完成并通过用户验收**（tag `v0.0.0`～`v0.0.3` 已推送）；**V1 计划已锁定**（见 §2.1），尚未开分支/写代码。下一步：Lead 开 `feat/v1-foundation` 冻结包格式/Registry/SDK v1 契约，然后并行 M1a/M1b/M1c。
 - 日常桌面端需用户自行 `npm run dev:enable -- --yes` 并重启 DSH；UI 客户端改动刷新页面即可。
 - 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复；用户桌面端版本已确认为 0.2.1-rc.2，与验证基线一致。
 - GitHub 推送权限：若 `git push` 失败，需要用户提供可用凭据或代为推送。
