@@ -1,0 +1,91 @@
+{
+  "id": "CR-P1-selfnav",
+  "title": "sandboxed iframe self-navigation boundary (host frame-src vs game own CSP)",
+  "generatedAt": "2026-10-19T13:34:05.065Z",
+  "ports": {
+    "sink": 58301,
+    "resource": 58302,
+    "parent": 58303,
+    "cdp": 9501
+  },
+  "sandboxAttribute": "allow-scripts",
+  "gameScriptDelivery": "external /res/game.js (no inline script, per asset-zip-v2 rule)",
+  "cases": [
+    {
+      "id": "C1-parent-no-csp",
+      "note": "host page sends no CSP (current situation)",
+      "navigatedTo": "http://127.0.0.1:58303/plain",
+      "gameRan": true,
+      "expectedLeak": true,
+      "leaked": true,
+      "hits": [
+        {
+          "method": "GET",
+          "url": "/",
+          "host": "127.0.0.1:58301",
+          "referer": null
+        }
+      ],
+      "browserLog": [],
+      "verdict": "as-expected"
+    },
+    {
+      "id": "C2-parent-frame-src",
+      "note": "host page restricts frame-src to the resource origin",
+      "navigatedTo": "http://127.0.0.1:58303/with-frame-src",
+      "gameRan": true,
+      "expectedLeak": false,
+      "leaked": false,
+      "hits": [],
+      "browserLog": [
+        "Framing 'http://127.0.0.1:58301/' violates the following Content Security Policy directive: \"frame-src http://127.0.0.1:58302\". The request has been blocked.\n"
+      ],
+      "verdict": "as-expected"
+    },
+    {
+      "id": "C3-wrapper-frame-src",
+      "note": "platform-served wrapper restricts frame-src to the resource origin",
+      "navigatedTo": "http://127.0.0.1:58303/wrapper",
+      "gameRan": true,
+      "expectedLeak": false,
+      "leaked": false,
+      "hits": [],
+      "browserLog": [],
+      "verdict": "as-expected"
+    },
+    {
+      "id": "C4-game-own-csp-only",
+      "note": "game document CSP only (negative control)",
+      "navigatedTo": "http://127.0.0.1:58302/res/game.html?to=http%3A%2F%2F127.0.0.1%3A58301",
+      "gameRan": true,
+      "expectedLeak": true,
+      "leaked": true,
+      "hits": [
+        {
+          "method": "GET",
+          "url": "/",
+          "host": "127.0.0.1:58301",
+          "referer": "http://127.0.0.1:58302/"
+        },
+        {
+          "method": "GET",
+          "url": "/favicon.ico",
+          "host": "127.0.0.1:58301",
+          "referer": "http://127.0.0.1:58301/"
+        }
+      ],
+      "browserLog": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "verdict": "as-expected"
+    }
+  ],
+  "unexpected": [],
+  "conclusion": {
+    "gapReproduced": true,
+    "hostFrameSrcBlocks": true,
+    "sameOriginWrapperBlocks": true,
+    "gameOwnCspInsufficient": true
+  },
+  "passed": true
+}

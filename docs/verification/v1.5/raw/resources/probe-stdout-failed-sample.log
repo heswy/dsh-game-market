@@ -1,0 +1,9 @@
+S-A1 probe FAILED (79/84 required checks)
+evidence: docs/verification/v1.5/raw/resources
+screenshots: docs/verification/v1.5/raw/resources/screenshots
+failed checks: self-csp.external-classic-script-blocked, self-csp.external-module-script-blocked, self-csp.stylesheet-not-applied, self-csp.image-blocked, self-csp.only-entry-document-hits-network
+  - self-csp.external-classic-script-blocked: {"classicMarker":true}
+  - self-csp.external-module-script-blocked: {"probePresent":true}
+  - self-csp.stylesheet-not-applied: {"bodyBackground":"rgb(18, 24, 38)"}
+  - self-csp.image-blocked: [{"id":"ship","complete":true,"naturalWidth":64},{"id":"ship-nocors","complete":true,"naturalWidth":64}]
+  - self-csp.only-entry-document-hits-network: {"routes":["entry-credential","entry","resource","resource","resource","resource","resource","resource","resource","resource","resource","resource","resource","resource","entry","resource"]}

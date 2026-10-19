@@ -5824,6 +5824,8 @@ M4 V1 发布验收（约 1 周）
 | D-049 | **支持矩阵与 `engines.dsh`**：`engines.dsh` 维持 `>=0.2.0 <0.3.0`（不收窄到预发布下界——§8.11.2 拒绝预发布范围，且 `>=0.2.1` 会排除实际被测宿主 `0.2.1-rc.2`）；V1.5 特有行为（HMR 更新、资源 origin、ZIP、宿主 primitives 模块）一律用**运行期能力探测 + 显式降级**；支持矩阵记录实测基线 `0.2.1-rc.2` 与逐项支持级别 | 预发布下界不可移植且会把已测宿主挡在门外；能力探测比版本字符串可靠 | Lead 裁决（`docs/verification/v1.5/support-matrix.md`） | 已定 |
 | D-050 | **普通问答与敏感审批分离**：游戏视图内的**普通 AskQuestion** 走原生 pending 对象结算（open 走原生 waterfall channel，continued 走宿主 `userQuestions.answer` RPC），不重新注册第二个 waterfall listener、不伪造 tool/result、不把 continued RPC 当 open 提交接口；**危险工具审批**不复制批准逻辑、不改 policy、不给一次性永久授权，默认只提供「回到 DSH 处理」入口 | 两条协议的结算通道不同；抢 waterfall 会让原生 UI 收不到请求；审批有一次性决定与审计链 | 指南 §6.2/§6.4 + M0 探针 S-Q1/S-Q2（结论见 `docs/verification/v1.5/questions.md`） | 已定（第三方可消费面细分待 S-Q1/S-Q2 收口） |
 
+| D-051 | **导航边界与 CSP 因果（复核修正轮）**：① **子文档自导航**（`window.location.*`、`meta refresh`）**不由子文档自身 CSP 约束**——`connect-src`/`frame-src 'none'` 只管子资源；阻断 MUST 由嵌入文档的 `frame-src` 提供，首选**平台自服务的同源 wrapper**（wrapper 自身 CSP 含 `frame-src/child-src <resourceOrigin>`），实现**不得假设 host 页面带该策略**；受信 Runtime 仍须把非预期导航/Bridge 心跳中断当失败处理（纵深防御，不能替代阻断）。② CSP **按 origin 匹配**，不是按「绝对 vs 相对」：`connect-src <resourceOrigin>` 是运行时权威边界，validator 对绝对/协议相对 URL 的拒绝是**创作期可移植性规则、非安全证明**。③ ZIP 条目口径以**总条目**（含 `dsh-package.json`）≤512 为准 → `files[]` ≤511。④ 更新终态唯一：`inspecting→installing→applied→activating→updated`，`applied` 为中间态、核验前不得显示「已更新」；非成功分支含 `pending-restart`/`already-at-target`/`verification-failed`/`stale-runtime`/`cancelled`/`failed`（`too-late` 不是回滚）。⑤ v2 CSP 不使用 `upgrade-insecure-requests`（loopback http 下有升级失败风险） | Codex 对 PR #6 固定 head `240c5d4` 的复核指出 iframe 自导航缺口与更新语义冲突；Lead 用真实浏览器复现并验证 wrapper 缓解（C1 泄漏 / C2、C3 阻断 / C4 负对照泄漏，均带同源 boot beacon 正向对照） | 复核 + CR-P1 探针实测（`raw/resources/cr-p1-selfnav.json`）；契约 §7.5.1/§9.5.1 | 已定 |
+
 ### 12.2 待验证项（Spike 清单）
 
 > S-04、S-10、S-11、S-17 是 V1.5 前置，不阻塞 V1；其余在对应任务前完成。每个 Spike 的结论必须回填本表（通过/降级/失败）。
@@ -5867,6 +5869,7 @@ M4 V1 发布验收（约 1 周）
 | S-30 = S-Q2 | timed 继续、重连、切 Session、多窗口竞争、原生 UI 并存、delegation/关闭语义 | 问答生命周期正确性 | 同上 | 见 `questions.md` | 保留「回到会话处理」兜底 |
 | S-31 = S-A1 | `sandbox="allow-scripts"` 下独立 JS/CSS/图片/ESM/fetch JSON/音频加载、CORS/CSP 与一次性 entry 凭证关系 | 资源包可行性 | 真实浏览器 iframe（不加 allow-same-origin） | **已实测通过（82/82）**：多文件可加载；**资源路由不能复用 DSH `/api`**，需独立 loopback 资源 origin（D-043） | 不允许加 `allow-same-origin` 或放开 Host API |
 | S-32 = S-B1 | 当前 Client 模块加载器能否解析 `FishLogo`、正式 SVG 许可/来源、明暗表现 | 品牌形象 | 隔离宿主 + headless Chrome 真实 require | **已实测通过（23/23）**：可运行时 require（MIT，`currentColor`）；现 bundler 需 M1 扩白名单（D-048） | 冻结可分发本地官方轮廓后备资产，不依赖远程 URL |
+| S-33 = CR-P1 | sandboxed 游戏能否自导航到包外 origin；子文档自身 CSP 是否足够；如何阻断 | 资源隔离/包外网络拒绝 | 真实浏览器 4 用例（含同源 boot beacon 正向对照） | **已实测**：子文档自身 CSP **不足**（负对照外泄）；嵌入文档 `frame-src` 可阻断；**平台自服务同源 wrapper** 方案在 Chromium 155 阻断且不依赖 host 页面策略（D-051） | M1 必须接入真实 DSH 页面并补自导航正/反例回归；跨引擎未验证 |
 
 ### 12.3 风险与缓解
 

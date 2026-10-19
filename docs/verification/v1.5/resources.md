@@ -177,6 +177,33 @@ Referrer-Policy: no-referrer
 - 现有 V1.2 `/entry` 的“一次性”只是 **TTL 绑定**：同一 URL 重复 GET 仍 200（`browser-platformEntry.json`：`repeatGetStatus=200`）。若 M1 要「entry 仍一次性消费」，需比现有实现更强的显式消费语义（本探针已验证可行），并处理 reload（§5.2）。
 - 现有 `/entry` 响应无 ACAO，且 `Origin: null` 请求被平台 403 —— 这再次说明资源服务不能复用该路由。
 
+## 5.4 复核补充（CR-P1）：sandboxed iframe 的**自导航**边界
+
+> 来源：Codex 对 PR #6 固定 head `240c5d4` 的复核指出 —— S-A1 的 CSP 结论只覆盖**子资源加载**，没有覆盖
+> **子文档自身的导航**：sandboxed 游戏执行 `window.location.replace(外部地址)` 时目标服务**实际收到请求**。
+> Lead 用真实浏览器独立复现并验证缓解方案，证据 `raw/resources/cr-p1-selfnav.json`，
+> 探针 `scripts/verification/v1.5/assets/probe-selfnav.mjs`（exit 0，4/4 as-expected）。
+> 每个用例都先发一个**同源 boot beacon**（`connect-src` 允许），用来证明「没有外泄」不是「游戏根本没跑起来」。
+
+| 用例 | 嵌入文档的 `frame-src` | 游戏实际运行 | 外部 origin 是否收到请求 | 浏览器日志 |
+|---|---|---|---|---|
+| C1 host page **无 CSP**（现状） | 无 | 是 | **收到（gap 复现）** | — |
+| C2 host page `frame-src <resOrigin>` | 有 | 是 | 未收到 | `Framing 'http://127.0.0.1:58301/' violates the following Content Security Policy directive: "frame-src http://127.0.0.1:58302". The request has been blocked.` |
+| C3 **平台自服务的同源 wrapper**（wrapper 自己的 CSP 含 `frame-src <resOrigin>`） | 有（wrapper） | 是 | 未收到 | 无（静默阻断） |
+| C4 游戏文档**自身 CSP**（负对照） | 无 | 是 | **收到** | — |
+
+**结论（供契约与 M1 使用）**
+
+1. **子文档自身的 CSP 拦不住它自己的导航**（C4 负对照证实）：`connect-src` / `frame-src 'none'` 只约束子资源，不约束文档导航。
+2. **阻断必须来自嵌入文档的 `frame-src`**（CSP3 对 nested browsing context 的导航生效），由 Chrome 的违规日志直接佐证（C2）。
+3. **首选缓解（本轮已验证、无需 DSH 改动）**：资源 origin 提供一个**平台自服务的同源 wrapper 文档**，其 CSP 设 `frame-src <resourceOrigin>; child-src <resourceOrigin>`，由它内嵌游戏 iframe（C3 实测阻断）。这样导航边界不依赖 host 页面策略。
+4. **替代缓解**：host 页面自身设 `frame-src <resourceOrigin>`（C2 实测阻断）。**产品实现 MUST NOT 假设 host 页面有该策略** —— 现状没有（C1）。
+5. **纵深防御（不能替代阻断）**：请求可能已经发出，检测无法挽回。受信 Runtime 仍应把「非预期导航 / Bridge 心跳中断」当失败处理：暂停并销毁实例、显示错误、不再授予能力。
+6. **修正一处表述**：CSP **按 origin 匹配**，不是按「绝对 vs 相对」。指向同一资源 origin 的绝对 URL 会被放行；`connect-src <resourceOrigin>` 是运行时权威边界，而 validator 对绝对 URL 的静态拒绝是**创作期可移植性规则，不是安全证明**。
+
+**M1 必须补的回归**：正例 —— wrapper 内导航到资源 origin 内页面成功；反例 —— 导航到外部 origin 被阻断且**不产生网络请求**（用与 C2/C3 相同的 sink 记录法判定）。
+**仍未验证**：wrapper 方案只在 Chromium 155 实测；跨引擎、以及接入真实 DSH 页面后的行为未验证（见 §6）。
+
 ## 6. 未验证项（明确不写成通过）
 
 | 未验证项 | 原因 / 下一步 |

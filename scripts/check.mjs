@@ -279,6 +279,47 @@ function collectJs(dir, out) {
   ok('verification logs tracked');
 })();
 
+// V1.5 M0 evidence (CR-P2 follow-up): every evidence file cited from
+// docs/verification/v1.5/*.md must exist in a fresh clone, must not be
+// swallowed by the global `*.log` ignore rule, and must be tracked by Git.
+// A doc that cites a log nobody can open is not evidence.
+(function checkV15Evidence() {
+  const base = path.join(root, 'docs/verification/v1.5');
+  const evidenceRoot = path.join(base, 'raw');
+  if (!fs.existsSync(base)) return;
+  const docs = fs.readdirSync(base).filter((name) => name.endsWith('.md'));
+  const refs = new Set();
+  for (const name of docs) {
+    const text = fs.readFileSync(path.join(base, name), 'utf8');
+    const candidates = [
+      ...text.matchAll(/\]\(([^)\s]+)\)/g),
+      ...text.matchAll(/`([A-Za-z0-9_./-]+\/[A-Za-z0-9_./-]*\.(?:log|png|json))`/g),
+    ].map((match) => match[1]);
+    for (const raw of candidates) {
+      const cleaned = raw.split('#')[0];
+      if (cleaned === '' || /^[a-z]+:/i.test(cleaned)) continue;
+      const abs = cleaned.startsWith('docs/') ? path.join(root, cleaned) : path.resolve(base, cleaned);
+      // Only evidence artifacts count: prose in these docs also mentions
+      // package-relative paths (levels/…, saves/…) that are not evidence files.
+      if (!abs.startsWith(`${evidenceRoot}${path.sep}`)) continue;
+      if (/\.(log|png|json)$/.test(abs)) refs.add(path.relative(root, abs));
+    }
+  }
+  for (const rel of [...refs].sort()) {
+    if (!fs.existsSync(path.join(root, rel))) {
+      fail(`V1.5 evidence referenced but missing: ${rel}`);
+      continue;
+    }
+    if (spawnSync('git', ['check-ignore', '-q', rel], { cwd: root }).status === 0) {
+      fail(`V1.5 evidence is ignored by Git: ${rel}`);
+    }
+    if (spawnSync('git', ['ls-files', '--error-unmatch', rel], { cwd: root }).status !== 0) {
+      fail(`V1.5 evidence is not tracked by Git: ${rel}`);
+    }
+  }
+  if (refs.size > 0) ok(`V1.5 evidence referenced and tracked (${refs.size} files)`);
+})();
+
 // M4 evidence logs referenced by the controlled public-loop report must exist,
 // be tracked, and not be swallowed by the global `*.log` ignore rule.
 (function checkCommunityM4Evidence() {

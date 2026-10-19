@@ -68,12 +68,17 @@ Lead 实测反例：`apply()` 时读得 `hmr=false`（`Service.init` 未完成�
 | `html-v1` CSP | 沿用现状（含 `'unsafe-inline'`） | 不回归 |
 | `asset-zip-v2` CSP | 显式资源 origin，**不含 `'unsafe-inline'`**；v2 validator 拒绝内联 `<script>`/`<style>`/`on*=`/`javascript:` | Lead 裁决 3（从严；放宽是加法，收紧会破坏已发布作者包） |
 | entry 凭证 | 首导航携带一次性 launch；reload/重试一律用资源凭证 URL | S-A1 实测：重放 launch URL = 410，去掉 launch = 200 |
+| **导航边界** | **平台自服务的同源 wrapper** 用 `frame-src <resourceOrigin>` 阻断游戏自导航到包外 origin | CR-P1 实测：host 页无 CSP 时外泄；wrapper 方案在 Chromium 155 阻断，**不依赖 host 页面策略** |
+| **包外网络** | 子资源由 `connect-src <resourceOrigin>` 阻断（CSP **按 origin 匹配**，不是按「绝对 vs 相对」）；**子文档自导航**由上面的 wrapper `frame-src` 阻断 | CR-P1：子文档自身 CSP 拦不住它自己的导航（负对照实测外泄） |
+| ZIP 条目上限 | **总条目（含 `dsh-package.json`）≤512 → `files[]` ≤511** | Lead 裁决（统一口径，禁止「512+1」歧义） |
+| 更新终态 | `updated` 仅在 **Host 与 Client 双端**版本匹配 target 且健康检查通过后进入；`applied` 是中间态，核验前不得报成功 | 契约 §9.5.1 状态机（复核修正轮统一） |
 
 ## 6. 明确不支持 / 明确边界
 
 - HMR 能力**不可靠探测**时不展示可执行更新按钮（能力缺失 → 禁用 + 原生恢复入口）。
 - 不支持调用系统 `unzip`/shell 执行作者内容。
 - 不支持去除 iframe `sandbox="allow-scripts"` 或加 `allow-same-origin`。
+- **不假设 host 页面带 `frame-src` 策略**：导航阻断必须由平台自服务的同源 wrapper 提供（CR-P1）；仅靠子文档 CSP 无法阻止自导航。
 - 不支持 `link:`/`file:` dev 载入被静默替换为正式包（显示「开发模式，前往插件管理切换安装来源」）。
 - 不支持把 continued RPC 当作 open 问题的提交接口。
 - 不支持“先卸载自己再靠自身完成安装”的更新流程。
@@ -93,6 +98,8 @@ Lead 实测反例：`apply()` 时读得 `hmr=false`（`Service.init` 未完成�
 | 2000 文件路由注册开销（PRD S-11） | 未做（只验证了 10 文件包的加载正确性） |
 | 直接启动用户 `desktop` profile 的探针 | 未直接启动（合规：不碰日常 profile） |
 | 本地后备品牌资产的启用 | S-B1 已给来源与许可，但首选路径可用，后备未启用、未验证 |
+| 导航阻断的跨引擎 / 真实 DSH 页面接入 | CR-P1 只在 Chromium 155 验证；wrapper 方案接入真实 DSH 页面后必须补一条自导航回归（正例：包内导航成功；反例：包外导航被阻断且不产生请求） |
+| 更新状态机 `updated` 的双端核验实测 | 契约 §9.5.1 已冻结语义，但 Host/Client 版本双端核验与 `verification-failed`/`stale-runtime` 分支属 M3 实测项 |
 
 ## 8. M0 已裁决（Lead 仲裁，写进 V1.5-CONTRACTS）
 
@@ -103,3 +110,7 @@ Lead 实测反例：`apply()` 时读得 `hmr=false`（`Service.init` 未完成�
 | A3 | `asset-zip-v2` 必须外链：CSP 不含 `'unsafe-inline'`，validator 拒绝内联脚本/样式/事件处理器/`javascript:` URL；`html-v1` 不回归 | 严格 CSP 可被自动断言；从严后放宽是加法 |
 | A4 | 首次导航带一次性 launch；此后 reload/重试用资源凭证 URL；复用已消费 launch → 明确错误 | S-A1 实测 410/200 |
 | A5 | 无 CSP 时 CORS 挡不住 no-cors 外发 → **CSP 是必需的外发边界**，契约必须含 `child-src/worker-src/frame-src 'none'`、`object-src 'none'`、`base-uri 'none'`、`form-action 'none'` | S-A1 S-A1-17 实测 |
+| A6 | **子文档自导航**不由子文档自身 CSP 约束；导航阻断 MUST 由嵌入文档的 `frame-src` 提供，首选**平台自服务的同源 wrapper**（含 `frame-src/child-src <resourceOrigin>`），实现**不得假设 host 页面有该策略**；Runtime 仍须把非预期导航/心跳中断当失败处理（纵深防御，不能替代阻断） | CR-P1 实测（C1 泄漏 / C2、C3 阻断 / C4 负对照泄漏，均带 boot beacon 正向对照） |
+| A7 | CSP **按 origin 匹配**：`connect-src <resourceOrigin>` 是运行时权威边界；validator 对绝对/协议相对 URL 的拒绝是**创作期可移植性规则，不是安全证明** | CR-P1 复核修正 |
+| A8 | ZIP 条目口径以**总条目**为准（含 `dsh-package.json`）≤512 → `files[]` ≤511 | 复核意见 + Lead 裁决（消除「512+1」歧义） |
+| A9 | 更新终态唯一：`inspecting → installing → applied → activating → updated`；`applied` 为中间态，核验前不得显示「已更新」；非成功分支含 `pending-restart`/`already-at-target`/`verification-failed`/`stale-runtime`/`cancelled`/`failed`（`too-late` 不是回滚） | 复核意见 + 契约 §9.5.1 |

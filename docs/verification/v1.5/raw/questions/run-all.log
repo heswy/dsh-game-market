@@ -1,0 +1,411 @@
+
+=== S-Q1: node scripts/verification/v1.5/questions/q1-open-in-game-panel.mjs ===
+{
+  "passed": true,
+  "failed": [],
+  "checks": [
+    [
+      "runtimeIdentity",
+      true
+    ],
+    [
+      "probe Client module materialized in a real DSH page",
+      true
+    ],
+    [
+      "probe Host registered the scripted LLM adapter",
+      true
+    ],
+    [
+      "probe Client control surface available",
+      true
+    ],
+    [
+      "session/create accepted with a host-owned cwd",
+      true
+    ],
+    [
+      "created Session is bound to the main view",
+      true
+    ],
+    [
+      "conversation view DOM before the question",
+      true
+    ],
+    [
+      "session/prompt accepted (a real Agent turn starts)",
+      true
+    ],
+    [
+      "live native PendingQuestion published to uiSession.sessionStatus",
+      true
+    ],
+    [
+      "pending question is an open waterfall request",
+      true
+    ],
+    [
+      "blocking/open request: native card is unnamed (no callId) and cancel-on-dismiss",
+      true
+    ],
+    [
+      "PendingQuestion exposes answer/dismiss/delegate/snapshot methods",
+      true
+    ],
+    [
+      "native question card renders in the conversation view (native UI present at the same time)",
+      true
+    ],
+    [
+      "game panel selected via ctx.layout.selectPanel",
+      true
+    ],
+    [
+      "native composer is unmounted while the game panel owns the main view",
+      true
+    ],
+    [
+      "game panel is bound to the same Session",
+      true
+    ],
+    [
+      "open PendingQuestion still live and answerable while the game panel owns the view",
+      true
+    ],
+    [
+      "third-party Client settled the open question through pending.answer(batch)",
+      true
+    ],
+    [
+      "Agent turn finished after settlement",
+      true
+    ],
+    [
+      "native Session recorded the ask_user_question tool call",
+      true
+    ],
+    [
+      "Session recorded exactly one native ask call to settle",
+      true
+    ],
+    [
+      "native Session recorded the tool result with the submitted answer (same callId)",
+      true
+    ],
+    [
+      "same turn continued after the tool result (>= 2 model steps, one turn)",
+      true
+    ],
+    [
+      "final assistant message recorded in the Session",
+      true
+    ],
+    [
+      "blocking/open call is not tracked by the userQuestions projection (only timed calls are)",
+      true
+    ],
+    [
+      "pending interaction cleared from uiSession.sessionStatus",
+      true
+    ]
+  ]
+}
+
+=== S-Q2: node scripts/verification/v1.5/questions/q2-lifecycle.mjs ===
+{
+  "passed": true,
+  "failed": [],
+  "checks": [
+    [
+      "runtimeIdentity",
+      true
+    ],
+    [
+      "probe Client materialized in window 1",
+      true
+    ],
+    [
+      "probe preset boot state",
+      true
+    ],
+    [
+      "probe-only timed ask_user_question preset registered",
+      true
+    ],
+    [
+      "timed scenario prompt accepted",
+      true
+    ],
+    [
+      "timed open question carries a native callId (wait.callId)",
+      true
+    ],
+    [
+      "timed open question is a waterfall request with a host/client deadline",
+      true
+    ],
+    [
+      "client-owned countdown settled the call with a pending result (no fabricated answer)",
+      true
+    ],
+    [
+      "pending result names the same tool callId",
+      true
+    ],
+    [
+      "timed call remains answerable as `continued` in the userQuestions projection",
+      true
+    ],
+    [
+      "Agent turn ended after the pending result",
+      true
+    ],
+    [
+      "continued card is published with the RPC channel",
+      true
+    ],
+    [
+      "continued RPC refuses a batch that does not name the call question",
+      true
+    ],
+    [
+      "probe Client materialized in window 2",
+      true
+    ],
+    [
+      "window 2 observes the continued PendingQuestion for the bound Session",
+      true
+    ],
+    [
+      "continued RPC accepted the reply in window 1",
+      true
+    ],
+    [
+      "second window cannot get a second reply accepted (REPLY_QUEUED or value:false)",
+      true
+    ],
+    [
+      "Agent finished the turn started by the continued reply",
+      true
+    ],
+    [
+      "native Session logged the steered user-question-reply message",
+      true
+    ],
+    [
+      "reply carries the submitted answer batch",
+      true
+    ],
+    [
+      "the reply started a new Turn (turn 2)",
+      true
+    ],
+    [
+      "a reply after admission is refused (no second steer)",
+      true
+    ],
+    [
+      "projection moved the call from continued to settled",
+      true
+    ],
+    [
+      "continued card cleared from window 1 status",
+      true
+    ],
+    [
+      "multi-question prompt accepted",
+      true
+    ],
+    [
+      "pending multi-question batch has two questions",
+      true
+    ],
+    [
+      "first question is multi-select with two option labels",
+      true
+    ],
+    [
+      "multi-question batch settled from the game panel",
+      true
+    ],
+    [
+      "turn ended after the multi-question answer",
+      true
+    ],
+    [
+      "tool result keeps both answers exactly",
+      true
+    ],
+    [
+      "captured the live blocking PendingQuestion before closing",
+      true
+    ],
+    [
+      "native question card visible before closing",
+      true
+    ],
+    [
+      "closing an unnamed blocking card cancelled the request (native dismiss=reject ASK_CANCELLED)",
+      true
+    ],
+    [
+      "turn idle state after close/dismiss",
+      true
+    ],
+    [
+      "question is pending on Session A",
+      true
+    ],
+    [
+      "main view switched to a different Session",
+      true
+    ],
+    [
+      "pending question for Session A stays addressable from Session B view",
+      true
+    ],
+    [
+      "Session A question can be settled while another Session owns the view",
+      true
+    ],
+    [
+      "Session A turn ended after settlement",
+      true
+    ],
+    [
+      "Session A recorded the tool result with the answer",
+      true
+    ],
+    [
+      "question pending while the conversation view is active",
+      true
+    ],
+    [
+      "native question card is rendered in the conversation composer",
+      true
+    ],
+    [
+      "third-party consumer reads the same pending object the native UI renders",
+      true
+    ],
+    [
+      "third-party answer accepted while the native UI is mounted",
+      true
+    ],
+    [
+      "the pending native card is no longer published once the Session settles",
+      true
+    ],
+    [
+      "recorded question text still visible in the transcript after settle (expected tool-call history)",
+      true
+    ],
+    [
+      "Session recorded the answered tool result",
+      true
+    ],
+    [
+      "question is pending before the browser disconnects",
+      true
+    ],
+    [
+      "reconnected browser materializes the probe Client",
+      true
+    ],
+    [
+      "open question is delivered again to the reconnected browser",
+      true
+    ],
+    [
+      "reconnected browser settles the same open call",
+      true
+    ],
+    [
+      "Session recorded the answered tool result after reconnect",
+      true
+    ],
+    [
+      "delegation/teardown semantics",
+      true
+    ]
+  ]
+}
+
+=== S-Q2b: node scripts/verification/v1.5/questions/q2b-attach-wait.mjs ===
+{
+  "passed": true,
+  "failed": [],
+  "checks": [
+    [
+      "runtimeIdentity",
+      true
+    ],
+    [
+      "probe Host adapter registered",
+      true
+    ],
+    [
+      "live root Agent created through the native agents service",
+      true
+    ],
+    [
+      "unclaimed askTimed settles as pending at the Host deadline",
+      true
+    ],
+    [
+      "askTimed is still open after its Host deadline while a claim is held",
+      true
+    ],
+    [
+      "attachWait attached to the live foreground wait",
+      true
+    ],
+    [
+      "attachWait yields the Host-computed remaining duration",
+      true
+    ],
+    [
+      "releasing the claim re-arms the Host timer and the call settles as pending right after",
+      true
+    ],
+    [
+      "the call lived past its nominal deadline because the claim owned the wait",
+      true
+    ],
+    [
+      "attachWait for a call without a live wait yields no frame",
+      true
+    ]
+  ]
+}
+
+{
+  "passed": true,
+  "results": [
+    {
+      "id": "S-Q1",
+      "script": "scripts/verification/v1.5/questions/q1-open-in-game-panel.mjs",
+      "command": "node scripts/verification/v1.5/questions/q1-open-in-game-panel.mjs",
+      "exitCode": 0,
+      "startedAt": "2026-10-19T13:03:50.710Z",
+      "finishedAt": "2026-10-19T13:04:16.569Z"
+    },
+    {
+      "id": "S-Q2",
+      "script": "scripts/verification/v1.5/questions/q2-lifecycle.mjs",
+      "command": "node scripts/verification/v1.5/questions/q2-lifecycle.mjs",
+      "exitCode": 0,
+      "startedAt": "2026-10-19T13:04:16.570Z",
+      "finishedAt": "2026-10-19T13:04:51.922Z"
+    },
+    {
+      "id": "S-Q2b",
+      "script": "scripts/verification/v1.5/questions/q2b-attach-wait.mjs",
+      "command": "node scripts/verification/v1.5/questions/q2b-attach-wait.mjs",
+      "exitCode": 0,
+      "startedAt": "2026-10-19T13:04:51.922Z",
+      "finishedAt": "2026-10-19T13:05:01.818Z"
+    }
+  ]
+}
+[exit code: 0]
