@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { promises as fs } from 'node:fs';
+import { promises as fs, readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -201,7 +201,7 @@ export function makeHttpMock(urls) {
   };
 }
 
-export function makeFakeGit({ repo = 'https://github.com/example/registry.git', clean = true, branch = 'main' } = {}) {
+export function makeFakeGit({ repo = 'https://github.com/example/registry.git', clean = true, branch = 'main', ancestor = true } = {}) {
   const calls = [];
   let current = branch;
   const branches = new Set([branch]);
@@ -215,6 +215,7 @@ export function makeFakeGit({ repo = 'https://github.com/example/registry.git', 
     remoteHead: () => 'head-with-latest-base',
     head: () => 'head-with-latest-base',
     branchExists: (name) => branches.has(name),
+    isAncestor: () => ancestor,
     checkout(name) { calls.push(['checkout', name]); current = name; },
     createBranch(name) { calls.push(['createBranch', name]); branches.add(name); current = name; },
     add(paths) { calls.push(['add', paths]); },
@@ -223,12 +224,18 @@ export function makeFakeGit({ repo = 'https://github.com/example/registry.git', 
   };
 }
 
-export function makeFakeGithub({ failOnUpload = false, failVerifyOnce = false, failPullRequestOnce = false } = {}) {
+export function makeFakeGithub({ failOnUpload = false, failVerifyOnce = false, failPullRequestOnce = false, draftAssets = null } = {}) {
   const releases = new Map();
   const prs = [];
   const calls = [];
   let verifyFailures = failVerifyOnce ? 1 : 0;
   let prFailures = failPullRequestOnce ? 1 : 0;
+  if (draftAssets && draftAssets.tag) {
+    releases.set(draftAssets.tag, {
+      draft: true,
+      assets: (draftAssets.assets || []).map((asset, index) => ({ id: index + 1, name: asset.name, bytes: Buffer.from(asset.bytes) })),
+    });
+  }
   return {
     repo: 'example/registry',
     calls,
@@ -238,14 +245,29 @@ export function makeFakeGithub({ failOnUpload = false, failVerifyOnce = false, f
     repoInfo() { return { nameWithOwner: 'example/registry', isPrivate: false, visibility: 'PUBLIC', defaultBranchRef: { name: 'main' } }; },
     releaseView(tag) {
       const release = releases.get(tag);
-      return release ? { tagName: tag, isDraft: release.draft, assets: release.assets.map((name) => ({ name })) } : null;
+      return release ? { tagName: tag, isDraft: release.draft, assets: release.assets.map((item) => ({ id: item.id, name: item.name, size: item.bytes ? item.bytes.length : 0 })) } : null;
     },
     async createDraftRelease({ tag }) { calls.push(['createDraftRelease', tag]); releases.set(tag, { draft: true, assets: [] }); },
     uploadAssets(tag, files) {
       calls.push(['uploadAssets', tag, files.length]);
       if (failOnUpload) throw Object.assign(new Error('simulated upload failure'), { code: 'E_PUBLISH_GH' });
       const release = releases.get(tag);
-      for (const file of files) release.assets.push(path.basename(file));
+      for (const file of files) {
+        const name = path.basename(file);
+        const bytes = readFileSync(file);
+        release.assets.push({ id: release.assets.length + 1, name, bytes });
+      }
+    },
+    inspectDraftAsset(tag, name) {
+      const release = releases.get(tag);
+      const asset = release && release.assets.find((item) => item.name === name);
+      return asset ? { id: asset.id, name: asset.name, size: asset.bytes.length } : null;
+    },
+    downloadAsset(asset) {
+      const all = [...releases.values()].flatMap((release) => release.assets);
+      const found = all.find((item) => item.name === asset.name) || all.find((item) => item.id === asset.id);
+      if (found) return found.bytes;
+      throw Object.assign(new Error('missing fake asset'), { code: 'E_PUBLISH_GH' });
     },
     publishRelease(tag) { calls.push(['publishRelease', tag]); releases.get(tag).draft = false; },
     listOpenPullRequests(head) { return prs.filter((pr) => pr.branch === head); },

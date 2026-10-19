@@ -1,0 +1,32 @@
+✔ catalog generation produces a deterministic runtime index (38.547667ms)
+✔ check mode rejects a stale or missing generated index (22.876416ms)
+✔ owner/review binding rejects changed package or media hashes (15.567167ms)
+✔ catalog entry without owner is rejected (17.46825ms)
+✔ init-content-repo fills platform lock and refuses a non-empty target (10.48325ms)
+✔ multiple games coexist, cover URLs are in the generated index, withdrawal removes only that entry (13.147ms)
+✔ history validation rejects version rollback, owner replacement and review rewrite (52.959833ms)
+✔ history validation allows documented withdrawal while keeping audit records (18.528917ms)
+✔ content-repo CLI scripts run from a checkout path containing spaces (449.154791ms)
+✔ publishing tool refuses to run without the required arguments (139.9545ms)
+✔ dry run validates and plans without remote or local mutation (94.0875ms)
+✔ rejects a changed package or media after the approval (9.563125ms)
+✔ execute publishes verified bytes, writes catalog and opens one PR (45.035375ms)
+✔ upload failure leaves the catalog unchanged and opens no PR (34.565417ms)
+✔ public asset verification failure can be retried and creates only one PR (32.731709ms)
+✔ PR creation failure resumes the catalog branch on retry (31.20275ms)
+✔ a 1.0.1 update gets a separate release and preserves the client data contract (35.378625ms)
+✔ dry run rejects a candidate that violates trusted catalog history before any remote call (42.73775ms)
+✔ a resumed draft with mismatched asset bytes is never published (17.646791ms)
+✔ invalid UTF-8 package bytes are rejected by publishing validation (9.611791ms)
+✔ resuming a branch that is not based on the latest base is rejected (21.936625ms)
+✔ same version with different bytes is immutable (18.72275ms)
+✔ skill has valid frontmatter, version and no placeholder paths (6.71425ms)
+✔ skill archive is deterministic and manifest hashes match the archive (18.651667ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 697.106084

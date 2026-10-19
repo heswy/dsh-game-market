@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { preparePublish } from '../lib/prepare.mjs';
+import { buildRegistry } from '../lib/catalog.mjs';
 import { makeEmptyContentRepo, makeFakeGit, makeFakeGithub, makeHttpMock, prepareFixtures, PNG_1X1 } from './helpers.mjs';
 
 async function writeJson(file, value) {
@@ -227,6 +228,98 @@ test('a 1.0.1 update gets a separate release and preserves the client data contr
   assert.equal(owner.owner.githubUserId, 123456);
   const registry = JSON.parse(await fs.readFile(path.join(ctx.content, 'registry', 'games.json'), 'utf8'));
   assert.equal(registry.games[0].version, '1.0.1');
+});
+
+test('dry run rejects a candidate that violates trusted catalog history before any remote call', async (t) => {
+  const ctx = await context();
+  t.after(() => ctx.cleanup());
+  const git = makeFakeGit();
+  const github = makeFakeGithub();
+  const dry = await preparePublish({ submissionPath: ctx.submissionPath, reviewPath: ctx.reviewPath, registryDir: ctx.content, execute: false, repo: 'example/registry', git, github, http: ctx.http });
+
+  const base = await fs.mkdtemp(path.join(os.tmpdir(), 'dsh-history-base-'));
+  t.after(() => fs.rm(base, { recursive: true, force: true }));
+  await fs.cp(ctx.content, base, { recursive: true });
+  const entry = JSON.parse(JSON.stringify(dry.plan.catalogEntry));
+  entry.release.packageSha256 = 'd'.repeat(64);
+  await writeJson(path.join(base, 'catalog', 'jump.json'), entry);
+  await writeJson(path.join(base, 'owners', 'jump.json'), {
+    schemaVersion: 1,
+    gameId: 'jump',
+    owner: { login: ctx.fixtures.submission.author.login, githubUserId: ctx.fixtures.submission.author.githubUserId },
+    createdAt: ctx.fixtures.review.reviewedAt,
+  });
+  const review = JSON.parse(JSON.stringify(ctx.fixtures.review));
+  review.package.sha256 = 'd'.repeat(64);
+  await writeJson(path.join(base, 'reviews', 'jump', '1.0.0.json'), review);
+  const baseBuild = await buildRegistry(base, { write: true });
+  assert.equal(baseBuild.ok, true, JSON.stringify(baseBuild.errors));
+
+  await assert.rejects(
+    () => preparePublish({ submissionPath: ctx.submissionPath, reviewPath: ctx.reviewPath, registryDir: ctx.content, execute: false, repo: 'example/registry', git, github, http: ctx.http, historyBaseDir: base }),
+    (error) => error.code === 'E_PUBLISH_HISTORY_INVALID'
+  );
+  assert.equal(github.calls.length, 0);
+});
+
+test('a resumed draft with mismatched asset bytes is never published', async (t) => {
+  const ctx = await context();
+  t.after(() => ctx.cleanup());
+  const git = makeFakeGit();
+  const github = makeFakeGithub({
+    draftAssets: { tag: 'jump-v1.0.0', assets: [{ name: 'jump-1.0.0.html', bytes: Buffer.from('wrong bytes') }] },
+  });
+  await assert.rejects(
+    () => preparePublish({ submissionPath: ctx.submissionPath, reviewPath: ctx.reviewPath, registryDir: ctx.content, execute: true, repo: 'example/registry', git, github, http: ctx.http }),
+    (error) => error.code === 'E_PUBLISH_DRAFT_ASSET_MISMATCH'
+  );
+  assert.equal(github.calls.some((call) => call[0] === 'publishRelease'), false);
+  assert.equal(await fs.stat(path.join(ctx.content, 'catalog', 'jump.json')).then(() => true).catch(() => false), false);
+});
+
+test('invalid UTF-8 package bytes are rejected by publishing validation', async (t) => {
+  const ctx = await context();
+  t.after(() => ctx.cleanup());
+  const invalid = Buffer.concat([ctx.fixtures.pkg, Buffer.from('<!-- '), Buffer.from([0xff]), Buffer.from(' -->')]);
+  const sha = (await import('node:crypto')).createHash('sha256').update(invalid).digest('hex');
+  const submission = JSON.parse(JSON.stringify(ctx.fixtures.submission));
+  submission.package.sha256 = sha;
+  submission.package.size = invalid.length;
+  const submissionPath = path.join(ctx.base, 'submission-invalid-utf8.json');
+  await writeJson(submissionPath, submission);
+  const reviewPath = path.join(ctx.base, 'review-invalid-utf8.json');
+  const review = JSON.parse(JSON.stringify(ctx.fixtures.review));
+  review.package = { sha256: sha, size: invalid.length };
+  await writeJson(reviewPath, review);
+  const urls = new Map([
+    [submission.package.url, invalid],
+    [submission.package.sha256Url, Buffer.from(`${sha}  jump-1.0.0.html\n`)],
+    [submission.media.cover.url, PNG_1X1],
+    [submission.media.screenshots[0].url, PNG_1X1],
+  ]);
+  const git = makeFakeGit();
+  const github = makeFakeGithub();
+  await assert.rejects(
+    () => preparePublish({ submissionPath, reviewPath, registryDir: ctx.content, execute: false, repo: 'example/registry', git, github, http: makeHttpMock(urls) }),
+    (error) => error.code === 'E_PUBLISH_PACKAGE_UTF8'
+  );
+  assert.equal(github.calls.length, 0);
+});
+
+test('resuming a branch that is not based on the latest base is rejected', async (t) => {
+  const ctx = await context();
+  t.after(() => ctx.cleanup());
+  const git = makeFakeGit({ ancestor: false });
+  const github = makeFakeGithub({ failPullRequestOnce: true });
+  await assert.rejects(
+    () => preparePublish({ submissionPath: ctx.submissionPath, reviewPath: ctx.reviewPath, registryDir: ctx.content, execute: true, repo: 'example/registry', git, github, http: ctx.http }),
+    (error) => error.code === 'E_PUBLISH_GH'
+  );
+  github.publishRelease = github.publishRelease; // keep fake state
+  await assert.rejects(
+    () => preparePublish({ submissionPath: ctx.submissionPath, reviewPath: ctx.reviewPath, registryDir: ctx.content, execute: true, repo: 'example/registry', git, github, http: ctx.http }),
+    (error) => error.code === 'E_PUBLISH_STALE_BASE'
+  );
 });
 
 test('same version with different bytes is immutable', async (t) => {

@@ -52,6 +52,16 @@ export function createGit({ cwd, runner } = {}) {
     branchExists(branch) {
       return call(['rev-parse', '--verify', '--quiet', `refs/heads/${branch}`], { allowFailure: true }).status === 0;
     },
+    isAncestor(ancestor, descendant) {
+      return call(['merge-base', '--is-ancestor', ancestor, descendant], { allowFailure: true }).status === 0;
+    },
+    materializeRef(ref, target) {
+      call(['worktree', 'add', '--detach', target, ref]);
+      return target;
+    },
+    removeWorktree(target) {
+      return call(['worktree', 'remove', '--force', target], { allowFailure: true }).stdout;
+    },
     checkout(branch) {
       return call(['checkout', branch]);
     },

@@ -13,6 +13,7 @@ import { createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
+import { compareVersions } from '../../../packages/host/src/semver.js';
 import {
   CATALOG_SCHEMA_VERSION,
   OWNER_SCHEMA_VERSION,
@@ -212,6 +213,73 @@ export async function buildRegistry(root, options = {}) {
     }
   }
   return { ok: false, errors, index: null, entries, changed: false, generatedAt: null };
+}
+
+/**
+ * Compare a candidate content-repository snapshot against a trusted base ref
+ * (normally `origin/main`). CI uses this so the current tree cannot silently
+ * roll back a version, replace an owner, or rewrite an existing review/asset
+ * binding just by regenerating the index.
+ *
+ * `baseRoot` is a directory containing the trusted snapshot (CI materializes
+ * `origin/main` into a temp dir). Every historical game/version is immutable;
+ * updates may only append a strictly higher version.
+ */
+export async function validateAgainstBase(candidateRoot, baseRoot) {
+  const errors = [];
+  const candidate = await buildRegistry(candidateRoot, { check: false });
+  if (!candidate.ok) return { ok: false, errors: candidate.errors };
+  const base = await buildRegistry(baseRoot, { check: false });
+  if (!base.ok) return { ok: false, errors: base.errors };
+
+  const baseEntries = new Map(base.entries.map((entry) => [entry.gameId, entry]));
+  const candidateEntries = new Map(candidate.entries.map((entry) => [entry.gameId, entry]));
+  const removed = [];
+
+  for (const [id, previous] of baseEntries) {
+    const next = candidateEntries.get(id);
+
+    // Audit records survive withdrawal and can never be rewritten/replaced.
+    const baseOwner = await readJson(path.join(baseRoot, 'owners', `${id}.json`)).catch(() => null);
+    const nextOwner = await readJson(path.join(candidateRoot, 'owners', `${id}.json`)).catch(() => null);
+    if (!nextOwner) {
+      errors.push({ code: 'E_CATALOG_OWNER_IMMUTABLE', field: `owners/${id}.json`, message: 'owner audit record is missing' });
+    } else if (baseOwner && JSON.stringify(baseOwner.owner) !== JSON.stringify(nextOwner.owner)) {
+      errors.push({ code: 'E_CATALOG_OWNER_IMMUTABLE', field: `owners/${id}.json`, message: 'owner identity is immutable' });
+    }
+
+    let reviewFiles = [];
+    try { reviewFiles = (await fs.readdir(path.join(baseRoot, 'reviews', id))).filter((name) => name.endsWith('.json')); } catch (_error) { reviewFiles = []; }
+    for (const file of reviewFiles) {
+      const before = await readJson(path.join(baseRoot, 'reviews', id, file));
+      let after = null;
+      try { after = await readJson(path.join(candidateRoot, 'reviews', id, file)); } catch (_error) { after = null; }
+      if (!after || JSON.stringify(before) !== JSON.stringify(after)) {
+        errors.push({ code: 'E_CATALOG_REVIEW_IMMUTABLE', field: `reviews/${id}/${file}`, message: 'historical review record was removed or modified' });
+      }
+    }
+
+    if (!next) {
+      // Withdrawal is the documented way to remove a game from the index
+      // (owner/review audit records stay in place).
+      removed.push(id);
+      continue;
+    }
+    const cmp = compareVersions(next.game.version, previous.game.version);
+    if (cmp < 0) {
+      errors.push({ code: 'E_CATALOG_VERSION_ROLLBACK', field: `catalog/${id}.json`, message: `version ${next.game.version} is older than trusted ${previous.game.version}` });
+      continue;
+    }
+    if (cmp === 0) {
+      for (const field of ['release', 'source', 'author', 'publishedAt']) {
+        if (JSON.stringify(next[field]) !== JSON.stringify(previous[field])) {
+          errors.push({ code: 'E_CATALOG_IMMUTABLE', field: `catalog/${id}.json`, message: `same version cannot change ${field}` });
+        }
+      }
+    }
+  }
+
+  return { ok: errors.length === 0, errors, removed, baseCount: base.entries.length, candidateCount: candidate.entries.length };
 }
 
 function maxUpdatedAt(entries) {

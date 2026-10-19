@@ -149,9 +149,11 @@ cover/screenshots）→ 上传完整 → 发布 Release → 通过公开 URL 重
 - `.github/workflows/validate-catalog.yml` 只读 checkout 内容仓库，再按
   `toolchain.lock.json` 固定 commit checkout 平台工具链；不使用
   `pull_request_target` 执行投稿代码；第三方 Action 固定完整 commit SHA。
-- CI 运行 `scripts/registry/validate-catalog.mjs --registry-dir .` 校验
-  catalog/owner/review/生成索引，再运行 `validate-assets.mjs --registry-dir .`
-  重新下载正式包/封面/截图并核对摘要与真实格式；不执行作者构建、不读 secrets。
+- CI 运行 `validate-catalog.mjs --registry-dir . [--base-dir .base]`：先校验
+  catalog/owner/review/生成索引，再与 PR 的 `github.event.pull_request.base.sha`
+  对比历史约束（版本只能递增、同版本包/素材/owner/review 不可改写；撤下只是
+  从索引移除且保留 owner/review 审计）；随后 `validate-assets.mjs` 重新下载
+  正式包/封面/截图并核对摘要与真实格式。不执行作者构建、不读 secrets。
 - 内容仓库 main 通过 PR 更新；合并是唯一生产开关。单维护者可“PR + 必需 CI + 人工
   点击合并”；有第二位维护者后再加独立 approval/CODEOWNERS。
 - 维护者本机执行上架工具（`gh`），不要求投稿机器 CI 持有写权限或机器人。

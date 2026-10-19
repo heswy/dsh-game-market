@@ -59,25 +59,51 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
     return active === 'official' ? official : seed;
   }
 
-  async function chooseSource() {
-    const snap = await official.snapshot().catch(() => null);
-    const officialGames = official.games();
-    const usableRemote = Array.isArray(officialGames) && officialGames.length > 0 &&
-      snap && (snap.state === 'fresh' || snap.state === 'stale' || snap.state === 'offline');
-    if (usableRemote) {
+  /**
+   * A successfully loaded official snapshot is authoritative even when it is
+   * empty: an empty index is how maintainers withdraw every game. The seed is
+   * only chosen when the remote could not be loaded/validated at all.
+   */
+  function officialLoaded() {
+    const peeked = official.peek ? official.peek() : null;
+    if (!peeked || !peeked.loaded) return false;
+    const state = official.state();
+    return state === 'fresh' || state === 'stale' || state === 'offline';
+  }
+
+  function chooseSource() {
+    if (officialLoaded()) {
       active = 'official';
       return;
     }
     active = 'seed';
-    await ensureSeedStarted();
   }
 
+  /**
+   * Startup is local-first: load the bundled seed immediately, then refresh the
+   * official index in the background. `ready()` must not block on a hanging
+   * official network request; callers get usable seed content right away.
+   */
   function start() {
     if (startupPromise) return startupPromise;
     startupPromise = (async () => {
       await seed.start().catch(() => undefined);
-      await official.start().catch(() => undefined);
-      await chooseSource();
+      chooseSource();
+      // Start the official refresh in parallel. Wait only a bounded settle
+      // window so a hanging remote never blocks list/health indefinitely; the
+      // seed is already usable while this runs.
+      const officialStart = official.start().then(() => {
+        chooseSource();
+        return official.snapshot().catch(() => null);
+      }).catch(() => undefined);
+      let timer;
+      const settle = new Promise((resolve) => { timer = setTimeout(resolve, 250); });
+      try {
+        await Promise.race([officialStart, settle]);
+      } finally {
+        clearTimeout(timer);
+      }
+      chooseSource();
     })();
     return startupPromise;
   }
@@ -91,19 +117,20 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
     if (active === 'seed') await ensureSeedStarted();
   }
 
+  /** Resolve once the bundled seed is loaded; never waits for the remote. */
+  async function localReady() {
+    await ensureSeedStarted();
+  }
+
   async function refresh(options = {}) {
     await ready();
     try {
       const result = await official.refresh(options);
-      if (official.games().length > 0) {
-        active = 'official';
-        return { ...result, activeSource: 'official', fallback: false };
-      }
-      throw Object.assign(new Error('Official registry returned no games'), { code: 'GM-5032' });
+      active = 'official';
+      return { ...result, activeSource: 'official', fallback: false };
     } catch (error) {
-      // Keep a usable remote cache if one exists; otherwise expose the seed.
-      const officialGames = official.games();
-      if (officialGames.length > 0) {
+      // Keep a usable official cache/snapshot if one exists; otherwise expose seed.
+      if (officialLoaded()) {
         active = 'official';
         throw error;
       }
@@ -129,6 +156,9 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
 
   async function snapshot() {
     await ready();
+    // The background official refresh may have completed after startup; prefer a
+    // valid official snapshot (including an empty one) once it is available.
+    if (officialLoaded()) active = 'official';
     const base = await delegate().snapshot();
     const officialSnap = await official.snapshot().catch(() => null);
     const seedSnap = await seed.snapshot().catch(() => null);
@@ -207,6 +237,7 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
     get allowedHosts() { return delegate().allowedHosts; },
     start,
     ready,
+    localReady,
     refresh,
     snapshot,
     state,

@@ -110,7 +110,12 @@ function imageDimensions(type, bytes) {
 }
 
 export function validatePackageBytes({ bytes, manifest, id, version }) {
-  const html = bytes.toString('utf8');
+  let html;
+  try {
+    html = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
+  } catch (_error) {
+    throw publishError('E_PUBLISH_PACKAGE_UTF8', 'package is not valid UTF-8 HTML; Host install would reject it');
+  }
   const validation = validatePackageHtml(html, { packageBytes: 20 * 1024 * 1024 });
   if (!validation.ok || !validation.manifest) {
     throw publishError('E_PUBLISH_PACKAGE_INVALID', 'package failed the shared validator', validation.errors.slice(0, 8));

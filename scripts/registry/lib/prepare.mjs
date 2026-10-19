@@ -159,6 +159,20 @@ async function writeAtomic(file, text) {
   await fs.rename(temp, file);
 }
 
+async function snapshotFile(file) {
+  try { return await fs.readFile(file, 'utf8'); } catch (error) {
+    if (error && error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+async function restoreFiles(entries) {
+  for (const [file, content] of entries) {
+    if (content === null) await fs.rm(file, { force: true });
+    else await writeAtomic(file, content);
+  }
+}
+
 function releaseExpectedAssets(plan, assets) {
   const shaBytes = Buffer.from(`${plan.assetPlan.hashes.package}  ${plan.assetPlan.packageName}\n`);
   return [
@@ -167,6 +181,51 @@ function releaseExpectedAssets(plan, assets) {
     { url: plan.assetPlan.coverUrl, sha256: plan.assetPlan.hashes.cover, size: assets.coverBytes.length },
     ...plan.assetPlan.screenshotUrls.map((url, index) => ({ url, sha256: plan.assetPlan.hashes.screenshots[index], size: assets.screenshotBytes[index].length })),
   ];
+}
+
+function draftAssetExpectations(plan, assets) {
+  const shaBytes = Buffer.from(`${plan.assetPlan.hashes.package}  ${plan.assetPlan.packageName}\n`);
+  return [
+    { name: plan.assetPlan.packageName, sha256: plan.assetPlan.hashes.package, size: assets.packageBytes.length, bytes: assets.packageBytes },
+    { name: plan.assetPlan.shaName, sha256: sha256(shaBytes), size: shaBytes.length, bytes: shaBytes },
+    { name: plan.assetPlan.coverName, sha256: plan.assetPlan.hashes.cover, size: assets.coverBytes.length, bytes: assets.coverBytes },
+    ...plan.assetPlan.screenshotNames.map((name, index) => ({ name, sha256: plan.assetPlan.hashes.screenshots[index], size: assets.screenshotBytes[index].length, bytes: assets.screenshotBytes[index] })),
+  ];
+}
+
+/**
+ * Verify a resumed draft before publishing it. A same-name asset is only
+ * reused when authenticated bytes match exactly; otherwise the draft stays
+ * unpublished and the tool fails before any catalog mutation.
+ */
+async function inspectDraftAssets({ github, plan, assets, requireAll = false }) {
+  const existing = new Map(((github.releaseView(plan.tag) || {}).assets || []).map((asset) => [asset.name, asset]));
+  const reused = [];
+  for (const expected of draftAssetExpectations(plan, assets)) {
+    const listed = existing.get(expected.name);
+    if (!listed) continue;
+    let actual = null;
+    if (typeof github.downloadAsset === 'function') {
+      const inspector = typeof github.inspectDraftAsset === 'function' ? github.inspectDraftAsset(plan.tag, expected.name) : null;
+      actual = await github.downloadAsset(inspector || { id: listed.id, name: expected.name });
+    } else if (typeof github.verifyDraftAsset === 'function') {
+      await github.verifyDraftAsset(plan.tag, expected);
+      reused.push(expected.name);
+      continue;
+    } else {
+      throw cleanError('E_PUBLISH_DRAFT_UNVERIFIABLE', 'resumed draft assets cannot be verified by this GitHub adapter; refusing to publish');
+    }
+    if (!actual || actual.length !== expected.size || sha256(actual) !== expected.sha256) {
+      throw cleanError('E_PUBLISH_DRAFT_ASSET_MISMATCH', `draft asset ${expected.name} does not match the approved bytes; delete/fix the draft before publishing`, { asset: expected.name });
+    }
+    reused.push(expected.name);
+  }
+  if (requireAll) {
+    const expectedNames = draftAssetExpectations(plan, assets).map((item) => item.name);
+    const missing = expectedNames.filter((name) => !reused.includes(name));
+    if (missing.length > 0) throw cleanError('E_PUBLISH_DRAFT_INCOMPLETE', `draft release is missing assets: ${missing.join(', ')}`);
+  }
+  return reused;
 }
 
 async function uploadRelease({ github, plan, assets, http, transactionDir }) {
@@ -178,14 +237,16 @@ async function uploadRelease({ github, plan, assets, http, transactionDir }) {
     }
     return { reused: true, release };
   }
+  const reusedDraftAssets = release ? await inspectDraftAssets({ github, plan, assets }) : [];
   if (!release) {
     await github.createDraftRelease({
       tag: plan.tag,
       title: `${plan.game.id} v${plan.game.version}`,
       notes: `Community game ${plan.game.id} ${plan.game.version}. Source: ${plan.review.sourceCommit}.`,
     });
+    release = github.releaseView(plan.tag);
   }
-  const existingAssets = new Set(((release && release.assets) || []).map((asset) => asset && asset.name).filter(Boolean));
+  const existingAssets = new Set(reusedDraftAssets);
   const packagePath = path.join(transactionDir, plan.assetPlan.packageName);
   const shaPath = path.join(transactionDir, plan.assetPlan.shaName);
   const coverPath = path.join(transactionDir, plan.assetPlan.coverName);
@@ -202,11 +263,37 @@ async function uploadRelease({ github, plan, assets, http, transactionDir }) {
     if (!existingAssets.has(plan.assetPlan.screenshotNames[index])) upload.push(target);
   }
   github.uploadAssets(plan.tag, upload);
+  // Re-read the draft through the authenticated API before publishing so a
+  // partial/failed upload can never be published as if it were complete.
+  if (typeof github.downloadAsset === 'function') {
+    await inspectDraftAssets({ github, plan, assets, requireAll: true });
+  }
   github.publishRelease(plan.tag);
   for (const expected of releaseExpectedAssets(plan, assets)) {
     await github.verifyPublicAsset(expected.url, expected, http);
   }
   return { reused: false };
+}
+
+/**
+ * Build the full candidate content repository in a throwaway copy. This must
+ * happen before any remote mutation so an invalid generated index/tag/owner
+ * cannot leave a published Release behind.
+ */
+async function stageCandidate({ registryDir, files, review, catalogText, ownerText, transactionDir, historyBaseDir }) {
+  const candidateDir = path.join(transactionDir, 'candidate');
+  await fs.cp(registryDir, candidateDir, { recursive: true, filter: (source) => !source.split(path.sep).includes('.git') });
+  await writeAtomic(path.join(candidateDir, files.review), `${JSON.stringify(review, null, 2)}\n`);
+  await writeAtomic(path.join(candidateDir, files.catalog), catalogText);
+  if (ownerText) await writeAtomic(path.join(candidateDir, files.owner), ownerText);
+  const candidate = await buildRegistry(candidateDir, { write: true });
+  assert(candidate.ok, 'E_PUBLISH_REGISTRY_INVALID', 'generated candidate registry is invalid', candidate.errors);
+  if (typeof historyBaseDir === 'string' && historyBaseDir.length > 0) {
+    const { validateAgainstBase } = await import('./catalog.mjs');
+    const history = await validateAgainstBase(candidateDir, historyBaseDir);
+    assert(history.ok, 'E_PUBLISH_HISTORY_INVALID', 'candidate violates trusted catalog history', history.errors);
+  }
+  return { candidateDir, candidate };
 }
 
 /**
@@ -303,8 +390,26 @@ export async function preparePublish(options) {
     };
   }
 
-  if (!options.execute) {
-    return { ok: true, mode: 'dry-run', alreadyPublished: false, repo, plan, mutations, downloadedBytes: assets.packageBytes.length };
+  const transactionDir = await fs.mkdtemp(path.join(options.tempRoot || os.tmpdir(), 'dsh-publish-'));
+  const files = plan.files;
+  const catalogText = `${JSON.stringify(plan.catalogEntry, null, 2)}\n`;
+  const ownerText = owner ? null : `${JSON.stringify({
+    schemaVersion: 1,
+    gameId: id,
+    owner: { login: submission.author.login, githubUserId: submission.author.githubUserId },
+    createdAt: plan.release.releasedAt,
+  }, null, 2)}\n`;
+  try {
+    if (!options.execute) {
+      // Dry-run still validates the complete candidate so an invalid tag or
+      // index fails here, never on the remote.
+      await stageCandidate({ registryDir, files, review, catalogText, ownerText, transactionDir, historyBaseDir: options.historyBaseDir });
+      await fs.rm(transactionDir, { recursive: true, force: true });
+      return { ok: true, mode: 'dry-run', alreadyPublished: false, repo, plan, mutations, downloadedBytes: assets.packageBytes.length };
+    }
+  } catch (error) {
+    await fs.rm(transactionDir, { recursive: true, force: true });
+    throw error;
   }
 
   const github = options.github || createGithub({ repo });
@@ -313,25 +418,41 @@ export async function preparePublish(options) {
   assert(repoInfo && repoInfo.isPrivate !== true, 'E_PUBLISH_PRIVATE_REPO', 'the content repository must be public');
   assert(cleanWorktree, 'E_PUBLISH_DIRTY', 'content repository has uncommitted changes; commit/stash them before publishing');
   assert(resumingBranch || currentBranch === baseBranch, 'E_PUBLISH_BRANCH', `content repository must be checked out on ${baseBranch} (or the resumable catalog branch)`);
-  if (!resumingBranch) {
-    if (typeof git.fetchOrigin === 'function') git.fetchOrigin(baseBranch);
-    if (typeof git.remoteHead === 'function' && typeof git.head === 'function') {
-      const remoteHead = git.remoteHead(baseBranch);
-      if (remoteHead) assert(git.head() === remoteHead, 'E_PUBLISH_STALE_BASE', `local ${baseBranch} is not the latest origin/${baseBranch}; pull/rebase before publishing`);
+  // Always refresh the trusted base, including resuming an existing branch, so
+  // a stale branch cannot silently withdraw/roll back newer catalog entries.
+  if (typeof git.fetchOrigin === 'function') git.fetchOrigin(baseBranch);
+  if (typeof git.remoteHead === 'function' && typeof git.head === 'function') {
+    const remoteHead = git.remoteHead(baseBranch);
+    if (remoteHead) {
+      if (resumingBranch) {
+        if (typeof git.isAncestor === 'function') {
+          assert(git.isAncestor(remoteHead, git.head()), 'E_PUBLISH_STALE_BASE', `resumable branch is not based on the latest origin/${baseBranch}; rebase before publishing`);
+        }
+      } else {
+        assert(git.head() === remoteHead, 'E_PUBLISH_STALE_BASE', `local ${baseBranch} is not the latest origin/${baseBranch}; pull/rebase before publishing`);
+      }
+    }
+  }
+  let historyBaseDir = options.historyBaseDir;
+  let materializedBase = null;
+  if (!historyBaseDir && typeof git.materializeRef === 'function') {
+    const target = path.join(transactionDir, 'trusted-base');
+    try {
+      git.materializeRef(`origin/${baseBranch}`, target);
+      historyBaseDir = target;
+      materializedBase = target;
+    } catch (_error) {
+      throw cleanError('E_PUBLISH_STALE_BASE', `could not materialize trusted origin/${baseBranch}; refusing to publish without a history baseline`);
     }
   }
 
-  const transactionDir = await fs.mkdtemp(path.join(options.tempRoot || os.tmpdir(), 'dsh-publish-'));
+  let snapshots = null;
+  let committed = false;
   try {
+    await stageCandidate({ registryDir, files, review, catalogText, ownerText, transactionDir, historyBaseDir });
     const draft = await uploadRelease({ github, plan, assets, http: options.http || {}, transactionDir });
-    const files = plan.files;
-    const catalogText = `${JSON.stringify(plan.catalogEntry, null, 2)}\n`;
-    const ownerText = owner ? null : `${JSON.stringify({
-      schemaVersion: 1,
-      gameId: id,
-      owner: { login: submission.author.login, githubUserId: submission.author.githubUserId },
-      createdAt: plan.release.releasedAt,
-    }, null, 2)}\n`;
+    const touched = [files.review, files.catalog, ...(ownerText ? [files.owner] : []), files.registry].map((relative) => path.join(registryDir, relative));
+    snapshots = await Promise.all(touched.map(async (file) => [file, await snapshotFile(file)]));
     await writeAtomic(path.join(registryDir, files.review), `${JSON.stringify(review, null, 2)}\n`);
     await writeAtomic(path.join(registryDir, files.catalog), catalogText);
     if (ownerText) await writeAtomic(path.join(registryDir, files.owner), ownerText);
@@ -348,6 +469,7 @@ export async function preparePublish(options) {
       // A retried transaction may already have committed identical files.
       if (!/nothing to commit|no changes added/i.test(String(error.message || ''))) throw error;
     }
+    committed = true;
     git.push(branch);
     let prUrl = '';
     const openPrs = github.listOpenPullRequests(branch);
@@ -382,7 +504,14 @@ export async function preparePublish(options) {
       mutations,
       files: [files.catalog, ...(ownerText ? [files.owner] : []), files.review, files.registry],
     };
+  } catch (error) {
+    // Before a commit exists, restore the worktree so a failed transaction
+    // cannot leave partial catalog files behind. After commit the branch is a
+    // resumable transaction and is intentionally kept.
+    if (!committed && snapshots) await restoreFiles(snapshots).catch(() => undefined);
+    throw error;
   } finally {
+    if (materializedBase && typeof git.removeWorktree === 'function') git.removeWorktree(materializedBase);
     await fs.rm(transactionDir, { recursive: true, force: true });
   }
 }

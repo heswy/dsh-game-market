@@ -48,6 +48,31 @@ export function createGithub({ repo, runner } = {}) {
       }
       return JSON.parse(result.stdout);
     },
+    /**
+     * Authenticated view of one draft asset: GitHub's release API exposes the
+     * asset id/name/size/digest, while the download URL requires auth. This is
+     * used before publishing a resumed draft so a same-name but different-byte
+     * asset can never be silently accepted.
+     */
+    inspectDraftAsset(tag, name) {
+      const release = call(['api', `repos/${repo}/releases/tags/${encodeURIComponent(tag)}`], { allowFailure: true });
+      if (release.status !== 0) return null;
+      let parsed;
+      try { parsed = JSON.parse(release.stdout); } catch (_error) { return null; }
+      const asset = (parsed.assets || []).find((item) => item && item.name === name);
+      if (!asset) return null;
+      return { id: asset.id, name: asset.name, size: asset.size, digest: asset.digest || null, state: asset.state, url: asset.url };
+    },
+    downloadAsset(asset) {
+      if (!asset || asset.id === undefined) throw ghError('E_PUBLISH_GH', 'draft asset has no id');
+      const result = spawnSync('gh', ['api', `repos/${repo}/releases/assets/${asset.id}`, '-H', 'Accept: application/octet-stream'], {
+        encoding: null,
+        maxBuffer: 32 * 1024 * 1024,
+        env: { ...process.env, GH_PROMPT_DISABLED: '1', GIT_TERMINAL_PROMPT: '0' },
+      });
+      if (result.status !== 0) throw ghError('E_PUBLISH_GH', `gh api asset download failed for ${asset.name}`);
+      return Buffer.from(result.stdout || new Uint8Array(0));
+    },
     async createDraftRelease({ tag, title, notes }) {
       const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'dsh-release-notes-'));
       const file = path.join(directory, 'notes.md');

@@ -8,9 +8,9 @@
 
 | 项 | 命令 | 结果 | 日志/产物 |
 |---|---|---|---|
-| 全量回归 | `npm run verify` | **821/821**，`CHECK OK (37)` | `logs/full-verify.log` |
-| 社区组件/工具/Skill 单元与集成测试 | `node --test scripts/registry/test/*.test.js` | **18/18** | `logs/registry-tests.log` |
-| Host 默认源分层测试 | `node --test packages/host/test/index.js --test-name-pattern=layered` | 153/153（pattern 过滤后仍全量执行文件） | `logs/host-layered.log` |
+| 全量回归 | `npm run verify` | **831/831**，`CHECK OK (37)` | `logs/full-verify.log` |
+| 社区组件/工具/Skill 单元与集成测试 | `node --test scripts/registry/test/*.test.js` | **24/24** | `logs/registry-tests.log` |
+| Host 全量测试 | `node --test packages/host/test/index.js` | **155/155** | `logs/host-tests.log` |
 | 构建确定性 | `npm run build` ×2 + sha256 列表比较 | 4 游戏 + client + 随包 registry 全部一致 | `logs/build-determinism.log` |
 | 内容仓库初始化/校验 CLI | `init-content-repo.mjs` → `validate-catalog.mjs` | 初始化成功、空目录合法 | `logs/init-content-repo.log`、`logs/validate-content-repo.log`、`artifacts/content-repo-init/` |
 | 可移植生成工程 | Vanilla + React `create → build → validate → pack → validate(packed)` | 均通过；生成 config 不含机器相关 CLI 路径，使用 `DSH_GAME_CLI` | `logs/portable-templates.log`、`logs/react-template.log` |
@@ -57,6 +57,19 @@
 
 在 1–6 完成前，默认 remote 不可达时 Host 使用随包 seed，Market 不白屏；上架工具只
 以 mock GitHub/HTTP 验证，不能宣称已真实上线。
+
+## 3.5 CR4 复核修复（PR #4 review）
+
+| 编号 | 问题 | 修复 | 回归 |
+|---|---|---|---|
+| CR4-01 | 完整目录校验发生在 Release 发布之后 | `prepare` 先在临时目录生成并校验完整候选目录（含历史基线），通过后才允许远端写入；写真实文件失败会在 commit 前回滚；`--history-base` 支持 CI/工具指定基线 | `prepare.test.js` 新增 dry-run 历史冲突零 GitHub 调用；候选校验先于 release |
+| CR4-02 | 恢复 draft 只检查文件名 | 发布前用认证接口读取 draft 附件字节并核对大小/SHA；不匹配保持 draft 并拒绝；上传后发布前再次认证校验完整性 | 新增 mismatched draft 资产测试；draft 完整性校验 |
+| CR4-03 | 目录 CI 不校验历史约束 | 新增 `validateAgainstBase`：版本只能递增、同版本 release/source/author/publishedAt 不可变、owner 不可替换、历史 review 不可改写；撤下允许但 owner/review 审计保留；CI checkout PR base 并传 `--base-dir`；恢复分支必须基于最新 origin/main | `catalog.test.js` 回退/owner/review/撤下测试；`prepare.test.js` stale resume |
+| CR4-04 | 合法空官方目录错误触发 seed | 官方快照成功加载（含空数组）即 authoritative；`refresh` 空目录成功不再报错 | Host 新增“空官方目录不显示 seed”测试 |
+| CR4-05 | seed 已加载但首屏等待官方初始化 | 启动先加载 seed，官方后台刷新（最多 250ms settle）；`localReady` 保证列表/安装立即可用；官方完成后自动切换 | Host 新增“官方挂起时列表/seed 安装可用”测试 |
+| CR4-06 | 发布校验与 Host 非法 UTF-8 处理不一致 | `validatePackageBytes` 使用 fatal UTF-8 解码，非法字节返回 `E_PUBLISH_PACKAGE_UTF8` | 新增 `0xff` 包拒绝测试 |
+
+详见 [`review-cr4.md`](./review-cr4.md)。
 
 ## 4. Skill 独立评估
 

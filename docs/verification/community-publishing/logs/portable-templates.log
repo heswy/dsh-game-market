@@ -1,0 +1,31 @@
+# Portable generated template verification (post-evaluator fixes)
+platform_cli=$DSH_GAME_CLI
+
+## Vanilla
+create_exit=0
+build_exit=0
+validate_exit=0
+pack_exit=0
+validate_after_pack_exit=0
+OK  <tmp>/dsh-portable-eval/vanilla-verify/dist/vanilla-verify-1.0.0.html (108220 bytes)
+    manifest: vanilla-verify@1.0.0 (Vanilla Verify)
+f02224ce1c22da74282acf072856c50ad0a0d5399066b8317481f00ef4f96f42  <vanilla>/dist/vanilla-verify-1.0.0.html
+
+## React
+create_exit=0
+install_exit=0
+build_exit=0
+validate_exit=0
+pack_exit=0
+validate_after_pack_exit=0
+OK  <tmp>/dsh-portable-eval/react-portable/dist/react-portable-1.0.0.html (194677 bytes)
+    manifest: react-portable@1.0.0 (React Portable)
+5d1e7734add5f7a0c5f42dad56f4eba87045dc12036f6f9dcbaafe662cdc1291  <react>/dist/react-portable-1.0.0.html
+
+## Config (portable; no cli path)
+{
+  "manifest": "manifest.json",
+  "template": "index.html",
+  "entry": "src/main.js",
+  "out": "dist/index.html"
+}
