@@ -47,6 +47,7 @@
 4. 交付报告必须包含固定 SHA、分支、改动、实际验证结果和未完成项；主会话在隔离 checkout 复核。不得把 mock、模拟器或 headless 证据写成真实公网/桌面 Host 验收。
 5. 不自动合并、发布或打 tag，不自动向其他任务或外部人员发消息；相关动作遵循用户在会话中的授权。
 6. 平台 Host/Client/Runtime/SDK 保持现有零新增第三方依赖约束（Client 使用 react）；新增依赖须先明确决策。开发者 React 模板的构建依赖按其模板契约管理。
+   - **V1.5 已批准的限定例外（2026-10-19，PRD D-040）**：`packages/host/src/zip.js` 及其测试**允许** import `yauzl@3.4.0`（唯一传递依赖 `pend@1.2.0`，均 MIT），精确版本 + integrity pin，发行 Bundle 必须放进真实 `dependencies`。其余位置（`packages/client|runtime|sdk|shared`、`games`、`scripts`）仍为零新增依赖。详见 `docs/V1.5-CONTRACTS.md` §2。
 
 ### 1.3 验证要求
 
@@ -260,8 +261,9 @@ npm run dev:enable
 npm run dev:disable
 ```
 
-- Node ≥ 20（本机 v24.14.0），零 npm 依赖，不需要 `npm install`。
-- DSH 基线：Desktop **0.2.1-rc.2**。
+- Node ≥ 20（本机 v24.14.0）。**V1.5 M0 之前**零 npm 依赖、不需要 `npm install`。
+- **自 M1 起（PRD D-041 预告，实施时生效）**：为 `asset-zip-v2` 引入 `yauzl@3.4.0`（见 §1.2.6 例外）后，仓库首次需要安装运行时依赖，`npm run verify` **不再能在无 `node_modules` 的全新 checkout 上直接跑**；CI 与本地须先安装依赖，`scripts/check.mjs` 在缺依赖时给出可操作失败信息。README 快速开始同步修订。
+- DSH 基线：Desktop **0.2.1-rc.2**。V1.5 实测：**真实 Desktop 是 HMR 能力开启的 profile**（详见 `docs/verification/v1.5/support-matrix.md` §3）。
 - 开发态加载：改 Host 代码需重启 DSH 或停用/启用插件行；改 `client.js` 后页面约 0.5s 热更新（以实测为准）。
 
 ---
@@ -346,6 +348,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - V1-39：**受控 M4 与 V1.2.0**：受控作者 `heswy/dsh-game-test-author` 经真实内容仓库 PR #3/#4/#5 完成 1.0.0→1.0.1→撤下，目录为空、owner/review 审计保留；独立 Host 从固定目录快照安装/启动 SHA 一致，不等同真实 DSH App 验收。平台 PR #5 合入 `e247b93`：精确放行 GitHub Release 的 `release-assets.githubusercontent.com`；draft 认证 REST 数字资产 id、分页查找与 fail closed；脱敏 M4 日志已跟踪并纳入 check。用户授权合码/打 tag，平台版本升 1.2.0；内容仓库 toolchain pin 更新通过后续独立 PR，不自动修改其他仓库。
 
 - V1-40：**V1.5 正式对外首版规划**：用户指定资源包+新内置游戏、DSH 平台持续一键更新、DeepSeek Logo 鲸鱼与原地问答。HTML/ZIP 并存、两代游戏目录隔离；插件安装由 DSH 管理器执行，非 HMR Desktop 覆盖安装/待重启是必须实证路径，HMR 需独立能力门；open 问答复用原生 pending channel，continued 走宿主 answer，危险权限不由游戏批准。指南及能力记录位于 `docs/plans/2026-10-19-v1.5-*`；均为待实施方案，M0 先验证宿主能力并冻结契约，正式发布门槛见指南 §8。
+- V1-41：**V1.5 M0 探针与契约冻结（2026-10-19 完成，PR 待复核）**：分支 `feat/v1.5-m0`（从 `origin/main` `f422e8d` 建，`--no-ff` 合入本地指南分支 `codex/v1.5-development-guide`），M0 证据提交 `50f27ad`。S-U1/U2/U3、S-Q1/Q2、S-A1、S-B1 **全部通过**（required 断言 0 失败），主证据索引 `docs/verification/v1.5/host-spikes.md`。冻结 `docs/V1.5-CONTRACTS.md`（1429 行）、ZIP 依赖裁决（`yauzl@3.4.0` + `pend@1.2.0`）、支持矩阵，PRD 新增 D-039～D-050 与 S-26～S-32。**三条改变设计的事实**：① 真实 DSH Desktop 是 **HMR 能力开启**（推翻指南「非 HMR Desktop」前提），主更新路径为 git URL+精确 commit 的**在线替换**（`applied`，无需重启；`already-installed` 只是幂等保护；URL 形态重复点击是 `ambiguous-install`）；② HMR 能力判定必须在 Loader 树稳定后**轮询采样** `manager.ownerContext.get('hmr')`（t=0 为 false 的竞态）；③ 资源服务**不能复用 DSH `/api`**（opaque-origin 被围栏 403），必须用独立 loopback 资源 origin；open 问答**不能调用 `pending.dismiss()`**（unnamed blocking 卡那是取消请求）。**未验证项**见 host-spikes.md §6，未推进 M1～M5 实现。
 
 ---
 
@@ -363,10 +366,13 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-19 · **社区投稿 MVP 复核通过并合码（PR #4）**：固定 head `c93a85a` 经 Codex 复跑 verify 835/835、CHECK OK (37)、registry 28/28；真实 ref lock 复现正确返回 `E_PUBLISH_ROLLBACK_FAILED`。用户授权后以 merge commit `2b45b2e` 合入 main；未发布、未打 tag。下一步 M4 公网闭环及真实 Host 安装/持久化、120 秒流程、跨机 save 验收。
 - 2026-10-19 · **PR #5 复核合入与 V1.2.0 发版**：固定 head `f862650` 验证 840/840、CHECK OK (38)、registry 31/31，两个 P2 全关闭；PR #5 合入 `e247b93`。用户随后授权合码/打 tag；本次合入项目记忆维护提交，升 package 1.2.0，更新发布说明并以 main 发布提交打 tag v1.2.0。真实 App 等剩余边界未改写为通过。
 - 2026-10-19 · **V1.5 正式对外首版开发指南**：只读核对当前 DSH 0.2.1-rc.2 的 pluginManager/pluginMarket/userQuestions/uiSession/FishLogo 实现并对照官方文档；交付 V1.5 指南与宿主能力记录，明确 ZIP/双目录、原生更新/重启确认、原地问答与权限隔离、M0 探针及正式验收门槛。尚未实施或发布 v1.5，下一步由用户指定开发 Agent 执行 M0。
+- 2026-10-19 · **V1.5 M0 执行完成**：按指南 §7.1 从 `origin/main` `f422e8d` 建 `feat/v1.5-m0` worktree 并 `--no-ff` 合入本地指南分支（`689b5b9`）；交付 7 个宿主探针（S-U1/U2/U3、S-Q1/Q2、S-A1、S-B1）全部通过 + `docs/V1.5-CONTRACTS.md` 冻结 + ZIP 依赖裁决 + 支持矩阵 + PRD D-039～D-050/S-26～S-32；`npm run verify` 840/840、CHECK OK (38)。**未**推进 M1～M5、未合并 main、未打 tag、未发布。等 Codex 复核。
 
-**当前状态（2026-10-19，V1.2.0 已发布 / V1.5 规划）**：
+**当前状态（2026-10-19，V1.2.0 已发布 / V1.5 M0 完成待复核）**：
 
 - **发布**：`package.json` 1.2.0；tag `v1.2.0` 指向本次 main 发布提交。平台 Git tag 分发，不创建 GitHub Release 页面、不上传新游戏资产；历史 tag 不动。
+- **V1.5 M0（当前阶段）**：分支 `feat/v1.5-m0`，证据提交 `50f27ad`；交付物见 `docs/verification/v1.5/host-spikes.md`（主证据索引）、`docs/V1.5-CONTRACTS.md`、`support-matrix.md`。**探针结论改变了三处设计前提**（见 §5 V1-41）：真实 Desktop 是 HMR 开启、能力判定要轮询采样、资源服务必须独立 origin、open 问答不得 `dismiss()`。**未验证项**见 host-spikes.md §6。
+- **V1.5 下一步**：Codex 复核 M0 PR → 按契约开 M1（`feat/v1.5-asset-packages`：包格式/ZIP 校验器/两代目录/独立资源 origin）。M1 起仓库需要安装运行时依赖（`yauzl`，PRD D-041）。
 - **合并 / 验收**：PR #4 `2b45b2e`、PR #5 `e247b93`；已验收 head `f862650` 为 840/840、CHECK OK (38)、registry 31/31。本次版本/文档收口的独立验证结果见 `docs/releases/v1.2.0.md`。
 - **入口**：作者 `docs/community-submission.md`；维护者 `docs/community-operations.md`；契约 `docs/community-publishing-contracts.md`；Skill `skills/dsh-game-developer/SKILL.md`；任务指南 `docs/plans/2026-10-19-community-publishing-mvp.md`。
 - **受控 M4 已完成**：内容仓库 `heswy/dsh-game-registry` 已配置规则/不可变 Release；受控作者公网投稿→1.0.0→1.0.1→撤下闭环通过，目录为空且保留审计。独立 Host 安装/启动、Release 重定向与 SHA 核验已有归档；见 `m4-public-loop.md` / `external-content-repo.md`。

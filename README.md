@@ -22,7 +22,7 @@ V0 已完成并验收，验证游戏是贪吃蛇（snake）。
 
 - 权威规格：[`PRD｜DSH Game Market.md`](./PRD｜DSH%20Game%20Market.md)（第 8–12 章为实现权威来源）
 - 项目记忆与协作/分支/验证规则：[`PROJECT_MEMORY.md`](./PROJECT_MEMORY.md)（**唯一项目记忆文件**）
-- 基线：DSH Desktop `0.2.1-rc.2`，Node ≥ 20，**零第三方依赖**
+- 基线：DSH Desktop `0.2.1-rc.2`，Node ≥ 20，**M0 阶段仍为零第三方依赖**（V1.5 M1 起为 `asset-zip-v2` 引入 `yauzl`，见「常用命令」下的依赖变更预告）
 
 ## V0 包含什么
 
@@ -94,7 +94,10 @@ tests/                  # 跨模块集成测试
 npm run build      # 构建 client.js 与 games/snake/dist/index.html
 npm run check      # 检查 bundle 元数据、JS 语法、产物是否自包含
 npm test           # node --test（Host/Client/Runtime/SDK/游戏逻辑 + 集成测试）
+npm run verify     # build + check + test（交付前必须全绿）
 ```
+
+> **依赖变更预告（V1.5 M1 起）**：V1.5 的 `asset-zip-v2` 资源包需要 `yauzl@3.4.0`（+ 唯一传递依赖 `pend@1.2.0`，均 MIT），已由 PRD D-040 批准为**限定范围的例外**（只允许 `packages/host/src/zip.js` 引入）。该依赖落地后，全新 checkout 需先安装依赖才能跑 `npm run verify`——本仓库长期以来的「零依赖、免 `npm install`」状态届时结束。M0 阶段（当前）仍未引入该依赖，`npm run verify` 依旧免安装可跑。决策与供应链控制见 [`docs/V1.5-CONTRACTS.md`](./docs/V1.5-CONTRACTS.md) §2。
 
 代码格式/提交/分支规范见 [`PROJECT_MEMORY.md`](./PROJECT_MEMORY.md)。功能分支完成且检查通过后由 Lead 合并到 `main`。
 

@@ -1,12 +1,14 @@
 # PRD｜DSH Game Market
 
-> **文档状态**：v2.2 · 2026-10-18。第 0–7 章为产品定义与体验设计；第 8–12 章为可开发的实现级规格、界面交互规格、验收标准、任务拆解与决策日志。**两者冲突时以第 8–12 章为准**；已定决策见 12.1，待验证项见 12.2。v2.1 已按一轮独立一致性审查修复 P0/P1 问题（接口超时、容量模型、Session 字段、偏好模型、错误码、文案 key 等）。
+> **文档状态**：v2.3 · 2026-10-19。第 0–7 章为产品定义与体验设计；第 8–12 章为可开发的实现级规格、界面交互规格、验收标准、任务拆解与决策日志。**两者冲突时以第 8–12 章为准**；已定决策见 12.1，待验证项见 12.2。v2.1 已按一轮独立一致性审查修复 P0/P1 问题（接口超时、容量模型、Session 字段、偏好模型、错误码、文案 key 等）。
 >
 > **v2.2 修订（2026-10-18，用户决策锁定）**：包格式从「`.dshgame` zip 归档」改为**单文件自包含 HTML + 内嵌 manifest v1**（`<script type="application/json" id="dsh-game-manifest">`，全文恰好一处，manifest 文本 ≤64 KiB）；V1 不引入 zip/解压/文件列表/压缩炸弹等概念，多文件资源推迟到 V1.5。随之统一：安装目录为 `packages/<id>/<version>/entry.html`；Registry 索引为 `registry/games.json`（`registryVersion: 1`），条目 `package = { url, sha256, size, releasedAt }`；新增 Host `POST /install-local`（raw `text/html`，≤20 MiB，`source: 'local'`，Client 负责二次确认）；包 URL 准入改为 host allowlist（默认 `github.com`/`raw.githubusercontent.com`/`objects.githubusercontent.com`，可配置 `allowedHosts`），删除「只允许 `/releases/download/`」的硬限制；V1 首发锁定四款 `snake`/`jump`/`2048`/`breakout`，DSH-native Demo 从 V1 阻塞范围移除。包内 `entry`、`cover`、`screenshots` 字段退出 manifest：文件本身即入口，封面/截图仅作为 Registry 条目字段。决策记录见 12.1 D-034/D-035/D-036。
 >
 > **V1.2 社区投稿修订（2026-10-19）**：新增 GitHub 内容仓库投稿/审核/目录 PR/维护者上架工具、默认官方目录源 + 随包 seed 兜底、`dsh-game-developer` Skill；运行时包/Registry 协议不变。契约见 `docs/community-publishing-contracts.md`，决策记录 D-038。
 >
 > **V1.1 呈现规范修订（2026-10-19，用户决策锁定）**：Runtime 舞台改为**全出血（edge-to-edge）**，删除黑色舞台背景/letterbox/舞台内边距；`manifest.viewport` 仅作为推荐设计分辨率（SDK `viewport` 为实际容器尺寸），不再驱动平台等比缩放；游戏必须铺满视口并遵守平台悬浮控件安全区。开发包规范见 `docs/developer-guide.md` §4.4，决策记录 D-037。
+>
+> **v2.3 修订（2026-10-19，V1.5 M0 契约冻结）**：V1.5 = **正式对外首版**，包格式扩展为**联合类型**（保留 `html-v1` + 新增 `asset-zip-v2`，两代 Registry 并存）；ZIP 归档依赖经**限定范围的例外**批准 `yauzl@3.4.0`（+`pend@1.2.0`，均 MIT，精确 pin，唯一引入点 `packages/host/src/zip.js`），并同步修订开发/CI 需安装运行时依赖；opaque-origin 多文件资源服务改用**独立 loopback 资源 origin**（不复用 DSH `/api`），entry 保留一次性 launch、子资源改用实例绑定资源凭证；`asset-zip-v2` 必须外链但允许包内相对同源读取；插件一键更新接入 DSH `pluginManager`，**真实 DSH Desktop 实测为 HMR 能力开启**（推翻此前"非 HMR Desktop"的假设），能力判定改为 Loader 树稳定后轮询采样；品牌形象运行时复用宿主 `FishLogo`。范围与放行条件见 `docs/plans/2026-10-19-v1.5-public-launch.md`，实现级契约见 `docs/V1.5-CONTRACTS.md`，M0 宿主实测见 `docs/verification/v1.5/host-spikes.md`；决策记录 **D-039～D-050**，Spike 记录 **S-26～S-32**。
 >
 > **阅读路径**：
 > - 产品 / 设计：0–7 章 → 9 章（交互规格）→ 12 章（决策与风险）
@@ -1825,6 +1827,10 @@ Build / Validate
 只要这两条链路都能够顺畅完成，V1 就已经具备发布价值。对应的可执行验收清单见 10.2–10.4，性能与安全验收见 10.5–10.7。
 
 ### 7.6 V1.5：开始验证生态
+
+> **V1.5 范围更新（2026-10-19，权威口径）**：V1.5 = **正式对外首版**，三条主线是「离线多文件资源包 + 新增真多文件内置游戏 `orbit-courier`」「接入 DSH 原生插件管理的一键持续更新」「DeepSeek 鲸鱼形象 + 游戏视图内普通 AskQuestion 原地回答」；同时补完旧版遗留的真实 App 安装/持久化、完整真实玩法流程与外部作者验证。
+> 交付顺序与放行条件见开发指南 `docs/plans/2026-10-19-v1.5-public-launch.md` §7（M0 宿主与契约 → M1 包与目录 → M2 内置与开发者 → M3 插件更新 → M4 形象与问答 → M5 正式首版），实现级契约见 `docs/V1.5-CONTRACTS.md`，M0 宿主实测结论见 `docs/verification/v1.5/host-spikes.md` 与 `support-matrix.md`。
+> 下面这段早期的"生态观察"清单是方向性描述，**不是 V1.5 交付门槛**；其中「本地排行榜 / Achievement / Favorite / 游戏时长」等仍属后续迭代，未纳入 V1.5 阻塞范围。V1.5 冻结决策见 §12.1 D-039～D-050。
 
 V1.5 不做大规模重构，重点观察用户和开发者是否真的愿意持续使用平台。
 
@@ -5805,6 +5811,19 @@ M4 V1 发布验收（约 1 周）
 | D-037 | Runtime 舞台全出血（edge-to-edge），删除黑色舞台背景/letterbox/舞台内边距；`viewport` 仅作推荐设计分辨率；SDK viewport 为实际容器尺寸，不再驱动平台缩放；游戏铺满视口并遵守顶部全宽 112px、右下 96×96 安全区；开发包规范写入开发者指南 §4.4/模板 | 消除黑边、统一第三方接入规范 | 用户决策（2026-10-19） | 已定 |
 | D-038 | V1.2 社区投稿：GitHub 内容仓库 + Issue/PR 投稿契约 + 人工批准绑定精确包/素材摘要 + `prepare.mjs` dry-run/execute 上架工具 + 默认官方目录源与随包 seed 兜底 + `dsh-game-developer` Skill；运行时包/Registry 协议不变 | 可实际运营的社区上架链路，无需自建服务器 | 用户确认方案（2026-10-19） | 已定 |
 
+| D-039 | **V1.5 包格式 = 联合类型**：保留 `html-v1`（`<id>-<version>.html`，现有 ≤20 MiB/UTF-8/自包含检查不变），新增 `asset-zip-v2`（`<id>-<version>.dshgame.zip`，只含静态前端资源）；`dsh-package.json` 描述 `formatVersion:2`/`entry`/`gameManifest`/逐文件 `size+sha256` 清单；v2 以 `game.json` 为**唯一权威** manifest，冲突必须拒绝；同 id/version 字节不可变，HTML→ZIP 必须升游戏版本 | 作者一份文件、审核绑定原始字节、离线安装与完整回滚；两代并存避免旧客户端整份目录失败 | M0 契约冻结（`docs/V1.5-CONTRACTS.md` §1） | 已定 |
+| D-040 | **ZIP 归档依赖 = 限定范围的例外，批准 `yauzl@3.4.0`**（唯一传递依赖 `pend@1.2.0`，均 MIT，精确版本 + integrity pin，`import` 只允许出现在 `packages/host/src/zip.js` 及其测试）；`packages/client`/`runtime`/`sdk`/`shared`、`games`、`scripts` 保持零新增依赖；**维持 D-032 禁止自研完整解压器**；发行 Bundle 必须把 `yauzl` 放进真实 `dependencies`，缺失时明确报错而非静默降级 | 指南 §4.1 允许经 review 的最小归档依赖；实测宿主自带 `fflate` reader 不暴露 CRC 且对篡改数据不报错，无法满足 CRC 实测；自研容器解析器（约 500–700 行、无上游安全修复）被指南与 D-032 明确排除 | M0 探针实测（`b1-zip-reader-eval.json` 12/12）+ Lead 裁决 | 已定 |
+| D-041 | **开发/CI 工作流变更**：引入 D-040 后仓库首次需要安装运行时依赖，`npm run verify` 不再能在无 `node_modules` 的全新 checkout 上直接跑；`PROJECT_MEMORY` §3「零 npm 依赖，不需要 `npm install`」相应修订；`scripts/check.mjs` 在缺少 `node_modules/yauzl` 时必须给出可操作失败信息，并断言 `yauzl=3.4.0`/`pend=1.2.0`、无安装脚本、引入点唯一；新增 `THIRD-PARTY-NOTICES.md` 由 check 校验 | 依赖例外必须有可机检的供应链控制与诚实的开发成本披露 | Lead 裁决（D-040 前置条件） | 已定 |
+| D-042 | **两代索引并存**：`/registry/games.json` 继续生成 Registry v1、**只含可用 HTML 版本**；V1.5 默认读取新增 `/registry/v2/games.json`（支持显式 `package.format` 与 HTML/ZIP 联合结构）；两代都严格整份校验、任一条目非法即整份拒绝并回退缓存；撤下一个游戏同时从两代投影撤下，保留 owners/reviews/已发布资产 | 现有 v1 客户端严格校验整份 Registry，把 ZIP 条目放进旧 URL 会让旧用户整份目录失败 | M0 契约冻结（`docs/V1.5-CONTRACTS.md` §5） | 已定 |
+| D-043 | **资源服务 = 独立 loopback 资源 origin**：`/res/<instanceId>/<resourceToken>/<path>`，路径前缀让包内相对 URL 自然解析（无需 `<base>`/改写 HTML）；**不复用 DSH `/api` connection 路由**（`connection.fetch.register` 只接受 `/api/*`，且 `/api` 前缀的 Origin/`sec-fetch-site` 围栏会拒绝 opaque-origin 子资源，实测 403）；该 origin 只提供实例资源，绝不暴露 Host 写接口；另向 DSH 上游提出「`/api` 之外的公开 route seam」作为后续替代项（非 V1.5 阻塞） | S-A1 真实浏览器实测硬约束；独立 origin 已端到端验证可行 | M0 探针 S-A1（82/82）+ Lead 裁决 | 已定 |
+| D-044 | **资源凭证与 CSP**：entry 首导航携带**一次性 launch**（首 GET 即消费，重放 410）；此后 reload/重试/再进入一律用**实例绑定资源凭证** URL（可重复 GET/HEAD，renew 同步续期，release/TTL 失效 → 403）；CSP **只在入口文档发送**且用**显式资源 origin**（不用 `'self'`），`frame-ancestors` 精确到 DSH web origin；资源响应 `ACAO: *` 匿名、无 credentials、无 `Set-Cookie`、`no-store`、`no-referrer`、精确 MIME + `nosniff`；**CSP 是必需的外发边界**（实测无 CSP 时 CORS 挡不住 `no-cors` 外发） | opaque-origin 下多文件加载与「凭证不被 302/缓存绕过」的实测结论 | M0 探针 S-A1 + Lead 裁决 | 已定 |
+| D-045 | **`asset-zip-v2` 内容策略**：必须外链——拒绝内联 `<script>`/内联 `<style>`/内联事件处理器（`on*=`）/`javascript:` URL，v2 CSP 不含 `'unsafe-inline'`；**允许包内相对同源资源读取**（如 `fetch('./levels/level-01.json')`），拒绝任何带 scheme 或 authority 的 URL；安全边界由运行时 CSP `connect-src <resourceOrigin>` 强制，静态扫描不作为「无网络」的证明。`html-v1` 的现有 CSP 不回归 | 严格 CSP 可被自动断言；V1.5 头号目标要求内置游戏真实加载独立关卡 JSON；CDN/绝对地址一律拒绝 | M0 探针 S-A1 + Lead 裁决（放宽是加法，收紧会破坏已发布作者包） | 已定 |
+| D-046 | **插件更新由 DSH `pluginManager` 持有，平台只做可信发现、协调与结果确认**；主路径 = `installBundle` 使用 **git HTTPS URL + 完整 40 位 commit** 的 spec（HMR 下返回 `application:"applied"` 在线替换；非 HMR 返回 `restart-required` + `restartReason:"no-hmr"`）；`already-installed` 是**幂等保护**（同目标重复点击），不是失败；**不得用 spec 字符串判定「已是最新」**（pnpm 会把 https spec 归一化记录为 `github:` 形态），必须比版本/commit；禁止裸包名与本地路径 spec（会被 `already-installed` 拦或语义不同）；禁止先卸载自己再靠自身完成安装 | 真实 DSH Desktop 实测为 **HMR 能力开启**（推翻指南「非 HMR Desktop」前提）；`specPackageName` 的匹配规则决定可用 spec 形态 | M0 探针 S-U1/S-U2/S-U3 + Lead 裁决 | 已定 |
+| D-047 | **HMR 能力判定契约**：必须在 Loader 树稳定后对 `ctx.get('hmr')` 做**超时轮询采样**（真实 Desktop 实测 t=0 无 → t≈0.5–2s 有，Cordis `Service.init` 异步注册）；**不得**用 UA、版本字符串或插件 `apply()` 时的单次读取判定；能力缺失时**不展示可执行更新按钮**，只给明确不支持状态与原生恢复入口 | 实测竞态会让单次读取把 HMR 环境误判为非 HMR，进而走错更新路径 | M0 探针（Lead 采样 + probe-update 独立复现） | 已定 |
+| D-048 | **品牌形象在可信 Client 层复用宿主正式标志**：运行时 `require('@deepseek-ai/dsh-client-ui-primitives')` 取 `FishLogo`（MIT，`currentColor`，随明暗主题变化，实测 288 exports）；按运行期能力探测 + 版本门，失败降级到已冻结的本地官方轮廓资产；**不复制官方资产、不热链网页 Logo、不用占位鲸鱼**、不覆盖宿主品牌 slot；不暗示获得官方发行背书。M1 需把 `bundle-lib.mjs` 的 bare import 白名单从「仅 react」扩为受审最小集合（含 primitives 与 `react-dom/client`） | S-B1 实测：第三方 `dsh.client` 可解析宿主种子表模块；现自研 bundler 拒绝该 bare import | M0 探针 S-B1（23/23）+ Lead 裁决 | 已定 |
+| D-049 | **支持矩阵与 `engines.dsh`**：`engines.dsh` 维持 `>=0.2.0 <0.3.0`（不收窄到预发布下界——§8.11.2 拒绝预发布范围，且 `>=0.2.1` 会排除实际被测宿主 `0.2.1-rc.2`）；V1.5 特有行为（HMR 更新、资源 origin、ZIP、宿主 primitives 模块）一律用**运行期能力探测 + 显式降级**；支持矩阵记录实测基线 `0.2.1-rc.2` 与逐项支持级别 | 预发布下界不可移植且会把已测宿主挡在门外；能力探测比版本字符串可靠 | Lead 裁决（`docs/verification/v1.5/support-matrix.md`） | 已定 |
+| D-050 | **普通问答与敏感审批分离**：游戏视图内的**普通 AskQuestion** 走原生 pending 对象结算（open 走原生 waterfall channel，continued 走宿主 `userQuestions.answer` RPC），不重新注册第二个 waterfall listener、不伪造 tool/result、不把 continued RPC 当 open 提交接口；**危险工具审批**不复制批准逻辑、不改 policy、不给一次性永久授权，默认只提供「回到 DSH 处理」入口 | 两条协议的结算通道不同；抢 waterfall 会让原生 UI 收不到请求；审批有一次性决定与审计链 | 指南 §6.2/§6.4 + M0 探针 S-Q1/S-Q2（结论见 `docs/verification/v1.5/questions.md`） | 已定（第三方可消费面细分待 S-Q1/S-Q2 收口） |
+
 ### 12.2 待验证项（Spike 清单）
 
 > S-04、S-10、S-11、S-17 是 V1.5 前置，不阻塞 V1；其余在对应任务前完成。每个 Spike 的结论必须回填本表（通过/降级/失败）。
@@ -5820,8 +5839,8 @@ M4 V1 发布验收（约 1 周）
 | S-07 | Registry 缓存 TTL 与合并 | 离线体验 | 断网/改 index/版本更新 | 离线可用、更新可见 | 延长 TTL + 手动刷新 |
 | S-08 | 本地数据 schemaVersion 迁移 | 升级兼容 | 构造旧格式文件 | 可迁移或明确报错 | 版本号 + 拒绝未知版本 |
 | S-09 | 20 MiB 单文件包加载性能 | 首帧体验 | 大包加载计时 | ≤2s 首帧（参考机） | 降低包体上限 |
-| S-10 | sandbox iframe 子资源是否通过 `/api` 栅栏 | V1.5 多文件 | 构造多文件游戏，观察 403/401 | 子资源可加载且不泄露宿主 | 保持单文件；或公开静态路由/独立 origin |
-| S-11 | 逐文件精确路由注册开销（2000 文件） | V1.5 多文件 | 注册/teardown 计时与内存 | 注册 ≤500ms、无泄漏 | 限制可服务文件 ≤512 |
+| S-10 | sandbox iframe 子资源是否通过 `/api` 栅栏 | V1.5 多文件 | 构造多文件游戏，观察 403/401 | **已实测（S-31/S-A1，82/82）**：**不通过**——`/api` 前缀的 Origin/`sec-fetch-site` 围栏拒绝 opaque-origin 子资源；改用**独立 loopback 资源 origin** 后全部子资源可加载 | 已改为独立资源 origin（D-043）；不再走 `/api` |
+| S-11 | 逐文件精确路由注册开销（2000 文件） | V1.5 多文件 | 注册/teardown 计时与内存 | 未在本轮测（S-A1 只验证 10 文件包的加载正确性，未做 2000 文件注册开销计时） | 限制可服务文件 ≤512（D-039 限额表已含） |
 | S-12 | 从侧栏/Market 直接进入时的当前 Session 归属 | 多 Session 绑定 | 两个 Session 下从 Market 进入 | 绑定正确 | 回退"最近一次 chip 捕获"，再回退 null |
 | S-13 | Host 重启后 Agent 状态重建 | 跨重启一致性 | 重启 DSH 后进入游戏 | 显示正确状态 | 显示"未知"，等下次事件 |
 | S-14 | `userQuestions` 投影/approval 的等待态观测 | 提醒可靠性 | 触发提问/审批，200ms 内读投影 | 1.5s 内到达 waiting-user | 仅提示"可能等待"，由 Sidebar 状态点兜底 |
@@ -5836,6 +5855,18 @@ M4 V1 发布验收（约 1 周）
 | S-23 | Runtime 顶部与窗口 chrome 是否重叠 | 布局 | 真机截图测量 | 不遮挡、控件可点 | 固定 clearance 值 |
 | S-24 | 下载是否有字节级进度回调 | 安装体验 | 观察 fetch Response 流 | 可显示百分比 | 不确定进度 + 预计时长 |
 | S-25 | 跨 iframe 焦点顺序 | 无障碍 | 纯键盘走 Runtime | 平台控件可达 | 常显 1px 热区/按钮 |
+
+**V1.5 M0 宿主探针（2026-10-19 执行，证据 `docs/verification/v1.5/host-spikes.md`）**
+
+| 编号 | 待验证问题 | 影响 | 验证方法 | 结论 | 未通过降级 |
+|---|---|---|---|---|---|
+| S-26 = S-U1 | 非 HMR profile 中旧 Bundle → 新精确 Git commit，`installBundle` 是否允许覆盖、返回值、旧 Host 是否继续运行、重启后版本与存档 | 一键更新主线 | 隔离 profile + 真实 git commit + 真实 `ctx.get('pluginManager')` | 见 `host-spikes.md`（探针实测） | 路径不成立则暂停更新主线设计 |
+| S-27 = S-U2 | HMR profile 中重复安装、卸载/重装、销毁时序；操作是否由独立于被更新插件的宿主服务持有 | HMR 能力门 | 同上 + 依赖串原文 + HMR disposal 记录 | 见 `host-spikes.md`（探针实测） | 显式标为不支持原地一键更新 + 原生恢复入口 |
+| S-28 = S-U3 | `application`/`restartReason`/`requestId`/结果丢失/声明版本 vs loadedVersion/HMR 能力可靠来源 | 状态真实性与能力判定 | 时序采样 + 真实 Remote Result | **已实测**：HMR 能力须在 Loader 树稳定后轮询采样（t=0 无 → t≈0.5–2s 有）；真实 Desktop = HMR 开 | 不能证明能力就不展示可执行更新按钮 |
+| S-29 = S-Q1 | 游戏视图内读取原生 pending question、提交 blocking/open 回答并在原生会话观察同一调用结算 | 原地问答（发布门槛） | 隔离宿主 + 真实浏览器 + 原生 pending 对象 | 见 `questions.md` | 无稳定接口则先提 DSH 最小 seam；退回会话处理 |
+| S-30 = S-Q2 | timed 继续、重连、切 Session、多窗口竞争、原生 UI 并存、delegation/关闭语义 | 问答生命周期正确性 | 同上 | 见 `questions.md` | 保留「回到会话处理」兜底 |
+| S-31 = S-A1 | `sandbox="allow-scripts"` 下独立 JS/CSS/图片/ESM/fetch JSON/音频加载、CORS/CSP 与一次性 entry 凭证关系 | 资源包可行性 | 真实浏览器 iframe（不加 allow-same-origin） | **已实测通过（82/82）**：多文件可加载；**资源路由不能复用 DSH `/api`**，需独立 loopback 资源 origin（D-043） | 不允许加 `allow-same-origin` 或放开 Host API |
+| S-32 = S-B1 | 当前 Client 模块加载器能否解析 `FishLogo`、正式 SVG 许可/来源、明暗表现 | 品牌形象 | 隔离宿主 + headless Chrome 真实 require | **已实测通过（23/23）**：可运行时 require（MIT，`currentColor`）；现 bundler 需 M1 扩白名单（D-048） | 冻结可分发本地官方轮廓后备资产，不依赖远程 URL |
 
 ### 12.3 风险与缓解
 
@@ -5869,4 +5900,4 @@ M4 V1 发布验收（约 1 周）
 | O-05 | Developer Console / 自动审核 | V2 | Registry 出现足够多第三方提交 |
 | O-06 | 游戏评分/评论/社交 | V2 | 游戏数量与用户量达到需要发现效率的阶段 |
 | O-07 | Cloud Save | V2 | 多设备用户比例与需求验证成立 |
-| O-08 | 多文件游戏资源（S-10/S-11 通过后） | V1.5 | 单文件限制成为真实开发者的主要抱怨；或首发游戏需要多文件资源 |
+| O-08 | 多文件游戏资源（S-10/S-11 通过后） | V1.5 | **已触发并纳入 V1.5**：S-A1（=S-31）实测通过（opaque-origin 多文件可加载，82/82），决策见 D-039/D-043/D-044/D-045；资源包实现（ZIP 解析、两代目录、实例资源服务）在 M1 交付，未通过前不得宣称支持资源包 |
