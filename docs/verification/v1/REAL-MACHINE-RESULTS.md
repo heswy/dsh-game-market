@@ -22,6 +22,7 @@
 | A-13 窄窗 | 通过 | 窗口约 760px 宽：hero 重排、卡片自适应、无横向滚动；`real-A-13-narrow-760.jpg` |
 | U-05 Agent 完成提醒 | 通过（用户截图） | 2048 游玩中右下角出现「任务完成啦 / 查看结果」，不打断游戏；`real-U-05-agent-completed.jpg`（用户提供） |
 | U-13 深色主题 | 通过（用户截图） | DSH 深色主题下 2048/Market 对比度正常；`real-U-13-dark-theme.jpg`（用户提供） |
+| U-06 提问提醒（AskUserQuestion） | 通过（用户截图，出现） | Breakout 游玩中鲸鱼显示「需要你回答一个问题 / 去处理」，底部状态同步；`real-U-06-question-presence.jpg`（用户提供）。**回答后提醒不消失的收尾 bug 已修复（`bcc3c92`），待重载 Host 复测** |
 
 ## 2. 阻塞 / 部分 / 未执行（需后续或用户本人）
 
