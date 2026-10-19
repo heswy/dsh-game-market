@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**V1 M3 自动化部分已完成，真机部分待用户执行**。M3 已交付：`docs/verification/v1/AUTOMATED-EVIDENCE.md`（AE-01..17 通过、AE-18 部分）、`docs/verification/v1/REAL-MACHINE-CHECKLIST.md`（两场约 2h）、`docs/V1-VERIFICATION.md` §1/§2 已填、`fixtures/`（file+HTTPS Registry、恶意包矩阵）、`logs/`、`results/`、`screenshots/`、`scripts/verification/*`。自动化覆盖：安装/更新/卸载/重装 Continue、HTTPS Registry、entry 安全头、存档配额/CAS/恢复、CLI create/build/validate/pack/publish、幂等/并发、恶意包拒绝矩阵。**剩余**：真机 U-04/05/06、U-08 关 DSH 重开、U-09、U-13/14/15、A-03/05/06/07/11/12/13/14/15/16 观感、FM-01/02/06/07/09/10..14、SEC-01/02/03/07、性能实测（Market 首屏/启动/FPS/CPU/内存）；完成后封 `v1.0.0`。
+- 当前目标：**V1 M3 自动化 + 真机代执行部分完成**（2026-10-19 Lead 在用户桌面端用辅助控制执行真机验收：13 项通过、4 部分、3 阻塞、3 未执行；证据 `docs/verification/v1/screenshots/real-*.jpg` 与 `REAL-MACHINE-RESULTS.md`）。M3 已交付：`docs/verification/v1/AUTOMATED-EVIDENCE.md`（AE-01..17 通过、AE-18 部分）、`docs/verification/v1/REAL-MACHINE-CHECKLIST.md`（两场约 2h）、`docs/V1-VERIFICATION.md` §1/§2 已填、`fixtures/`（file+HTTPS Registry、恶意包矩阵）、`logs/`、`results/`、`screenshots/`、`scripts/verification/*`。自动化覆盖：安装/更新/卸载/重装 Continue、HTTPS Registry、entry 安全头、存档配额/CAS/恢复、CLI create/build/validate/pack/publish、幂等/并发、恶意包拒绝矩阵。**剩余**：真机 U-04/05/06、U-08 关 DSH 重开、U-09、U-13/14/15、A-03/05/06/07/11/12/13/14/15/16 观感、FM-01/02/06/07/09/10..14、SEC-01/02/03/07、性能实测（Market 首屏/启动/FPS/CPU/内存）；完成后封 `v1.0.0`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2，2026-10-18 已按 V1 单文件包统一**；第 8–12 章为开发权威来源）
 - 开始记录：2026-10-18
 
@@ -355,6 +355,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-19 · **Game tab 返回直连恢复**：`beginGame` 增加 `autoResume`，RuntimeView 在 paused 时自动 resume 并隐藏平台确认；entry-flow 测试、store 测试更新；`npm run verify` 767/767。仅需刷新页面（client 变更），无需重启 DSH 或重装游戏。
 - 2026-10-19 · **平台暂停双层修复**：用户点平台暂停出现平台弹窗+游戏暂停面板。已统一四款游戏：生命周期 `pause` 只冻结、隐藏自身 overlay，平台暂停菜单为唯一暂停 UI；本地暂停不受影响。E2E（隔离 DSH 真实 Host/Runtime）：breakout/jump/2048 平台暂停后游戏层可见 overlay=0，暂停→继续后 runtime playing；snake 内置同步修复并验证。`npm run verify` 767/767。需刷新页面 + 重装三个本地游戏。
 - 2026-10-19 · **M3 自动化完成并交付真机清单**：`npm run verify` 767/767；确定性构建 byte-identical；CLI create/build/validate/pack/publish 通过；file+HTTPS Registry 安装/更新/卸载/重装 Continue 通过（host E2E）；entry CSP/no-store/sha 头通过；存档配额/CAS/损坏恢复通过；恶意包矩阵返回 GM-5015/4221/4225/4240/4232/4234/4135；UI 9 张截图；`docs/V1-VERIFICATION.md` §1/§2 填充。**真机待执行**：见 `docs/verification/v1/REAL-MACHINE-CHECKLIST.md`；性能/故障注入/SEC 运行时攻击列为剩余。
+- 2026-10-19 · **M3 真机代执行（桌面辅助控制）**：在用户真实 DSH Desktop 窗口内执行安装 Jump/Breakout、四款启动、平台暂停单层（4 款截图）、Continue 确认、Game tab 直连恢复（V1-22）、游戏内真实 Agent presence、Snake Game Over、卸载确认框、760px 窄窗；共 13 项通过、4 部分、3 阻塞（U-05 需回合结束观察/U-06 审批禁用/U-13 深色未生效）、3 未执行；应用全屏与系统深色已恢复，未卸载任何游戏。证据见 `docs/verification/v1/REAL-MACHINE-RESULTS.md` 与 `real-*.jpg`。
 - （待续）
 
 **当前状态 / 待用户确认**：

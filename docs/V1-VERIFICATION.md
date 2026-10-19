@@ -86,6 +86,20 @@ V1 自动化汇总（2026-10-19 实际执行）
 > 结果列只能填：`通过` / `失败` / `阻塞` / `未执行`；填"通过"必须同时填证据（截图文件名或日志路径）。
 > 环境：§1.1 的隔离 DSH 0.2.1-rc.2 + headless Chrome；Agent 状态无真实 Agent 时用 dev 路由模拟，并在备注注明"模拟"。
 
+### 3.0 真机执行记录（2026-10-19，Lead 代执行）
+
+> 在用户真实 DSH Desktop 窗口中通过辅助控制执行；详细结论与证据见
+> [`docs/verification/v1/REAL-MACHINE-RESULTS.md`](./verification/v1/REAL-MACHINE-RESULTS.md)。
+
+| 状态 | 数量 | 条目 |
+|---|---|---|
+| 通过（真机） | 13 | U-02、U-03、U-04（presence）、U-08（面板级）、U-09（Snake）、U-11（确认框）、A-03/A-04/A-05/A-08/A-13/A-15（键盘游玩）、V1-22/V1-23 |
+| 部分 | 4 | U-08（应用重启未做）、U-09（PB 反馈未触发）、U-14（完整 Tab 流程）、A-11（未连续 5 分钟） |
+| 阻塞 | 3 | U-05（需回合结束后观察）、U-06（审批禁用）、U-13 深色（系统外观未影响 DSH 主题） |
+| 未执行 | 3 | U-13 放大字号、U-15 减少动效、性能测量 |
+
+证据：`docs/verification/v1/screenshots/real-*.jpg`；细节见 REAL-MACHINE-RESULTS.md §1–§3。
+
 ### 3.1 用户旅程 `U-01..U-15`
 
 | 编号 | 场景（骨架） | 前置/步骤摘要 | 实际结果（待填） | 证据（截图/日志槽位） | 备注 |
@@ -226,7 +240,7 @@ V1 真机结论（全部条目执行后填写）
 
 | # | 项 | 状态 |
 |---|---|---|
-| 1 | 自动化部分已执行（2026-10-19）；真机部分待执行 | 进行中（见 AUTOMATED-EVIDENCE.md） |
+| 1 | 自动化已执行；真机由 Lead 代执行 13 项通过、4 部分、3 阻塞、3 未执行（见 §3.0 / REAL-MACHINE-RESULTS.md） | 进行中（剩余阻塞项待补） |
 | 2 | `FM-10..FM-14`、`SEC-10` 场景标题仍为占位，需 Lead 校正后执行 | 待确认 |
 | 3 | 测试用 HTTPS Registry：使用仓库 raw.githubusercontent.com fixture（已实际安装成功） | 已确认 |
 | 4 | CSP `frame-ancestors` allowlist 实测为 `'self' http://127.0.0.1:* http://localhost:*`；真实 DSH 宿主 origin 待真机确认（TBD-05） | 待真机确认 |
