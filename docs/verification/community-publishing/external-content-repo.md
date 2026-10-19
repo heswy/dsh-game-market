@@ -33,5 +33,5 @@ performed by this worktree; PR #4 was merged by the user (`heswy`).
 
 1. Production (non-controlled) author submissions and maintainer identities.
 2. Optional hardening: raise required approving review count on `main-protection`.
-3. After a platform release/tag, bump the content-repo toolchain lock via a PR.
+3. Platform v1.2.0 includes PR #5 fixes; bump the content-repo toolchain lock from `2b45b2e` to that release commit via a separate PR and verify CI.
 4. Full real-time 120 s playthrough, cross-machine save, real Host update delivery.

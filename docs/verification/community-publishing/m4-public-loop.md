@@ -49,11 +49,17 @@ withdrawn):
 Evidence: `artifacts/m4/host-install.log`, `artifacts/m4/release-redirect.log`
 (final URL host `release-assets.githubusercontent.com`, downloaded bytes hash matches).
 
+## Platform release status
+
+The follow-up platform PR #5 was reviewed and merged as `e247b93`. Its fixes and
+this evidence are included in platform `v1.2.0`; this platform tag does not update
+the content repository toolchain pin, which still requires a separate PR.
+
 ## Remaining (not claimed as production-ready)
 
 - Production author identities/source repos and maintainer review identities.
-- Platform release/tag and promotion of the toolchain pin; after that the content
-  repo lock should be bumped via PR.
+- Promotion of the content repository toolchain pin to the v1.2.0 platform
+  release commit through a separately verified PR.
 - Full real-time 120 s playthrough and cross-machine save persistence / real Host
   update delivery.
 - M4 production loop with a real external author (this was a controlled test).
