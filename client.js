@@ -20,7 +20,7 @@ window.__ModuleLoader__.load({
     const NS = 'dshGameMarket';
 
     const ZH = Object.freeze({
-      'sidebar.label': 'Game Market',
+      'sidebar.label': '游戏市场',
       'panel.title': 'Game Market',
       'panel.backToConversation': '返回会话',
       'panel.tab.market': '市场',
@@ -360,11 +360,11 @@ window.__ModuleLoader__.load({
       'entry.waiting.generic': 'Agent 在等你',
       'entry.waiting.action': '回到会话处理',
       'entry.waiting.later': '稍后处理',
-      'entry.sidebar.running': 'Game Market，Agent 正在工作',
-      'entry.sidebar.waiting': 'Game Market，需要你处理',
-      'entry.sidebar.completed': 'Game Market，有未查看的结果',
-      'entry.sidebar.resume': 'Game Market，有暂停的游戏',
-      'entry.sidebar.error': 'Game Market，Agent 遇到问题',
+      'entry.sidebar.running': '游戏市场，Agent 正在工作',
+      'entry.sidebar.waiting': '游戏市场，需要你处理',
+      'entry.sidebar.completed': '游戏市场，有未查看的结果',
+      'entry.sidebar.resume': '游戏市场，有暂停的游戏',
+      'entry.sidebar.error': '游戏市场，Agent 遇到问题',
 
       'agent.state.running': '正在工作…',
       'agent.state.idle': 'Agent 空闲',
@@ -15413,19 +15413,22 @@ window.__ModuleLoader__.load({
       resume: { color: '#b26b00', background: 'rgba(178, 107, 0, 0.14)' },
     });
 
-    const BADGE_KEYS = Object.freeze({
-      waiting: 'entry.tab.badge.waiting',
-      completed: 'entry.tab.badge.completed',
-      error: 'entry.tab.badge.error',
-      resume: 'entry.tab.badge.resume',
-    });
+    function resolvedLabel(labels, key) {
+      if (labels && typeof labels[key] === 'string' && labels[key].length > 0) return labels[key];
+      return null;
+    }
 
-    function GameTabLabel() {
+    function GameTabLabel(props) {
       const state = useStoreState();
       const now = useClock(1000);
       const locale = detectLocale();
+      const labels = props && props.labels ? props.labels : null;
       const status = deriveTabStatus(state, now, { sessionId: state.bindingSessionId });
       const badge = status ? BADGE_STYLES[status] : null;
+      const gameLabel = resolvedLabel(labels, 'game') || translate(locale, 'entry.tab.game');
+      const badgeLabel = status
+        ? resolvedLabel(labels, status) || translate(locale, 'entry.tab.badge.' + status)
+        : null;
       return h(
         'span',
         {
@@ -15436,7 +15439,7 @@ window.__ModuleLoader__.load({
             lineHeight: '1',
           },
         },
-        translate(locale, 'entry.tab.game'),
+        gameLabel,
         badge
           ? h(
               'span',
@@ -15466,7 +15469,7 @@ window.__ModuleLoader__.load({
                   background: 'currentColor',
                 },
               }),
-              translate(locale, BADGE_KEYS[status])
+              badgeLabel
             )
           : null
       );
@@ -15554,25 +15557,39 @@ window.__ModuleLoader__.load({
       );
 
       let boundTranslate = null;
-      function sidebarLabel() {
+      function hostTranslate(key) {
         try {
           if (boundTranslate === null && ctx.locale && typeof ctx.locale.bind === 'function') {
             boundTranslate = ctx.locale.bind(NS);
           }
           if (typeof boundTranslate === 'function') {
-            const value = boundTranslate('sidebar.label');
-            if (typeof value === 'string' && value.length > 0 && value !== 'sidebar.label') return value;
+            const value = boundTranslate(key);
+            if (typeof value === 'string' && value.length > 0 && value !== key) return value;
           }
         } catch (error) {
-          reportDiagnostic('sidebar-label-failed', error);
+          reportDiagnostic('host-translate-failed:' + key, error);
         }
-        return translate('zh', 'sidebar.label');
+        return null;
       }
 
-      // The host renders the resolved label value as the tab's children; returning
-      // a component gives the tab a live, session-level status badge.
+      function sidebarLabel() {
+        const value = hostTranslate('sidebar.label');
+        return typeof value === 'string' && value.length > 0 ? value : translate('zh', 'sidebar.label');
+      }
+
+      // The host resolves a label thunk on the active locale and re-runs it when the
+      // locale changes; resolve the visible strings through the host dictionary so a
+      // zh host never shows the en fallback ("Game"/"Done").
       function gameTabLabel() {
-        return h(GameTabLabel, null);
+        return h(GameTabLabel, {
+          labels: {
+            game: hostTranslate('entry.tab.game'),
+            waiting: hostTranslate('entry.tab.badge.waiting'),
+            completed: hostTranslate('entry.tab.badge.completed'),
+            error: hostTranslate('entry.tab.badge.error'),
+            resume: hostTranslate('entry.tab.badge.resume'),
+          },
+        });
       }
 
       function injectSlot(slotName, callback) {

@@ -37,8 +37,8 @@ function loadBundle() {
 
 function fakeReact() {
   return {
-    createElement: function createElement(type) {
-      return { type: type, children: Array.prototype.slice.call(arguments, 2) };
+    createElement: function createElement(type, props) {
+      return { type: type, props: props || null, children: Array.prototype.slice.call(arguments, 2) };
     },
     Fragment: 'fragment',
   };
@@ -83,8 +83,16 @@ test('apply registers locale, main panel, sidebar row and header chip inside eff
         return function disposeLocale() {};
       },
       bind: function bind(ns) {
+        const hostKeys = {
+          'sidebar.label': 'Game Market',
+          'entry.tab.game': '游戏',
+          'entry.tab.badge.waiting': '等你',
+          'entry.tab.badge.completed': '完成',
+          'entry.tab.badge.error': '出错',
+          'entry.tab.badge.resume': '已暂停',
+        };
         return function translate(key) {
-          return ns === 'dshGameMarket' && key === 'sidebar.label' ? 'Game Market' : key;
+          return ns === 'dshGameMarket' && Object.prototype.hasOwnProperty.call(hostKeys, key) ? hostKeys[key] : key;
         };
       },
     },
@@ -130,6 +138,11 @@ test('apply registers locale, main panel, sidebar row and header chip inside eff
   const tabLabel = registered[2].options.label();
   assert.equal(typeof tabLabel, 'object');
   assert.equal(typeof tabLabel.type, 'function');
+  // Host locale (zh) wins over navigator.language; the labels are re-resolved
+  // by the host on locale changes and passed into the mounted component.
+  assert.equal(tabLabel.props.labels.game, '游戏');
+  assert.equal(tabLabel.props.labels.completed, '完成');
+  assert.equal(tabLabel.props.labels.error, '出错');
   assert.equal(typeof registered[1].options.label, 'function');
   assert.equal(registered[1].options.label(), 'Game Market');
   assert.ok(effects.length >= 3);

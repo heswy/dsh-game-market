@@ -21,19 +21,22 @@ const BADGE_STYLES = Object.freeze({
   resume: { color: '#b26b00', background: 'rgba(178, 107, 0, 0.14)' },
 });
 
-const BADGE_KEYS = Object.freeze({
-  waiting: 'entry.tab.badge.waiting',
-  completed: 'entry.tab.badge.completed',
-  error: 'entry.tab.badge.error',
-  resume: 'entry.tab.badge.resume',
-});
+function resolvedLabel(labels, key) {
+  if (labels && typeof labels[key] === 'string' && labels[key].length > 0) return labels[key];
+  return null;
+}
 
-export function GameTabLabel() {
+export function GameTabLabel(props) {
   const state = useStoreState();
   const now = useClock(1000);
   const locale = detectLocale();
+  const labels = props && props.labels ? props.labels : null;
   const status = deriveTabStatus(state, now, { sessionId: state.bindingSessionId });
   const badge = status ? BADGE_STYLES[status] : null;
+  const gameLabel = resolvedLabel(labels, 'game') || translate(locale, 'entry.tab.game');
+  const badgeLabel = status
+    ? resolvedLabel(labels, status) || translate(locale, 'entry.tab.badge.' + status)
+    : null;
   return h(
     'span',
     {
@@ -44,7 +47,7 @@ export function GameTabLabel() {
         lineHeight: '1',
       },
     },
-    translate(locale, 'entry.tab.game'),
+    gameLabel,
     badge
       ? h(
           'span',
@@ -74,7 +77,7 @@ export function GameTabLabel() {
               background: 'currentColor',
             },
           }),
-          translate(locale, BADGE_KEYS[status])
+          badgeLabel
         )
       : null
   );

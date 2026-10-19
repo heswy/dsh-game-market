@@ -172,6 +172,8 @@ test('V1 Market, detail and error copy exists in both dictionaries', function ()
   }
   assert.equal(ZH['market.title'], 'Game Market', 'brand name stays untranslated');
   assert.equal(EN['market.title'], 'Game Market', 'brand name stays untranslated');
+  assert.equal(ZH['sidebar.label'], '游戏市场', 'sidebar nav label follows the zh host locale');
+  assert.equal(EN['sidebar.label'], 'Game Market');
 });
 
 test('locale switching returns the matching Market copy', function () {
