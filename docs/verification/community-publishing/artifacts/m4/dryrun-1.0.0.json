@@ -1,0 +1,239 @@
+{
+  "ok": true,
+  "mode": "dry-run",
+  "alreadyPublished": false,
+  "repo": "heswy/dsh-game-registry",
+  "plan": {
+    "repo": "heswy/dsh-game-registry",
+    "baseBranch": "main",
+    "game": {
+      "id": "ember-drift",
+      "version": "1.0.0",
+      "name": "Ember Drift"
+    },
+    "tag": "ember-drift-v1.0.0",
+    "release": {
+      "tag": "ember-drift-v1.0.0",
+      "releasedAt": "2026-10-19T10:17:43.202Z",
+      "packageUrl": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/ember-drift-1.0.0.html",
+      "packageSha256": "cb2c5a6f769111d8d1ac7c22cbbe360b79ea95416edb340b992964f4a18ab283",
+      "packageSize": 156897,
+      "cover": {
+        "url": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/cover-1.0.0.png"
+      },
+      "screenshots": [
+        {
+          "url": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/screenshot-1-1.0.0.png"
+        },
+        {
+          "url": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/screenshot-2-1.0.0.png"
+        },
+        {
+          "url": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/screenshot-3-1.0.0.png"
+        },
+        {
+          "url": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/screenshot-4-1.0.0.png"
+        }
+      ],
+      "updatedAt": "2026-10-19T10:17:43.202Z"
+    },
+    "catalogEntry": {
+      "schemaVersion": 1,
+      "gameId": "ember-drift",
+      "game": {
+        "name": "Ember Drift",
+        "version": "1.0.0",
+        "description": "A two-minute hand-painted space dodge. Weave through the emberfall, gather fallen stars, and keep the little skiff alight.",
+        "categories": [
+          "arcade",
+          "action"
+        ],
+        "tags": [
+          "space",
+          "dodge",
+          "hand-painted",
+          "short-session"
+        ],
+        "capabilities": [
+          "storage",
+          "score"
+        ],
+        "sdkVersion": "^1.0.0",
+        "runtimeVersion": "^1.0.0",
+        "license": "MIT"
+      },
+      "author": {
+        "name": "heswy",
+        "login": "heswy",
+        "githubUserId": 174761563
+      },
+      "release": {
+        "tag": "ember-drift-v1.0.0",
+        "releasedAt": "2026-10-19T10:17:43.202Z",
+        "packageUrl": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/ember-drift-1.0.0.html",
+        "packageSha256": "cb2c5a6f769111d8d1ac7c22cbbe360b79ea95416edb340b992964f4a18ab283",
+        "packageSize": 156897,
+        "cover": {
+          "url": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/cover-1.0.0.png",
+          "sha256": "0e7530362d9e2d6e3a0ca7f390f852d8d874b1e7af646b2d9e64ec5cb89bfbbe",
+          "size": 817894,
+          "type": "png"
+        },
+        "screenshots": [
+          {
+            "url": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/screenshot-1-1.0.0.png",
+            "sha256": "357452d390e03102123323c4b15bcaa76f37a96e42f998a75b96771de3cc9591",
+            "size": 719827,
+            "type": "png"
+          },
+          {
+            "url": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/screenshot-2-1.0.0.png",
+            "sha256": "6efab26d299b18ea0bc674c1b43b5bc5b7342180ddd6a274fecceb169d6f468f",
+            "size": 787954,
+            "type": "png"
+          },
+          {
+            "url": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/screenshot-3-1.0.0.png",
+            "sha256": "5ab63564d2d39d3dbc67374f1a02abc38511e5b48ccfbabcf58ed9d17fcf226e",
+            "size": 735584,
+            "type": "png"
+          },
+          {
+            "url": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/screenshot-4-1.0.0.png",
+            "sha256": "4ccd0aa1a092d4b463fdfa9add797d5cd199be5b7281febe971fc2c767c916b4",
+            "size": 733639,
+            "type": "png"
+          }
+        ]
+      },
+      "source": {
+        "repo": "https://github.com/heswy/dsh-game-test-author",
+        "commit": "63873f2f7cb4406bd9ef2be6edd88ea0814b37c2"
+      },
+      "review": {
+        "reviewer": {
+          "login": "heswy",
+          "githubUserId": 174761563
+        },
+        "reviewedAt": "2026-10-19T10:17:24Z",
+        "packageSha256": "cb2c5a6f769111d8d1ac7c22cbbe360b79ea95416edb340b992964f4a18ab283"
+      },
+      "selfTest": {
+        "ready": true,
+        "pauseResume": true,
+        "beforeSave": true,
+        "continuePlay": true,
+        "keyboard": true,
+        "narrowWindow": true,
+        "theme": true,
+        "fullBleed": true,
+        "safeArea": true,
+        "noNetwork": true
+      },
+      "publishedAt": "2026-10-19T10:17:43.202Z",
+      "updatedAt": "2026-10-19T10:17:43.202Z"
+    },
+    "assetPlan": {
+      "tag": "ember-drift-v1.0.0",
+      "packageName": "ember-drift-1.0.0.html",
+      "shaName": "ember-drift-1.0.0.html.sha256",
+      "coverName": "cover-1.0.0.png",
+      "screenshotNames": [
+        "screenshot-1-1.0.0.png",
+        "screenshot-2-1.0.0.png",
+        "screenshot-3-1.0.0.png",
+        "screenshot-4-1.0.0.png"
+      ],
+      "packageUrl": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/ember-drift-1.0.0.html",
+      "shaUrl": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/ember-drift-1.0.0.html.sha256",
+      "coverUrl": "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/cover-1.0.0.png",
+      "screenshotUrls": [
+        "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/screenshot-1-1.0.0.png",
+        "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/screenshot-2-1.0.0.png",
+        "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/screenshot-3-1.0.0.png",
+        "https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.0/screenshot-4-1.0.0.png"
+      ],
+      "hashes": {
+        "package": "cb2c5a6f769111d8d1ac7c22cbbe360b79ea95416edb340b992964f4a18ab283",
+        "cover": "0e7530362d9e2d6e3a0ca7f390f852d8d874b1e7af646b2d9e64ec5cb89bfbbe",
+        "screenshots": [
+          "357452d390e03102123323c4b15bcaa76f37a96e42f998a75b96771de3cc9591",
+          "6efab26d299b18ea0bc674c1b43b5bc5b7342180ddd6a274fecceb169d6f468f",
+          "5ab63564d2d39d3dbc67374f1a02abc38511e5b48ccfbabcf58ed9d17fcf226e",
+          "4ccd0aa1a092d4b463fdfa9add797d5cd199be5b7281febe971fc2c767c916b4"
+        ],
+        "sourceCommit": "63873f2f7cb4406bd9ef2be6edd88ea0814b37c2"
+      }
+    },
+    "files": {
+      "catalog": "catalog/ember-drift.json",
+      "owner": "owners/ember-drift.json",
+      "review": "reviews/ember-drift/1.0.0.json",
+      "registry": "registry/games.json"
+    },
+    "existingEntry": null,
+    "manifest": {
+      "manifestVersion": 1,
+      "id": "ember-drift",
+      "name": "Ember Drift",
+      "version": "1.0.0",
+      "author": {
+        "name": "heswy"
+      },
+      "description": "A two-minute hand-painted space dodge. Weave through the emberfall, gather fallen stars, and keep the little skiff alight.",
+      "categories": [
+        "arcade",
+        "action"
+      ],
+      "capabilities": [
+        "storage",
+        "score"
+      ],
+      "sdkVersion": "^1.0.0",
+      "runtimeVersion": "^1.0.0",
+      "tags": [
+        "space",
+        "dodge",
+        "hand-painted",
+        "short-session"
+      ],
+      "preferredTheme": "game-defined",
+      "viewport": {
+        "fit": "contain",
+        "height": 720,
+        "width": 1280
+      },
+      "score": {
+        "direction": "higher-better",
+        "integer": true,
+        "max": 1000000,
+        "min": 0
+      },
+      "save": {
+        "schemaVersion": 1
+      }
+    },
+    "selfTest": {
+      "ready": true,
+      "pauseResume": true,
+      "beforeSave": true,
+      "continuePlay": true,
+      "keyboard": true,
+      "narrowWindow": true,
+      "theme": true,
+      "fullBleed": true,
+      "safeArea": true,
+      "noNetwork": true
+    },
+    "review": {
+      "reviewedAt": "2026-10-19T10:17:24Z",
+      "reviewer": {
+        "login": "heswy",
+        "githubUserId": 174761563
+      },
+      "sourceCommit": "63873f2f7cb4406bd9ef2be6edd88ea0814b37c2"
+    }
+  },
+  "mutations": [],
+  "downloadedBytes": 156897
+}

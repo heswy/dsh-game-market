@@ -107,6 +107,31 @@ test('bundled seed serves list/install while the official request hangs', async 
   assert.equal(installed.source, 'registry');
 });
 
+test('GitHub Release assets may redirect to release-assets.githubusercontent.com', async (t) => {
+  const fixture = await createHttpsRegistry(t, [{ manifest: { id: 'jump' } }]);
+  const entry = fixture.document.games[0];
+  const pkg = fixture.packages.get(entry.package.url);
+  const originalFetch = fixture.fetch;
+  const redirectHost = 'https://release-assets.githubusercontent.com/github-production-release-asset/test';
+  fixture.fetch = async (url, init) => {
+    if (String(url) === entry.package.url) {
+      return new Response(null, { status: 302, headers: { location: redirectHost } });
+    }
+    if (String(url) === redirectHost) {
+      return new Response(pkg.bytes, { status: 200, headers: { 'content-length': String(pkg.size) } });
+    }
+    return originalFetch(url, init);
+  };
+  const host = await createHostHarness(t, {
+    config: { registry: { url: fixture.indexUrl } },
+    http: { fetch: fixture.fetch },
+  });
+  await host.host.registry.ready();
+  const installed = await host.data(ROUTES.INSTALL, { body: { gameId: 'jump', operationId: 'release-asset-redirect' } });
+  assert.equal(installed.sha256, pkg.sha256);
+  assert.equal(installed.version, '1.0.0');
+});
+
 test('official index failure does not create a fake remote cache', async (t) => {
   const host = await createHostHarness(t, {
     useDefaultRegistry: true,

@@ -166,6 +166,8 @@ test('registry cache validation', () => {
 
 test('allowlist defaults and helpers', () => {
   assert.ok(DEFAULT_ALLOWED_HOSTS.includes('github.com'));
+  assert.ok(DEFAULT_ALLOWED_HOSTS.includes('release-assets.githubusercontent.com'));
+  assert.equal(isAllowedHost('release-assets.githubusercontent.com', {}), true);
   assert.equal(isAllowedHost('github.com', {}), true);
   assert.equal(isAllowedHost('GITHUB.COM', {}), true);
   assert.equal(isAllowedHost('evil.example.com', {}), false);

@@ -19,14 +19,19 @@ performed by this worktree; PR #4 was merged by the user (`heswy`).
 | License | MIT (`LICENSE` copied from the platform repository) |
 | Topics | `dsh-game-market`, `catalog`, `registry` |
 
+## Controlled public loop completed (see `m4-public-loop.md`)
+
+- Content repo PRs #3 (1.0.0), #4 (1.0.1), #5 (withdraw) all merged with green CI;
+  final catalog is empty while owner/review audit records remain.
+- GitHub Release assets redirect to `release-assets.githubusercontent.com`; the
+  Host allowlist originally lacked that host. It is added in the follow-up
+  platform PR with tests, and a real Host install/launch was verified.
+- `raw.githubusercontent.com` may serve the previous index until its CDN cache
+  TTL expires; git/API main is authoritative.
+
 ## What is still pending
 
-1. Real submission → Release → catalog PR → merge → update → withdraw loop. This
-   needs either a real author identity/source repo + media/package URLs, or an
-   explicit authorization to run a controlled maintainer test release.
-2. GitHub Release redirect-host verification after the first real Release; the
-   current Host allowlist is `github.com`, `raw.githubusercontent.com`,
-   `objects.githubusercontent.com`.
-3. Optional hardening: raise required approving review count on `main-protection`.
-4. The content repository's toolchain is pinned to `2b45b2e` (platform v1.1.0
-   main); after a future platform release, bump the lock via a PR.
+1. Production (non-controlled) author submissions and maintainer identities.
+2. Optional hardening: raise required approving review count on `main-protection`.
+3. After a platform release/tag, bump the content-repo toolchain lock via a PR.
+4. Full real-time 120 s playthrough, cross-machine save, real Host update delivery.

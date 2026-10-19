@@ -13,9 +13,9 @@
 
 ## 回归结果
 
-- `npm run verify`：835/835，`CHECK OK (37)`（`logs/full-verify.log`）
-- registry 工具/契约/历史测试：28/28（`logs/registry-tests.log`）
-- Host 全量：155/155（`logs/host-tests.log`）
+- `npm run verify`：838/838，`CHECK OK (37)`（`logs/full-verify.log`）
+- registry 工具/契约/历史测试：29/29（`logs/registry-tests.log`）
+- Host 全量：156/156（`logs/host-tests.log`）
 - 构建确定性：client + 4 games + 随包 registry 字节一致（`logs/build-determinism.log`）
 
 ## 独立评估与剩余边界

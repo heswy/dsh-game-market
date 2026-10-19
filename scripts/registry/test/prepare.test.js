@@ -416,6 +416,20 @@ test('a real git branch-ref lock during rollback reports E_PUBLISH_ROLLBACK_FAIL
   assert.equal(run(['branch', '--format=%(refname:short)']), 'main');
 });
 
+test('a draft asset that cannot be resolved through the authenticated API is rejected', async (t) => {
+  const ctx = await context();
+  t.after(() => ctx.cleanup());
+  const git = makeFakeGit();
+  const github = makeFakeGithub({ draftAssets: { tag: 'jump-v1.0.0', assets: [{ name: 'jump-1.0.0.html', bytes: Buffer.from('whatever') }] } });
+  // Simulate a release-view adapter exposing only GraphQL node ids / no REST
+  // resolution: the tool must fail closed instead of guessing an id.
+  github.inspectDraftAsset = () => null;
+  await assert.rejects(
+    () => preparePublish({ submissionPath: ctx.submissionPath, reviewPath: ctx.reviewPath, registryDir: ctx.content, execute: true, repo: 'example/registry', git, github, http: ctx.http }),
+    (error) => error.code === 'E_PUBLISH_DRAFT_UNVERIFIABLE'
+  );
+});
+
 test('same version with different bytes is immutable', async (t) => {
   const ctx = await context();
   t.after(() => ctx.cleanup());
