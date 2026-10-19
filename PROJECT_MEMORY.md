@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**V1.2.0 社区投稿 MVP 发版（2026-10-19）**。PR #4（`2b45b2e`）与 PR #5（`e247b93`）均已复核合入；CR4-01～06 与 PR #5 两项 P2 全关闭。`package.json` **1.2.0**，本次发布 tag 为 `v1.2.0`（指向包含版本与文档收口的 main 提交）；保留 `v1.1.0@c106ac1` 等历史 tag。受控 M4 公网闭环与独立 Host 安装/启动完成，真实 DSH App、完整 120 秒及跨机 save 仍待验收；证据见 `docs/verification/community-publishing/`。
+- 当前目标：**规划 V1.5 正式对外首版**。已发布基线 `v1.2.0@f422e8d`（package 1.2.0）；PR #4 / #5 与项目记忆维护已合入。用户指定三条主线：多资源包与新增非单文件内置游戏；结合 DSH 的平台一键持续更新；DeepSeek Logo 鲸鱼/气泡和游戏内普通 AskQuestion 回答。开发指南见 `docs/plans/2026-10-19-v1.5-public-launch.md`，宿主能力核对见配套记录；目前只完成方案，未开始实现、未发布 v1.5。
 - 历史：V1 验收/修复过程（M3 自动化、真机代执行、codex 两轮 review CR-01..09）见 `docs/V1-VERIFICATION.md`、`docs/verification/v1/AUTOMATED-EVIDENCE.md`、`docs/reviews/2026-10-19-codex-acceptance-review.md` 与 `git log`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2 + V1.1 呈现修订 + 社区投稿 §8.14 / D-038**；第 8–12 章为开发权威来源；全出血/安全区见 §9.6.1、D-037）
 - 开始记录：2026-10-18
@@ -345,13 +345,14 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 
 - V1-39：**受控 M4 与 V1.2.0**：受控作者 `heswy/dsh-game-test-author` 经真实内容仓库 PR #3/#4/#5 完成 1.0.0→1.0.1→撤下，目录为空、owner/review 审计保留；独立 Host 从固定目录快照安装/启动 SHA 一致，不等同真实 DSH App 验收。平台 PR #5 合入 `e247b93`：精确放行 GitHub Release 的 `release-assets.githubusercontent.com`；draft 认证 REST 数字资产 id、分页查找与 fail closed；脱敏 M4 日志已跟踪并纳入 check。用户授权合码/打 tag，平台版本升 1.2.0；内容仓库 toolchain pin 更新通过后续独立 PR，不自动修改其他仓库。
 
+- V1-40：**V1.5 正式对外首版规划**：用户指定资源包+新内置游戏、DSH 平台持续一键更新、DeepSeek Logo 鲸鱼与原地问答。HTML/ZIP 并存、两代游戏目录隔离；插件安装由 DSH 管理器执行，非 HMR Desktop 覆盖安装/待重启是必须实证路径，HMR 需独立能力门；open 问答复用原生 pending channel，continued 走宿主 answer，危险权限不由游戏批准。指南及能力记录位于 `docs/plans/2026-10-19-v1.5-*`；均为待实施方案，M0 先验证宿主能力并冻结契约，正式发布门槛见指南 §8。
+
 ---
 
 ## 6. 当前状态与工作日志
 
 > 历史细节以 `git log`、`docs/V0-VERIFICATION.md`、`docs/V1-VERIFICATION.md` 为准；本节只保留最近 10 条工作日志（每阶段追加：日期、阶段、commit、结果、下一步）。
 
-- 2026-10-19 · **AskUserQuestion 提示出现 + 回答后不消失修复**：用户真机确认提问提醒已出现（2048/Breakout 游戏内鲸鱼「需要你回答一个问题 / 去处理」），并报告回答后状态未消失。根因：真实 `tool/result` 不带工具名，V1-25 的 name 匹配失效。已改为按快照 `source=question` 收尾；host 141/141；待再重载 Host 复测。
 - 2026-10-19 · **U-06/U-08 真机通过**：用户确认 AskUserQuestion 提醒回答后消失（`bcc3c92` 生效），U-08 关闭 DSH 重开后 Continue/进度正确。后续补跑 A-11 连续 5 分钟与收尾封板。
 - 2026-10-19 · **codex review 收口（fix/m3-review）**：CR-01 默认 Registry 随包（build/check/files + 冷启动安装测试）；CR-02 卸载删除含 `.bak` 且失败可重试；CR-03 新增 `POST /save-remove` 真实删除；CR-04/05 实例心跳/按实例释放/凭证 TTL 分离；CR-06 提问 callId/turn 关联；CR-07 日志入库+脱敏+check；CR-08 采集脚本断言/非零退出；CR-09 性能指标语义拆分。Host 149/149、全量 **780/780**、CHECK OK (23)；证据脚本（host-e2e/stability/reduced-motion/perf）全部通过。该分支后经两轮复核合入 main。
 - 2026-10-19 · **codex 复核第二轮修复**：按复核意见补修 CR-02/05/06/08/09；Host 150/150、全量 **780/780**、`CHECK OK (23)`；冻结自测 exit 1、正式 A-11（19 样本/8 状态/anyMovement）与 perf（全样本成功）通过；证据刷新；审核文档移入 `docs/reviews/`；随后 codex 复核通过并发布 `v1.0.0`。
@@ -361,14 +362,16 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-19 · **V1.1.0 发布**：PR #3（Game tab/sidebar 宿主 locale）合入 `192aa6a`；`package.json` 1.1.0；README/验证文档/记忆更新；发布提交（即 tag `v1.1.0` 指向的提交）推送；全量 787/787、CHECK OK (23)。
 - 2026-10-19 · **社区投稿 MVP 复核通过并合码（PR #4）**：固定 head `c93a85a` 经 Codex 复跑 verify 835/835、CHECK OK (37)、registry 28/28；真实 ref lock 复现正确返回 `E_PUBLISH_ROLLBACK_FAILED`。用户授权后以 merge commit `2b45b2e` 合入 main；未发布、未打 tag。下一步 M4 公网闭环及真实 Host 安装/持久化、120 秒流程、跨机 save 验收。
 - 2026-10-19 · **PR #5 复核合入与 V1.2.0 发版**：固定 head `f862650` 验证 840/840、CHECK OK (38)、registry 31/31，两个 P2 全关闭；PR #5 合入 `e247b93`。用户随后授权合码/打 tag；本次合入项目记忆维护提交，升 package 1.2.0，更新发布说明并以 main 发布提交打 tag v1.2.0。真实 App 等剩余边界未改写为通过。
+- 2026-10-19 · **V1.5 正式对外首版开发指南**：只读核对当前 DSH 0.2.1-rc.2 的 pluginManager/pluginMarket/userQuestions/uiSession/FishLogo 实现并对照官方文档；交付 V1.5 指南与宿主能力记录，明确 ZIP/双目录、原生更新/重启确认、原地问答与权限隔离、M0 探针及正式验收门槛。尚未实施或发布 v1.5，下一步由用户指定开发 Agent 执行 M0。
 
-**当前状态（2026-10-19，V1.2.0）**：
+**当前状态（2026-10-19，V1.2.0 已发布 / V1.5 规划）**：
 
 - **发布**：`package.json` 1.2.0；tag `v1.2.0` 指向本次 main 发布提交。平台 Git tag 分发，不创建 GitHub Release 页面、不上传新游戏资产；历史 tag 不动。
 - **合并 / 验收**：PR #4 `2b45b2e`、PR #5 `e247b93`；已验收 head `f862650` 为 840/840、CHECK OK (38)、registry 31/31。本次版本/文档收口的独立验证结果见 `docs/releases/v1.2.0.md`。
 - **入口**：作者 `docs/community-submission.md`；维护者 `docs/community-operations.md`；契约 `docs/community-publishing-contracts.md`；Skill `skills/dsh-game-developer/SKILL.md`；任务指南 `docs/plans/2026-10-19-community-publishing-mvp.md`。
 - **受控 M4 已完成**：内容仓库 `heswy/dsh-game-registry` 已配置规则/不可变 Release；受控作者公网投稿→1.0.0→1.0.1→撤下闭环通过，目录为空且保留审计。独立 Host 安装/启动、Release 重定向与 SHA 核验已有归档；见 `m4-public-loop.md` / `external-content-repo.md`。
-- **下一步**：以独立内容仓库 PR 将 toolchain pin 从 `2b45b2e` 提升到本次平台发布提交并跑 CI；验证目标 AI 宿主的 Skill 安装/调用与真实外部作者/维护者生产流程。本次平台发版不自动改内容仓库。
+- **V1.5 交付分工**：主会话规划/review/验收，用户指定 DSH 实施；先交宿主更新/问答/资源/Logo 的 M0 探针与 V1.5-CONTRACTS，再按指南分阶段开 PR。不默认派发开发 Agent，不修改日常 profile 做验收。
+- **发布后续**：以独立内容仓库 PR 将 toolchain pin 从 `2b45b2e` 提升到本次平台发布提交并跑 CI；验证目标 AI 宿主的 Skill 安装/调用与真实外部作者/维护者生产流程。本次平台发版不自动改内容仓库。
 - **真实环境待验收**：真实 DSH App 安装与持久化、Host GM-4006 独立安装拒绝路径、完整真实 120 秒流程、跨机 save 传输、真实 Host 更新分发。C-22 save 恢复仍为模拟器证据。
 - **后续迭代**：V1.5 多资源包与既有滚动项（真实审批、桌面性能终值、字号/减少动效、DEV-03/07、2048 PB、Tab 键盘链路）保留。
 - **日常桌面端**：需要 dev 行时用户执行 `npm run dev:enable -- --yes` 后重启 DSH；Client 改动刷新页面即可；Host 改动需重启/重载插件行。
