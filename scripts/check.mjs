@@ -279,6 +279,26 @@ function collectJs(dir, out) {
   ok('verification logs tracked');
 })();
 
+// M4 evidence logs referenced by the controlled public-loop report must exist,
+// be tracked, and not be swallowed by the global `*.log` ignore rule.
+(function checkCommunityM4Evidence() {
+  const evidenceDoc = path.join(root, 'docs/verification/community-publishing/m4-public-loop.md');
+  if (!fs.existsSync(evidenceDoc)) return;
+  const text = fs.readFileSync(evidenceDoc, 'utf8');
+  const refs = [...text.matchAll(/`(artifacts\/m4\/[^`]+?\.log)`/g)].map((match) => match[1]);
+  const base = path.join(root, 'docs/verification/community-publishing');
+  for (const ref of refs) {
+    const abs = path.join(base, ref);
+    if (!fs.existsSync(abs)) fail(`M4 evidence missing: ${ref}`);
+    const rel = path.join('docs/verification/community-publishing', ref);
+    const ignored = spawnSync('git', ['check-ignore', '-q', rel], { cwd: root });
+    if (ignored.status === 0) fail(`M4 evidence is ignored by Git: ${ref}`);
+    const tracked = spawnSync('git', ['ls-files', '--error-unmatch', rel], { cwd: root });
+    if (tracked.status !== 0) fail(`M4 evidence is not tracked by Git: ${ref}`);
+  }
+  if (refs.length > 0) ok('community M4 evidence logs tracked');
+})();
+
 // Community publishing artifacts (V1.2): Skill metadata, content-repo template
 // placeholders and shared validators must stay in sync with the contracts doc.
 (function checkCommunityPublishing() {

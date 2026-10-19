@@ -8,8 +8,8 @@
 
 | 项 | 命令 | 结果 | 日志/产物 |
 |---|---|---|---|
-| 全量回归 | `npm run verify` | **838/838**，`CHECK OK (37)` | `logs/full-verify.log` |
-| 社区组件/工具/Skill 单元与集成测试 | `node --test scripts/registry/test/*.test.js` | **29/29** | `logs/registry-tests.log` |
+| 全量回归 | `npm run verify` | **840/840**，`CHECK OK (38)` | `logs/full-verify.log` |
+| 社区组件/工具/Skill 单元与集成测试 | `node --test scripts/registry/test/*.test.js` | **31/31** | `logs/registry-tests.log` |
 | Host 全量测试 | `node --test packages/host/test/index.js` | **156/156** | `logs/host-tests.log` |
 | 构建确定性 | `npm run build` ×2 + sha256 列表比较 | 4 游戏 + client + 随包 registry 全部一致 | `logs/build-determinism.log` |
 | 内容仓库初始化/校验 CLI | `init-content-repo.mjs` → `validate-catalog.mjs` | 初始化成功、空目录合法 | `logs/init-content-repo.log`、`logs/validate-content-repo.log`、`artifacts/content-repo-init/` |

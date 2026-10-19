@@ -13,8 +13,8 @@
 
 ## 回归结果
 
-- `npm run verify`：838/838，`CHECK OK (37)`（`logs/full-verify.log`）
-- registry 工具/契约/历史测试：29/29（`logs/registry-tests.log`）
+- `npm run verify`：840/840，`CHECK OK (38)`（`logs/full-verify.log`）
+- registry 工具/契约/历史测试：31/31（`logs/registry-tests.log`）
 - Host 全量：156/156（`logs/host-tests.log`）
 - 构建确定性：client + 4 games + 随包 registry 字节一致（`logs/build-determinism.log`）
 
