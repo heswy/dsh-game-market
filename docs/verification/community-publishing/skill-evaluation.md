@@ -30,6 +30,10 @@ hints beyond the user gameplay request).
   960×540 viewport (playtest/media evidence);
 - injected near-time-up Continue → completed session/score (timeup-injected);
 - no console errors recorded in the QA evidence steps (`"errors"` empty);
+- errorcheck hook recorded **no external network requests** from the game (only its
+  own Runtime iframe URL) and no console errors;
+- final QA: restore existing save → pause/continue, light/dark, and a near-time-up
+  injected save completes correctly (finalqa/errorcheck evidence);
 - HUD/canvas sizes followed the actual iframe viewport, not a fixed stage.
 
 ## Independently verified vs pending
@@ -44,7 +48,9 @@ hints beyond the user gameplay request).
   - React Skill evaluation: the React *template* was verified separately
     (`logs/react-template.log`); independent AI React generation remains pending.
 - Skill gaps noted by the evaluator (to feed the next Skill update):
-  - *to be filled from the evaluator's final report if it adds findings*.
+  - Evaluator QA remained focused on the author-side game; it did not test the
+  invalid-package repair loop or a 1.0.1 update. These remain explicitly pending
+  in the acceptance matrix (C-21/C-22).
 
 ## Why this is evidence, not approval
 
