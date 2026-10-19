@@ -110,3 +110,13 @@
 3. 安全：SEC-01/02/03/07（建议 V1 后专项；当前设计有 sandbox+CSP，但未做 V1 阻塞）。
 4. 性能：Market 首屏、游戏启动、FPS、暂停 CPU、内存（真机测量）。
 5. U-03 详情页截图需重跑（选择器失败）。
+
+## 8. 增量执行（2026-10-19 真机复测后）
+
+| 项 | 结果 | 证据 |
+|---|---|---|
+| A-11 连续 5 分钟无崩溃 | **通过（headless 隔离）**：301 秒连续游玩 Breakout（150 次输入），Runtime 末态 `playing`，控制台/Runtime 异常 **0**；桌面端同日短时游玩亦无白屏/异常 | `logs/A-11-A-16-stability.log`、`scripts/verification/stability.mjs` |
+| A-16 减少动效 | **通过（CDP 媒体模拟）**：`prefers-reduced-motion: reduce` 下，页面 matchMedia=true，游戏 iframe 内 `__dsh2048Debug().reducedMotion === true` | `logs/A-16-reduced-motion.log`、`scripts/verification/reduced-motion.mjs` |
+| 启动性能（参考） | Market 首屏可交互 **122ms**（headless 隔离、warm cache）；四款游戏 launch→playing **121–211ms**；非桌面参考机最终值 | `logs/perf-reference.log`、`scripts/verification/perf.mjs` |
+| U-06 提问提醒 | 真机通过：游戏内出现「需要你回答一个问题」，回答后提醒消失；审批流程仍因本环境审批被禁用而阻塞 | 本文件 §5 / `REAL-MACHINE-RESULTS.md` |
+| U-08 关闭 DSH 重开 | 真机通过：重开后续玩与进度正确 | 同上 |

@@ -22,6 +22,8 @@
 | A-13 窄窗 | 通过 | 窗口约 760px 宽：hero 重排、卡片自适应、无横向滚动；`real-A-13-narrow-760.jpg` |
 | U-05 Agent 完成提醒 | 通过（用户截图） | 2048 游玩中右下角出现「任务完成啦 / 查看结果」，不打断游戏；`real-U-05-agent-completed.jpg`（用户提供） |
 | U-13 深色主题 | 通过（用户截图） | DSH 深色主题下 2048/Market 对比度正常；`real-U-13-dark-theme.jpg`（用户提供） |
+| A-11 连续 5 分钟 | 通过（headless 隔离） | 301 秒连续游玩 Breakout，0 异常，末态 playing；桌面端短时也无白屏/异常；证据 `logs/A-11-A-16-stability.log` |
+| A-16 减少动效 | 通过（CDP 模拟） | `prefers-reduced-motion: reduce` 下游戏 iframe `reducedMotion=true`；证据 `logs/A-16-reduced-motion.log` |
 | U-06 提问提醒（AskUserQuestion） | 通过（用户确认） | Breakout 游玩中鲸鱼显示「需要你回答一个问题 / 去处理」；回答后提醒消失（用户重启 Host 后复测通过，修复 `bcc3c92`）；`real-U-06-question-presence.jpg` |
 
 ## 2. 阻塞 / 部分 / 未执行（需后续或用户本人）
@@ -35,7 +37,7 @@
 | U-13 放大字号 | 未执行 | 系统级字号会影响用户其他应用，未代改 |
 | U-14 纯键盘全流程 | 部分 | 游戏内键盘可玩已覆盖；Market→安装→焦点完整 Tab 流程未做 |
 | U-15 减少动效 | 未执行 | 需改系统辅助功能设置，未代改 |
-| A-11 连续 5 分钟 | 部分 | 各游戏短时游玩无崩溃/白屏；未连续 5 分钟压测 |
+
 | A-07/U-09 PB 更新反馈 | 部分 | Snake 覆盖 Game Over 记录；2048 新纪录反馈未触发 |
 | 性能（启动/FPS/CPU/内存） | 未测 | 需录屏/Instrument 采样，本轮未测 |
 | DEV-03 热更新 / DEV-07 外部开发者 | 未执行 | 前者需改代码实时观察；后者需真人从零体验 |
