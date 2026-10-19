@@ -110,7 +110,7 @@ async function downloadSubmissionAssets(submission, http) {
   return { packageBytes: packageResult.bytes, packageManifest, coverBytes: coverResult.bytes, screenshotBytes: screenshots.map((item) => item.bytes) };
 }
 
-function buildPlan({ repo, submission, review, assets, existingIndex, existingEntry, baseBranch }) {
+function buildPlan({ repo, submission, review, assets, existingEntry, baseBranch }) {
   const id = submission.game.id;
   const version = submission.game.version;
   const tag = `${id}-v${version}`;
@@ -136,11 +136,6 @@ function buildPlan({ repo, submission, review, assets, existingIndex, existingEn
   };
   const catalogEntry = catalogEntryFromSubmissionSafe({ submission, review, release });
   assert(catalogEntry, 'E_PUBLISH_INTERNAL', 'could not build the catalog entry');
-  const entries = (existingIndex && Array.isArray(existingIndex.games) ? existingIndex.games.map((game) => {
-    // Reconstruct source entries from the generated index is lossy; the caller
-    // passes existing catalog source entries separately in execute mode.
-    return game;
-  }) : []);
   return {
     repo,
     baseBranch: baseBranch || DEFAULT_BASE,
@@ -154,7 +149,6 @@ function buildPlan({ repo, submission, review, assets, existingIndex, existingEn
     manifest: assets.packageManifest,
     selfTest: submission.selfTest,
     review: { reviewedAt: review.reviewedAt, reviewer: review.reviewer, sourceCommit: review.sourceCommit },
-    entriesToMerge: entries,
   };
 }
 
@@ -283,7 +277,7 @@ export async function preparePublish(options) {
   }
 
   const assets = await downloadSubmissionAssets(submission, options.http || {});
-  const plan = buildPlan({ repo, submission, review, assets, existingIndex: existing.index, existingEntry, baseBranch });
+  const plan = buildPlan({ repo, submission, review, assets, existingEntry, baseBranch });
   const intendedBranch = `catalog/${safeBranchPart(id)}-v${safeBranchPart(version)}-${submission.package.sha256.slice(0, 8)}`;
   const reviewPath = path.join(registryDir, 'reviews', id, `${version}.json`);
   let existingReview = null;

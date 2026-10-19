@@ -28,10 +28,6 @@ export function createGithub({ repo, runner } = {}) {
     }
     return output;
   }
-  function json(args) {
-    const result = call([...args, '--json', '']);
-    return JSON.parse(result.stdout);
-  }
   return {
     repo,
     checkAuth() {
