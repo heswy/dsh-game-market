@@ -34,7 +34,8 @@ existing project is already React.
 
 ```bash
 mkdir -p /tmp/dsh-game-projects
-node <platform>/scripts/cli/create-dsh-game.mjs --dir /tmp/dsh-game-projects --id <game-id> --template vanilla
+export DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs
+node "$DSH_GAME_CLI" create <game-id> --dir /tmp/dsh-game-projects --template vanilla
 ```
 
 The generated project contains `manifest.json`, `src/`, the local `dsh-game`

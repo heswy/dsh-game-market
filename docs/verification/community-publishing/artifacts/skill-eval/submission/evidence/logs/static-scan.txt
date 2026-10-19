@@ -1,0 +1,14 @@
+file: HTML document text, Unicode text, UTF-8 text, with very long lines (497)
+sha256: f882e1159f7f2b3f73373793d4a6297b0c7a148d8472299b1f1193b72b38dfd9
+bytes: 156912
+first3bytes_hex: 3c2164  (BOM would be efbbbf)
+manifest_script_count: 1
+inline_json_script_count: 1
+external_link_tags: 0
+iframe_tags: 0
+css_import: 0
+http_urls: 1
+fetch_calls: 0
+xhr_websocket_eventsource_beacon: 0
+--- any http URLs ---
+https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json';

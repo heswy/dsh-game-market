@@ -1,0 +1,57 @@
+{
+  "ok": false,
+  "errors": [
+    {
+      "code": "E_SUBMISSION_AUTHOR",
+      "field": "author.login",
+      "message": "author.login must be a string (1..39 chars)"
+    },
+    {
+      "code": "E_SUBMISSION_AUTHOR",
+      "field": "author.githubUserId",
+      "message": "githubUserId must be the numeric GitHub user id"
+    },
+    {
+      "code": "E_SUBMISSION_URL",
+      "field": "author.sourceRepo",
+      "message": "author.sourceRepo must be an https URL"
+    },
+    {
+      "code": "E_SUBMISSION_PACKAGE",
+      "field": "package.url",
+      "message": "package.url must be an https URL"
+    },
+    {
+      "code": "E_SUBMISSION_PACKAGE",
+      "field": "package.sha256Url",
+      "message": "package.sha256Url must be an https URL"
+    },
+    {
+      "code": "E_SUBMISSION_MEDIA",
+      "field": "media.cover.url",
+      "message": "media.cover.url must be an https URL"
+    },
+    {
+      "code": "E_SUBMISSION_MEDIA",
+      "field": "media.screenshots[0].url",
+      "message": "media.screenshots[0].url must be an https URL"
+    },
+    {
+      "code": "E_SUBMISSION_MEDIA",
+      "field": "media.screenshots[1].url",
+      "message": "media.screenshots[1].url must be an https URL"
+    },
+    {
+      "code": "E_SUBMISSION_MEDIA",
+      "field": "media.screenshots[2].url",
+      "message": "media.screenshots[2].url must be an https URL"
+    },
+    {
+      "code": "E_SUBMISSION_MEDIA",
+      "field": "media.screenshots[3].url",
+      "message": "media.screenshots[3].url must be an https URL"
+    }
+  ],
+  "warnings": [],
+  "submission": null
+}

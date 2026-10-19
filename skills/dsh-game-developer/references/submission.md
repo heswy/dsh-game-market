@@ -20,8 +20,13 @@ Validator: `<platform>/packages/shared/src/community.js`
   continuePlay, keyboard, narrowWindow, theme, fullBleed, safeArea, noNetwork).
 - `update` (required for updates): changelog, save compatibility, breaking notes.
 
-Missing fields are field-level errors. Do not include reviewer approval in the
-submission; approval is a separate maintainer review bound to the exact hashes.
+Missing fields are field-level errors. If GitHub identity or public HTTPS hosting is
+not available yet, produce `submission.draft.json` with the unavailable remote fields
+null/omitted and listed in `pending[]` (field paths and/or free-text notes); validate it with
+`validateSubmission(draft, {mode:'draft'})`. A final submission (what maintainer/publish
+tools accept) must resolve every pending field and validate in final mode. Do not
+invent URLs or identity. Do not include reviewer approval in the submission; approval
+is a separate maintainer review bound to the exact hashes.
 
 ## Author-side output
 

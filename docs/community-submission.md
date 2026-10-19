@@ -12,7 +12,8 @@
   `dsh-game-developer-<version>.tar.gz`），它不会替你发布。
 
 ```bash
-node <platform>/scripts/cli/create-dsh-game.mjs --dir /tmp/games --id my-game --template vanilla
+export DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs
+node "$DSH_GAME_CLI" create my-game --dir /tmp/games --template vanilla
 cd /tmp/games/my-game
 npm run build && npm run validate && npm run pack
 ```

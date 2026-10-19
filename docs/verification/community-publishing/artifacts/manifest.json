@@ -21,8 +21,8 @@
     },
     {
       "path": "dsh-game-developer-1.0.0/references/submission.md",
-      "sha256": "d43928c82b43c19b85bf9129bffc6d0c23c6a3e068824ae67a422faf8ad089bb",
-      "size": 1626
+      "sha256": "43e825371587817af9139d334ae0f69fbdf0445b8e94404f973f021d8ca306f8",
+      "size": 2048
     },
     {
       "path": "dsh-game-developer-1.0.0/references/verification.md",
@@ -31,8 +31,8 @@
     },
     {
       "path": "dsh-game-developer-1.0.0/SKILL.md",
-      "sha256": "68c6daed8553635e18e3448b901d290e41abc2cbf2bd14bd412c3ca1efccd9bb",
-      "size": 5735
+      "sha256": "9f9dadbfad37737c6f866b7ad990502af223df0f9b3979bfe440a4d52870b449",
+      "size": 5780
     },
     {
       "path": "dsh-game-developer-1.0.0/VERSION",
@@ -42,7 +42,7 @@
   ],
   "archive": {
     "file": "dsh-game-developer-1.0.0.tar.gz",
-    "size": 5237,
-    "sha256": "0fb9814fe22151a6ddd6408375759dda1a8d792c476ebbcce3ba0a7e88ab5e1f"
+    "size": 5435,
+    "sha256": "5069aed50712f62298c27eb933fc44537d02d72228217cd205fb7f8bb5b449f2"
   }
 }

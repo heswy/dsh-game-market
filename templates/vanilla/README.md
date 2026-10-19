@@ -31,9 +31,12 @@ sdk/index.d.ts           @dsh-game/sdk v1 public typings
 
 ## Quick start
 
+Generated projects are portable: set the CLI path once (or use the CLI directly).
+
 ```bash
+export DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs
 npm run build       # -> dist/index.html
-npm run validate    # build + validate (exit 0/1/2/3)
+npm run validate    # build + validate; also validates the packed file if present
 npm run dev         # -> http://127.0.0.1:4321/ (fake Runtime + controls)
 ```
 

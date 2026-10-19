@@ -137,11 +137,27 @@ function checkSelfTest(errors, value) {
   }
 }
 
+const PENDING_SUBMISSION_FIELDS = Object.freeze([
+  'author.login',
+  'author.githubUserId',
+  'author.sourceRepo',
+  'package.url',
+  'package.sha256Url',
+  'media.cover.url',
+  'media.screenshots[0].url',
+  'media.screenshots[1].url',
+  'media.screenshots[2].url',
+  'media.screenshots[3].url',
+  'media.screenshots[4].url',
+]);
+
 /** Validate one `submission.json` document (author-facing contract). */
-export function validateSubmission(input) {
+export function validateSubmission(input, options = {}) {
+  const mode = options.mode === 'draft' ? 'draft' : 'final';
   const errors = [];
   const warnings = [];
   const warningsList = warnings;
+  let pending = [];
   if (!isPlainObject(input)) {
     return { ok: false, errors: [{ code: 'E_SUBMISSION_DOCUMENT', field: '$', message: 'submission must be an object' }], warnings, submission: null };
   }
@@ -259,7 +275,41 @@ export function validateSubmission(input) {
     }
   }
 
-  return { ok: errors.length === 0, errors, warnings: warningsList, submission: errors.length === 0 ? submission : null };
+  let pendingNotes = [];
+  if (submission.pending !== undefined) {
+    if (!Array.isArray(submission.pending) || submission.pending.length > 32) {
+      error(errors, 'E_SUBMISSION_PENDING', 'pending', 'pending must be an array of field paths or notes');
+    } else {
+      const fields = [];
+      for (const entry of submission.pending) {
+        const text = String(entry || '').trim();
+        if (!text) continue;
+        const token = text.split(/[\s(]/)[0];
+        if (token === 'media.screenshots[].url') {
+          const count = Array.isArray(submission.media && submission.media.screenshots) ? submission.media.screenshots.length : 0;
+          for (let index = 0; index < count; index += 1) fields.push(`media.screenshots[${index}].url`);
+        } else if (PENDING_SUBMISSION_FIELDS.includes(token)) fields.push(token);
+        else if (token.includes('.')) error(errors, 'E_SUBMISSION_PENDING', 'pending', `unsupported pending field: ${token}`);
+        else pendingNotes.push(text);
+      }
+      pending = [...new Set(fields)];
+    }
+  }
+  if (mode === 'final' && (pending.length > 0 || pendingNotes.length > 0)) {
+    error(errors, 'E_SUBMISSION_PENDING', 'pending', 'a final submission must resolve every pending remote field');
+  }
+  const effectiveErrors = mode === 'draft'
+    ? errors.filter((item) => !(pending.includes(item.field) && PENDING_SUBMISSION_FIELDS.includes(item.field)))
+    : errors;
+  return {
+    ok: effectiveErrors.length === 0,
+    errors: effectiveErrors,
+    warnings: warningsList,
+    pending,
+    pendingNotes,
+    mode,
+    submission: effectiveErrors.length === 0 ? submission : null,
+  };
 }
 
 /** Validate an approved review record and bind it to the exact submission bytes. */

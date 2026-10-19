@@ -1,0 +1,19 @@
+{
+  "steps": [
+    {
+      "step": "hook-installed",
+      "hook": true
+    },
+    {
+      "step": "runtime",
+      "hint": "← → or A D drift · P pause · gather stars, dodge the emberfall",
+      "theme": "dark",
+      "hookErrors": [],
+      "consoleErrors": [],
+      "gameRequests": [
+        "http://127.0.0.1:4321/game?instance=746b6079366caa8227fbf6a87ac071db&nonce=991ea8414cbfe15bbef67faec9374862"
+      ],
+      "externalRequests": []
+    }
+  ]
+}

@@ -17,7 +17,7 @@ import { GAME_ID_PATTERN } from '../../../packages/shared/src/constants.js';
 import { RESERVED_GAME_IDS } from '../../../packages/shared/src/manifest.js';
 import { usageError } from './cli-error.mjs';
 import { dirExists, fileExists, listFilesRecursive, readText, toPosix, writeText } from './fs-utils.mjs';
-import { CLI_ENTRY, REPO_ROOT, SDK_ENTRY, SDK_TYPES, TEMPLATES_ROOT, isInside } from './paths.mjs';
+import { REPO_ROOT, SDK_ENTRY, SDK_TYPES, TEMPLATES_ROOT, isInside } from './paths.mjs';
 
 const TEMPLATE_NAMES = Object.freeze(['vanilla', 'react']);
 const TEXT_EXTENSIONS = new Set(['.html', '.js', '.mjs', '.ts', '.tsx', '.css', '.md', '.json', '.gitignore', '.txt']);
@@ -68,7 +68,6 @@ function replaceTokens(text, values, kind) {
       .replaceAll('__GAME_TITLE__', values.name)
       .replaceAll('__GAME_DESCRIPTION__', values.description)
       .replaceAll('__GAME_AUTHOR__', values.author)
-      .replaceAll('__CLI_INVOCATION__', values.cliInvocation);
   }
   return output;
 }
@@ -141,20 +140,13 @@ export const game = __sdk.game;
   return cachedSdkModule;
 }
 
-function configFor(template, cliRelative) {
+function configFor(template) {
   return {
     manifest: 'manifest.json',
     template: 'index.html',
     entry: template === 'react' ? 'src/main.tsx' : 'src/main.js',
     out: 'dist/index.html',
-    cli: cliRelative,
   };
-}
-
-/** Relative path from `fromDir` to `toFile`, POSIX separators (portable config). */
-function relativeCli(fromDir) {
-  const relative = path.relative(fromDir, CLI_ENTRY);
-  return toPosix(relative.startsWith('.') ? relative : `./${relative}`);
 }
 
 /**
@@ -214,7 +206,6 @@ export function createProject(options = {}) {
     name: options.displayName || displayNameFromId(id),
     description: options.description || `${displayNameFromId(id)} — a DSH Game Market game.`,
     author: options.author || 'Your Name',
-    cliInvocation: `node ${relativeCli(projectRoot)}`,
   };
 
   if (options.dryRun) {
@@ -250,7 +241,7 @@ export function createProject(options = {}) {
   const generatedFiles = {
     'manifest.json': `${JSON.stringify(manifestFor(values), null, 2)}\n`,
     'package.json': `${JSON.stringify(packageJsonFor(template, values), null, 2)}\n`,
-    'dsh-game.config.json': `${JSON.stringify(configFor(template, relativeCli(projectRoot)), null, 2)}\n`,
+    'dsh-game.config.json': `${JSON.stringify(configFor(template), null, 2)}\n`,
   };
   if (template === 'react') generatedFiles['vendor/dsh-game-sdk.js'] = sdkModuleSource();
   for (const [relative, content] of Object.entries(generatedFiles)) {
@@ -277,6 +268,7 @@ export function createProject(options = {}) {
     files: [...new Set(generated)].sort(),
     nextSteps: [
       `cd ${targetDir}`,
+      'export DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs',
       'npm run build',
       'npm run validate',
       template === 'react' ? 'npm install && npm run dev' : 'npm run dev',

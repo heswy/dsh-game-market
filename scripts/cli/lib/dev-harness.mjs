@@ -205,6 +205,7 @@ export function renderHarness(config) {
               <button data-command="theme">Toggle theme</button>
               <button data-command="locale">Toggle locale</button>
               <button data-command="viewport">Resize stage</button>
+              <button data-command="reduced-motion">Reduced motion</button>
               <button data-command="ping">Ping</button>
             </div>
           </section>
@@ -262,7 +263,8 @@ export function renderHarness(config) {
       var viewports = [
         { width: 960, height: 540 },
         { width: 640, height: 360 },
-        { width: 1280, height: 720 }
+        { width: 1280, height: 720 },
+        { width: 375, height: 667 }
       ];
 
       function randomHex(length) {
@@ -573,6 +575,10 @@ export function renderHarness(config) {
           state.locale = state.locale === "zh-CN" ? "en-US" : "zh-CN";
           appendLog("·", "locale → " + state.locale + " (reloading with a new instance)");
           loadGame();
+        } else if (name === "reduced-motion") {
+          state.reducedMotion = !state.reducedMotion;
+          sendEvent("theme", { theme: state.theme, reducedMotion: state.reducedMotion });
+          appendLog("·", "reducedMotion → " + state.reducedMotion);
         } else if (name === "viewport") {
           state.viewportIndex = (state.viewportIndex + 1) % viewports.length;
           var viewport = viewports[state.viewportIndex];

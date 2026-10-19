@@ -50,8 +50,11 @@ test('create-dsh-game generates a complete vanilla project', () => {
   assert.equal(manifest.sdkVersion, '^1.0.0');
 
   const config = readJson(path.join(result.targetDir, 'dsh-game.config.json'));
-  assert.equal(fs.existsSync(path.resolve(result.targetDir, config.cli)), true);
-  assert.equal(path.resolve(result.targetDir, config.cli), CLI);
+  // Generated projects are portable: no machine-specific platform CLI path.
+  assert.equal(Object.prototype.hasOwnProperty.call(config, 'cli'), false);
+  assert.equal(JSON.stringify(config).includes('/Users/'), false);
+  const generatedCli = fs.readFileSync(path.join(result.targetDir, 'scripts/cli.mjs'), 'utf8');
+  assert.ok(generatedCli.includes('DSH_GAME_CLI'));
 
   const readme = fs.readFileSync(path.join(result.targetDir, 'README.md'), 'utf8');
   assert.ok(readme.includes('Orbit Catch'));
@@ -84,6 +87,10 @@ test('the create-dsh-game CLI scaffolds into --dir and supports --dry-run', () =
   const dryJson = JSON.parse(dry.stdout);
   assert.equal(dryJson.dryRun, true);
   assert.equal(fs.existsSync(path.join(parent, 'dry-game')), false);
+
+  const dryHuman = runCreate(['dry-human', '--template', 'vanilla', '--dir', parent, '--dry-run']);
+  assert.equal(dryHuman.status, 0, dryHuman.stderr + dryHuman.stdout);
+  assert.match(dryHuman.stdout, /dry run: no files were written/i);
 
   const created = runCreate(['cli-game', '--template', 'vanilla', '--dir', parent, '--json']);
   assert.equal(created.status, 0, created.stderr);

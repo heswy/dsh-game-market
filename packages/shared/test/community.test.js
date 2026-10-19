@@ -92,6 +92,51 @@ export function validReview(overrides = {}) {
   };
 }
 
+test('draft submissions can list explicitly pending remote-only fields, final cannot', () => {
+  const draft = validSubmission();
+  const pending = [
+    'author.login',
+    'author.githubUserId',
+    'author.sourceRepo',
+    'package.url',
+    'package.sha256Url',
+    'media.cover.url',
+    'media.screenshots[0].url',
+  ];
+  draft.pending = pending;
+  draft.author.login = null;
+  draft.author.githubUserId = null;
+  draft.author.sourceRepo = null;
+  draft.package.url = null;
+  draft.package.sha256Url = null;
+  draft.media.cover.url = null;
+  draft.media.screenshots[0].url = null;
+  const asDraft = validateSubmission(draft, { mode: 'draft' });
+  assert.equal(asDraft.ok, true, JSON.stringify(asDraft.errors));
+  assert.deepEqual(asDraft.pending, pending);
+  const asFinal = validateSubmission(draft);
+  assert.equal(asFinal.ok, false);
+  assert.ok(asFinal.errors.some((item) => item.code === 'E_SUBMISSION_PENDING'));
+
+  const unknown = validSubmission({ pending: ['author.nonexistent'] });
+  assert.equal(validateSubmission(unknown, { mode: 'draft' }).ok, false);
+
+  const notes = validSubmission();
+  notes.pending = ['public hosting evidence', 'maintainer approval not requested here'];
+  notes.author.login = null;
+  notes.author.githubUserId = null;
+  notes.author.sourceRepo = null;
+  notes.package.url = null;
+  notes.package.sha256Url = null;
+  notes.media.cover.url = null;
+  for (const shot of notes.media.screenshots) shot.url = null;
+  notes.pending.push('author.login', 'author.githubUserId', 'author.sourceRepo', 'package.url', 'package.sha256Url', 'media.cover.url', 'media.screenshots[].url');
+  const noteDraft = validateSubmission(notes, { mode: 'draft' });
+  assert.equal(noteDraft.ok, true, JSON.stringify(noteDraft.errors));
+  assert.equal(noteDraft.pendingNotes.length, 2);
+  assert.equal(noteDraft.pending.includes('media.screenshots[0].url'), true);
+});
+
 test('valid submission/review/owner round-trips', () => {
   const submission = validSubmission();
   const submissionResult = validateSubmission(submission);

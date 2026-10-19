@@ -36,21 +36,41 @@ hints beyond the user gameplay request).
   injected save completes correctly (finalqa/errorcheck evidence);
 - HUD/canvas sizes followed the actual iframe viewport, not a fixed stage.
 
+## Evaluator submission materials (archived)
+
+The evaluator also produced `submission/submission.json` + `verification-report.md`
+and media under `artifacts/skill-eval/submission/`. All package/media hashes are
+real; only public hosting and GitHub identity are null. The original JSON used a
+free-form `pending[]` list. This PR now supports an explicit **draft** mode:
+
+- `validateSubmission(submission, {mode:'draft'})` → `ok:true`, with the ten remote
+  fields normalized to `pending[]` and non-field notes kept separately;
+- default/final validation still rejects the same fields and the non-empty pending
+  list (`draft-validation.json` records both results).
+
+## Gaps found by the evaluator and disposition
+
+| # | Finding | Disposition |
+|---|---|---|
+| 1 | Skill scaffold used `--id`, CLI requires positional id | **Fixed** in SKILL.md/docs; positional examples now match the CLI |
+| 2 | `create --dry-run` crashed (`nextSteps` not iterable) | **Fixed**; non-JSON dry-run prints files and writes nothing; regression test added |
+| 3 | No honest representation for missing identity/URLs | **Fixed contract**: draft mode + normalized `pending[]`; final/publish still requires all fields; test added |
+| 4 | Generated `dsh-game.config.json` embedded checkout path | **Fixed**: config is portable/no `cli` path; generated scripts require `DSH_GAME_CLI`; template README/docs updated; Vanilla+React portable projects rebuilt and validated |
+| 5 | `npm run validate` did not validate packed filename | **Fixed**: generated validate script checks packed `<id>-<version>.html` when present |
+| 6 | Simulator lacked 375px preset/reduced-motion toggle | **Added** 375×667 preset + reduced-motion toggle; test added. GM-4006 not triggered (scores in range), full real DSH Host install still pending |
+
 ## Independently verified vs pending
 
 - Verified: Skill guidance produced a real playable single-file Vanilla package,
-  build/validate/pack succeeded, browser behavior/theme/narrow/Continue tested.
+  build/validate/pack succeeded, browser behavior/theme/narrow/Continue tested,
+  evaluator-authored submission materials archived.
 - Pending before this can be called a submitted game:
-  - author-side `submission.json` and real public HTTPS package/media URLs;
-  - real GitHub identity/source commit and license confirmation;
+  - real public HTTPS package/media URLs and GitHub identity/ownership evidence;
   - maintainer review/approval and catalog publish;
   - independent AI update evaluation (1.0.0 → 1.0.1) is not covered here;
-  - React Skill evaluation: the React *template* was verified separately
-    (`logs/react-template.log`); independent AI React generation remains pending.
-- Skill gaps noted by the evaluator (to feed the next Skill update):
-  - Evaluator QA remained focused on the author-side game; it did not test the
-  invalid-package repair loop or a 1.0.1 update. These remain explicitly pending
-  in the acceptance matrix (C-21/C-22).
+  - independent AI invalid-package repair loop is not covered here;
+  - independent AI React generation remains pending (React template itself verified);
+  - full real-time 120 s completion was not waited (accelerated save used).
 
 ## Why this is evidence, not approval
 

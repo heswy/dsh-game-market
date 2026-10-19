@@ -175,6 +175,14 @@ function commandCreate(argv) {
     printJson(result);
     return EXIT_CODES.OK;
   }
+  if (result.dryRun) {
+    if (!values.quiet) {
+      write(`Would create ${result.id} (${result.template}) at ${result.targetDir}\n`);
+      for (const file of result.files) write(`  ${file}\n`);
+      write('\n(dry run: no files were written)\n');
+    }
+    return EXIT_CODES.OK;
+  }
   if (!values.quiet) {
     write(`Created ${result.id} (${result.template}) at ${result.targetDir}\n`);
     for (const file of result.files) write(`  ${file}\n`);

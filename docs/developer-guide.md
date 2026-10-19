@@ -25,7 +25,9 @@ node scripts/cli/create-dsh-game.mjs --help
 ```
 
 `npx dsh-game` / `npx create-dsh-game` 需要根 `package.json` 的 `bin`（由 Lead 维护，本分支未修改）；
-模板里的 `npm run ...` 已通过 `dsh-game.config.json` 记录本地 CLI 路径，可正常使用。
+生成工程不写机器相关 CLI 路径：运行模板里的 `npm run ...` 前需设置
+`DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs`（或在同一 shell 里
+export 后执行 create）；`dsh-game.config.json` 只记录 manifest/template/entry/out。
 
 ---
 
@@ -33,6 +35,7 @@ node scripts/cli/create-dsh-game.mjs --help
 
 ```bash
 # 1) 在空目录创建工程（id 即目录名；--dir 指定父目录）
+export DSH_GAME_CLI="$PWD/scripts/cli/dsh-game.mjs"
 node scripts/cli/create-dsh-game.mjs my-game --template vanilla --dir /tmp/games
 
 cd /tmp/games/my-game
@@ -83,7 +86,7 @@ sandbox Runtime 中游玩。
 my-game/
 ├── manifest.json           # 构建期 manifest v1 源文件（不进入 dist 的独立文件）
 ├── index.html              # HTML 模板；build 注入 manifest/SDK/内联资源
-├── dsh-game.config.json    # manifest/template/entry/out 与本地 CLI 路径
+├── dsh-game.config.json    # manifest/template/entry/out（可移植，无 CLI 路径）
 ├── src/
 │   ├── main.js             # 启动、循环、SDK 生命周期、分数/Session
 │   ├── render.js           # canvas、DPR/缩放、HUD/遮罩

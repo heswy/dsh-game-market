@@ -39,6 +39,13 @@
 - 更新投稿必须带 `update.changelog`、`update.saveCompatibility`
   （compatible/incompatible/not-applicable）。
 
+**Draft 与 final**：投稿工具/CI 只接受 final（完整、`pending` 为空）。作者尚未拿到
+GitHub 身份/公网 URL 时，可交付 `submission.draft.json`：把未完成字段留空并放进
+`pending[]`。`pending[]` 支持字段路径（author.login/githubUserId/sourceRepo、
+package.url/sha256Url、media 各 URL，截图可用 `media.screenshots[].url` 批量表示）
+和自由文本待办说明；`validateSubmission(draft, {mode:'draft'})` 可通过，但 final
+仍会拒绝所有 pending。补齐后必须重新以 final 校验。
+
 Issue Form 与资料 PR 使用同一字段；Issue 关闭/作者 CI 通过不等于审核通过。
 
 ### 2.2 `review`（维护者）
