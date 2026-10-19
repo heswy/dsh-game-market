@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "dsh-game-market": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+  },
+  "bundles": [
+    "@deepseek-ai/dsh-base",
+    "@deepseek-ai/dsh-web-app",
+    "dsh-game-market"
+  ]
+}

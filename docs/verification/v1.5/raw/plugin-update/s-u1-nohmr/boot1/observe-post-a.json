@@ -1,0 +1,148 @@
+{
+  "probeVersion": 1,
+  "bootTag": "su1-boot1",
+  "commandIndex": 3,
+  "command": {
+    "id": "su1-b1-post-a",
+    "action": "observe",
+    "label": "post-a"
+  },
+  "startedAt": "2026-10-19T12:53:47.028Z",
+  "finishedAt": "2026-10-19T12:53:47.133Z",
+  "ok": true,
+  "action": "observe",
+  "label": "post-a",
+  "snapshot": {
+    "observedAt": "2026-10-19T12:53:47.132Z",
+    "bootTag": "su1-boot1",
+    "pid": 30750,
+    "selfFiberUid": 48,
+    "capability": {
+      "at": "2026-10-19T12:53:47.132Z",
+      "probeScopeHmr": false,
+      "managerContextHmr": false,
+      "managerContextHmrCtor": null,
+      "managerContextHmrHasRunExclusive": false,
+      "hmrLoaderRow": {
+        "id": "hmr",
+        "name": "@deepseek-ai/dsh-hmr",
+        "disabled": true,
+        "hasFiber": false,
+        "fiberState": null,
+        "fiberUid": null
+      },
+      "samplesSinceBoot": 30
+    },
+    "managerInternal": {
+      "ownerEntryId": "include:plugin-manager",
+      "ownerContextIsProbeContext": false,
+      "ctor": "PluginManager",
+      "hasInstallBundle": true,
+      "hasWaitForInstall": true,
+      "hasCancelInstall": true,
+      "hasRemoveBundle": true,
+      "hasListBundles": true,
+      "installedCount": 0
+    },
+    "profile": {
+      "dir": "/tmp/dsh-v15/home-su1-nohmr/profiles/web",
+      "packageJson": {
+        "name": "dsh-profile-web",
+        "dependencies": {
+          "dsh-game-market": "github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f"
+        },
+        "profileBundles": [
+          "@deepseek-ai/dsh-base",
+          "@deepseek-ai/dsh-web-app",
+          "dsh-game-market"
+        ]
+      },
+      "dependency": "github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f",
+      "diskPackage": {
+        "name": "dsh-game-market",
+        "version": "1.1.0"
+      },
+      "diskPackagePath": "/tmp/dsh-v15/home-su1-nohmr/profiles/web/node_modules/dsh-game-market/package.json",
+      "diskPackageRealPath": "/private/tmp/dsh-v15/home-su1-nohmr/profiles/web/node_modules/dsh-game-market"
+    },
+    "bundles": [
+      {
+        "name": "dsh-game-market",
+        "version": "1.1.0",
+        "enabled": true,
+        "installed": true,
+        "removable": true,
+        "availability": "profile",
+        "error": null
+      }
+    ],
+    "bundlesError": null,
+    "loader": {
+      "available": true,
+      "scope": "probeScope",
+      "rows": [
+        {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        },
+        {
+          "id": "v15-plugin-update-probe",
+          "name": "file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-m0/scripts/verification/v1.5/plugin-update/probe-plugin-host.js",
+          "disabled": null,
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 48
+        }
+      ],
+      "totalEntries": 194
+    },
+    "health": {
+      "available": false,
+      "connectionService": true,
+      "connectionScope": "probeScope",
+      "routeRegistered": false
+    },
+    "storage": {
+      "configured": true,
+      "root": "/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market",
+      "exists": false,
+      "entries": [],
+      "markers": [],
+      "saves": [],
+      "markerPath": "/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market/su1-boot1-update-marker.json",
+      "markerPresent": false
+    },
+    "installStateEvents": [
+      {
+        "at": "2026-10-19T12:53:43.874Z",
+        "kind": "install-state",
+        "payload": {
+          "requestId": "su1-a-1792414422191",
+          "phase": "installing",
+          "attempt": {
+            "registry": null,
+            "index": 1,
+            "total": 1
+          }
+        }
+      },
+      {
+        "at": "2026-10-19T12:53:46.605Z",
+        "kind": "install-state",
+        "payload": {
+          "requestId": "su1-a-1792414422191",
+          "phase": "applying"
+        }
+      }
+    ],
+    "eventCounts": {
+      "installState": 2,
+      "installLog": 6,
+      "changed": 1
+    }
+  }
+}

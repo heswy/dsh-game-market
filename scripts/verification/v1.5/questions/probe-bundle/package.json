@@ -1,0 +1,21 @@
+{
+  "name": "dsh-qprobe",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "V1.5 M0 S-Q1/S-Q2 probe bundle: scripted Host LLM + third-party Client question consumer + simulated game panel.",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "client": {
+      "platform": "web",
+      "inject": [],
+      "immediately": true
+    }
+  }
+}

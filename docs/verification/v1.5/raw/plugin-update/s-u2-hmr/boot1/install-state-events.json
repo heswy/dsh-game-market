@@ -1,0 +1,847 @@
+{
+  "source": "live probe Host event stream (plugin-manager/install-state, install-log, changed) captured on the manager owner context",
+  "note": "sanitised copy; the raw ndjson stays in the isolated probe work dir; commit SHAs are kept intentionally",
+  "counts": {
+    "install-state:installing": 6,
+    "install-log:chunk": 41,
+    "install-state:applying": 5,
+    "changed:install": 9,
+    "install-state:cancelling": 1,
+    "changed:remove": 1
+  },
+  "requestIds": [
+    "su2-a-req",
+    "su2-b-again-req",
+    "su2-b-req",
+    "su2-c-req",
+    "su2-cancel-req",
+    "su2-reinstall-req",
+    "su2-tooLate-req"
+  ],
+  "events": [
+    {
+      "at": "2026-10-19T12:51:42.627Z",
+      "kind": "install-state",
+      "requestId": "su2-a-req",
+      "phase": "installing",
+      "reason": null,
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:44.924Z",
+      "kind": "install-log",
+      "requestId": "su2-a-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+        "--save-exact"
+      ],
+      "text": "Progress: resolved 0, reused 1, downloaded 0, added 0\n"
+    },
+    {
+      "at": "2026-10-19T12:51:44.941Z",
+      "kind": "install-log",
+      "requestId": "su2-a-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+        "--save-exact"
+      ],
+      "text": "\ndependencies:\n+ dsh-game-market github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f\n\n"
+    },
+    {
+      "at": "2026-10-19T12:51:44.944Z",
+      "kind": "install-log",
+      "requestId": "su2-a-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+        "--save-exact"
+      ],
+      "text": "Packages: +1\n+\n"
+    },
+    {
+      "at": "2026-10-19T12:51:44.996Z",
+      "kind": "install-log",
+      "requestId": "su2-a-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+        "--save-exact"
+      ],
+      "text": "Progress: resolved 1, reused 1, downloaded 0, added 1, done\n"
+    },
+    {
+      "at": "2026-10-19T12:51:45.021Z",
+      "kind": "install-log",
+      "requestId": "su2-a-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+        "--save-exact"
+      ],
+      "text": "Done in 2.2s using pnpm v10.28.2\n"
+    },
+    {
+      "at": "2026-10-19T12:51:45.030Z",
+      "kind": "install-log",
+      "requestId": "su2-a-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": 0,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+        "--save-exact"
+      ],
+      "text": ""
+    },
+    {
+      "at": "2026-10-19T12:51:45.030Z",
+      "kind": "install-state",
+      "requestId": "su2-a-req",
+      "phase": "applying",
+      "reason": null,
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:45.214Z",
+      "kind": "changed",
+      "requestId": null,
+      "phase": null,
+      "reason": "install",
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:45.810Z",
+      "kind": "changed",
+      "requestId": null,
+      "phase": null,
+      "reason": "install",
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:47.598Z",
+      "kind": "install-state",
+      "requestId": "su2-b-req",
+      "phase": "installing",
+      "reason": null,
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:49.416Z",
+      "kind": "install-log",
+      "requestId": "su2-b-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "Progress: resolved 0, reused 1, downloaded 0, added 0\n"
+    },
+    {
+      "at": "2026-10-19T12:51:49.516Z",
+      "kind": "install-log",
+      "requestId": "su2-b-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "\n"
+    },
+    {
+      "at": "2026-10-19T12:51:49.522Z",
+      "kind": "install-log",
+      "requestId": "su2-b-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "Packages: +1\n+\n"
+    },
+    {
+      "at": "2026-10-19T12:51:49.594Z",
+      "kind": "install-log",
+      "requestId": "su2-b-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "Progress: resolved 2, reused 2, downloaded 0, added 1, done\n"
+    },
+    {
+      "at": "2026-10-19T12:51:49.616Z",
+      "kind": "install-log",
+      "requestId": "su2-b-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "Done in 1.8s using pnpm v10.28.2\n"
+    },
+    {
+      "at": "2026-10-19T12:51:49.623Z",
+      "kind": "install-log",
+      "requestId": "su2-b-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": 0,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": ""
+    },
+    {
+      "at": "2026-10-19T12:51:49.624Z",
+      "kind": "install-state",
+      "requestId": "su2-b-req",
+      "phase": "applying",
+      "reason": null,
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:49.754Z",
+      "kind": "changed",
+      "requestId": null,
+      "phase": null,
+      "reason": "install",
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:50.320Z",
+      "kind": "changed",
+      "requestId": null,
+      "phase": null,
+      "reason": "install",
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:52.322Z",
+      "kind": "install-state",
+      "requestId": "su2-b-again-req",
+      "phase": "installing",
+      "reason": null,
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:54.141Z",
+      "kind": "install-log",
+      "requestId": "su2-b-again-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "Progress: resolved 0, reused 1, downloaded 0, added 0\n"
+    },
+    {
+      "at": "2026-10-19T12:51:54.464Z",
+      "kind": "install-log",
+      "requestId": "su2-b-again-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "\n"
+    },
+    {
+      "at": "2026-10-19T12:51:54.472Z",
+      "kind": "install-log",
+      "requestId": "su2-b-again-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "Already up to date\n"
+    },
+    {
+      "at": "2026-10-19T12:51:54.474Z",
+      "kind": "install-log",
+      "requestId": "su2-b-again-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "Progress: resolved 1, reused 1, downloaded 0, added 0, done\n"
+    },
+    {
+      "at": "2026-10-19T12:51:54.489Z",
+      "kind": "install-log",
+      "requestId": "su2-b-again-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "Done in 2s using pnpm v10.28.2\n"
+    },
+    {
+      "at": "2026-10-19T12:51:54.495Z",
+      "kind": "install-log",
+      "requestId": "su2-b-again-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": 0,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": ""
+    },
+    {
+      "at": "2026-10-19T12:51:54.497Z",
+      "kind": "changed",
+      "requestId": null,
+      "phase": null,
+      "reason": "install",
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:56.511Z",
+      "kind": "install-state",
+      "requestId": "su2-c-req",
+      "phase": "installing",
+      "reason": null,
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:58.162Z",
+      "kind": "install-log",
+      "requestId": "su2-c-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#611c0ed0083432fc7b471e1d1351b90bc15f81ff",
+        "--save-exact"
+      ],
+      "text": "Progress: resolved 0, reused 1, downloaded 0, added 0\n"
+    },
+    {
+      "at": "2026-10-19T12:51:58.191Z",
+      "kind": "install-log",
+      "requestId": "su2-c-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#611c0ed0083432fc7b471e1d1351b90bc15f81ff",
+        "--save-exact"
+      ],
+      "text": "\n"
+    },
+    {
+      "at": "2026-10-19T12:51:58.197Z",
+      "kind": "install-log",
+      "requestId": "su2-c-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#611c0ed0083432fc7b471e1d1351b90bc15f81ff",
+        "--save-exact"
+      ],
+      "text": "Packages: +1\n+\n"
+    },
+    {
+      "at": "2026-10-19T12:51:58.265Z",
+      "kind": "install-log",
+      "requestId": "su2-c-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#611c0ed0083432fc7b471e1d1351b90bc15f81ff",
+        "--save-exact"
+      ],
+      "text": "Progress: resolved 2, reused 2, downloaded 0, added 1, done\n"
+    },
+    {
+      "at": "2026-10-19T12:51:58.285Z",
+      "kind": "install-log",
+      "requestId": "su2-c-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#611c0ed0083432fc7b471e1d1351b90bc15f81ff",
+        "--save-exact"
+      ],
+      "text": "Done in 1.6s using pnpm v10.28.2\n"
+    },
+    {
+      "at": "2026-10-19T12:51:58.292Z",
+      "kind": "install-log",
+      "requestId": "su2-c-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": 0,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#611c0ed0083432fc7b471e1d1351b90bc15f81ff",
+        "--save-exact"
+      ],
+      "text": ""
+    },
+    {
+      "at": "2026-10-19T12:51:58.293Z",
+      "kind": "install-state",
+      "requestId": "su2-c-req",
+      "phase": "applying",
+      "reason": null,
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:58.420Z",
+      "kind": "changed",
+      "requestId": null,
+      "phase": null,
+      "reason": "install",
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:59.681Z",
+      "kind": "install-state",
+      "requestId": "su2-cancel-req",
+      "phase": "cancelling",
+      "reason": null,
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:51:59.693Z",
+      "kind": "changed",
+      "requestId": null,
+      "phase": null,
+      "reason": "install",
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:52:02.848Z",
+      "kind": "install-state",
+      "requestId": "su2-tooLate-req",
+      "phase": "installing",
+      "reason": null,
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:52:05.638Z",
+      "kind": "install-log",
+      "requestId": "su2-tooLate-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      ],
+      "text": "Progress: resolved 0, reused 1, downloaded 0, added 0\n"
+    },
+    {
+      "at": "2026-10-19T12:52:06.617Z",
+      "kind": "install-log",
+      "requestId": "su2-tooLate-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      ],
+      "text": "\n"
+    },
+    {
+      "at": "2026-10-19T12:52:06.623Z",
+      "kind": "install-log",
+      "requestId": "su2-tooLate-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      ],
+      "text": "Packages: +1\n+\n"
+    },
+    {
+      "at": "2026-10-19T12:52:06.640Z",
+      "kind": "install-log",
+      "requestId": "su2-tooLate-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      ],
+      "text": "Progress: resolved 2, reused 2, downloaded 0, added 0\n"
+    },
+    {
+      "at": "2026-10-19T12:52:06.697Z",
+      "kind": "install-log",
+      "requestId": "su2-tooLate-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      ],
+      "text": "Progress: resolved 2, reused 2, downloaded 0, added 1, done\n"
+    },
+    {
+      "at": "2026-10-19T12:52:06.718Z",
+      "kind": "install-log",
+      "requestId": "su2-tooLate-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      ],
+      "text": "Done in 3.7s using pnpm v10.28.2\n"
+    },
+    {
+      "at": "2026-10-19T12:52:06.726Z",
+      "kind": "install-log",
+      "requestId": "su2-tooLate-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": 0,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      ],
+      "text": ""
+    },
+    {
+      "at": "2026-10-19T12:52:06.726Z",
+      "kind": "install-state",
+      "requestId": "su2-tooLate-req",
+      "phase": "applying",
+      "reason": null,
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:52:06.848Z",
+      "kind": "changed",
+      "requestId": null,
+      "phase": null,
+      "reason": "install",
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:52:08.346Z",
+      "kind": "install-log",
+      "requestId": null,
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "remove",
+        "dsh-game-market"
+      ],
+      "text": "\ndependencies:\n- dsh-game-market github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2\n\n"
+    },
+    {
+      "at": "2026-10-19T12:52:08.351Z",
+      "kind": "install-log",
+      "requestId": null,
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "remove",
+        "dsh-game-market"
+      ],
+      "text": "Already up to date\n"
+    },
+    {
+      "at": "2026-10-19T12:52:08.377Z",
+      "kind": "install-log",
+      "requestId": null,
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "remove",
+        "dsh-game-market"
+      ],
+      "text": "Done in 263ms using pnpm v10.28.2\n"
+    },
+    {
+      "at": "2026-10-19T12:52:08.384Z",
+      "kind": "install-log",
+      "requestId": null,
+      "phase": null,
+      "reason": null,
+      "exitCode": 0,
+      "argv": [
+        "pnpm",
+        "remove",
+        "dsh-game-market"
+      ],
+      "text": ""
+    },
+    {
+      "at": "2026-10-19T12:52:08.531Z",
+      "kind": "changed",
+      "requestId": null,
+      "phase": null,
+      "reason": "remove",
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:52:10.714Z",
+      "kind": "install-state",
+      "requestId": "su2-reinstall-req",
+      "phase": "installing",
+      "reason": null,
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:52:12.474Z",
+      "kind": "install-log",
+      "requestId": "su2-reinstall-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "Progress: resolved 0, reused 1, downloaded 0, added 0\n"
+    },
+    {
+      "at": "2026-10-19T12:52:12.488Z",
+      "kind": "install-log",
+      "requestId": "su2-reinstall-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "\ndependencies:\n+ dsh-game-market github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2\n\n"
+    },
+    {
+      "at": "2026-10-19T12:52:12.493Z",
+      "kind": "install-log",
+      "requestId": "su2-reinstall-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "Packages: +1\n+\n"
+    },
+    {
+      "at": "2026-10-19T12:52:12.547Z",
+      "kind": "install-log",
+      "requestId": "su2-reinstall-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "Progress: resolved 1, reused 1, downloaded 0, added 1, done\n"
+    },
+    {
+      "at": "2026-10-19T12:52:12.569Z",
+      "kind": "install-log",
+      "requestId": "su2-reinstall-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": null,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": "Done in 1.7s using pnpm v10.28.2\n"
+    },
+    {
+      "at": "2026-10-19T12:52:12.576Z",
+      "kind": "install-log",
+      "requestId": "su2-reinstall-req",
+      "phase": null,
+      "reason": null,
+      "exitCode": 0,
+      "argv": [
+        "pnpm",
+        "add",
+        "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "--save-exact"
+      ],
+      "text": ""
+    },
+    {
+      "at": "2026-10-19T12:52:12.577Z",
+      "kind": "install-state",
+      "requestId": "su2-reinstall-req",
+      "phase": "applying",
+      "reason": null,
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    },
+    {
+      "at": "2026-10-19T12:52:12.731Z",
+      "kind": "changed",
+      "requestId": null,
+      "phase": null,
+      "reason": "install",
+      "exitCode": null,
+      "argv": null,
+      "text": null
+    }
+  ]
+}

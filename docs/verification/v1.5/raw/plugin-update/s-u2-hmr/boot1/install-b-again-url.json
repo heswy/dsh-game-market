@@ -1,0 +1,53 @@
+{
+  "probeVersion": 1,
+  "bootTag": "su2-boot1",
+  "commandIndex": 8,
+  "command": {
+    "id": "su2-install-b-again-url",
+    "action": "install",
+    "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+    "requestId": "su2-b-again-req",
+    "saveExact": true
+  },
+  "startedAt": "2026-10-19T12:51:50.624Z",
+  "finishedAt": "2026-10-19T12:51:54.497Z",
+  "ok": true,
+  "action": "install",
+  "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+  "options": {
+    "enabled": true,
+    "saveExact": true,
+    "requestId": "su2-b-again-req"
+  },
+  "result": {
+    "stage": "install",
+    "target": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+    "enabled": true,
+    "changed": false,
+    "application": "failed",
+    "registries": [
+      null
+    ],
+    "packageResult": {
+      "exitCode": 0,
+      "output": "Progress: resolved 0, reused 1, downloaded 0, added 0\n\nAlready up to date\nProgress: resolved 1, reused 1, downloaded 0, added 0, done\nDone in 2s using pnpm v10.28.2\n",
+      "truncated": false,
+      "logPath": "/tmp/dsh-v15/home-su2-hmr/profiles/web/.plugin-manager/logs/operation-2lafDt/pnpm.log"
+    },
+    "error": {
+      "code": "ambiguous-install"
+    }
+  },
+  "waitForInstallAfterSettle": null,
+  "elapsedMs": 3873,
+  "resultKeys": [
+    "application",
+    "changed",
+    "enabled",
+    "error",
+    "packageResult",
+    "registries",
+    "stage",
+    "target"
+  ]
+}

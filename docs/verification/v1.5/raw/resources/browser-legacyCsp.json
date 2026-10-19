@@ -1,0 +1,223 @@
+{
+  "name": "legacy-csp",
+  "variant": "legacy",
+  "expectBlocked": true,
+  "description": "Control: the production V1.2 CSP builder output applied to a multi-file entry (expected to block subresources).",
+  "instance": {
+    "instanceId": "<instance>",
+    "ttlMs": 600000
+  },
+  "entry": {
+    "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=legacy&launch=<redacted>",
+    "path": "/res/<instance>/<token>/probe-orbit/index.html",
+    "variant": "legacy",
+    "oneShotLaunchCredential": true
+  },
+  "iframeSessionAttached": true,
+  "sessionId": "9E1E91CCEDCEA1F607AC86F0F59FAB03",
+  "probeScriptRan": false,
+  "dom": {
+    "origin": "http://127.0.0.1:58262",
+    "pathname": "/res/<id>/<id>/index.html",
+    "title": "Orbit Probe",
+    "hasBody": true,
+    "classicMarker": false,
+    "probePresent": false,
+    "probeDone": false,
+    "styleSheetCount": 1,
+    "bodyBackground": "rgba(0, 0, 0, 0)",
+    "scriptCount": 2,
+    "moduleScriptCount": 1,
+    "images": [
+      {
+        "id": "ship",
+        "complete": true,
+        "naturalWidth": 0
+      },
+      {
+        "id": "ship-nocors",
+        "complete": true,
+        "naturalWidth": 0
+      }
+    ],
+    "hud": "booting…"
+  },
+  "probe": null,
+  "screenshot": "docs/verification/v1.5/raw/resources/screenshots/dh-02-legacy-csp-full.png",
+  "iframeScreenshot": "docs/verification/v1.5/raw/resources/screenshots/dh-02-legacy-csp-iframe.png",
+  "browser": {
+    "network": [
+      {
+        "sessionId": "9E1E91CCEDCEA1F607AC86F0F59FAB03",
+        "requestId": "91461.31",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/styles/game.css",
+        "resourceType": "Stylesheet",
+        "status": null,
+        "mimeType": null,
+        "failed": true,
+        "errorText": "",
+        "blockedReason": "csp",
+        "fromDiskCache": false,
+        "responseHeaders": {},
+        "requestHeaders": {
+          "referer": ""
+        }
+      },
+      {
+        "sessionId": "9E1E91CCEDCEA1F607AC86F0F59FAB03",
+        "requestId": "91461.32",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/scripts/bootstrap.js",
+        "resourceType": "Script",
+        "status": null,
+        "mimeType": null,
+        "failed": true,
+        "errorText": "",
+        "blockedReason": "csp",
+        "fromDiskCache": false,
+        "responseHeaders": {},
+        "requestHeaders": {
+          "referer": ""
+        }
+      },
+      {
+        "sessionId": "9E1E91CCEDCEA1F607AC86F0F59FAB03",
+        "requestId": "91461.33",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/scripts/main.js",
+        "resourceType": "Script",
+        "status": null,
+        "mimeType": null,
+        "failed": true,
+        "errorText": "",
+        "blockedReason": "csp",
+        "fromDiskCache": false,
+        "responseHeaders": {},
+        "requestHeaders": {
+          "origin": "null",
+          "referer": ""
+        }
+      },
+      {
+        "sessionId": "9E1E91CCEDCEA1F607AC86F0F59FAB03",
+        "requestId": "91461.34",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/assets/ship.png",
+        "resourceType": "Image",
+        "status": null,
+        "mimeType": null,
+        "failed": true,
+        "errorText": "",
+        "blockedReason": "csp",
+        "fromDiskCache": false,
+        "responseHeaders": {},
+        "requestHeaders": {
+          "origin": "null",
+          "referer": ""
+        }
+      },
+      {
+        "sessionId": "9E1E91CCEDCEA1F607AC86F0F59FAB03",
+        "requestId": "91461.35",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/assets/ship.png",
+        "resourceType": "Image",
+        "status": null,
+        "mimeType": null,
+        "failed": true,
+        "errorText": "",
+        "blockedReason": "csp",
+        "fromDiskCache": false,
+        "responseHeaders": {},
+        "requestHeaders": {
+          "referer": ""
+        }
+      }
+    ],
+    "logEntries": [
+      {
+        "level": "error",
+        "source": "security",
+        "text": "Loading the stylesheet 'http://127.0.0.1:58262/res/<instance>/<token>/styles/game.css' violates the following Content Security Policy directive: \"style-src 'unsafe-inline'\". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback. The action has been blocked.",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=legacy&launch=<redacted>"
+      },
+      {
+        "level": "error",
+        "source": "security",
+        "text": "Loading the script 'http://127.0.0.1:58262/res/<instance>/<token>/scripts/bootstrap.js' violates the following Content Security Policy directive: \"script-src 'unsafe-inline'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=legacy&launch=<redacted>"
+      },
+      {
+        "level": "error",
+        "source": "security",
+        "text": "Loading the script 'http://127.0.0.1:58262/res/<instance>/<token>/scripts/main.js' violates the following Content Security Policy directive: \"script-src 'unsafe-inline'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=legacy&launch=<redacted>"
+      },
+      {
+        "level": "error",
+        "source": "security",
+        "text": "Loading the image 'http://127.0.0.1:58262/res/<instance>/<token>/assets/ship.png' violates the following Content Security Policy directive: \"img-src data:\". The action has been blocked.",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=legacy&launch=<redacted>"
+      },
+      {
+        "level": "error",
+        "source": "security",
+        "text": "Loading the image 'http://127.0.0.1:58262/res/<instance>/<token>/assets/ship.png' violates the following Content Security Policy directive: \"img-src data:\". The action has been blocked.",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=legacy&launch=<redacted>"
+      },
+      {
+        "level": "error",
+        "source": "security",
+        "text": "Loading media from  'http://127.0.0.1:58262/res/<instance>/<token>/assets/pickup.wav' violates the following Content Security Policy directive: \"default-src 'none'\". Note that 'media-src' was not explicitly set, so 'default-src' is used as a fallback. The action has been blocked.",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=legacy&launch=<redacted>"
+      }
+    ],
+    "consoleEntries": [],
+    "exceptions": []
+  },
+  "httpRequests": [
+    {
+      "seq": 17,
+      "route": "entry-credential",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/index.html",
+      "query": "",
+      "status": 200,
+      "rel": null,
+      "bytes": null,
+      "origin": null,
+      "referer": null,
+      "secFetchSite": null,
+      "launchConsumed": true,
+      "responseHeaders": null,
+      "event": "launch-credential-consumed"
+    },
+    {
+      "seq": 18,
+      "route": "entry",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/index.html",
+      "query": "?host=http://127.0.0.1:58261&evil=http://127.0.0.1:58263&variant=legacy&launch=<redacted>",
+      "status": 200,
+      "rel": "index.html",
+      "bytes": 1331,
+      "origin": null,
+      "referer": null,
+      "secFetchSite": "same-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "text/html; charset=utf-8",
+        "content-security-policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58261 http://127.0.0.1:58262",
+        "x-probe-variant": "legacy",
+        "content-length": "1331"
+      },
+      "event": null
+    }
+  ]
+}

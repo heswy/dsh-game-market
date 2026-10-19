@@ -1,0 +1,94 @@
+{
+  "observedAt": "2026-10-19T12:53:41.971Z",
+  "bootTag": "su1-boot1",
+  "pid": 30750,
+  "selfFiberUid": 48,
+  "capability": {
+    "at": "2026-10-19T12:53:41.971Z",
+    "probeScopeHmr": false,
+    "managerContextHmr": false,
+    "managerContextHmrCtor": null,
+    "managerContextHmrHasRunExclusive": false,
+    "hmrLoaderRow": {
+      "id": "hmr",
+      "name": "@deepseek-ai/dsh-hmr",
+      "disabled": true,
+      "hasFiber": false,
+      "fiberState": null,
+      "fiberUid": null
+    },
+    "samplesSinceBoot": 30
+  },
+  "managerInternal": {
+    "ownerEntryId": "include:plugin-manager",
+    "ownerContextIsProbeContext": false,
+    "ctor": "PluginManager",
+    "hasInstallBundle": true,
+    "hasWaitForInstall": true,
+    "hasCancelInstall": true,
+    "hasRemoveBundle": true,
+    "hasListBundles": true,
+    "installedCount": 0
+  },
+  "profile": {
+    "dir": "/tmp/dsh-v15/home-su1-nohmr/profiles/web",
+    "packageJson": {
+      "name": "dsh-profile-web",
+      "dependencies": {},
+      "profileBundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app"
+      ]
+    },
+    "dependency": null,
+    "diskPackage": null,
+    "diskPackagePath": "/tmp/dsh-v15/home-su1-nohmr/profiles/web/node_modules/dsh-game-market/package.json"
+  },
+  "bundles": [],
+  "bundlesError": null,
+  "loader": {
+    "available": true,
+    "scope": "probeScope",
+    "rows": [
+      {
+        "id": "hmr",
+        "name": "@deepseek-ai/dsh-hmr",
+        "disabled": true,
+        "hasFiber": false,
+        "fiberState": null,
+        "fiberUid": null
+      },
+      {
+        "id": "v15-plugin-update-probe",
+        "name": "file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-m0/scripts/verification/v1.5/plugin-update/probe-plugin-host.js",
+        "disabled": null,
+        "hasFiber": true,
+        "fiberState": 2,
+        "fiberUid": 48
+      }
+    ],
+    "totalEntries": 194
+  },
+  "health": {
+    "available": false,
+    "connectionService": true,
+    "connectionScope": "probeScope",
+    "routeRegistered": false
+  },
+  "storage": {
+    "configured": true,
+    "root": "/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market",
+    "exists": false,
+    "entries": [],
+    "markers": [],
+    "saves": [],
+    "markerPath": "/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market/su1-boot1-update-marker.json",
+    "markerPresent": false
+  },
+  "installStateEvents": [],
+  "eventCounts": {
+    "installState": 0,
+    "installLog": 0,
+    "changed": 0
+  }
+}

@@ -1,0 +1,373 @@
+{
+  "runtime": {
+    "dshPackage": {
+      "name": "@deepseek-ai/dsh-desktop-runtime",
+      "version": "0.2.1-rc.2"
+    },
+    "pluginManager": {
+      "name": "@deepseek-ai/dsh-plugin-manager",
+      "version": "0.2.1-rc.2"
+    },
+    "electronApp": {
+      "name": "@deepseek-ai/dsh-desktop",
+      "version": "0.2.1-rc.2"
+    },
+    "asarExtractedAt": "2026-10-19T12:00:52.172Z"
+  },
+  "home": "/tmp/dsh-v15/home-su2b-devrow",
+  "note": "HMR profile with a same-id dev row (scripts/dev-enable.mjs form)",
+  "networkEnvUsedForPnpm": {
+    "HTTPS_PROXY": "http://127.0.0.1:7897",
+    "HTTP_PROXY": "http://127.0.0.1:7897",
+    "ALL_PROXY": "http://127.0.0.1:7897",
+    "npm_config_https_proxy": "http://127.0.0.1:7897",
+    "npm_config_http_proxy": "http://127.0.0.1:7897",
+    "npm_config_proxy": "http://127.0.0.1:7897",
+    "NO_PROXY": "127.0.0.1,localhost"
+  },
+  "id": "s-u2b-devmigration",
+  "title": "S-U2b (HMR profile with an existing dev row)",
+  "commands": [
+    "node scripts/verification/v1.5/plugin-update/run-su2b-devmigration.mjs"
+  ],
+  "startedAt": "2026-10-19T12:51:34.909Z",
+  "finishedAt": "2026-10-19T12:51:46.901Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "HMR capability present in manager context",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "at": "2026-10-19T12:51:40.235Z",
+        "probeScopeHmr": true,
+        "managerContextHmr": true,
+        "managerContextHmrCtor": "Hmr",
+        "managerContextHmrHasRunExclusive": true,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": {
+            "__jsExpr": "!ctx.get('profileContext')"
+          },
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 110
+        },
+        "samplesSinceBoot": 2
+      }
+    },
+    {
+      "name": "pre: dev row health version (checkout code)",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.2.0"
+      }
+    },
+    {
+      "name": "pre: dev mode reported by /health",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": true
+      }
+    },
+    {
+      "name": "pre: dev row serves /health before any install",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "available": true,
+        "connectionScope": "probeScope",
+        "routeRegistered": true,
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "requestId": "req_e2090d3332f0cdd1",
+          "serverTime": "2026-10-19T12:51:40.593Z"
+        },
+        "body": {
+          "ok": true,
+          "version": "1.2.0",
+          "hostEpoch": "he_bbbb29eeecbec20a",
+          "devMode": true,
+          "uptimeMs": 2320,
+          "storage": {
+            "ok": true,
+            "root": "/tmp/dsh-v15/home-su2b-devrow/storages/dsh-game-market",
+            "readOnly": false
+          },
+          "installRegistries": {
+            "state": "fresh",
+            "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+            "fetchedAt": "2026-10-19T12:51:39.102Z",
+            "truncated": false,
+            "count": 0,
+            "lastError": null,
+            "activeSource": "official",
+            "fallback": false,
+            "official": {
+              "state": "fresh",
+              "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+              "fetchedAt": "2026-10-19T12:51:39.102Z",
+              "truncated": false,
+              "count": 0,
+              "lastError": null
+            },
+            "seed": {
+              "state": "fresh",
+              "count": 3,
+              "sourceUrl": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-m0/registry/games.json"
+            }
+          },
+          "installations": {
+            "count": 0,
+            "updateAvailable": 0
+          },
+          "error": null
+        },
+        "bodyText": "{\"ok\":true,\"data\":{\"ok\":true,\"version\":\"1.2.0\",\"hostEpoch\":\"he_bbbb29eeecbec20a\",\"devMode\":true,\"storage\":{\"ok\":true,\"root\":\"/tmp/dsh-v15/home-su2b-devrow/storages/dsh-game-market\",\"readOnly\":false},\"uptimeMs\":2320,\"registry\":{\"state\":\"fresh\",\"sourceUrl\":\"https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json\",\"fetchedAt\":\"2026-10-19T12:51:39.102Z\",\"truncated\":false,\"count\":0,\"lastError\":null,\"activeSource\":\"official\",\"fallback\":false,\"official\":{\"state\":\"fresh\",\"sourceUrl\":\"https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json\",\"fetchedAt\":\"2026-10-19T12:51:39.102Z\",\"truncated\":false,\"count\":0,\"lastError\":null},\"seed\":{\"state\":\"fresh\",\"count\":3,\"sourceUrl\":\"/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-m0/registry/games.json\"}},\"installations\":{\"count\":0,\"updateAvailable\":0},\"sessions\":{\"running\":0,\"staleRunningPreserved\":true},\"games\":{\"builtinCount\":1,\"issues\":[]}},\"requestId\":\"req_e2090d3332f0cdd1\",\"serverTime\":\"2026-10-19T12:51:40.593Z\"}"
+      }
+    },
+    {
+      "name": "pre: package is not a profile dependency",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "pre: /health reports devMode=true from the repository checkout",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "version": "1.2.0",
+        "hostEpoch": "he_bbbb29eeecbec20a",
+        "devMode": true,
+        "uptimeMs": 2320,
+        "storage": {
+          "ok": true,
+          "root": "/tmp/dsh-v15/home-su2b-devrow/storages/dsh-game-market",
+          "readOnly": false
+        },
+        "installRegistries": {
+          "state": "fresh",
+          "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+          "fetchedAt": "2026-10-19T12:51:39.102Z",
+          "truncated": false,
+          "count": 0,
+          "lastError": null,
+          "activeSource": "official",
+          "fallback": false,
+          "official": {
+            "state": "fresh",
+            "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+            "fetchedAt": "2026-10-19T12:51:39.102Z",
+            "truncated": false,
+            "count": 0,
+            "lastError": null
+          },
+          "seed": {
+            "state": "fresh",
+            "count": 3,
+            "sourceUrl": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-m0/registry/games.json"
+          }
+        },
+        "installations": {
+          "count": 0,
+          "updateAvailable": 0
+        },
+        "error": null
+      }
+    },
+    {
+      "name": "install over the dev row returned a Remote Result",
+      "ok": true,
+      "required": true,
+      "detail": [
+        "application",
+        "bundle",
+        "changed",
+        "enabled",
+        "packageResult",
+        "registries",
+        "stage",
+        "target",
+        "version",
+        "warnings"
+      ]
+    },
+    {
+      "name": "install application",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "applied"
+      }
+    },
+    {
+      "name": "install error code",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "none"
+      }
+    },
+    {
+      "name": "install version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.1.0"
+      }
+    },
+    {
+      "name": "install actually ran pnpm (packageResult present)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exitCode": 0
+      }
+    },
+    {
+      "name": "post: dependency after install",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f"
+      }
+    },
+    {
+      "name": "post: disk package version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.1.0"
+      }
+    },
+    {
+      "name": "post: loader rows with id dsh-game-market",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": [
+          {
+            "id": "dsh-game-market",
+            "name": "file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-m0/index.js",
+            "disabled": null,
+            "hasFiber": true,
+            "fiberState": 2,
+            "fiberUid": 183
+          }
+        ]
+      }
+    },
+    {
+      "name": "post: dev row and installed row did not create two competing live rows",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "id": "dsh-game-market",
+          "name": "file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-m0/index.js",
+          "disabled": null,
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 183
+        }
+      ]
+    },
+    {
+      "name": "post: /health version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.2.0"
+      }
+    },
+    {
+      "name": "post: /health devMode",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": true
+      }
+    },
+    {
+      "name": "post: live row name (which layer won)",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-m0/index.js"
+      }
+    },
+    {
+      "name": "the installed bundle did NOT take over the live row: the same-id dev row still runs",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "rows": [
+          {
+            "id": "dsh-game-market",
+            "name": "file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-m0/index.js",
+            "disabled": null,
+            "hasFiber": true,
+            "fiberState": 2,
+            "fiberUid": 183
+          }
+        ],
+        "health": {
+          "version": "1.2.0",
+          "devMode": true
+        }
+      }
+    },
+    {
+      "name": "package installed + dependency recorded while the live row stayed on the checkout code",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "dependency": "github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f",
+        "disk": "1.1.0",
+        "running": "1.2.0"
+      }
+    },
+    {
+      "name": "post: bundles summary",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": [
+          {
+            "name": "dsh-game-market",
+            "version": "1.1.0",
+            "enabled": true,
+            "installed": true,
+            "removable": true,
+            "availability": "profile",
+            "error": null
+          }
+        ]
+      }
+    }
+  ],
+  "requiredChecks": 9,
+  "optionalChecks": 12,
+  "requiredPassed": 9,
+  "failedRequired": [],
+  "failedOptional": []
+}

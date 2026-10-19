@@ -1,0 +1,193 @@
+{
+  "probeVersion": 1,
+  "bootTag": "su1-boot2",
+  "commandIndex": 3,
+  "command": {
+    "id": "su1-b2-post-b",
+    "action": "observe",
+    "label": "post-b"
+  },
+  "startedAt": "2026-10-19T12:54:12.270Z",
+  "finishedAt": "2026-10-19T12:54:12.380Z",
+  "ok": true,
+  "action": "observe",
+  "label": "post-b",
+  "snapshot": {
+    "observedAt": "2026-10-19T12:54:12.378Z",
+    "bootTag": "su1-boot2",
+    "pid": 31225,
+    "selfFiberUid": 48,
+    "capability": {
+      "at": "2026-10-19T12:54:12.378Z",
+      "probeScopeHmr": false,
+      "managerContextHmr": false,
+      "managerContextHmrCtor": null,
+      "managerContextHmrHasRunExclusive": false,
+      "hmrLoaderRow": {
+        "id": "hmr",
+        "name": "@deepseek-ai/dsh-hmr",
+        "disabled": true,
+        "hasFiber": false,
+        "fiberState": null,
+        "fiberUid": null
+      },
+      "samplesSinceBoot": 30
+    },
+    "managerInternal": {
+      "ownerEntryId": "include:plugin-manager",
+      "ownerContextIsProbeContext": false,
+      "ctor": "PluginManager",
+      "hasInstallBundle": true,
+      "hasWaitForInstall": true,
+      "hasCancelInstall": true,
+      "hasRemoveBundle": true,
+      "hasListBundles": true,
+      "installedCount": 0
+    },
+    "profile": {
+      "dir": "/tmp/dsh-v15/home-su1-nohmr/profiles/web",
+      "packageJson": {
+        "name": "dsh-profile-web",
+        "dependencies": {
+          "dsh-game-market": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+        },
+        "profileBundles": [
+          "@deepseek-ai/dsh-base",
+          "@deepseek-ai/dsh-web-app",
+          "dsh-game-market"
+        ]
+      },
+      "dependency": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+      "diskPackage": {
+        "name": "dsh-game-market",
+        "version": "1.2.0"
+      },
+      "diskPackagePath": "/tmp/dsh-v15/home-su1-nohmr/profiles/web/node_modules/dsh-game-market/package.json",
+      "diskPackageRealPath": "/private/tmp/dsh-v15/home-su1-nohmr/profiles/web/node_modules/dsh-game-market"
+    },
+    "bundles": [
+      {
+        "name": "dsh-game-market",
+        "version": "1.2.0",
+        "enabled": true,
+        "installed": true,
+        "removable": true,
+        "availability": "profile",
+        "error": null
+      }
+    ],
+    "bundlesError": null,
+    "loader": {
+      "available": true,
+      "scope": "probeScope",
+      "rows": [
+        {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        },
+        {
+          "id": "dsh-game-market",
+          "name": "dsh-game-market",
+          "disabled": null,
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 182
+        },
+        {
+          "id": "v15-plugin-update-probe",
+          "name": "file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-m0/scripts/verification/v1.5/plugin-update/probe-plugin-host.js",
+          "disabled": null,
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 48
+        }
+      ],
+      "totalEntries": 195
+    },
+    "health": {
+      "available": true,
+      "connectionScope": "probeScope",
+      "routeRegistered": true,
+      "status": 200,
+      "envelope": {
+        "ok": true,
+        "requestId": "req_af48f1c29ae9f078",
+        "serverTime": "2026-10-19T12:54:12.379Z"
+      },
+      "body": {
+        "ok": true,
+        "version": "1.1.0",
+        "hostEpoch": "he_7275349ee89ead23",
+        "devMode": false,
+        "uptimeMs": 22201,
+        "storage": {
+          "ok": true,
+          "root": "/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market",
+          "readOnly": false
+        },
+        "installRegistries": {
+          "state": "fresh",
+          "sourceUrl": "/private/tmp/dsh-v15/home-su1-nohmr/profiles/web/node_modules/dsh-game-market/registry/games.json",
+          "fetchedAt": "2026-10-19T12:53:50.218Z",
+          "truncated": false,
+          "count": 3,
+          "lastError": null
+        },
+        "installations": {
+          "count": 0,
+          "updateAvailable": 0
+        },
+        "error": null
+      },
+      "bodyText": "{\"ok\":true,\"data\":{\"ok\":true,\"version\":\"1.1.0\",\"hostEpoch\":\"he_7275349ee89ead23\",\"devMode\":false,\"storage\":{\"ok\":true,\"root\":\"/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market\",\"readOnly\":false},\"uptimeMs\":22201,\"registry\":{\"state\":\"fresh\",\"sourceUrl\":\"/private/tmp/dsh-v15/home-su1-nohmr/profiles/web/node_modules/dsh-game-market/registry/games.json\",\"fetchedAt\":\"2026-10-19T12:53:50.218Z\",\"truncated\":false,\"count\":3,\"lastError\":null},\"installations\":{\"count\":0,\"updateAvailable\":0},\"sessions\":{\"running\":0,\"staleRunningPreserved\":true},\"games\":{\"builtinCount\":1,\"issues\":[]}},\"requestId\":\"req_af48f1c29ae9f078\",\"serverTime\":\"2026-10-19T12:54:12.379Z\"}"
+    },
+    "storage": {
+      "configured": true,
+      "root": "/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market",
+      "exists": true,
+      "entries": [
+        "registry-cache.json",
+        "saves/",
+        "su1-boot1-update-marker.json"
+      ],
+      "markers": [],
+      "saves": [
+        "snake"
+      ],
+      "markerPath": "/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market/su1-boot2-update-marker.json",
+      "markerPresent": false
+    },
+    "installStateEvents": [
+      {
+        "at": "2026-10-19T12:54:09.863Z",
+        "kind": "install-state",
+        "payload": {
+          "requestId": "su1-b-1792414447676",
+          "phase": "installing",
+          "attempt": {
+            "registry": null,
+            "index": 1,
+            "total": 1
+          }
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:12.116Z",
+        "kind": "install-state",
+        "payload": {
+          "requestId": "su1-b-1792414447676",
+          "phase": "applying"
+        }
+      }
+    ],
+    "eventCounts": {
+      "installState": 2,
+      "installLog": 6,
+      "changed": 1
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "probeVersion": 1,
+  "bootTag": "su2-boot1",
+  "commandIndex": 4,
+  "command": {
+    "id": "su2-install-recorded-a",
+    "action": "install",
+    "spec": "github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f",
+    "requestId": "su2-recorded-a-req"
+  },
+  "startedAt": "2026-10-19T12:51:45.808Z",
+  "finishedAt": "2026-10-19T12:51:45.810Z",
+  "ok": true,
+  "action": "install",
+  "spec": "github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f",
+  "options": {
+    "enabled": true,
+    "requestId": "su2-recorded-a-req"
+  },
+  "result": {
+    "stage": "install",
+    "target": "github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f",
+    "enabled": true,
+    "changed": false,
+    "application": "failed",
+    "error": {
+      "code": "already-installed"
+    }
+  },
+  "waitForInstallAfterSettle": null,
+  "elapsedMs": 2,
+  "resultKeys": [
+    "application",
+    "changed",
+    "enabled",
+    "error",
+    "stage",
+    "target"
+  ]
+}

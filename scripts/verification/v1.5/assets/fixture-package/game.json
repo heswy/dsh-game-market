@@ -1,0 +1,23 @@
+{
+  "manifestVersion": 1,
+  "id": "probe-orbit",
+  "name": "Orbit Probe",
+  "version": "1.0.0",
+  "author": "dsh-game-market verification",
+  "description": "M0 S-A1 multi-file resource probe fixture (not a shipped game).",
+  "categories": ["arcade"],
+  "capabilities": [],
+  "sdkVersion": ">=1.0.0 <2.0.0",
+  "runtimeVersion": ">=1.0.0 <2.0.0",
+  "files": [
+    "index.html",
+    "scripts/main.js",
+    "scripts/bootstrap.js",
+    "scripts/level-loader.mjs",
+    "scripts/powerup.mjs",
+    "styles/game.css",
+    "assets/ship.png",
+    "assets/pickup.wav",
+    "levels/level-01.json"
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "probeVersion": 1,
+  "bootTag": "su2-boot1",
+  "commandIndex": 2,
+  "command": {
+    "id": "su2-install-a",
+    "action": "install",
+    "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+    "requestId": "su2-a-req",
+    "saveExact": true,
+    "waitConcurrently": true
+  },
+  "startedAt": "2026-10-19T12:51:40.897Z",
+  "finishedAt": "2026-10-19T12:51:45.216Z",
+  "ok": true,
+  "action": "install",
+  "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+  "options": {
+    "enabled": true,
+    "saveExact": true,
+    "requestId": "su2-a-req"
+  },
+  "waitConcurrently": true,
+  "waitResolvedWhileActive": true,
+  "result": {
+    "stage": "enable",
+    "target": "dsh-game-market",
+    "enabled": true,
+    "changed": true,
+    "application": "applied",
+    "registries": [
+      null
+    ],
+    "packageResult": {
+      "exitCode": 0,
+      "output": "Progress: resolved 0, reused 1, downloaded 0, added 0\n\ndependencies:\n+ dsh-game-market github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f\n\nPackages: +1\n+\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\nDone in 2.2s using pnpm v10.28.2\n",
+      "truncated": false,
+      "logPath": "/tmp/dsh-v15/home-su2-hmr/profiles/web/.plugin-manager/logs/operation-1BrlIa/pnpm.log"
+    },
+    "bundle": "dsh-game-market",
+    "version": "1.1.0",
+    "warnings": []
+  },
+  "waitValue": {
+    "stage": "enable",
+    "target": "dsh-game-market",
+    "enabled": true,
+    "changed": true,
+    "application": "applied",
+    "registries": [
+      null
+    ],
+    "packageResult": {
+      "exitCode": 0,
+      "output": "Progress: resolved 0, reused 1, downloaded 0, added 0\n\ndependencies:\n+ dsh-game-market github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f\n\nPackages: +1\n+\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\nDone in 2.2s using pnpm v10.28.2\n",
+      "truncated": false,
+      "logPath": "/tmp/dsh-v15/home-su2-hmr/profiles/web/.plugin-manager/logs/operation-1BrlIa/pnpm.log"
+    },
+    "bundle": "dsh-game-market",
+    "version": "1.1.0",
+    "warnings": []
+  },
+  "waitEqualsResult": true,
+  "waitForInstallAfterSettle": null,
+  "elapsedMs": 4319,
+  "resultKeys": [
+    "application",
+    "bundle",
+    "changed",
+    "enabled",
+    "packageResult",
+    "registries",
+    "stage",
+    "target",
+    "version",
+    "warnings"
+  ]
+}

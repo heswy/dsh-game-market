@@ -1,0 +1,344 @@
+{
+  "generatedAt": "2026-10-19T13:08:28.489Z",
+  "node": "v24.14.0",
+  "zlibCrc32Available": true,
+  "crc32SelfTest": true,
+  "candidates": {
+    "yauzl": {
+      "version": "3.4.0",
+      "license": "MIT",
+      "dependencies": {
+        "pend": "~1.2.0"
+      },
+      "transitive": {
+        "pend": {
+          "version": "1.2.0",
+          "license": "MIT"
+        }
+      },
+      "packageBytes": 122880
+    },
+    "fflateAppVendored": {
+      "version": "0.8.2",
+      "license": "MIT",
+      "dependencies": null,
+      "path": "/tmp/dsh-v15/asar/dsh/node_modules/fflate"
+    }
+  },
+  "yauzl": {
+    "good": {
+      "file": "/tmp/dsh-v15/ziptest/good.zip",
+      "entries": [
+        {
+          "name": "scripts/main.js",
+          "fileNameRaw": "736372697074732f6d61696e2e6a73",
+          "compressionMethod": 8,
+          "compressedSize": 17,
+          "uncompressedSize": 36,
+          "crc32": 3943299212,
+          "generalPurposeBitFlag": 0,
+          "externalFileAttributes": 2175008768,
+          "unixMode": "0100644",
+          "versionNeededToExtract": 20,
+          "extraFieldIds": [],
+          "relativeOffsetOfLocalHeader": 0,
+          "decodedBytes": 36,
+          "crc32Computed": 3943299212,
+          "crc32Matches": true
+        },
+        {
+          "name": "assets/big.bin",
+          "fileNameRaw": "6173736574732f6269672e62696e",
+          "compressionMethod": 0,
+          "compressedSize": 10240,
+          "uncompressedSize": 10240,
+          "crc32": 3150855069,
+          "generalPurposeBitFlag": 0,
+          "externalFileAttributes": 2175008768,
+          "unixMode": "0100644",
+          "versionNeededToExtract": 20,
+          "extraFieldIds": [],
+          "relativeOffsetOfLocalHeader": 62,
+          "decodedBytes": 10240,
+          "crc32Computed": 3150855069,
+          "crc32Matches": true
+        }
+      ]
+    },
+    "corrupt": {
+      "file": "/tmp/dsh-v15/ziptest/corrupt-data.zip",
+      "entries": [
+        {
+          "name": "scripts/main.js",
+          "fileNameRaw": "736372697074732f6d61696e2e6a73",
+          "compressionMethod": 8,
+          "compressedSize": 17,
+          "uncompressedSize": 36,
+          "crc32": 3943299212,
+          "generalPurposeBitFlag": 0,
+          "externalFileAttributes": 2175008768,
+          "unixMode": "0100644",
+          "versionNeededToExtract": 20,
+          "extraFieldIds": [],
+          "relativeOffsetOfLocalHeader": 0,
+          "decodedBytes": 36,
+          "crc32Computed": 3943299212,
+          "crc32Matches": true
+        },
+        {
+          "name": "assets/big.bin",
+          "fileNameRaw": "6173736574732f6269672e62696e",
+          "compressionMethod": 0,
+          "compressedSize": 10240,
+          "uncompressedSize": 10240,
+          "crc32": 3150855069,
+          "generalPurposeBitFlag": 0,
+          "externalFileAttributes": 2175008768,
+          "unixMode": "0100644",
+          "versionNeededToExtract": 20,
+          "extraFieldIds": [],
+          "relativeOffsetOfLocalHeader": 62,
+          "decodedBytes": 10240,
+          "crc32Computed": 1084849677,
+          "crc32Matches": false
+        }
+      ]
+    },
+    "hostile": {
+      "file": "/tmp/dsh-v15/ziptest/hostile.zip",
+      "entries": [
+        {
+          "name": "assets/link",
+          "fileNameRaw": "6173736574732f6c696e6b",
+          "compressionMethod": 0,
+          "compressedSize": 19,
+          "uncompressedSize": 19,
+          "crc32": 4148175405,
+          "generalPurposeBitFlag": 0,
+          "externalFileAttributes": 2717843456,
+          "unixMode": "0120777",
+          "versionNeededToExtract": 20,
+          "extraFieldIds": [],
+          "relativeOffsetOfLocalHeader": 0,
+          "decodedBytes": 19,
+          "crc32Computed": 4148175405,
+          "crc32Matches": true
+        },
+        {
+          "name": "../escape.txt",
+          "fileNameRaw": "2e2e2f6573636170652e747874",
+          "compressionMethod": 0,
+          "compressedSize": 1,
+          "uncompressedSize": 1,
+          "crc32": 2363233923,
+          "generalPurposeBitFlag": 0,
+          "externalFileAttributes": 25165824,
+          "unixMode": "0600",
+          "versionNeededToExtract": 20,
+          "extraFieldIds": [],
+          "relativeOffsetOfLocalHeader": 60,
+          "decodedBytes": 1,
+          "crc32Computed": 2363233923,
+          "crc32Matches": true
+        },
+        {
+          "name": "/abs.txt",
+          "fileNameRaw": "2f6162732e747874",
+          "compressionMethod": 0,
+          "compressedSize": 1,
+          "uncompressedSize": 1,
+          "crc32": 2363233923,
+          "generalPurposeBitFlag": 0,
+          "externalFileAttributes": 25165824,
+          "unixMode": "0600",
+          "versionNeededToExtract": 20,
+          "extraFieldIds": [],
+          "relativeOffsetOfLocalHeader": 104,
+          "decodedBytes": 1,
+          "crc32Computed": 2363233923,
+          "crc32Matches": true
+        },
+        {
+          "name": "a\\b.txt",
+          "fileNameRaw": "615c622e747874",
+          "compressionMethod": 0,
+          "compressedSize": 1,
+          "uncompressedSize": 1,
+          "crc32": 2363233923,
+          "generalPurposeBitFlag": 0,
+          "externalFileAttributes": 25165824,
+          "unixMode": "0600",
+          "versionNeededToExtract": 20,
+          "extraFieldIds": [],
+          "relativeOffsetOfLocalHeader": 143,
+          "decodedBytes": 1,
+          "crc32Computed": 2363233923,
+          "crc32Matches": true
+        },
+        {
+          "name": "café.txt",
+          "fileNameRaw": "636166c3a92e747874",
+          "compressionMethod": 0,
+          "compressedSize": 1,
+          "uncompressedSize": 1,
+          "crc32": 2363233923,
+          "generalPurposeBitFlag": 2048,
+          "externalFileAttributes": 25165824,
+          "unixMode": "0600",
+          "versionNeededToExtract": 20,
+          "extraFieldIds": [],
+          "relativeOffsetOfLocalHeader": 181,
+          "decodedBytes": 1,
+          "crc32Computed": 2363233923,
+          "crc32Matches": true
+        },
+        {
+          "name": "café.txt",
+          "fileNameRaw": "63616665cc812e747874",
+          "compressionMethod": 0,
+          "compressedSize": 1,
+          "uncompressedSize": 1,
+          "crc32": 2363233923,
+          "generalPurposeBitFlag": 2048,
+          "externalFileAttributes": 25165824,
+          "unixMode": "0600",
+          "versionNeededToExtract": 20,
+          "extraFieldIds": [],
+          "relativeOffsetOfLocalHeader": 221,
+          "decodedBytes": 1,
+          "crc32Computed": 2363233923,
+          "crc32Matches": true
+        }
+      ]
+    },
+    "encrypted": {
+      "file": "/tmp/dsh-v15/ziptest/enc.zip",
+      "entries": [
+        {
+          "name": "t/hello.txt",
+          "fileNameRaw": "742f68656c6c6f2e747874",
+          "compressionMethod": 8,
+          "compressedSize": 29,
+          "uncompressedSize": 36,
+          "crc32": 3943299212,
+          "generalPurposeBitFlag": 9,
+          "externalFileAttributes": 2175008768,
+          "unixMode": "0100644",
+          "versionNeededToExtract": 20,
+          "extraFieldIds": [
+            21589,
+            30837
+          ],
+          "relativeOffsetOfLocalHeader": 0,
+          "encrypted": true,
+          "streamError": "rejected before openReadStream: general purpose bit 0 (encryption) set"
+        },
+        {
+          "name": "hello.txt",
+          "fileNameRaw": "68656c6c6f2e747874",
+          "compressionMethod": 8,
+          "compressedSize": 29,
+          "uncompressedSize": 36,
+          "crc32": 3943299212,
+          "generalPurposeBitFlag": 9,
+          "externalFileAttributes": 2175008768,
+          "unixMode": "0100644",
+          "versionNeededToExtract": 20,
+          "extraFieldIds": [
+            21589,
+            30837
+          ],
+          "relativeOffsetOfLocalHeader": 114,
+          "encrypted": true,
+          "streamError": "rejected before openReadStream: general purpose bit 0 (encryption) set"
+        }
+      ]
+    }
+  },
+  "fflate": {
+    "good": {
+      "file": "/tmp/dsh-v15/ziptest/good.zip",
+      "entries": [
+        {
+          "name": "scripts/main.js",
+          "compression": 8,
+          "size": 17,
+          "originalSize": 36,
+          "publicKeys": [
+            "compression",
+            "name",
+            "originalSize",
+            "size",
+            "start",
+            "terminate"
+          ],
+          "hasCrcField": false,
+          "decodedBytes": 36
+        },
+        {
+          "name": "assets/big.bin",
+          "compression": 0,
+          "size": 10240,
+          "originalSize": 10240,
+          "publicKeys": [
+            "compression",
+            "name",
+            "originalSize",
+            "size",
+            "start",
+            "terminate"
+          ],
+          "hasCrcField": false,
+          "decodedBytes": 10240
+        }
+      ]
+    },
+    "corrupt": {
+      "file": "/tmp/dsh-v15/ziptest/corrupt-data.zip",
+      "entries": [
+        {
+          "name": "scripts/main.js",
+          "compression": 8,
+          "size": 17,
+          "originalSize": 36,
+          "publicKeys": [
+            "compression",
+            "name",
+            "originalSize",
+            "size",
+            "start",
+            "terminate"
+          ],
+          "hasCrcField": false,
+          "decodedBytes": 36
+        },
+        {
+          "name": "assets/big.bin",
+          "compression": 0,
+          "size": 10240,
+          "originalSize": 10240,
+          "publicKeys": [
+            "compression",
+            "name",
+            "originalSize",
+            "size",
+            "start",
+            "terminate"
+          ],
+          "hasCrcField": false,
+          "decodedBytes": 10240
+        }
+      ]
+    }
+  },
+  "sha256": {
+    "good.zip": "c0f2a639f5986461c89b1265103b7273754db247ddec2b9f3242085fb6f29c89",
+    "corrupt-data.zip": "99f70c7d8c5ba5acb71ff8fa87f355e9ee01eab45a236fa99de16ec2ce327df2",
+    "hostile.zip": "b0aaab2775f5ab40e383c3512651096aaf145a1dcc96c821385f76d3c61f7680"
+  },
+  "readerLimitations": [
+    "yauzl reads local headers to locate data and validates entry sizes (validateEntrySizes), but it does NOT report a mismatch between a local header and the central directory; M1 must keep the central directory as authority and reject entries whose local header disagrees. Recorded limitation, not a verified pass.",
+    "yauzl supports ZIP64; the V1.5 contract forbids it, so the validator must reject ZIP64 explicitly (central-directory extra field id 0x0001, versionNeededToExtract >= 45, or EOCD sentinel values). This probe did not produce a real ZIP64 archive — still unverified.",
+    "yauzl does not verify CRC-32; the validator computes CRC-32 over decoded bytes (zlib.crc32 when available, otherwise a table-driven CRC-32/ISO-HDLC implementation with the 0xCBF43926 self-test)."
+  ]
+}

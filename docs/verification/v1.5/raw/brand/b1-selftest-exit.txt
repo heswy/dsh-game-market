@@ -1,0 +1,10 @@
+command: node scripts/verification/v1.5/brand/b1-fishlogo.mjs --self-test-fail
+exitCode: 1
+expected: 1 (non-zero on failed assertion)
+
+  ok   platform seed table carries the primitives specifier at boot
+  ok   an official whale SVG file ships in the App (distributable fallback source)
+  ok   react-only bundle still builds with the current bundler
+  ok   current bundler rejects the primitives bare import (build-tool change required)
+  FAIL self-test: forced failing check (must exit 1) :: {"forced":true}
+[S-B1] evidence: docs/verification/v1.5/raw/brand/

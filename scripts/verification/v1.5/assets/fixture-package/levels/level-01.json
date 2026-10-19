@@ -1,0 +1,13 @@
+{
+  "id": "level-01",
+  "name": "第一关 · 轨道",
+  "goal": 1200,
+  "parTime": 120,
+  "obstacles": [
+    { "type": "asteroid", "x": 0.22, "y": 0.35, "radius": 0.06 },
+    { "type": "asteroid", "x": 0.55, "y": 0.62, "radius": 0.08 },
+    { "type": "gate", "x": 0.78, "y": 0.30, "width": 0.10 },
+    { "type": "pickup", "x": 0.40, "y": 0.20, "kind": "boost" },
+    { "type": "pickup", "x": 0.66, "y": 0.78, "kind": "shield" }
+  ]
+}

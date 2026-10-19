@@ -1,0 +1,35 @@
+{
+  "root": "/tmp/dsh-v15/home-su2-hmr/storages/dsh-game-market",
+  "exists": true,
+  "marker": {
+    "marker": "v1.5-m0-plugin-update-storage-marker",
+    "bootTag": "su2-boot1",
+    "writtenAt": "2026-10-19T12:51:40.282Z",
+    "note": "probe fixture standing in for user data outside the bundle directory"
+  },
+  "save": {
+    "schemaVersion": 1,
+    "gameId": "snake",
+    "playSessionId": "probe-su2-boot1",
+    "score": 42,
+    "state": {
+      "snake": [
+        [
+          3,
+          3
+        ]
+      ],
+      "direction": "right"
+    },
+    "updatedAt": "2026-10-19T12:51:40.283Z",
+    "marker": "v1.5-m0-plugin-update-save-fixture"
+  },
+  "entries": [
+    "registry-cache.json",
+    "registry-cache.json.bak",
+    "saves",
+    "su2-boot1-update-marker.json"
+  ],
+  "markerPresent": true,
+  "savePresent": true
+}

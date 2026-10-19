@@ -1,0 +1,1374 @@
+{
+  "name": "no-csp",
+  "variant": "none",
+  "expectBlocked": false,
+  "description": "Control: same resource service without any CSP header (isolates CORS and shows why CSP is required).",
+  "instance": {
+    "instanceId": "<instance>",
+    "ttlMs": 600000
+  },
+  "entry": {
+    "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=none&launch=<redacted>",
+    "path": "/res/<instance>/<token>/probe-orbit/index.html",
+    "variant": "none",
+    "oneShotLaunchCredential": true
+  },
+  "iframeSessionAttached": true,
+  "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+  "probeScriptRan": true,
+  "dom": {
+    "origin": "http://127.0.0.1:58262",
+    "pathname": "/res/<id>/<id>/index.html",
+    "title": "Orbit Probe",
+    "hasBody": true,
+    "classicMarker": true,
+    "probePresent": true,
+    "probeDone": true,
+    "styleSheetCount": 1,
+    "bodyBackground": "rgb(18, 24, 38)",
+    "scriptCount": 2,
+    "moduleScriptCount": 1,
+    "images": [
+      {
+        "id": "ship",
+        "complete": true,
+        "naturalWidth": 64
+      },
+      {
+        "id": "ship-nocors",
+        "complete": true,
+        "naturalWidth": 64
+      }
+    ],
+    "hud": "probe none done"
+  },
+  "trustedClickDispatched": true,
+  "probe": {
+    "variant": "none",
+    "urlOrigin": "http://127.0.0.1:58262",
+    "documentOrigin": "null",
+    "opaqueOrigin": true,
+    "hrefPath": "/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=none&launch=<redacted>",
+    "classic": {
+      "marker": {
+        "ok": true,
+        "ranAt": 1792412742604,
+        "urlOrigin": "http://127.0.0.1:58262",
+        "documentOrigin": "null",
+        "path": "/res/<instance>/<token>/<file>",
+        "variant": "none"
+      }
+    },
+    "staticModule": {
+      "moduleId": "level-loader@probe-1"
+    },
+    "css": {
+      "sheets": 1,
+      "bodyBackground": "rgb(18, 24, 38)",
+      "hudColor": "rgb(255, 196, 92)",
+      "cssRulesAccess": "SecurityError: Failed to read the 'cssRules' property from 'CSSStyleSheet': Cannot access rules",
+      "applied": true
+    },
+    "image": {
+      "naturalWidth": 64,
+      "naturalHeight": 64,
+      "decoded": true,
+      "pixels": {
+        "readable": true,
+        "nonTransparent": 416
+      }
+    },
+    "imageNoCors": {
+      "naturalWidth": 64,
+      "canvasTainted": true,
+      "taintError": "SecurityError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The canvas has b"
+    },
+    "levels": {
+      "firstStatus": 200,
+      "secondStatus": 200,
+      "signature": "level-01:5:1200",
+      "goal": 1200,
+      "obstacleCount": 5,
+      "repeatedReadOk": true
+    },
+    "head": {
+      "status": 200,
+      "contentType": "text/css; charset=utf-8"
+    },
+    "dynamicImport": {
+      "powerupId": "powerup@probe-1",
+      "applied": true
+    },
+    "entryOneShot": {
+      "status": 410,
+      "expected": 410
+    },
+    "entryResourceRepeat": {
+      "status": 200,
+      "bytes": 1329,
+      "hasMainScript": true
+    },
+    "audio": {
+      "mediaStatus": 200,
+      "mediaReadyState": 4,
+      "canplay": {
+        "alreadyReady": true
+      },
+      "mediaDuration": 0.2,
+      "fetchedBytes": 3244,
+      "decodedDuration": 0.2,
+      "decodedChannels": 1
+    },
+    "audioGesture": {
+      "beforeGesture": {
+        "played": false,
+        "error": "NotAllowedError: play() failed because the user didn't interact with the document first. https://"
+      },
+      "afterGesture": {
+        "trusted": true,
+        "play": "ok",
+        "audioContextState": "running"
+      }
+    },
+    "hostApi": {
+      "readBlocked": true,
+      "error": "TypeError: Failed to fetch"
+    },
+    "hostApiWrite": {
+      "writeBlocked": true,
+      "error": "TypeError: Failed to fetch"
+    },
+    "hostApiImage": {
+      "loaded": false
+    },
+    "external": {
+      "readBlocked": true,
+      "error": "TypeError: Failed to fetch"
+    },
+    "evil": {
+      "readBlocked": true,
+      "error": "TypeError: Failed to fetch"
+    },
+    "evilImage": {
+      "loaded": true,
+      "naturalWidth": 1
+    },
+    "evilPost": {
+      "sent": true
+    },
+    "canvas": {
+      "width": 320,
+      "height": 180,
+      "hudText": "orbit probe ready"
+    },
+    "cspViolations": [],
+    "consoleErrors": [],
+    "steps": [
+      {
+        "name": "classicScript",
+        "ok": true,
+        "ms": 0,
+        "value": {
+          "marker": {
+            "ok": true,
+            "ranAt": 1792412742604,
+            "urlOrigin": "http://127.0.0.1:58262",
+            "documentOrigin": "null",
+            "path": "/res/<instance>/<token>/<file>",
+            "variant": "none"
+          }
+        }
+      },
+      {
+        "name": "staticEsmImport",
+        "ok": true,
+        "ms": 0,
+        "value": {
+          "moduleId": "level-loader@probe-1"
+        }
+      },
+      {
+        "name": "stylesheet",
+        "ok": true,
+        "ms": 0,
+        "value": {
+          "sheets": 1,
+          "bodyBackground": "rgb(18, 24, 38)",
+          "hudColor": "rgb(255, 196, 92)",
+          "cssRulesAccess": "SecurityError: Failed to read the 'cssRules' property from 'CSSStyleSheet': Cannot access rules",
+          "applied": true
+        }
+      },
+      {
+        "name": "imageCors",
+        "ok": true,
+        "ms": 1,
+        "value": {
+          "naturalWidth": 64,
+          "naturalHeight": 64,
+          "decoded": true,
+          "pixels": {
+            "readable": true,
+            "nonTransparent": 416
+          }
+        }
+      },
+      {
+        "name": "imageNoCors",
+        "ok": true,
+        "ms": 0,
+        "value": {
+          "naturalWidth": 64,
+          "canvasTainted": true,
+          "taintError": "SecurityError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The canvas has b"
+        }
+      },
+      {
+        "name": "jsonFetchTwice",
+        "ok": true,
+        "ms": 6,
+        "value": {
+          "firstStatus": 200,
+          "secondStatus": 200,
+          "signature": "level-01:5:1200",
+          "goal": 1200,
+          "obstacleCount": 5,
+          "repeatedReadOk": true
+        }
+      },
+      {
+        "name": "headRequest",
+        "ok": true,
+        "ms": 1,
+        "value": {
+          "status": 200,
+          "contentType": "text/css; charset=utf-8"
+        }
+      },
+      {
+        "name": "dynamicEsmImport",
+        "ok": true,
+        "ms": 3,
+        "value": {
+          "powerupId": "powerup@probe-1",
+          "applied": true
+        }
+      },
+      {
+        "name": "entryRefetchSameUrl",
+        "ok": true,
+        "ms": 1,
+        "value": {
+          "status": 410,
+          "expected": 410
+        }
+      },
+      {
+        "name": "entryFetchWithoutLaunchCredential",
+        "ok": true,
+        "ms": 0,
+        "value": {
+          "status": 200,
+          "bytes": 1329,
+          "hasMainScript": true
+        }
+      },
+      {
+        "name": "audio",
+        "ok": true,
+        "ms": 2,
+        "value": {
+          "mediaStatus": 200,
+          "mediaReadyState": 4,
+          "canplay": {
+            "alreadyReady": true
+          },
+          "mediaDuration": 0.2,
+          "fetchedBytes": 3244,
+          "decodedDuration": 0.2,
+          "decodedChannels": 1
+        }
+      },
+      {
+        "name": "audioGestureGate",
+        "ok": true,
+        "ms": 1,
+        "value": {
+          "beforeGesture": {
+            "played": false,
+            "error": "NotAllowedError: play() failed because the user didn't interact with the document first. https://"
+          },
+          "afterGesture": {
+            "trusted": true,
+            "play": "ok",
+            "audioContextState": "running"
+          }
+        }
+      },
+      {
+        "name": "hostApiReadAttempt",
+        "ok": true,
+        "ms": 1,
+        "value": {
+          "readBlocked": true,
+          "error": "TypeError: Failed to fetch"
+        }
+      },
+      {
+        "name": "hostApiWriteAttempt",
+        "ok": true,
+        "ms": 1,
+        "value": {
+          "writeBlocked": true,
+          "error": "TypeError: Failed to fetch"
+        }
+      },
+      {
+        "name": "hostApiNoCorsImageAttempt",
+        "ok": true,
+        "ms": 1,
+        "value": {
+          "loaded": false
+        }
+      },
+      {
+        "name": "externalNetworkAttempt",
+        "ok": true,
+        "ms": 345,
+        "value": {
+          "readBlocked": true,
+          "error": "TypeError: Failed to fetch"
+        }
+      },
+      {
+        "name": "thirdPartyFetchAttempt",
+        "ok": true,
+        "ms": 3,
+        "value": {
+          "readBlocked": true,
+          "error": "TypeError: Failed to fetch"
+        }
+      },
+      {
+        "name": "thirdPartyNoCorsImageAttempt",
+        "ok": true,
+        "ms": 7,
+        "value": {
+          "loaded": true,
+          "naturalWidth": 1
+        }
+      },
+      {
+        "name": "thirdPartyNoCorsPostAttempt",
+        "ok": true,
+        "ms": 2,
+        "value": {
+          "sent": true
+        }
+      },
+      {
+        "name": "canvasPaint",
+        "ok": true,
+        "ms": 1,
+        "value": {
+          "width": 320,
+          "height": 180,
+          "hudText": "orbit probe ready"
+        }
+      }
+    ],
+    "done": true,
+    "finishedAt": 1792412742985,
+    "elapsedMs": 376
+  },
+  "screenshot": "docs/verification/v1.5/raw/resources/screenshots/dh-02-no-csp-full.png",
+  "iframeScreenshot": "docs/verification/v1.5/raw/resources/screenshots/dh-02-no-csp-iframe.png",
+  "browser": {
+    "network": [
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.61",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/styles/game.css",
+        "resourceType": "Stylesheet",
+        "status": 200,
+        "mimeType": "text/css",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "text/css; charset=utf-8",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "no-cors",
+          "sec-fetch-dest": "style"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.62",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/scripts/bootstrap.js",
+        "resourceType": "Script",
+        "status": 200,
+        "mimeType": "text/javascript",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "text/javascript; charset=utf-8",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "no-cors",
+          "sec-fetch-dest": "script"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.63",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/scripts/main.js",
+        "resourceType": "Script",
+        "status": 200,
+        "mimeType": "text/javascript",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "text/javascript; charset=utf-8",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "script"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.64",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/assets/ship.png",
+        "resourceType": "Image",
+        "status": 200,
+        "mimeType": "image/png",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "image/png",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "image"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.71",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/assets/ship.png",
+        "resourceType": "Image",
+        "status": 200,
+        "mimeType": "image/png",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "image/png",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "no-cors",
+          "sec-fetch-dest": "image"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.73",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/assets/pickup.wav",
+        "resourceType": "Media",
+        "status": 200,
+        "mimeType": "audio/wav",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "audio/wav",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "no-cors",
+          "sec-fetch-dest": "audio"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.74",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/scripts/level-loader.mjs",
+        "resourceType": "Script",
+        "status": 200,
+        "mimeType": "text/javascript",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "text/javascript; charset=utf-8",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "script"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.75",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/levels/level-01.json",
+        "resourceType": "Fetch",
+        "status": 200,
+        "mimeType": "application/json",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "application/json; charset=utf-8",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.76",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/levels/level-01.json",
+        "resourceType": "Fetch",
+        "status": 200,
+        "mimeType": "application/json",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "application/json; charset=utf-8",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.77",
+        "method": "HEAD",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/styles/game.css",
+        "resourceType": "Fetch",
+        "status": 200,
+        "mimeType": "text/css",
+        "failed": true,
+        "errorText": "net::ERR_ABORTED",
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "text/css; charset=utf-8",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.78",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/scripts/powerup.mjs",
+        "resourceType": "Script",
+        "status": 200,
+        "mimeType": "text/javascript",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "text/javascript; charset=utf-8",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "script"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.79",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=none&launch=<redacted>",
+        "resourceType": "Fetch",
+        "status": 410,
+        "mimeType": "text/html",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "text/html; charset=utf-8",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.80",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=none",
+        "resourceType": "Fetch",
+        "status": 200,
+        "mimeType": "text/html",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "text/html; charset=utf-8",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.81",
+        "method": "GET",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/assets/pickup.wav",
+        "resourceType": "Fetch",
+        "status": 200,
+        "mimeType": "audio/wav",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "audio/wav",
+          "access-control-allow-origin": "*",
+          "x-content-type-options": "nosniff",
+          "cache-control": "no-store",
+          "referrer-policy": "no-referrer"
+        },
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.82",
+        "method": "GET",
+        "url": "http://127.0.0.1:58261/api/game-market/health",
+        "resourceType": "Fetch",
+        "status": null,
+        "mimeType": null,
+        "failed": true,
+        "errorText": "net::ERR_FAILED",
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {},
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.83",
+        "method": "POST",
+        "url": "http://127.0.0.1:58261/api/game-market/preferences",
+        "resourceType": "Fetch",
+        "status": null,
+        "mimeType": null,
+        "failed": true,
+        "errorText": "net::ERR_FAILED",
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {},
+        "requestHeaders": {
+          "referer": ""
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "A35B154612A9C2ABFEE00B72BA7FA5FB",
+        "method": "OPTIONS",
+        "url": "http://127.0.0.1:58261/api/game-market/preferences",
+        "resourceType": "Other",
+        "status": 403,
+        "mimeType": "",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {},
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.84",
+        "method": "GET",
+        "url": "http://127.0.0.1:58261/api/game-market/health",
+        "resourceType": "Image",
+        "status": 403,
+        "mimeType": "text/plain",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {},
+        "requestHeaders": {
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "no-cors",
+          "sec-fetch-dest": "image"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.85",
+        "method": "GET",
+        "url": "https://example.com/",
+        "resourceType": "Fetch",
+        "status": null,
+        "mimeType": null,
+        "failed": true,
+        "errorText": "net::ERR_FAILED",
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {},
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.86",
+        "method": "GET",
+        "url": "http://127.0.0.1:58263/evil.json",
+        "resourceType": "Fetch",
+        "status": null,
+        "mimeType": null,
+        "failed": true,
+        "errorText": "net::ERR_FAILED",
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {},
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.87",
+        "method": "GET",
+        "url": "http://127.0.0.1:58263/no-cors.png?probe=image",
+        "resourceType": "Image",
+        "status": 200,
+        "mimeType": "image/png",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "image/png",
+          "cache-control": "no-store"
+        },
+        "requestHeaders": {
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "no-cors",
+          "sec-fetch-dest": "image"
+        }
+      },
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "requestId": "91461.88",
+        "method": "POST",
+        "url": "http://127.0.0.1:58263/sink",
+        "resourceType": "Fetch",
+        "status": 200,
+        "mimeType": "text/plain",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "fromDiskCache": false,
+        "responseHeaders": {
+          "content-type": "text/plain; charset=utf-8"
+        },
+        "requestHeaders": {
+          "origin": "null",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "no-cors",
+          "sec-fetch-dest": "empty"
+        }
+      }
+    ],
+    "logEntries": [
+      {
+        "level": "error",
+        "source": "network",
+        "text": "Failed to load resource: the server responded with a status of 410 (Gone)",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=none&launch=<redacted>"
+      },
+      {
+        "level": "error",
+        "source": "javascript",
+        "text": "Access to fetch at 'http://127.0.0.1:58261/api/game-market/health' from origin 'null' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=none&launch=<redacted>"
+      },
+      {
+        "level": "error",
+        "source": "network",
+        "text": "Failed to load resource: net::ERR_FAILED",
+        "url": "http://127.0.0.1:58261/api/game-market/health"
+      },
+      {
+        "level": "error",
+        "source": "javascript",
+        "text": "Access to fetch at 'http://127.0.0.1:58261/api/game-market/preferences' from origin 'null' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=none&launch=<redacted>"
+      },
+      {
+        "level": "error",
+        "source": "network",
+        "text": "Failed to load resource: net::ERR_FAILED",
+        "url": "http://127.0.0.1:58261/api/game-market/preferences"
+      },
+      {
+        "level": "error",
+        "source": "network",
+        "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+        "url": "http://127.0.0.1:58261/api/game-market/health"
+      },
+      {
+        "level": "error",
+        "source": "javascript",
+        "text": "Access to fetch at 'https://example.com/' from origin 'null' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=none&launch=<redacted>"
+      },
+      {
+        "level": "error",
+        "source": "network",
+        "text": "Failed to load resource: net::ERR_FAILED",
+        "url": "https://example.com/"
+      },
+      {
+        "level": "error",
+        "source": "javascript",
+        "text": "Access to fetch at 'http://127.0.0.1:58263/evil.json' from origin 'null' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+        "url": "http://127.0.0.1:58262/res/<instance>/<token>/index.html?host=http%3A%2F%2F127.0.0.1%3A58261&evil=http%3A%2F%2F127.0.0.1%3A58263&variant=none&launch=<redacted>"
+      },
+      {
+        "level": "error",
+        "source": "network",
+        "text": "Failed to load resource: net::ERR_FAILED",
+        "url": "http://127.0.0.1:58263/evil.json"
+      }
+    ],
+    "consoleEntries": [
+      {
+        "sessionId": "8FFEAA584CA7B86F39C2CC11600824F9",
+        "at": 1792412742988,
+        "type": "log",
+        "text": "ASSETS_PROBE_DONE none "
+      }
+    ],
+    "exceptions": []
+  },
+  "httpRequests": [
+    {
+      "seq": 35,
+      "route": "entry-credential",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/index.html",
+      "query": "",
+      "status": 200,
+      "rel": null,
+      "bytes": null,
+      "origin": null,
+      "referer": null,
+      "secFetchSite": null,
+      "launchConsumed": true,
+      "responseHeaders": null,
+      "event": "launch-credential-consumed"
+    },
+    {
+      "seq": 36,
+      "route": "entry",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/index.html",
+      "query": "?host=http://127.0.0.1:58261&evil=http://127.0.0.1:58263&variant=none&launch=<redacted>",
+      "status": 200,
+      "rel": "index.html",
+      "bytes": 1331,
+      "origin": null,
+      "referer": null,
+      "secFetchSite": "same-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "text/html; charset=utf-8",
+        "x-probe-variant": "none",
+        "content-length": "1331"
+      },
+      "event": null
+    },
+    {
+      "seq": 37,
+      "route": "resource",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/styles/game.css",
+      "query": "",
+      "status": 200,
+      "rel": "styles/game.css",
+      "bytes": 1373,
+      "origin": null,
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "text/css; charset=utf-8",
+        "x-probe-variant": "candidate",
+        "content-length": "1373"
+      },
+      "event": null
+    },
+    {
+      "seq": 38,
+      "route": "resource",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/scripts/bootstrap.js",
+      "query": "",
+      "status": 200,
+      "rel": "scripts/bootstrap.js",
+      "bytes": 617,
+      "origin": null,
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "text/javascript; charset=utf-8",
+        "x-probe-variant": "candidate",
+        "content-length": "617"
+      },
+      "event": null
+    },
+    {
+      "seq": 39,
+      "route": "resource",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/scripts/main.js",
+      "query": "",
+      "status": 200,
+      "rel": "scripts/main.js",
+      "bytes": 17292,
+      "origin": "null",
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "text/javascript; charset=utf-8",
+        "x-probe-variant": "candidate",
+        "content-length": "17292"
+      },
+      "event": null
+    },
+    {
+      "seq": 40,
+      "route": "resource",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/assets/ship.png",
+      "query": "",
+      "status": 200,
+      "rel": "assets/ship.png",
+      "bytes": 318,
+      "origin": "null",
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "image/png",
+        "x-probe-variant": "candidate",
+        "content-length": "318"
+      },
+      "event": null
+    },
+    {
+      "seq": 41,
+      "route": "resource",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/assets/ship.png",
+      "query": "",
+      "status": 200,
+      "rel": "assets/ship.png",
+      "bytes": 318,
+      "origin": null,
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "image/png",
+        "x-probe-variant": "candidate",
+        "content-length": "318"
+      },
+      "event": null
+    },
+    {
+      "seq": 42,
+      "route": "resource",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/assets/pickup.wav",
+      "query": "",
+      "status": 200,
+      "rel": "assets/pickup.wav",
+      "bytes": 3244,
+      "origin": null,
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "audio/wav",
+        "x-probe-variant": "candidate",
+        "content-length": "3244"
+      },
+      "event": null
+    },
+    {
+      "seq": 43,
+      "route": "resource",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/scripts/level-loader.mjs",
+      "query": "",
+      "status": 200,
+      "rel": "scripts/level-loader.mjs",
+      "bytes": 662,
+      "origin": "null",
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "text/javascript; charset=utf-8",
+        "x-probe-variant": "candidate",
+        "content-length": "662"
+      },
+      "event": null
+    },
+    {
+      "seq": 44,
+      "route": "resource",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/levels/level-01.json",
+      "query": "",
+      "status": 200,
+      "rel": "levels/level-01.json",
+      "bytes": 435,
+      "origin": "null",
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "application/json; charset=utf-8",
+        "x-probe-variant": "candidate",
+        "content-length": "435"
+      },
+      "event": null
+    },
+    {
+      "seq": 45,
+      "route": "resource",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/levels/level-01.json",
+      "query": "",
+      "status": 200,
+      "rel": "levels/level-01.json",
+      "bytes": 435,
+      "origin": "null",
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "application/json; charset=utf-8",
+        "x-probe-variant": "candidate",
+        "content-length": "435"
+      },
+      "event": null
+    },
+    {
+      "seq": 46,
+      "route": "resource",
+      "method": "HEAD",
+      "path": "/res/<instance>/<token>/styles/game.css",
+      "query": "",
+      "status": 200,
+      "rel": "styles/game.css",
+      "bytes": 1373,
+      "origin": "null",
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "text/css; charset=utf-8",
+        "x-probe-variant": "candidate",
+        "content-length": "1373"
+      },
+      "event": null
+    },
+    {
+      "seq": 47,
+      "route": "resource",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/scripts/powerup.mjs",
+      "query": "",
+      "status": 200,
+      "rel": "scripts/powerup.mjs",
+      "bytes": 297,
+      "origin": "null",
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "text/javascript; charset=utf-8",
+        "x-probe-variant": "candidate",
+        "content-length": "297"
+      },
+      "event": null
+    },
+    {
+      "seq": 48,
+      "route": "resource",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/index.html",
+      "query": "?host=http://127.0.0.1:58261&evil=http://127.0.0.1:58263&variant=none&launch=<redacted>",
+      "status": 410,
+      "rel": null,
+      "bytes": null,
+      "origin": "null",
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "text/html; charset=utf-8",
+        "x-probe-variant": "none",
+        "content-length": "(streamed)"
+      },
+      "event": null
+    },
+    {
+      "seq": 49,
+      "route": "entry",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/index.html",
+      "query": "?host=http://127.0.0.1:58261&evil=http://127.0.0.1:58263&variant=none",
+      "status": 200,
+      "rel": "index.html",
+      "bytes": 1331,
+      "origin": "null",
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "text/html; charset=utf-8",
+        "x-probe-variant": "none",
+        "content-length": "1331"
+      },
+      "event": null
+    },
+    {
+      "seq": 50,
+      "route": "resource",
+      "method": "GET",
+      "path": "/res/<instance>/<token>/assets/pickup.wav",
+      "query": "",
+      "status": 200,
+      "rel": "assets/pickup.wav",
+      "bytes": 3244,
+      "origin": "null",
+      "referer": null,
+      "secFetchSite": "cross-site",
+      "launchConsumed": true,
+      "responseHeaders": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+        "referrer-policy": "no-referrer",
+        "content-type": "audio/wav",
+        "x-probe-variant": "candidate",
+        "content-length": "3244"
+      },
+      "event": null
+    }
+  ]
+}

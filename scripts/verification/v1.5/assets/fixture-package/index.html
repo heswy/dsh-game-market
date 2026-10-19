@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Orbit Probe</title>
+    <!-- Multi-file probe package: every asset is a separate HTTP resource. -->
+    <link rel="stylesheet" href="styles/game.css" />
+    <!-- Classic script: no CORS required to execute, still cross-origin to the opaque document. -->
+    <script src="scripts/bootstrap.js"></script>
+    <!-- ESM entry: needs CORS + a matching script-src source expression. -->
+    <script type="module" src="scripts/main.js"></script>
+  </head>
+  <body>
+    <main id="game">
+      <h1 id="title">Orbit Probe</h1>
+      <canvas id="board" width="320" height="180" aria-label="probe board"></canvas>
+      <div id="hud">booting…</div>
+      <!-- crossorigin=anonymous is what makes canvas pixel readback legal for a CORS resource. -->
+      <img id="ship" src="assets/ship.png" crossorigin="anonymous" alt="ship" width="64" height="64" />
+      <!-- Deliberate no-cors image: loads without CORS but taints the canvas. -->
+      <img id="ship-nocors" src="assets/ship.png" alt="" width="64" height="64" />
+      <audio id="pickup" src="assets/pickup.wav" preload="auto"></audio>
+      <button id="unlock" type="button">unlock audio</button>
+    </main>
+  </body>
+</html>

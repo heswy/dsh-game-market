@@ -1,0 +1,38 @@
+{
+  "probeVersion": 1,
+  "bootTag": "su2-boot1",
+  "commandIndex": 18,
+  "command": {
+    "id": "su2-remove",
+    "action": "remove-bundle",
+    "name": "dsh-game-market"
+  },
+  "startedAt": "2026-10-19T12:52:07.802Z",
+  "finishedAt": "2026-10-19T12:52:08.533Z",
+  "ok": true,
+  "action": "remove-bundle",
+  "name": "dsh-game-market",
+  "before": {
+    "selfFiberUid": 48,
+    "at": "2026-10-19T12:52:07.802Z"
+  },
+  "result": {
+    "stage": "remove",
+    "target": "dsh-game-market",
+    "changed": true,
+    "application": "applied",
+    "warnings": [],
+    "packageResult": {
+      "exitCode": 0,
+      "output": "\ndependencies:\n- dsh-game-market github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2\n\nAlready up to date\nDone in 263ms using pnpm v10.28.2\n",
+      "truncated": false,
+      "logPath": "/tmp/dsh-v15/home-su2-hmr/profiles/web/.plugin-manager/logs/operation-6jdLTs/pnpm.log"
+    }
+  },
+  "elapsedMs": 731,
+  "after": {
+    "selfFiberUid": 48,
+    "at": "2026-10-19T12:52:08.533Z",
+    "alive": true
+  }
+}

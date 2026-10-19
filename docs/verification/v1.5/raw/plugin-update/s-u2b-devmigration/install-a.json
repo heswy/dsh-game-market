@@ -1,0 +1,55 @@
+{
+  "probeVersion": 1,
+  "bootTag": "su2b-boot1",
+  "commandIndex": 2,
+  "command": {
+    "id": "su2b-install-a",
+    "action": "install",
+    "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+    "requestId": "su2b-a-1792414300881",
+    "saveExact": true
+  },
+  "startedAt": "2026-10-19T12:51:40.901Z",
+  "finishedAt": "2026-10-19T12:51:45.182Z",
+  "ok": true,
+  "action": "install",
+  "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+  "options": {
+    "enabled": true,
+    "saveExact": true,
+    "requestId": "su2b-a-1792414300881"
+  },
+  "result": {
+    "stage": "enable",
+    "target": "dsh-game-market",
+    "enabled": true,
+    "changed": true,
+    "application": "applied",
+    "registries": [
+      null
+    ],
+    "packageResult": {
+      "exitCode": 0,
+      "output": "Progress: resolved 0, reused 1, downloaded 0, added 0\n\ndependencies:\n+ dsh-game-market github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f\n\nPackages: +1\n+\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\nDone in 2.4s using pnpm v10.28.2\n",
+      "truncated": false,
+      "logPath": "/tmp/dsh-v15/home-su2b-devrow/profiles/web/.plugin-manager/logs/operation-NSk9aD/pnpm.log"
+    },
+    "bundle": "dsh-game-market",
+    "version": "1.1.0",
+    "warnings": []
+  },
+  "waitForInstallAfterSettle": null,
+  "elapsedMs": 4281,
+  "resultKeys": [
+    "application",
+    "bundle",
+    "changed",
+    "enabled",
+    "packageResult",
+    "registries",
+    "stage",
+    "target",
+    "version",
+    "warnings"
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "probeVersion": 1,
+  "bootTag": "su2-boot1",
+  "commandIndex": 5,
+  "command": {
+    "id": "su2-install-b",
+    "action": "install",
+    "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+    "requestId": "su2-b-req",
+    "saveExact": true
+  },
+  "startedAt": "2026-10-19T12:51:46.115Z",
+  "finishedAt": "2026-10-19T12:51:49.755Z",
+  "ok": true,
+  "action": "install",
+  "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+  "options": {
+    "enabled": true,
+    "saveExact": true,
+    "requestId": "su2-b-req"
+  },
+  "result": {
+    "stage": "enable",
+    "target": "dsh-game-market",
+    "enabled": true,
+    "changed": true,
+    "application": "applied",
+    "registries": [
+      null
+    ],
+    "packageResult": {
+      "exitCode": 0,
+      "output": "Progress: resolved 0, reused 1, downloaded 0, added 0\n\nPackages: +1\n+\nProgress: resolved 2, reused 2, downloaded 0, added 1, done\nDone in 1.8s using pnpm v10.28.2\n",
+      "truncated": false,
+      "logPath": "/tmp/dsh-v15/home-su2-hmr/profiles/web/.plugin-manager/logs/operation-mCckjn/pnpm.log"
+    },
+    "bundle": "dsh-game-market",
+    "version": "1.2.0",
+    "warnings": []
+  },
+  "waitForInstallAfterSettle": null,
+  "elapsedMs": 3641,
+  "resultKeys": [
+    "application",
+    "bundle",
+    "changed",
+    "enabled",
+    "packageResult",
+    "registries",
+    "stage",
+    "target",
+    "version",
+    "warnings"
+  ]
+}
