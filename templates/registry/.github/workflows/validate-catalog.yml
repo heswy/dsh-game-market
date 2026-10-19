@@ -1,0 +1,53 @@
+name: validate-catalog
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout content repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Read toolchain lock
+        id: toolchain
+        run: |
+          node -e "const l=require('./toolchain.lock.json'); console.log('repo='+l.platformRepo); console.log('commit='+l.commit);" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout trusted platform toolchain
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: __PLATFORM_REPO__
+          ref: ${{ steps.toolchain.outputs.commit }}
+          path: .toolchain
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Checkout trusted base revision
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: .base
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Validate catalog, index and history (read-only)
+        run: |
+          if [ -d .base ]; then
+            node .toolchain/scripts/registry/validate-catalog.mjs --registry-dir . --base-dir .base
+          else
+            node .toolchain/scripts/registry/validate-catalog.mjs --registry-dir .
+          fi
+
+      - name: Verify published package/media bytes (read-only HTTPS)
+        run: node .toolchain/scripts/registry/validate-assets.mjs --registry-dir .

@@ -1,0 +1,41 @@
+{
+  "draft": {
+    "ok": true,
+    "errors": [],
+    "pending": [
+      "author.login",
+      "author.githubUserId",
+      "author.sourceRepo",
+      "package.url",
+      "package.sha256Url",
+      "media.cover.url",
+      "media.screenshots[0].url",
+      "media.screenshots[1].url",
+      "media.screenshots[2].url",
+      "media.screenshots[3].url"
+    ],
+    "pendingNotes": [
+      "public GitHub identity evidence and ownership of the local commit",
+      "public release/hosting evidence",
+      "portable dsh-game.config.json CLI path for a public source repository",
+      "maintainer review and catalog approval (not author-side; not requested here)"
+    ]
+  },
+  "final": {
+    "ok": false,
+    "errorCount": 11,
+    "errors": [
+      "E_SUBMISSION_AUTHOR:author.login",
+      "E_SUBMISSION_AUTHOR:author.githubUserId",
+      "E_SUBMISSION_URL:author.sourceRepo",
+      "E_SUBMISSION_PACKAGE:package.url",
+      "E_SUBMISSION_PACKAGE:package.sha256Url",
+      "E_SUBMISSION_MEDIA:media.cover.url",
+      "E_SUBMISSION_MEDIA:media.screenshots[0].url",
+      "E_SUBMISSION_MEDIA:media.screenshots[1].url",
+      "E_SUBMISSION_MEDIA:media.screenshots[2].url",
+      "E_SUBMISSION_MEDIA:media.screenshots[3].url",
+      "E_SUBMISSION_PENDING:pending"
+    ]
+  }
+}

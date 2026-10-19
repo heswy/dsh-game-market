@@ -1,0 +1,199 @@
+{
+  "steps": [
+    {
+      "step": "ready-en",
+      "hint": "Space start · ← → drift · P pause",
+      "theme": "dark",
+      "innerWidth": 958,
+      "innerHeight": 538,
+      "canvas": {
+        "width": 958,
+        "height": 538
+      },
+      "canvasBacking": {
+        "width": 958,
+        "height": 538
+      },
+      "dpr": 1
+    },
+    {
+      "step": "playing-after-pointer",
+      "hint": "← → or A D drift · P pause · gather stars, dodge the emberfall",
+      "theme": "dark",
+      "innerWidth": 958,
+      "innerHeight": 538,
+      "canvas": {
+        "width": 958,
+        "height": 538
+      },
+      "canvasBacking": {
+        "width": 958,
+        "height": 538
+      },
+      "dpr": 1
+    },
+    {
+      "step": "after-2.6s-autosave",
+      "save": {
+        "saveVersion": 1,
+        "score": 0,
+        "lives": 3,
+        "elapsed": 2.5123000000007423,
+        "timeLeft": 117.48769999999925,
+        "streak": 1,
+        "bestStreak": 1,
+        "starsCollected": 0,
+        "shipX": 0.5,
+        "shipVx": 0,
+        "asteroids": [
+          {
+            "id": 2,
+            "x": 0.23109149508643895,
+            "y": 0.1377612589419279,
+            "vy": 0.18127506183290978,
+            "r": 15.307266956322206,
+            "rot": 3.702605514439821,
+            "spin": 0.601450755726546,
+            "seed": 3434484764
+          },
+          {
+            "id": 4,
+            "x": 0.9195868829265237,
+            "y": -0.052611866199931294,
+            "vy": 0.14006917057813903,
+            "r": 19.43171406041005,
+            "rot": 1.877390038256133,
+            "spin": -0.5049201218644157,
+            "seed": 1382431758
+          }
+        ],
+        "stars": [
+          {
+            "id": 1,
+            "x": 0.28668099462985996,
+            "y": 0.07187722324990536,
+            "vy": 0.0954658937375201,
+            "r": 9.221478401566856,
+            "phase": 5.873641383574155
+          },
+          {
+            "id": 3,
+            "x": 0.5546971957944333,
+            "y": 0.029028436320048635,
+            "vy": 0.11057969891527325,
+            "r": 9.376956832828,
+            "phase": 5.738205879010335
+          },
+          {
+            "id": 5,
+            "x": 0.8518882689205929,
+            "y": -0.08558316422773252,
+            "vy": 0.10383911920337907,
+            "r": 6.709336343337782,
+            "phase": 1.6406360095665853
+          }
+        ],
+        "invuln": 0,
+        "spawnAsteroidIn": 0.44191947177702023,
+        "spawnStarIn": 0.7360398103307748,
+        "seed": 2582736599,
+        "nextId": 6,
+        "outcome": "",
+        "gameOver": false
+      },
+      "revision": 1
+    },
+    {
+      "step": "keyboard-move",
+      "beforeMove": 0.5,
+      "afterMove": null,
+      "moved": false
+    },
+    {
+      "step": "pause-freeze",
+      "pausedA": 114.90459999999925,
+      "pausedB": 114.90459999999925,
+      "frozen": true,
+      "hint": "P or Resume to continue"
+    },
+    {
+      "step": "resume-advances",
+      "pausedB": 114.90459999999925,
+      "resumed": 112.20480599999921,
+      "advanced": true
+    },
+    {
+      "step": "continue-offered",
+      "savedTimeLeft": 111.90480599999921,
+      "hint": "Space continue · N new drift · P pause",
+      "saveStillPresent": true
+    },
+    {
+      "step": "continue-via-space",
+      "hint": "← → or A D drift · P pause · gather stars, dodge the emberfall",
+      "theme": "dark",
+      "innerWidth": 958,
+      "innerHeight": 538,
+      "canvas": {
+        "width": 958,
+        "height": 538
+      },
+      "canvasBacking": {
+        "width": 958,
+        "height": 538
+      },
+      "dpr": 1
+    },
+    {
+      "step": "continue-progress",
+      "timeLeft": 109.38829599999917,
+      "advanced": true
+    },
+    {
+      "step": "light-theme",
+      "hint": "← → or A D drift · P pause · gather stars, dodge the emberfall",
+      "theme": "light",
+      "innerWidth": 958,
+      "innerHeight": 538,
+      "canvas": {
+        "width": 958,
+        "height": 538
+      },
+      "canvasBacking": {
+        "width": 958,
+        "height": 538
+      },
+      "dpr": 1
+    },
+    {
+      "step": "narrow-375",
+      "hint": "← → or A D drift · P pause · gather stars, dodge the emberfall",
+      "theme": "light",
+      "innerWidth": 373,
+      "innerHeight": 665,
+      "canvas": {
+        "width": 373,
+        "height": 665
+      },
+      "canvasBacking": {
+        "width": 373,
+        "height": 665
+      },
+      "dpr": 1
+    },
+    {
+      "step": "network",
+      "unique": [
+        "http://127.0.0.1:4321/",
+        "http://127.0.0.1:4321/game?instance=12ba3e68890603c6bb0590fc13c15d40&nonce=5423ef162d61d4602a58feaea2f00037",
+        "http://127.0.0.1:4321/favicon.ico",
+        "http://127.0.0.1:4321/game?instance=7a89e46952092c088a0e741142a05d46&nonce=5ee74558831b3e860c620eabfdc9105d",
+        "http://127.0.0.1:4321/game?instance=9ca0c15f973d34d566900d93f7579b2a&nonce=34cafea59dca4010c20f4e30e61c2f99"
+      ],
+      "external": []
+    },
+    {
+      "step": "console-errors"
+    }
+  ]
+}

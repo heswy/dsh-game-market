@@ -837,7 +837,17 @@
 
   const AGENT_ACK_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
-  return { BUNDLE_ID, CLIENT_MODULE_ID, MAIN_PANEL_KEY, API_BASE, LOG_PREFIX, RUNTIME_VERSION, SDK_VERSION, PROTOCOL_VERSION, LEGACY_V0_VERSION, LIMITS, TIMING, AGENT_STATES, AGENT_SOURCES, AGENT_PRIORITY, AGENT_LABELS_ZH, AGENT_LABEL_KEYS, GAME_ID_PATTERN, PLAY_SESSION_ID_PATTERN, INSTANCE_ID_PATTERN, NONCE_PATTERN, DSH_SESSION_ID_PATTERN, LAUNCH_MODES, PAUSE_REASONS, SAVE_REASONS, SESSION_OUTCOMES, BUILTIN_GAMES, AGENT_ACK_MAX_AGE_MS };
+  /**
+   * Official community Registry index (V1.2 community publishing MVP).
+   *
+   * This is the single default URL used by the Host when no explicit Registry is
+   * configured. It is intentionally a constant (not scattered through call
+   * sites); until the content repository is created and publicly verified, the
+   * Host MUST fall back to the bundled `registry/games.json` seed on failure.
+   */
+  const DEFAULT_OFFICIAL_REGISTRY_URL = 'https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json';
+
+  return { BUNDLE_ID, CLIENT_MODULE_ID, MAIN_PANEL_KEY, API_BASE, LOG_PREFIX, RUNTIME_VERSION, SDK_VERSION, PROTOCOL_VERSION, LEGACY_V0_VERSION, LIMITS, TIMING, AGENT_STATES, AGENT_SOURCES, AGENT_PRIORITY, AGENT_LABELS_ZH, AGENT_LABEL_KEYS, GAME_ID_PATTERN, PLAY_SESSION_ID_PATTERN, INSTANCE_ID_PATTERN, NONCE_PATTERN, DSH_SESSION_ID_PATTERN, LAUNCH_MODES, PAUSE_REASONS, SAVE_REASONS, SESSION_OUTCOMES, BUILTIN_GAMES, AGENT_ACK_MAX_AGE_MS, DEFAULT_OFFICIAL_REGISTRY_URL };
   })();
 
   // module: packages/shared/src/errors.js

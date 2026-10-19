@@ -7,7 +7,7 @@ import { isBuiltin, screenshotsFor } from '../catalog.js';
 import { acknowledgeCompleted, beginGame, cancelInstall, closeDetail, installLocalGame, launchModeFor, loadCatalog, loadDetail, openDetail, pushToast, refreshRegistryAction, startInstall, uninstallGame, } from '../actions.js';
 import { getApiClient, getMarketApi } from '../api.js';
 import { makeT, detectLocale } from '../locale.js';
-import { BackIcon, MoreIcon, UploadIcon } from '../icons.js';
+import { BackIcon, MoreIcon, RefreshIcon, UploadIcon } from '../icons.js';
 import { StyleTag } from '../styles.js';
 import { backToConversation, openGameMarket } from '../navigation.js';
 import { useActivePanel, useClock, useSessionBinding, useStoreState } from '../hooks.js';
@@ -627,6 +627,22 @@ export function GameMarketPanel(props) {
               'aria-label': t('a11y.offline'),
               role: 'img',
             })
+          : null,
+        state.page === PAGES.MARKET
+          ? h(
+              'button',
+              {
+                key: 'refresh',
+                type: 'button',
+                className: 'dgm-icon-btn dgm-refresh',
+                onClick: function refresh() {
+                  void refreshRegistryAction({ store: store, api: api });
+                },
+                'aria-label': t('market.refresh'),
+                title: t('market.refresh'),
+              },
+              h(RefreshIcon, { size: 14 })
+            )
           : null,
         state.page === PAGES.MARKET
           ? h(

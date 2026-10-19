@@ -11,6 +11,7 @@ import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { DEFAULT_OFFICIAL_REGISTRY_URL } from '../../shared/src/constants.js';
 import { DEFAULT_ALLOWED_HOSTS, REGISTRY_FILE } from '../../shared/src/registry.js';
 
 const BUNDLE_ROOT_URL = new URL('../../../', import.meta.url);
@@ -137,9 +138,10 @@ export function resolveRegistrySource(rawSource, env, issues) {
   if (envValue.length > 0) {
     const remote = /^https?:\/\//i.test(envValue) ? toRemoteSource(envValue, { allowHttp: true }) : null;
     const local = remote ? null : toFileSource(envValue);
-    if (remote) return { source: remote, origin: 'env', allowLocalFile, issues };
-    if (local) return { source: local, origin: 'env', allowLocalFile, issues };
+    if (remote) return { mode: 'explicit', source: remote, origin: 'env', allowLocalFile, issues };
+    if (local) return { mode: 'explicit', source: local, origin: 'env', allowLocalFile, issues };
     issues.push('registry.url:invalid');
+    return { mode: 'explicit', source: null, origin: 'env', allowLocalFile, issues };
   }
 
   const configured =
@@ -152,22 +154,28 @@ export function resolveRegistrySource(rawSource, env, issues) {
     if (/^https?:\/\//i.test(configured)) {
       // A configured remote Registry must be https; `http:` is never trusted.
       const remote = toRemoteSource(configured, { allowHttp: false });
-      if (remote) return { source: remote, origin: 'config', allowLocalFile, issues };
+      if (remote) return { mode: 'explicit', source: remote, origin: 'config', allowLocalFile, issues };
       issues.push('registry.url:invalid');
+      return { mode: 'explicit', source: null, origin: 'config', allowLocalFile, issues };
     } else {
       if (!allowLocalFile) {
         issues.push('registry.allowLocalFile:required');
+        return { mode: 'explicit', source: null, origin: 'config', allowLocalFile, issues };
       } else {
         const local = toFileSource(configured);
-        if (local) return { source: local, origin: 'config', allowLocalFile, issues };
+        if (local) return { mode: 'explicit', source: local, origin: 'config', allowLocalFile, issues };
         issues.push('registry.url:invalid');
+        return { mode: 'explicit', source: null, origin: 'config', allowLocalFile, issues };
       }
     }
   }
 
   return {
-    source: { kind: 'file', path: defaultRegistryPath() },
-    origin: 'default',
+    mode: 'layered',
+    source: null,
+    origin: 'official-default',
+    officialUrl: DEFAULT_OFFICIAL_REGISTRY_URL,
+    seedSource: { kind: 'file', path: defaultRegistryPath() },
     allowLocalFile,
     issues,
   };
@@ -264,9 +272,12 @@ export function normaliseConfig(raw, env = process.env) {
     builtinGamesRoot: normaliseConfiguredRoot(source.builtinGamesRoot) || defaultBuiltinGamesRoot(),
     devGameRoots: normaliseDevGameRoots(source.devGameRoots, devMode, issues),
     registry: {
+      mode: resolved.mode || 'explicit',
       source: registrySource,
+      seedSource: resolved.seedSource || null,
+      officialUrl: resolved.officialUrl || null,
       origin: resolved.origin,
-      sourceUrl: sourceUrlOf(registrySource),
+      sourceUrl: registrySource ? sourceUrlOf(registrySource) : resolved.officialUrl || null,
       allowLocalFile: resolved.allowLocalFile,
       allowedHosts,
       defaultAllowedHosts: [...DEFAULT_ALLOWED_HOSTS],

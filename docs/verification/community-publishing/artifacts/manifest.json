@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "name": "dsh-game-developer",
+  "version": "1.0.0",
+  "skillPath": "skills/dsh-game-developer",
+  "platform": {
+    "name": "dsh-game-market",
+    "version": "1.1.0",
+    "compatibility": ">=1.1.0"
+  },
+  "files": [
+    {
+      "path": "dsh-game-developer-1.0.0/references/package-and-sdk.md",
+      "sha256": "1ed9a5179645c80a4b5eb55e905367c7420d8374068098174e4c7a97f6f2dfd5",
+      "size": 1924
+    },
+    {
+      "path": "dsh-game-developer-1.0.0/references/presentation.md",
+      "sha256": "37dbb0e0df713e1791b95d47a80bc69d7ea78819068f5478b3d559789f637992",
+      "size": 1219
+    },
+    {
+      "path": "dsh-game-developer-1.0.0/references/submission.md",
+      "sha256": "43e825371587817af9139d334ae0f69fbdf0445b8e94404f973f021d8ca306f8",
+      "size": 2048
+    },
+    {
+      "path": "dsh-game-developer-1.0.0/references/verification.md",
+      "sha256": "9afd41391667ea7e79045897ee22d7f8117936d7e62e1d0b52c2ba76f0a1b22c",
+      "size": 1815
+    },
+    {
+      "path": "dsh-game-developer-1.0.0/SKILL.md",
+      "sha256": "69cb24c17dd0d0bc5d6a252a7a414ae719095182d6df07eb2239294cae9022db",
+      "size": 6185
+    },
+    {
+      "path": "dsh-game-developer-1.0.0/VERSION",
+      "sha256": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+      "size": 6
+    }
+  ],
+  "archive": {
+    "file": "dsh-game-developer-1.0.0.tar.gz",
+    "size": 5948,
+    "sha256": "a9cef3deb4336ede2184bdac220715e77eca95ea80c010a7ab115a12064d89a5"
+  }
+}

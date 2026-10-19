@@ -1,0 +1,41 @@
+STEP simulator-before-update {"health":{"ok":true,"simulator":true,"build":true,"game":{"id":"c21-invalid","version":"1.0.0"}},"servedManifestVersion":"1.0.0","servedHasBadge":false,"servedBytes":108202}
+STEP ready-1.0.0 {"locale":"en-US","hud":{"hint":"Catch the falling stars before they hit the ground","badge":null,"hasBadge":false,"innerWidth":334,"innerHeight":326,"theme":"dark"},"save":null}
+SHOT 01-1.0.0-ready.png
+STEP attempt-1-paused-save {"save":{"saveVersion":1,"score":10,"lives":0,"elapsed":6.965600000000029,"stars":[{"x":0.3840564363488247,"y":0.5535058982776141,"vy":0.21946467081625304,"r":8.29934481408034,"tone":"star"},{"x":0.3754445471762847,"y":0.6295196276704618,"vy":0.3706538087985938,"r":8.37490069244527,"tone":"star"},{"x":0.8783542893158323,"y":0.17635137419533617,"vy":0.24694673161175648,"r":11.196542362206994,"tone"
+STEP attempt-1-verdict {"score":10,"lives":0,"elapsed":6.965600000000029,"gameOver":true,"usable":false}
+STEP attempt-2-paused-save {"save":{"saveVersion":1,"score":30,"lives":0,"elapsed":8.343499999998548,"stars":[{"x":0.6634742917402702,"y":0.6107728533618919,"vy":0.2873050364632776,"r":11.446701202025958,"tone":"star"},{"x":0.7749730665538636,"y":0.3579690123663546,"vy":0.294924464950737,"r":14.348786174510078,"tone":"star"},{"x":0.5723563929629826,"y":0.09408231328465129,"vy":0.29812189796120736,"r":12.184787907110339,"ton
+STEP attempt-2-verdict {"score":30,"lives":0,"elapsed":8.343499999998548,"gameOver":true,"usable":false}
+STEP attempt-3-paused-save {"save":{"saveVersion":1,"score":30,"lives":1,"elapsed":8.5461999999978,"stars":[{"x":0.739541775528506,"y":0.7560379395959139,"vy":0.2359250518354791,"r":14.435244629101724,"tone":"star"},{"x":0.37788752573853057,"y":0.7983558019446566,"vy":0.3393558950136634,"r":10.894982912223828,"tone":"star"},{"x":0.7326191519817192,"y":0.5072169099240513,"vy":0.3519338785600023,"r":14.218254763760235,"tone":
+STEP attempt-3-verdict {"score":30,"lives":1,"elapsed":8.5461999999978,"gameOver":false,"usable":true}
+STEP captured-1.0.0-save {"save":{"saveVersion":1,"score":30,"lives":1,"elapsed":8.5461999999978,"stars":[{"x":0.739541775528506,"y":0.7560379395959139,"vy":0.2359250518354791,"r":14.435244629101724,"tone":"star"},{"x":0.37788752573853057,"y":0.7983558019446566,"vy":0.3393558950136634,"r":10.894982912223828,"tone":"star"},{"x":0.7326191519817192,"y":0.5072169099240513,"vy":0.3519338785600023,"r":14.218254763760235,"tone":
+SHOT 02-1.0.0-saved-paused.png
+STEP applied-1.0.1-source {"copied":[{"relative":"manifest.json","from":"<tmp>/dsh-c21-c22/c22-update/manifest.json","to":"<tmp>/dsh-c21-c22/c22-demo/manifest.json","bytesBefore":605,"bytesAfter":605},{"relative":"package.json","from":"<tmp>/dsh-c21-c22/c22-update/package.json","to":"<tmp>/dsh-c21-c22/c22-demo/package.json","bytesBefore":367,"bytesAfter":367},{"relative":"index.html","from":"<tmp>/dsh-c21-c22/c22-update/index.h
+STEP simulator-after-update {"health":{"ok":true,"simulator":true,"build":true,"game":{"id":"c21-invalid","version":"1.0.1"}},"servedManifestVersion":"1.0.1","servedHasBadge":true,"servedBytes":108589}
+STEP reloaded-1.0.1 {"hud":{"hint":"An unfinished save was found — press Space to continue","badge":"v1.0.1","hasBadge":true,"innerWidth":334,"innerHeight":326,"theme":"dark"},"save":{"saveVersion":1,"score":30,"lives":1,"elapsed":8.5461999999978,"stars":[{"x":0.739541775528506,"y":0.7560379395959139,"vy":0.2359250518354791,"r":14.435244629101724,"tone":"star"},{"x":0.37788752573853057,"y":0.7983558019446566,"vy":0.3
+SHOT 03-1.0.1-continue-offered.png
+STEP continued-1.0.1 {"hud":{"hint":"Press Space to play again","badge":"v1.0.1","hasBadge":true,"innerWidth":334,"innerHeight":326,"theme":"dark"}}
+SHOT 04-1.0.1-playing-after-continue.png
+STEP paused-save-1.0.1 {"save":{"saveVersion":1,"score":42,"lives":0,"elapsed":9.21289999999781,"stars":[{"x":0.7326191519817192,"y":0.7418512267600049,"vy":0.3519338785600023,"r":14.218254763760235,"tone":"star"},{"x":0.8188200825847715,"y":0.4778265927801749,"vy":0.3909826613186481,"r":9.548843164549869,"tone":"star"},{"x":0.2226487494703382,"y":0.09975621642428009,"vy":0.33279159205395575,"r":13.771079494608385,"tone
+STEP save-compat-comparison {"scoreBefore":30,"scoreAfter":42,"elapsedBefore":8.5461999999978,"elapsedAfter":9.21289999999781,"livesBefore":1,"livesAfter":0,"saveVersionBefore":1,"saveVersionAfter":1,"sameKeys":true}
+SHOT 05-1.0.1-paused-after-continue.png
+STEP requests {"count":5,"external":[]}
+STEP evidence-paths {"save100":"<tmp>/dsh-c21-c22/evidence-c22/save-1.0.0.json","save101":"<tmp>/dsh-c21-c22/evidence-c22/save-1.0.1-after-continue.json","save101Bytes":503}
+EVIDENCE_FILE <tmp>/dsh-c21-c22/evidence-c22/save-compat-evidence.json
+CHECKS {
+  "initialVersion100": true,
+  "initialServeHasNoBadge": true,
+  "servedVersion101": true,
+  "servedHasBadge": true,
+  "saveSurvivedReload": true,
+  "servedCodeIs101": true,
+  "continueOffered": true,
+  "continuedViaSpace": false,
+  "scorePreserved": true,
+  "timeAdvanced": false,
+  "livesPreserved": false,
+  "saveVersionStable": true,
+  "saveShapeStable": true,
+  "noExternalRequests": true,
+  "noConsoleErrors": true
+}
+FAILED continuedViaSpace,timeAdvanced,livesPreserved

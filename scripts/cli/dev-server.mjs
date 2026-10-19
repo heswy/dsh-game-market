@@ -148,7 +148,7 @@ export async function startDevServer(options = {}) {
         sendJson(
           res,
           200,
-          { ok: true, simulator: true, build, game: { id: manifest.id, version: manifest.version } },
+          { ok: true, simulator: true, build, game: { id: manifest.id, name: manifest.name, version: manifest.version } },
           method
         );
         return;

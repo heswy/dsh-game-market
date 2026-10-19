@@ -28,8 +28,8 @@
       "preferredTheme": "game-defined",
       "package": {
         "url": "packages/2048-1.0.0.html",
-        "sha256": "b18549098084316aa9da70b19fe2f8e335fa8c621e95cc55e235d8528d34239c",
-        "size": 188313,
+        "sha256": "a603399c28365d1e49159ae7f167efa52ee2cee32df38976f6c9a099e6fa5a4a",
+        "size": 188877,
         "releasedAt": "2026-10-18T00:00:00.000Z"
       },
       "cover": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/docs/verification/v0/market.png",
@@ -66,8 +66,8 @@
       "preferredTheme": "game-defined",
       "package": {
         "url": "packages/breakout-1.0.0.html",
-        "sha256": "89930a0879604d69db2caf9f607a0589357a2fa37f0d8cf4db2a7430034a863a",
-        "size": 166406,
+        "sha256": "0a435247ff52d6fe82dedc4c0ccb7fea6edc5bda651b5546df1ea0b1baf3120d",
+        "size": 166970,
         "releasedAt": "2026-10-18T00:00:00.000Z"
       },
       "cover": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/docs/verification/v0/market.png",
@@ -103,8 +103,8 @@
       "preferredTheme": "game-defined",
       "package": {
         "url": "packages/jump-1.0.0.html",
-        "sha256": "61327aedea20f238b3f19bd03ed20651ae5a5a300bf95658f82a0d2f00e67dc6",
-        "size": 210814,
+        "sha256": "8a19ee77f0351111a8c71146205c8b1fff80c75ed842d4343ba0726ed7607099",
+        "size": 211378,
         "releasedAt": "2026-10-18T00:00:00.000Z"
       },
       "cover": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/docs/verification/v0/market.png",

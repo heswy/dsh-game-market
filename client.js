@@ -44,6 +44,9 @@ window.__ModuleLoader__.load({
       'market.backToChat': '返回会话',
       'market.localInstall': '安装本地游戏',
       'market.upload': '上传游戏',
+      'market.refresh': '刷新游戏目录',
+      'market.seed': '正在显示随包游戏，官方目录暂不可用。',
+      'market.seed.retry': '重试',
       'market.localInstall.title': '从本地安装游戏？',
       'market.localInstall.body': '选择一个自包含的 .html 游戏包。本地文件不经过商店校验，请只安装你信任的来源。',
       'market.localInstall.warning': '本地安装不会校验文件来源。',
@@ -273,6 +276,7 @@ window.__ModuleLoader__.load({
       'toast.uninstalledData': '《{gameName}》已卸载，存档与成绩已删除',
       'toast.dataDeleted': '《{gameName}》的游戏数据已删除',
       'toast.installCancelled': '已取消安装',
+      'toast.registryFallback': '官方目录暂不可用，已显示随包游戏',
       'toast.registryRefreshed': '游戏目录已刷新',
       'toast.registryThrottled': '刚刚刷新过，请稍后再试',
       'toast.offline': '离线模式',
@@ -489,6 +493,9 @@ window.__ModuleLoader__.load({
       'market.backToChat': 'Back to conversation',
       'market.localInstall': 'Install local game',
       'market.upload': 'Upload game',
+      'market.refresh': 'Refresh game catalog',
+      'market.seed': 'Showing bundled games; the official catalog is unavailable.',
+      'market.seed.retry': 'Retry',
       'market.localInstall.title': 'Install a game from this device?',
       'market.localInstall.body': 'Choose a self-contained .html game package. Local files are not verified by the store, so only install sources you trust.',
       'market.localInstall.warning': 'Local installs do not verify where the file came from.',
@@ -718,6 +725,7 @@ window.__ModuleLoader__.load({
       'toast.uninstalledData': '{gameName} uninstalled, saves and scores deleted',
       'toast.dataDeleted': 'Game data for {gameName} deleted',
       'toast.installCancelled': 'Installation cancelled',
+      'toast.registryFallback': 'Official catalog unavailable; showing bundled games',
       'toast.registryRefreshed': 'Game catalog refreshed',
       'toast.registryThrottled': 'Already refreshed recently. Try again later.',
       'toast.offline': 'Offline mode',
@@ -1184,7 +1192,17 @@ window.__ModuleLoader__.load({
 
     const AGENT_ACK_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
-    return { BUNDLE_ID, CLIENT_MODULE_ID, MAIN_PANEL_KEY, API_BASE, LOG_PREFIX, RUNTIME_VERSION, SDK_VERSION, PROTOCOL_VERSION, LEGACY_V0_VERSION, LIMITS, TIMING, AGENT_STATES, AGENT_SOURCES, AGENT_PRIORITY, AGENT_LABELS_ZH, AGENT_LABEL_KEYS, GAME_ID_PATTERN, PLAY_SESSION_ID_PATTERN, INSTANCE_ID_PATTERN, NONCE_PATTERN, DSH_SESSION_ID_PATTERN, LAUNCH_MODES, PAUSE_REASONS, SAVE_REASONS, SESSION_OUTCOMES, BUILTIN_GAMES, AGENT_ACK_MAX_AGE_MS };
+    /**
+     * Official community Registry index (V1.2 community publishing MVP).
+     *
+     * This is the single default URL used by the Host when no explicit Registry is
+     * configured. It is intentionally a constant (not scattered through call
+     * sites); until the content repository is created and publicly verified, the
+     * Host MUST fall back to the bundled `registry/games.json` seed on failure.
+     */
+    const DEFAULT_OFFICIAL_REGISTRY_URL = 'https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json';
+
+    return { BUNDLE_ID, CLIENT_MODULE_ID, MAIN_PANEL_KEY, API_BASE, LOG_PREFIX, RUNTIME_VERSION, SDK_VERSION, PROTOCOL_VERSION, LEGACY_V0_VERSION, LIMITS, TIMING, AGENT_STATES, AGENT_SOURCES, AGENT_PRIORITY, AGENT_LABELS_ZH, AGENT_LABEL_KEYS, GAME_ID_PATTERN, PLAY_SESSION_ID_PATTERN, INSTANCE_ID_PATTERN, NONCE_PATTERN, DSH_SESSION_ID_PATTERN, LAUNCH_MODES, PAUSE_REASONS, SAVE_REASONS, SESSION_OUTCOMES, BUILTIN_GAMES, AGENT_ACK_MAX_AGE_MS, DEFAULT_OFFICIAL_REGISTRY_URL };
     })();
 
     // module: packages/client/src/constants.js
@@ -5628,7 +5646,11 @@ window.__ModuleLoader__.load({
       try {
         const data = await api.refreshRegistry({ force: opts.force !== false });
         if (opts.silent !== true) {
-          pushToast(target, { kind: 'success', textKey: 'toast.registryRefreshed', id: opts.toastId, at: opts.now });
+          if (data && data.fallback === true) {
+            pushToast(target, { kind: 'info', textKey: 'toast.registryFallback', id: opts.toastId, at: opts.now });
+          } else {
+            pushToast(target, { kind: 'success', textKey: 'toast.registryRefreshed', id: opts.toastId, at: opts.now });
+          }
         }
         await loadCatalog({ store: target, api: api, now: opts.now });
         return { ok: true, data: data };
@@ -12379,6 +12401,8 @@ window.__ModuleLoader__.load({
         category: ui.category,
       });
       const installedCount = installedGames(games).length;
+      const registry = market.registry;
+      const registryFallback = Boolean(registry && registry.state === 'seed');
       const allFiltered = searching
         ? filterCatalog(games, { query: ui.query, category: ui.category, offline: market.offline === true, locale: locale })
         : sections.all;
@@ -12435,6 +12459,13 @@ window.__ModuleLoader__.load({
               text: t('market.offline'),
               actionLabel: t('market.offline.retry'),
               onAction: props.onRetry,
+            })
+          : null,
+        registryFallback
+          ? h(InlineBanner, {
+              text: t('market.seed'),
+              actionLabel: t('market.seed.retry'),
+              onAction: props.onRefreshRegistry || props.onRetry,
             })
           : null,
         market.status === 'error'
@@ -14400,6 +14431,7 @@ window.__ModuleLoader__.load({
     const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
     const BackIcon = __mods["packages/client/src/icons.js"].BackIcon;
     const MoreIcon = __mods["packages/client/src/icons.js"].MoreIcon;
+    const RefreshIcon = __mods["packages/client/src/icons.js"].RefreshIcon;
     const UploadIcon = __mods["packages/client/src/icons.js"].UploadIcon;
     const StyleTag = __mods["packages/client/src/styles.js"].StyleTag;
     const backToConversation = __mods["packages/client/src/navigation.js"].backToConversation;
@@ -15029,6 +15061,22 @@ window.__ModuleLoader__.load({
                   'aria-label': t('a11y.offline'),
                   role: 'img',
                 })
+              : null,
+            state.page === PAGES.MARKET
+              ? h(
+                  'button',
+                  {
+                    key: 'refresh',
+                    type: 'button',
+                    className: 'dgm-icon-btn dgm-refresh',
+                    onClick: function refresh() {
+                      void refreshRegistryAction({ store: store, api: api });
+                    },
+                    'aria-label': t('market.refresh'),
+                    title: t('market.refresh'),
+                  },
+                  h(RefreshIcon, { size: 14 })
+                )
               : null,
             state.page === PAGES.MARKET
               ? h(

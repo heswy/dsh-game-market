@@ -1,0 +1,79 @@
+{
+  "steps": [
+    {
+      "step": "injected-save",
+      "saveVersion": 1,
+      "score": 240,
+      "lives": 2,
+      "elapsed": 119.4,
+      "timeLeft": 0.6,
+      "streak": 3,
+      "bestStreak": 4,
+      "starsCollected": 12,
+      "shipX": 0.5,
+      "shipVx": 0,
+      "asteroids": [],
+      "stars": [],
+      "invuln": 5,
+      "spawnAsteroidIn": 0.23687300285482837,
+      "spawnStarIn": 0.27358733217989495,
+      "seed": 2454854205,
+      "nextId": 8,
+      "outcome": "",
+      "gameOver": false
+    },
+    {
+      "step": "continue-near-finish",
+      "hint": "Space continue · N new drift · P pause",
+      "savedTimeLeft": 0.6
+    },
+    {
+      "step": "time-up-finish",
+      "hint": "Space — drift again",
+      "best": {
+        "score": 240,
+        "achievedAt": "2026-10-19T08:07:45.398Z",
+        "meta": {
+          "stars": 12,
+          "bestStreak": 4,
+          "outcome": "complete",
+          "seconds": 120
+        }
+      },
+      "scoreHistory": [
+        {
+          "score": 10,
+          "achievedAt": "2026-10-19T08:06:13.037Z"
+        },
+        {
+          "score": 90,
+          "achievedAt": "2026-10-19T08:06:53.880Z"
+        },
+        {
+          "score": 240,
+          "achievedAt": "2026-10-19T08:07:45.398Z"
+        },
+        {
+          "score": 240,
+          "achievedAt": "2026-10-19T08:08:09.951Z"
+        }
+      ],
+      "session": {
+        "playSessionId": "ps_257cbd6245aaa6891c6d905a",
+        "startedAt": "2026-10-19T08:08:03.851Z",
+        "endedAt": "2026-10-19T08:08:09.956Z",
+        "outcome": "completed",
+        "score": 240
+      },
+      "save": null
+    },
+    {
+      "step": "restart",
+      "hint": "← → or A D drift · P pause · gather stars, dodge the emberfall",
+      "save": null
+    },
+    {
+      "step": "errors"
+    }
+  ]
+}

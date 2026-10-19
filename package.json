@@ -25,7 +25,10 @@
     "docs/developer*.md",
     "games/**",
     "registry/**",
-    "README.md"
+    "README.md",
+    "scripts/registry/**",
+    "skills/**",
+    "docs/community*.md"
   ],
   "bin": {
     "dsh-game": "./scripts/cli/dsh-game.mjs",
@@ -46,7 +49,12 @@
     "test": "node --test",
     "dev:enable": "node scripts/dev-enable.mjs",
     "dev:disable": "node scripts/dev-disable.mjs",
-    "verify": "node scripts/build.mjs && node scripts/check.mjs && node --test"
+    "verify": "node scripts/build.mjs && node scripts/check.mjs && node --test",
+    "registry:init": "node scripts/registry/init-content-repo.mjs",
+    "registry:generate": "node scripts/registry/generate-catalog.mjs",
+    "registry:validate": "node scripts/registry/validate-catalog.mjs",
+    "registry:prepare": "node scripts/registry/prepare.mjs",
+    "skill:pack": "node scripts/registry/pack-skill.mjs"
   },
   "dsh": {
     "manifestVersion": 1,

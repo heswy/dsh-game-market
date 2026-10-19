@@ -184,6 +184,8 @@ export function MarketHome(props) {
     category: ui.category,
   });
   const installedCount = installedGames(games).length;
+  const registry = market.registry;
+  const registryFallback = Boolean(registry && registry.state === 'seed');
   const allFiltered = searching
     ? filterCatalog(games, { query: ui.query, category: ui.category, offline: market.offline === true, locale: locale })
     : sections.all;
@@ -240,6 +242,13 @@ export function MarketHome(props) {
           text: t('market.offline'),
           actionLabel: t('market.offline.retry'),
           onAction: props.onRetry,
+        })
+      : null,
+    registryFallback
+      ? h(InlineBanner, {
+          text: t('market.seed'),
+          actionLabel: t('market.seed.retry'),
+          onAction: props.onRefreshRegistry || props.onRetry,
         })
       : null,
     market.status === 'error'

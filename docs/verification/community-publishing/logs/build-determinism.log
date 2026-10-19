@@ -1,0 +1,8 @@
+# build determinism (two consecutive npm run build)
+OK: all tracked artifact hashes identical
+c769e0b62c3608dfacaf3d0d5993a599897a2a2bafd49ad41cb7499fe093506b  client.js
+919f43be5df5ebff0e8c8dc32b3b6464332ea5c17d3c2c9abdaf3859b6e5adf4  games/snake/dist/index.html
+8a19ee77f0351111a8c71146205c8b1fff80c75ed842d4343ba0726ed7607099  games/jump/dist/index.html
+a603399c28365d1e49159ae7f167efa52ee2cee32df38976f6c9a099e6fa5a4a  games/2048/dist/index.html
+0a435247ff52d6fe82dedc4c0ccb7fea6edc5bda651b5546df1ea0b1baf3120d  games/breakout/dist/index.html
+68fd1d13b13285d74b14ae7867f9f1e9651de20fd9d4b8d3df4975c4c7add5b5  registry/games.json

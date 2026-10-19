@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "submissionType": "new",
+  "game": {
+    "id": "ember-drift",
+    "name": "Ember Drift",
+    "version": "1.0.0",
+    "description": "A two-minute hand-painted space dodge. Weave through the emberfall, gather fallen stars, and keep the little skiff alight.",
+    "categories": [
+      "arcade",
+      "action"
+    ],
+    "tags": [
+      "space",
+      "dodge",
+      "hand-painted",
+      "short-session"
+    ],
+    "capabilities": [
+      "storage",
+      "score"
+    ],
+    "sdkVersion": "^1.0.0",
+    "runtimeVersion": "^1.0.0",
+    "license": "MIT"
+  },
+  "author": {
+    "login": null,
+    "githubUserId": null,
+    "sourceRepo": null,
+    "sourceCommit": "f51033ce7f3a2fcb5aa60738f493c7509a48d853",
+    "buildInstructions": "No npm install and no third-party dependencies. From source commit f51033ce7f3a2fcb5aa60738f493c7509a48d853: npm run build && npm run validate && npm run pack. Node >= 20. If the local platform checkout moved, set DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs before the npm scripts. The local dsh-game.config.json records the evaluator checkout path and must be regenerated or overridden for public reproducibility."
+  },
+  "package": {
+    "url": null,
+    "sha256": "f882e1159f7f2b3f73373793d4a6297b0c7a148d8472299b1f1193b72b38dfd9",
+    "sha256Url": null,
+    "size": 156912
+  },
+  "media": {
+    "cover": {
+      "url": null,
+      "sha256": "0e7530362d9e2d6e3a0ca7f390f852d8d874b1e7af646b2d9e64ec5cb89bfbbe",
+      "size": 817894,
+      "type": "png"
+    },
+    "screenshots": [
+      {
+        "url": null,
+        "sha256": "357452d390e03102123323c4b15bcaa76f37a96e42f998a75b96771de3cc9591",
+        "size": 719827,
+        "type": "png"
+      },
+      {
+        "url": null,
+        "sha256": "6efab26d299b18ea0bc674c1b43b5bc5b7342180ddd6a274fecceb169d6f468f",
+        "size": 787954,
+        "type": "png"
+      },
+      {
+        "url": null,
+        "sha256": "5ab63564d2d39d3dbc67374f1a02abc38511e5b48ccfbabcf58ed9d17fcf226e",
+        "size": 735584,
+        "type": "png"
+      },
+      {
+        "url": null,
+        "sha256": "4ccd0aa1a092d4b463fdfa9add797d5cd199be5b7281febe971fc2c767c916b4",
+        "size": 733639,
+        "type": "png"
+      }
+    ]
+  },
+  "licensing": {
+    "codeLicense": "MIT",
+    "assetLicense": "Procedurally generated in code; MIT",
+    "archivePermission": true,
+    "notes": "No third-party art, audio, fonts or other assets are included. The package uses system font families and canvas-drawn visuals only. The MIT text is in the project LICENSE file."
+  },
+  "selfTest": {
+    "ready": true,
+    "pauseResume": true,
+    "beforeSave": true,
+    "continuePlay": true,
+    "keyboard": true,
+    "narrowWindow": true,
+    "theme": true,
+    "fullBleed": true,
+    "safeArea": true,
+    "noNetwork": true
+  },
+  "pending": [
+    "author.login (real GitHub identity)",
+    "author.githubUserId (real numeric GitHub user id)",
+    "author.sourceRepo (public HTTPS repository)",
+    "public GitHub identity evidence and ownership of the local commit",
+    "package.url (public HTTPS hosting, path must end ember-drift-1.0.0.html)",
+    "package.sha256Url (public HTTPS .sha256 sidecar)",
+    "media.cover.url (public HTTPS cover)",
+    "media.screenshots[].url (public HTTPS screenshots)",
+    "public release/hosting evidence",
+    "portable dsh-game.config.json CLI path for a public source repository",
+    "maintainer review and catalog approval (not author-side; not requested here)"
+  ],
+  "notes": "Author-side record only; nothing was published. Nulls above are deliberate pending values, not fabricated URLs or identity. sourceCommit is a real local git commit, but it is not hosted publicly yet. selfTest reflects the local Runtime Simulator evidence in submission/verification-report.md; the time-up completion branch was exercised by restoring a 0.6s-remaining save, not by waiting the full 120s in real time. No reviewer approval is included or implied."
+}

@@ -1,0 +1,3 @@
+COMMIT=f51033ce7f3a2fcb5aa60738f493c7509a48d853
+--- log ---
+f51033c Ember Drift 1.0.0 source (DSH Game Market evaluation)

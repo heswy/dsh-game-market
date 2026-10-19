@@ -1,0 +1,52 @@
+{
+  "steps": [
+    {
+      "step": "run-end",
+      "over": true,
+      "moves": 4,
+      "hint": "Space — drift again",
+      "best": {
+        "score": 10,
+        "achievedAt": "2026-10-19T08:06:13.037Z",
+        "meta": {
+          "stars": 1,
+          "bestStreak": 2,
+          "outcome": "lost",
+          "seconds": 86
+        }
+      },
+      "scoreHistory": [
+        {
+          "score": 10,
+          "achievedAt": "2026-10-19T08:06:13.037Z"
+        }
+      ],
+      "save": null,
+      "session": {
+        "playSessionId": "ps_b5f4219032ef8816ce78c442",
+        "startedAt": "2026-10-19T08:04:42.123Z",
+        "endedAt": "2026-10-19T08:06:13.042Z",
+        "outcome": "lost",
+        "score": 10
+      }
+    },
+    {
+      "step": "restart",
+      "hint": "← → or A D drift · P pause · gather stars, dodge the emberfall",
+      "save": null,
+      "best": {
+        "score": 10,
+        "achievedAt": "2026-10-19T08:06:13.037Z",
+        "meta": {
+          "stars": 1,
+          "bestStreak": 2,
+          "outcome": "lost",
+          "seconds": 86
+        }
+      }
+    },
+    {
+      "step": "errors"
+    }
+  ]
+}

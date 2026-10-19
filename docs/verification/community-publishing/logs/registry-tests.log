@@ -1,0 +1,36 @@
+✔ catalog generation produces a deterministic runtime index (31.729625ms)
+✔ check mode rejects a stale or missing generated index (12.637ms)
+✔ owner/review binding rejects changed package or media hashes (9.788125ms)
+✔ catalog entry without owner is rejected (9.797333ms)
+✔ init-content-repo fills platform lock and refuses a non-empty target (12.125791ms)
+✔ multiple games coexist, cover URLs are in the generated index, withdrawal removes only that entry (16.089042ms)
+✔ history validation rejects version rollback, owner replacement and review rewrite (59.255042ms)
+✔ history validation allows documented withdrawal while keeping audit records (20.839333ms)
+✔ withdrawn games keep owner/review history and cannot reuse old versions (60.100083ms)
+✔ content-repo CLI scripts run from a checkout path containing spaces (558.470333ms)
+✔ publishing tool refuses to run without the required arguments (146.220792ms)
+✔ dry run validates and plans without remote or local mutation (86.786959ms)
+✔ rejects a changed package or media after the approval (8.982292ms)
+✔ execute publishes verified bytes, writes catalog and opens one PR (54.161417ms)
+✔ upload failure leaves the catalog unchanged and opens no PR (32.187542ms)
+✔ public asset verification failure can be retried and creates only one PR (45.984542ms)
+✔ PR creation failure resumes the catalog branch on retry (34.69325ms)
+✔ a 1.0.1 update gets a separate release and preserves the client data contract (36.923625ms)
+✔ dry run rejects a candidate that violates trusted catalog history before any remote call (38.138791ms)
+✔ a resumed draft with mismatched asset bytes is never published (18.784417ms)
+✔ invalid UTF-8 package bytes are rejected by publishing validation (8.482833ms)
+✔ resuming a branch that is not based on the latest base is rejected (26.127542ms)
+✔ a failed commit rolls back files, index and branch so the tool can be retried (1081.416375ms)
+✔ a failed rollback is reported explicitly, never silently swallowed (18.705084ms)
+✔ a real git branch-ref lock during rollback reports E_PUBLISH_ROLLBACK_FAILED (934.754625ms)
+✔ same version with different bytes is immutable (21.789667ms)
+✔ skill has valid frontmatter, version and no placeholder paths (6.428666ms)
+✔ skill archive is deterministic and manifest hashes match the archive (16.869083ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2549.954042

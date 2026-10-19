@@ -4,6 +4,8 @@
 >
 > **v2.2 修订（2026-10-18，用户决策锁定）**：包格式从「`.dshgame` zip 归档」改为**单文件自包含 HTML + 内嵌 manifest v1**（`<script type="application/json" id="dsh-game-manifest">`，全文恰好一处，manifest 文本 ≤64 KiB）；V1 不引入 zip/解压/文件列表/压缩炸弹等概念，多文件资源推迟到 V1.5。随之统一：安装目录为 `packages/<id>/<version>/entry.html`；Registry 索引为 `registry/games.json`（`registryVersion: 1`），条目 `package = { url, sha256, size, releasedAt }`；新增 Host `POST /install-local`（raw `text/html`，≤20 MiB，`source: 'local'`，Client 负责二次确认）；包 URL 准入改为 host allowlist（默认 `github.com`/`raw.githubusercontent.com`/`objects.githubusercontent.com`，可配置 `allowedHosts`），删除「只允许 `/releases/download/`」的硬限制；V1 首发锁定四款 `snake`/`jump`/`2048`/`breakout`，DSH-native Demo 从 V1 阻塞范围移除。包内 `entry`、`cover`、`screenshots` 字段退出 manifest：文件本身即入口，封面/截图仅作为 Registry 条目字段。决策记录见 12.1 D-034/D-035/D-036。
 >
+> **V1.2 社区投稿修订（2026-10-19）**：新增 GitHub 内容仓库投稿/审核/目录 PR/维护者上架工具、默认官方目录源 + 随包 seed 兜底、`dsh-game-developer` Skill；运行时包/Registry 协议不变。契约见 `docs/community-publishing-contracts.md`，决策记录 D-038。
+>
 > **V1.1 呈现规范修订（2026-10-19，用户决策锁定）**：Runtime 舞台改为**全出血（edge-to-edge）**，删除黑色舞台背景/letterbox/舞台内边距；`manifest.viewport` 仅作为推荐设计分辨率（SDK `viewport` 为实际容器尺寸），不再驱动平台等比缩放；游戏必须铺满视口并遵守平台悬浮控件安全区。开发包规范见 `docs/developer-guide.md` §4.4，决策记录 D-037。
 >
 > **阅读路径**：
@@ -3670,7 +3672,7 @@ dsh-game-market (repo)
         └── <id>-<version>.html
 ```
 
-- Registry 索引：`https://raw.githubusercontent.com/<owner>/dsh-game-market/main/registry/games.json`（任意 https 静态地址均可）。**V1 默认分发为随包 file Registry**：`registry/games.json` + `registry/packages/<id>-<version>.html`（由 `scripts/build-registry.mjs` 从四款游戏构建确定性生成），全新环境无需网络即可发现/安装 Jump、2048、Breakout；远程 https 索引为可选项。
+- Registry 索引：官方内容仓库 `https://raw.githubusercontent.com/<owner>/dsh-game-registry/main/registry/games.json`（V1.2 默认源）；随包 `registry/games.json` + `registry/packages/<id>-<version>.html`（`scripts/build-registry.mjs` 确定性生成）作为**冷启动/离线 seed**，不与 remote 快照合并。显式 `DSH_GAME_REGISTRY_URL` / `config.registry.url` 仍优先；用户无需为社区目录更新重新安装插件。
 - 包下载 URL 规则：
   1. 必须是 `https`；本地 file Registry 例外，允许 Registry 目录内的相对路径。
   2. host 必须属于 allowlist，**或与 Registry 索引同 host**（自建镜像/内网分发）。
@@ -4473,6 +4475,32 @@ DSH 版本与插件的关系：
 - 用户文案键按 GM 码登记，见 9.8；`E_*` 不进入文案表。
 - 测试断言应**同时**断言 GM 码与 HTTP 状态；只断言 `E_*` 的测试视为未覆盖对外契约。
 - 8.10 安全测试中的自包含类攻击（外部子资源/网络调用）对应 `E_PKG_ENTRY_NOT_SELF_CONTAINED`（`GM-4225`）；超大单文件对应 `E_PKG_TOO_LARGE`（`GM-4135`）；非法 manifest 对应 `E_PKG_MANIFEST_*`（`GM-4221`）；不得为同一语义分配第二个 GM 码。
+
+### 8.14 社区投稿与官方内容目录（V1.2）
+
+权威契约：`docs/community-publishing-contracts.md`；作者/维护者指南：
+`docs/community-submission.md` / `docs/community-operations.md`。
+
+- **两个仓库**：平台仓库承载 Host/Client/Runtime/SDK、工具与模板；内容仓库
+  `catalog/owners/reviews/registry` 承载生产目录。随包 `registry/` 仅作 seed，
+  不得写入社区数据（`build-registry.mjs` 会覆盖）。
+- **投稿契约**：`submission.json`（作者/源码固定 commit/包与素材 HTTPS+摘要+
+  许可+自测）、`review`（维护者批准，绑定包与每张素材摘要）、`owners/<id>.json`
+  （稳定 GitHub 数字身份）。校验器在 `packages/shared/src/community.js`，内容仓库
+  CI 与维护者工具共用。
+- **目录生成**：`catalog/<id>.json` → `registry/games.json`，按 id 排序、固定
+  时间戳、字节确定；与源条目同 PR 提交并做 stale 检查；客户端 Registry schema 不变。
+- **上架工具**：`scripts/registry/prepare.mjs` 默认 dry-run（零远端写入）；
+  `--execute` 才创建 draft Release、上传已校验字节、发布、用公开 URL 复核摘要、
+  写目录/索引、push 分支并开 catalog PR；**不自动合并 PR**。幂等以
+  repo+id+version+批准 SHA 标识；同版本改字节拒绝，失败不改变生产目录。
+- **外部发布权限**：仓库创建/权限、CI 设置、真实公网资产与一次真实投稿闭环属于
+  M4 外部配置；未获授权只准备到可审查状态，不得把模拟写成上线。
+- **默认源与兜底**：无显式配置时优先官方 HTTPS 目录；有 fresh/stale 快照只使用
+  remote（不与 seed 合并）；冷启动/过期/网络失败/索引非法时使用随包 seed，状态
+  `seed`，Market 不白屏；显式源保持单源语义并优先。
+- **Skill**：`skills/dsh-game-developer/` 是必做交付；指导 AI 从玩法到开发、
+  包校验、Runtime 验证与作者侧投稿材料，不包含维护者发布权限。
 
 ## 9 界面与交互规格（实现级）
 
@@ -5775,6 +5803,7 @@ M4 V1 发布验收（约 1 周）
 | D-035 | 目录/命名统一：`packages/<id>/<version>/entry.html`；Registry 索引 `registry/games.json`（`registryVersion: 1`）；保留当前 + 1 个 previousVersion；Registry 包 URL host allowlist（`github.com`/`raw.githubusercontent.com`/`objects.githubusercontent.com` + 可配置 `allowedHosts`），重定向 ≤5 且不得降级 http | 统一契约、避免实现分歧 | 用户决策（2026-10-18） | 已定 |
 | D-036 | V1 首发只做四款：`snake`（内置）/`jump`/`2048`/`breakout`；DSH-native Demo 由用户亲自带人后续推进，不阻塞 V1 验收/发布 | 收敛范围、保证首发质量 | 用户决策（2026-10-18） | 已定 |
 | D-037 | Runtime 舞台全出血（edge-to-edge），删除黑色舞台背景/letterbox/舞台内边距；`viewport` 仅作推荐设计分辨率；SDK viewport 为实际容器尺寸，不再驱动平台缩放；游戏铺满视口并遵守顶部全宽 112px、右下 96×96 安全区；开发包规范写入开发者指南 §4.4/模板 | 消除黑边、统一第三方接入规范 | 用户决策（2026-10-19） | 已定 |
+| D-038 | V1.2 社区投稿：GitHub 内容仓库 + Issue/PR 投稿契约 + 人工批准绑定精确包/素材摘要 + `prepare.mjs` dry-run/execute 上架工具 + 默认官方目录源与随包 seed 兜底 + `dsh-game-developer` Skill；运行时包/Registry 协议不变 | 可实际运营的社区上架链路，无需自建服务器 | 用户确认方案（2026-10-19） | 已定 |
 
 ### 12.2 待验证项（Spike 清单）
 

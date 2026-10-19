@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "platformRepo": "__PLATFORM_REPO__",
+  "commit": "__PLATFORM_COMMIT__",
+  "platformVersion": "__PLATFORM_VERSION__",
+  "generatedAt": "__GENERATED_AT__"
+}

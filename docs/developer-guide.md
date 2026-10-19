@@ -25,7 +25,9 @@ node scripts/cli/create-dsh-game.mjs --help
 ```
 
 `npx dsh-game` / `npx create-dsh-game` 需要根 `package.json` 的 `bin`（由 Lead 维护，本分支未修改）；
-模板里的 `npm run ...` 已通过 `dsh-game.config.json` 记录本地 CLI 路径，可正常使用。
+生成工程不写机器相关 CLI 路径：运行模板里的 `npm run ...` 前需设置
+`DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs`（或在同一 shell 里
+export 后执行 create）；`dsh-game.config.json` 只记录 manifest/template/entry/out。
 
 ---
 
@@ -33,6 +35,7 @@ node scripts/cli/create-dsh-game.mjs --help
 
 ```bash
 # 1) 在空目录创建工程（id 即目录名；--dir 指定父目录）
+export DSH_GAME_CLI="$PWD/scripts/cli/dsh-game.mjs"
 node scripts/cli/create-dsh-game.mjs my-game --template vanilla --dir /tmp/games
 
 cd /tmp/games/my-game
@@ -83,7 +86,7 @@ sandbox Runtime 中游玩。
 my-game/
 ├── manifest.json           # 构建期 manifest v1 源文件（不进入 dist 的独立文件）
 ├── index.html              # HTML 模板；build 注入 manifest/SDK/内联资源
-├── dsh-game.config.json    # manifest/template/entry/out 与本地 CLI 路径
+├── dsh-game.config.json    # manifest/template/entry/out（可移植，无 CLI 路径）
 ├── src/
 │   ├── main.js             # 启动、循环、SDK 生命周期、分数/Session
 │   ├── render.js           # canvas、DPR/缩放、HUD/遮罩
@@ -364,7 +367,19 @@ npm run publish -- --url <https package URL> --cover <https cover URL>
 4. Host 拉取 Registry 后即可在 Market 看到并安装；Host 会重新下载并复验 sha256、
    manifest、自包含与版本兼容性（CLI 的校验结果不被信任）。
 
-### 7.3 版本与兼容
+### 7.3 社区投稿（V1.2）
+
+官方首发目录之外的游戏通过 GitHub 内容仓库投稿，而不是直接修改平台 `registry/`：
+
+- 作者流程/字段/自测：`docs/community-submission.md`；
+- 维护者审核与上架（dry-run/execute）：`docs/community-operations.md`；
+- 数据契约/幂等/默认源与 seed：`docs/community-publishing-contracts.md`；
+- AI 开发：`skills/dsh-game-developer/`（不授予发布权限）。
+
+`scripts/registry/prepare.mjs --execute` 只会创建 catalog PR，不会自动合并；合并
+才是上架。
+
+### 7.4 版本与兼容
 
 - 更新版本 = 修改 `manifest.json` 的 `version`，重新 build/pack/publish；
 - 平台只在 Registry 版本更高时显示 Update，不自动更新；

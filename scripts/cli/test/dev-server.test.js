@@ -24,6 +24,7 @@ test('the simulator serves the harness, the built package and health', async () 
     assert.equal(healthJson.ok, true);
     assert.equal(healthJson.simulator, true);
     assert.equal(healthJson.game.id, 'sim-game');
+    assert.equal(healthJson.game.name, 'Sim Game');
 
     const home = await fetch(simulator.url);
     assert.equal(home.status, 200);
@@ -35,6 +36,9 @@ test('the simulator serves the harness, the built package and health', async () 
     assert.match(harness, /data-command="before-save"/);
     assert.match(harness, /data-command="clear-save"/);
     assert.match(harness, /data-command="resume"/);
+    assert.match(harness, /data-command="reduced-motion"/);
+    assert.match(harness, /fetch\("\/health"/);
+    assert.match(harness, /375/);
     assert.match(harness, /\[simulator\]/);
 
     const game = await fetch(new URL('/game?instance=' + 'a'.repeat(32) + '&nonce=' + 'b'.repeat(32), simulator.url));

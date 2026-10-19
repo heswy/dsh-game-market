@@ -680,6 +680,7 @@ export function createGamesService({
   }
 
   async function buildAll() {
+    if (registry && typeof registry.localReady === 'function') await registry.localReady();
     const [infos, records, devItems] = await Promise.all([
       catalog.list(),
       installations.records(),

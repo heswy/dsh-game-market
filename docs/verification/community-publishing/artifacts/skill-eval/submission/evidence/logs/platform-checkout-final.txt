@@ -1,0 +1,26 @@
+=== final platform HEAD ===
+f00a28cbd10b517f3b0928499bd4d3d559356988
+=== commit details ===
+f00a28cbd10b517f3b0928499bd4d3d559356988
+2026-10-19 16:13:12 +0800
+heswy <heswy@users.noreply.github.com>
+test(community): attach final Skill QA and no-network evidence
+=== status ===
+=== recent log ===
+f00a28c test(community): attach final Skill QA and no-network evidence
+c1c16a0 test(community): archive publishing MVP verification and independent Skill evaluation
+cd6636b refactor(registry): remove unused publish helper and keep manifest metadata clean
+913b12e feat(community): implement GitHub publishing MVP and layered official catalog
+=== diff stat c1c16a..HEAD ===
+ .../artifacts/skill-eval/LICENSE                   |  21 ++
+ .../artifacts/skill-eval/README.md                 | 105 +++++++++
+ .../skill-eval/qa/errorcheck-evidence.json         |  19 ++
+ .../artifacts/skill-eval/qa/errorcheck.mjs         | 106 +++++++++
+ .../artifacts/skill-eval/qa/finalqa-evidence.json  | 241 +++++++++++++++++++++
+ .../artifacts/skill-eval/qa/finalqa.mjs            | 154 +++++++++++++
+ .../community-publishing/skill-evaluation.md       |   8 +-
+ 7 files changed, 653 insertions(+), 1 deletion(-)
+
+NOTE: this session issued no git write command against the platform checkout. The
+f00a28c commit appeared during the evaluation and mirrors this eval's QA artifacts
+(artifacts/skill-eval) plus an edit to skill-evaluation.md; no CLI/template files changed.

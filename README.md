@@ -47,6 +47,16 @@ V0 已完成并验收，验证游戏是贪吃蛇（snake）。
 
 </details>
 
+## 社区投稿（V1.2）
+
+除首发四款外，平台提供一条基于 GitHub 的社区投稿/审核/上架链路，不需要自建服务器：
+
+- 作者：按 [`docs/community-submission.md`](./docs/community-submission.md) 准备单文件包、素材和 `submission.json`；可用 [`skills/dsh-game-developer/`](./skills/dsh-game-developer/SKILL.md) 指导 AI 从玩法到打包/验证。
+- 维护者：按 [`docs/community-operations.md`](./docs/community-operations.md) 审核试玩后运行 `scripts/registry/prepare.mjs`（默认 dry-run），`--execute` 归档资产并开目录 PR；合并 PR 才上架。
+- 契约/字段/默认目录与 seed 兜底：见 [`docs/community-publishing-contracts.md`](./docs/community-publishing-contracts.md)。
+- 内容仓库模板：`templates/registry/`；Skill 归档：`npm run skill:pack`。
+- 外部内容仓库/GitHub 权限/公网地址属于 M4 待配置项，未配置时 Market 使用随包 seed，不白屏。
+
 ## V1 能力概览
 
 | 能力 | 状态 |

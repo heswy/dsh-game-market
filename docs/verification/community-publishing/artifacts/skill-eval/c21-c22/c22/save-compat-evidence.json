@@ -1,0 +1,364 @@
+{
+  "generatedAt": "2026-10-19T09:14:37.701Z",
+  "classification": "locally-simulated",
+  "baseUrl": "http://127.0.0.1:4391",
+  "steps": [
+    {
+      "at": "2026-10-19T09:14:37.755Z",
+      "step": "simulator-before-update",
+      "health": {
+        "ok": true,
+        "simulator": true,
+        "build": true,
+        "game": {
+          "id": "c21-invalid",
+          "version": "1.0.0"
+        }
+      },
+      "servedManifestVersion": "1.0.0",
+      "servedHasBadge": false,
+      "servedBytes": 108202
+    },
+    {
+      "at": "2026-10-19T09:14:39.202Z",
+      "step": "ready-1.0.0",
+      "locale": "en-US",
+      "hud": {
+        "hint": "Catch the falling stars before they hit the ground",
+        "badge": null,
+        "hasBadge": false,
+        "innerWidth": 334,
+        "innerHeight": 326,
+        "theme": "dark"
+      },
+      "save": null
+    },
+    {
+      "at": "2026-10-19T09:14:46.719Z",
+      "step": "attempt-1-paused-save",
+      "save": {
+        "saveVersion": 1,
+        "score": 20,
+        "lives": 2,
+        "elapsed": 6.547700000001515,
+        "stars": [
+          {
+            "x": 0.8600121411629268,
+            "y": 0.7972233606130104,
+            "vy": 0.25936732301025817,
+            "r": 14.990077461679267,
+            "tone": "star"
+          },
+          {
+            "x": 0.8942292549475925,
+            "y": 0.783650196952106,
+            "vy": 0.35729907292649804,
+            "r": 9.659282804809674,
+            "tone": "star"
+          },
+          {
+            "x": 0.26086887622893096,
+            "y": 0.4804827036732734,
+            "vy": 0.37447600146355586,
+            "r": 10.12474289101156,
+            "tone": "star"
+          },
+          {
+            "x": 0.7290081121255558,
+            "y": 0.12868603031209846,
+            "vy": 0.3573720606241969,
+            "r": 9.465856295534262,
+            "tone": "star"
+          }
+        ],
+        "spawnIn": 0.4181847999999873,
+        "speed": 0.2785724000000182,
+        "basket": 0.9452090691663548,
+        "gameOver": false
+      },
+      "revision": 1,
+      "paused": true
+    },
+    {
+      "at": "2026-10-19T09:14:46.719Z",
+      "step": "attempt-1-verdict",
+      "score": 20,
+      "lives": 2,
+      "elapsed": 6.547700000001515,
+      "gameOver": false,
+      "usable": true
+    },
+    {
+      "at": "2026-10-19T09:14:46.719Z",
+      "step": "captured-1.0.0-save",
+      "save": {
+        "saveVersion": 1,
+        "score": 20,
+        "lives": 2,
+        "elapsed": 6.547700000001515,
+        "stars": [
+          {
+            "x": 0.8600121411629268,
+            "y": 0.7972233606130104,
+            "vy": 0.25936732301025817,
+            "r": 14.990077461679267,
+            "tone": "star"
+          },
+          {
+            "x": 0.8942292549475925,
+            "y": 0.783650196952106,
+            "vy": 0.35729907292649804,
+            "r": 9.659282804809674,
+            "tone": "star"
+          },
+          {
+            "x": 0.26086887622893096,
+            "y": 0.4804827036732734,
+            "vy": 0.37447600146355586,
+            "r": 10.12474289101156,
+            "tone": "star"
+          },
+          {
+            "x": 0.7290081121255558,
+            "y": 0.12868603031209846,
+            "vy": 0.3573720606241969,
+            "r": 9.465856295534262,
+            "tone": "star"
+          }
+        ],
+        "spawnIn": 0.4181847999999873,
+        "speed": 0.2785724000000182,
+        "basket": 0.9452090691663548,
+        "gameOver": false
+      },
+      "bytes": 614,
+      "keys": [
+        "saveVersion",
+        "score",
+        "lives",
+        "elapsed",
+        "stars",
+        "spawnIn",
+        "speed",
+        "basket",
+        "gameOver"
+      ],
+      "attempts": 1
+    },
+    {
+      "at": "2026-10-19T09:14:46.771Z",
+      "step": "applied-1.0.1-source",
+      "copied": [
+        {
+          "relative": "manifest.json",
+          "from": "<tmp>/dsh-c21-c22/c22-update/manifest.json",
+          "to": "<tmp>/dsh-c21-c22/c22-demo/manifest.json",
+          "bytesBefore": 605,
+          "bytesAfter": 605
+        },
+        {
+          "relative": "package.json",
+          "from": "<tmp>/dsh-c21-c22/c22-update/package.json",
+          "to": "<tmp>/dsh-c21-c22/c22-demo/package.json",
+          "bytesBefore": 367,
+          "bytesAfter": 367
+        },
+        {
+          "relative": "index.html",
+          "from": "<tmp>/dsh-c21-c22/c22-update/index.html",
+          "to": "<tmp>/dsh-c21-c22/c22-demo/index.html",
+          "bytesBefore": 632,
+          "bytesAfter": 695
+        },
+        {
+          "relative": "src/styles.css",
+          "from": "<tmp>/dsh-c21-c22/c22-update/src/styles.css",
+          "to": "<tmp>/dsh-c21-c22/c22-demo/src/styles.css",
+          "bytesBefore": 2565,
+          "bytesAfter": 2889
+        },
+        {
+          "relative": "src/main.js",
+          "from": "<tmp>/dsh-c21-c22/c22-update/src/main.js",
+          "to": "<tmp>/dsh-c21-c22/c22-demo/src/main.js",
+          "bytesBefore": 12576,
+          "bytesAfter": 12576
+        }
+      ],
+      "manifest": "1.0.1"
+    },
+    {
+      "at": "2026-10-19T09:14:46.778Z",
+      "step": "simulator-after-update",
+      "health": {
+        "ok": true,
+        "simulator": true,
+        "build": true,
+        "game": {
+          "id": "c21-invalid",
+          "version": "1.0.1"
+        }
+      },
+      "servedManifestVersion": "1.0.1",
+      "servedHasBadge": true,
+      "servedBytes": 108589
+    },
+    {
+      "at": "2026-10-19T09:14:47.790Z",
+      "step": "reloaded-1.0.1",
+      "hud": {
+        "hint": "An unfinished save was found — press Space to continue",
+        "badge": "v1.0.1",
+        "hasBadge": true,
+        "innerWidth": 334,
+        "innerHeight": 326,
+        "theme": "dark"
+      },
+      "save": {
+        "saveVersion": 1,
+        "score": 20,
+        "lives": 2,
+        "elapsed": 6.547700000001515,
+        "stars": [
+          {
+            "x": 0.8600121411629268,
+            "y": 0.7972233606130104,
+            "vy": 0.25936732301025817,
+            "r": 14.990077461679267,
+            "tone": "star"
+          },
+          {
+            "x": 0.8942292549475925,
+            "y": 0.783650196952106,
+            "vy": 0.35729907292649804,
+            "r": 9.659282804809674,
+            "tone": "star"
+          },
+          {
+            "x": 0.26086887622893096,
+            "y": 0.4804827036732734,
+            "vy": 0.37447600146355586,
+            "r": 10.12474289101156,
+            "tone": "star"
+          },
+          {
+            "x": 0.7290081121255558,
+            "y": 0.12868603031209846,
+            "vy": 0.3573720606241969,
+            "r": 9.465856295534262,
+            "tone": "star"
+          }
+        ],
+        "spawnIn": 0.4181847999999873,
+        "speed": 0.2785724000000182,
+        "basket": 0.9452090691663548,
+        "gameOver": false
+      },
+      "saveStillEquals100": true,
+      "revision": 1
+    },
+    {
+      "at": "2026-10-19T09:14:49.045Z",
+      "step": "continued-1.0.1",
+      "hud": {
+        "hint": "Move with ← → / A D, mouse or touch; Tab leaves the canvas",
+        "badge": "v1.0.1",
+        "hasBadge": true,
+        "innerWidth": 334,
+        "innerHeight": 326,
+        "theme": "dark"
+      }
+    },
+    {
+      "at": "2026-10-19T09:14:50.008Z",
+      "step": "paused-save-1.0.1",
+      "save": {
+        "saveVersion": 1,
+        "score": 44,
+        "lives": 2,
+        "elapsed": 7.797700000001518,
+        "stars": [
+          {
+            "x": 0.26086887622893096,
+            "y": 0.9485777055027191,
+            "vy": 0.37447600146355586,
+            "r": 10.12474289101156,
+            "tone": "star"
+          },
+          {
+            "x": 0.7290081121255558,
+            "y": 0.5754011060923444,
+            "vy": 0.3573720606241969,
+            "r": 9.465856295534262,
+            "tone": "star"
+          },
+          {
+            "x": 0.6072406869363824,
+            "y": 0.25436266293670884,
+            "vy": 0.36520597904572705,
+            "r": 8.39161371166998,
+            "tone": "star"
+          }
+        ],
+        "spawnIn": 0.07745199999998724,
+        "speed": 0.2935724000000182,
+        "basket": 0.9452090691663548,
+        "gameOver": false
+      },
+      "revision": 2,
+      "paused": true
+    },
+    {
+      "at": "2026-10-19T09:14:50.008Z",
+      "step": "save-compat-comparison",
+      "scoreBefore": 20,
+      "scoreAfter": 44,
+      "elapsedBefore": 6.547700000001515,
+      "elapsedAfter": 7.797700000001518,
+      "livesBefore": 2,
+      "livesAfter": 2,
+      "saveVersionBefore": 1,
+      "saveVersionAfter": 1,
+      "sameKeys": true
+    },
+    {
+      "at": "2026-10-19T09:14:50.051Z",
+      "step": "requests",
+      "count": 5,
+      "external": []
+    },
+    {
+      "at": "2026-10-19T09:14:50.052Z",
+      "step": "evidence-paths",
+      "save100": "<tmp>/dsh-c21-c22/evidence-c22/save-1.0.0.json",
+      "save101": "<tmp>/dsh-c21-c22/evidence-c22/save-1.0.1-after-continue.json",
+      "save101Bytes": 505
+    }
+  ],
+  "checks": {
+    "initialVersion100": true,
+    "initialServeHasNoBadge": true,
+    "servedVersion101": true,
+    "servedHasBadge": true,
+    "saveSurvivedReload": true,
+    "servedCodeIs101": true,
+    "continueOffered": true,
+    "continuedViaSpace": true,
+    "scorePreserved": true,
+    "timeAdvanced": true,
+    "livesPreserved": true,
+    "saveVersionStable": true,
+    "saveShapeStable": true,
+    "noExternalRequests": true,
+    "noConsoleErrors": true
+  },
+  "errors": [],
+  "requests": [
+    "http://127.0.0.1:4391/",
+    "http://127.0.0.1:4391/game?instance=f2c7e00c36612c2fec4a2f0d64a66e57&nonce=998c0043372a4a321fd2b979560253a6",
+    "http://127.0.0.1:4391/favicon.ico",
+    "http://127.0.0.1:4391/game?instance=7f983f43e25f679f525930daa9885b54&nonce=dd102ff917301d7e58dc38beded26f2c",
+    "http://127.0.0.1:4391/game?instance=2a1e2e1fa0fd1acab3797a8960b824cb&nonce=ec4156887e47c3c51ad81da0752e3a51"
+  ],
+  "failedChecks": []
+}

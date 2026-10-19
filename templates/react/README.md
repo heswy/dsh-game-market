@@ -34,10 +34,13 @@ scripts/publish.mjs           registry entry + upload plan + checklist
 
 ## Setup
 
+Generated projects are portable: set the CLI path once (or use the CLI directly).
+
 ```bash
+export DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs
 npm install
 npm run build       # vite build -> dist/index.html (single file)
-npm run validate    # dsh-game validate dist/index.html
+npm run validate    # dsh-game validate dist/index.html (+ packed file if present)
 npm run runtime     # Local Runtime Simulator (serves the built file)
 ```
 

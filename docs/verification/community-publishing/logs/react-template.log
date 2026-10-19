@@ -1,0 +1,18 @@
+# Generated React template verification (independent evidence)
+# create: node scripts/cli/create-dsh-game.mjs react-verify --template react --dir <tmp>/dsh-react-eval2
+create_exit=0
+# install: npm install (dev-template deps only; proxy used)
+install_exit=0
+build_exit=0
+[plugin vite:singlefile] Inlining: style-BoI2zKMV.css
+computing gzip size...
+dist/index.html  194.26 kB │ gzip: 63.68 kB
+✓ built in 893ms
+validate_exit=0
+OK  <tmp>/dsh-react-eval2/react-verify/dist/index.html (194665 bytes)
+    manifest: react-verify@1.0.0 (React Verify)
+pack_exit=0
+packed <tmp>/dsh-react-eval2/react-verify/dist/react-verify-1.0.0.html (194665 bytes)
+  sha256: 48416e721a22c1d657c3bd8c56bf43a2dc4ef27e49a639936fe2bac0c4427a6f
+  digest: <tmp>/dsh-react-eval2/react-verify/dist/react-verify-1.0.0.html.sha256
+sha256=48416e721a22c1d657c3bd8c56bf43a2dc4ef27e49a639936fe2bac0c4427a6f
