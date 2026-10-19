@@ -2,8 +2,9 @@
 
 在 DeepSeek Harness（DSH）里，把 Agent 执行长任务时的等待时间变成一局小游戏：游戏占满主工作区，右下角的小鲸鱼负责维持 Agent 的存在感，任务完成时提醒但不打断。
 
-**当前发布：`v1.1.0`**。V1 首发能力（Game Market / My Games / 详情、静态 Registry、开发者 SDK/CLI/模板、首发四款游戏、默认随包 Registry）已通过 codex 验收；V1.1 进一步完成 Market 视觉交互收口、Runtime **全出血**舞台（移除黑边）、会话 Game tab 状态与中文宿主 locale 对齐，并补充第三方接入的呈现/安全区规范。
+**当前发布：`v1.2.0`**。在 V1.1 的 Market 视觉交互、全出血 Runtime 与开发包呈现规范基础上，新增社区投稿契约、AI 开发者 Skill、GitHub 内容仓库模板与维护者上架工具；默认官方 HTTPS 目录与随包 seed 兜底已接通。PR #4 / #5 已复核合并，受控 M4 公网上架→更新→撤下及独立 Host 安装/启动已有证据。
 
+V1.2 发布验证与范围见[发布说明](./docs/releases/v1.2.0.md)；真实 DSH App 安装/持久化、完整 120 秒流程、跨机 save、真实外部作者生产流程仍待验收。
 V1.1 验收：`npm run verify` **787/787**、`CHECK OK (23)`；真机与隔离宿主证据见 [`docs/V1-VERIFICATION.md`](./docs/V1-VERIFICATION.md)、[`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./docs/verification/v1/AUTOMATED-EVIDENCE.md)、[`docs/verification/fullbleed-runtime/`](./docs/verification/fullbleed-runtime/)。
 
 ### V1.1 主要变化
@@ -49,13 +50,15 @@ V0 已完成并验收，验证游戏是贪吃蛇（snake）。
 
 ## 社区投稿（V1.2）
 
+**已纳入 v1.2.0**：[PR #4](https://github.com/heswy/dsh-game-market/pull/4)（`2b45b2e`）与 [PR #5](https://github.com/heswy/dsh-game-market/pull/5)（`e247b93`）；CR4-01～06 和 PR #5 两项 P2 均已关闭。受控 M4 已完成；验收范围与剩余项见[社区投稿验证记录](./docs/verification/community-publishing/README.md)。
+
 除首发四款外，平台提供一条基于 GitHub 的社区投稿/审核/上架链路，不需要自建服务器：
 
 - 作者：按 [`docs/community-submission.md`](./docs/community-submission.md) 准备单文件包、素材和 `submission.json`；可用 [`skills/dsh-game-developer/`](./skills/dsh-game-developer/SKILL.md) 指导 AI 从玩法到打包/验证。
 - 维护者：按 [`docs/community-operations.md`](./docs/community-operations.md) 审核试玩后运行 `scripts/registry/prepare.mjs`（默认 dry-run），`--execute` 归档资产并开目录 PR；合并 PR 才上架。
 - 契约/字段/默认目录与 seed 兜底：见 [`docs/community-publishing-contracts.md`](./docs/community-publishing-contracts.md)。
 - 内容仓库模板：`templates/registry/`；Skill 归档：`npm run skill:pack`。
-- 外部内容仓库/GitHub 权限/公网地址属于 M4 待配置项，未配置时 Market 使用随包 seed，不白屏。
+- 受控内容仓库 `heswy/dsh-game-registry` 已完成公网上架/更新/撤下闭环；目录当前为空且保留审计。无可用官方快照时 Market 使用随包 seed；合法空官方目录保持权威，不回退 seed。生产作者流程、目标 AI 宿主 Skill 安装及内容仓库 toolchain pin 提升仍需按维护者文档完成。
 
 ## V1 能力概览
 

@@ -2,15 +2,15 @@
 
 > **本文件是全项目唯一的项目记忆文件（Single Source of Project Memory）。**
 > 任何项目级约定、状态、决策、交接信息都只记录在这里；其他文档（`PRD｜DSH Game Market.md`、`README.md` 等）是规格或说明，不是记忆。
-> **只有 Team Lead 可以修改本文件。** 子智能体/协作者只读；需要变更时向 Lead 报告，由 Lead 统一写入。
-> 本文件优先于口头约定；与 PRD 冲突时，实现以 PRD 第 8–12 章为准，本文件记录的是"我们怎么协作/做到哪了"。
+> 项目记忆由主会话统一维护；开发 Agent 交付状态与证据，由主会话复核后同步。
+> 用户最新明确指示优先。实现规格以 PRD 第 8–12 章及对应契约为准；本文件记录协作规则、当前状态和交接信息。
 
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**V1.1.0 已发布（2026-10-19）**。`main` 发布提交（tag `v1.1.0` 指向的提交）已推送；`package.json` **1.1.0**；全量 `npm run verify` **787/787**、`CHECK OK (23)`。V1.1 合入 PR #1（Market/详情/Game tab 视觉交互）、PR #2（Runtime 全出血 + 开发包呈现/安全区规范）、PR #3（宿主 locale 文案：Game tab/侧边栏）。`v1.0.0` tag 保留在 `611c0ed` 作为 V1 首发记录。**当前范围完成**；下一步为 V1.5（多资源/外部开发者体验）与滚动项。
+- 当前目标：**V1.2.0 社区投稿 MVP 发版（2026-10-19）**。PR #4（`2b45b2e`）与 PR #5（`e247b93`）均已复核合入；CR4-01～06 与 PR #5 两项 P2 全关闭。`package.json` **1.2.0**，本次发布 tag 为 `v1.2.0`（指向包含版本与文档收口的 main 提交）；保留 `v1.1.0@c106ac1` 等历史 tag。受控 M4 公网闭环与独立 Host 安装/启动完成，真实 DSH App、完整 120 秒及跨机 save 仍待验收；证据见 `docs/verification/community-publishing/`。
 - 历史：V1 验收/修复过程（M3 自动化、真机代执行、codex 两轮 review CR-01..09）见 `docs/V1-VERIFICATION.md`、`docs/verification/v1/AUTOMATED-EVIDENCE.md`、`docs/reviews/2026-10-19-codex-acceptance-review.md` 与 `git log`。
-- 权威规格：`PRD｜DSH Game Market.md`（**v2.2 + 2026-10-19 V1.1 呈现修订**；第 8–12 章为开发权威来源；全出血/安全区见 §9.6.1、D-037）
+- 权威规格：`PRD｜DSH Game Market.md`（**v2.2 + V1.1 呈现修订 + 社区投稿 §8.14 / D-038**；第 8–12 章为开发权威来源；全出血/安全区见 §9.6.1、D-037）
 - 开始记录：2026-10-18
 
 ---
@@ -20,8 +20,8 @@
 ### 1.1 Git 规则
 
 1. 仓库已初始化：`main` 跟踪 `origin/main`（`origin = https://github.com/heswy/dsh-game-market`）。
-2. **`main` 是集成分支，不允许直接开发功能。** 只有 Lead 做以下操作：初始化仓库、合并 feature 分支、打 tag、推送。
-3. 所有开发在短生命周期分支上进行，命名：
+2. **`main` 是集成分支，不直接开发功能。** Git 合并、远端写入、发布和打 tag 按用户授权执行；合码不自动授权发布或打 tag。
+3. 所有开发在短生命周期分支上进行；Codex 新分支默认 `codex/<topic>`，用户指定或已有分支保持原命名：
    - `feat/<scope>-<topic>`：新功能，例如 `feat/host-core`、`feat/client-shell`、`feat/runtime-sdk-snake`
    - `fix/<scope>-<topic>`：缺陷修复
    - `chore/<topic>`：工具、构建、文档、仓库维护
@@ -33,20 +33,20 @@
    - scope 示例：`host`、`client`、`runtime`、`sdk`、`snake`、`repo`、`scripts`
    - 正文用 `-` 列要点；必须写清"做了什么 + 怎么验证"；涉及 PRD 的注明章节（如 `PRD §8.5`）
    - 一个提交只做一件事；不提交生成缓存、`.DS_Store`、`.prd-draft/`
-6. 合并：feature 分支先合入 Lead 的集成分支 `chore/<milestone>-integration`，全量验证后再由 Lead `git merge --no-ff` 到 `main`；禁止快进合并到 `main`；合并前必须跑通 `npm run verify`（build + check + test）。`main` 只保留可发布提交。
+6. 合并：以固定 PR head 复核并通过 `npm run verify`（build + check + test），得到用户合并授权后，以 merge commit（`--no-ff` 或 GitHub merge 方法）合入 main；不强制增加中间集成分支。PR head 或基线发生实质变化时重新核对验证范围；集成通过不等于已经发布。
 7. 禁止 `git push --force` 到 `main`；禁止改写已推送历史；不 `git reset`/`clean` 丢掉用户改动。
-8. 推送：`main` 与 tag 由 Lead 推送；feature 分支默认只在本地，除非需要协作。推送失败（凭据/网络）不阻塞本地开发，但必须记录在"状态"里。
+8. 推送：按任务授权提交开发分支、开 PR 或更新远端；没有远端写入授权时保留本地交付。推送失败必须记录，不能报告为远端已同步。
 9. 版本 tag：V0 完成打 `v0.0.0`；之后按 `v<major>.<minor>.<patch>`。
 10. 不把任何 token/凭据写进仓库、日志、记忆或测试夹具。
 
-### 1.2 协作规则（子智能体）
+### 1.2 协作规则
 
-1. 子智能体开工前必须阅读：本文件 + PRD 对应章节 + 所在分支的共享契约文件。
-2. 子智能体只在自己的 worktree / 自己负责的目录内写文件；**禁止修改**：`PROJECT_MEMORY.md`、`PRD｜DSH Game Market.md`、`package.json`（根）、`cordis.patch.yml`、`scripts/`、`packages/shared/`，除非任务明确授权。
-3. 共享契约（`packages/shared/`）由 Lead 维护；需要新增字段/接口时先在交付说明中提出，不擅自改动。
-4. 子智能体在自己的分支提交（Conventional Commits），**不合并到 main、不推送**；完成后报告：分支名、commit hash、改动文件、测试命令与结果、未完成项/风险。
-5. 子智能体不修改用户 DSH profile、不安装插件、不联网、不执行破坏性命令。
-6. 零第三方依赖：Host/Client/Runtime/SDK 只用 Node 内置模块与 `react`（Client 只允许 `react`）。新增依赖必须先经 Lead 决策并写入记忆。
+1. 主会话负责架构、方案、任务指南、开发标准、仓库协调、review 和验收；用户选择其他开发 Agent 实施、验证、修复并开 PR。主会话不自动派发开发 Agent，也不默认接管实现；直接实现须有用户明确指派。
+2. 可复用开发规则集中在本文件；任务指南引用本文件，只增加任务范围和验收要求，不复制另一套协作规则。
+3. 开工先读本文件、任务指南、PRD 对应章节与共享契约；保留用户修改。开发 Agent 在独立 worktree/分支工作，按授权修改共享契约与工具，不自行扩大范围或修改用户 DSH profile。
+4. 交付报告必须包含固定 SHA、分支、改动、实际验证结果和未完成项；主会话在隔离 checkout 复核。不得把 mock、模拟器或 headless 证据写成真实公网/桌面 Host 验收。
+5. 不自动合并、发布或打 tag，不自动向其他任务或外部人员发消息；相关动作遵循用户在会话中的授权。
+6. 平台 Host/Client/Runtime/SDK 保持现有零新增第三方依赖约束（Client 使用 react）；新增依赖须先明确决策。开发者 React 模板的构建依赖按其模板契约管理。
 
 ### 1.3 验证要求
 
@@ -111,7 +111,7 @@ V0 必须包含（对应 PRD §7.1 / §11.2）：
 
 - **包格式**：单文件自包含 `.html`（UTF-8 无 BOM，≤20 MiB；Registry 包名 `<id>-<version>.html`），内嵌 `<script type="application/json" id="dsh-game-manifest">`（manifest v1，≤64 KiB，全文件恰好一处）+ 内联 SDK/样式/脚本/图标 data URI；**不引入 zip/归档/解压**（多文件资源 V1.5）。
 - **manifest v1**：必填 `manifestVersion/id/name/version/author/description/categories/capabilities/sdkVersion/runtimeVersion`；可选 `icon`(data URI ≤256 KiB)/`tags`/`preferredTheme`/`viewport`/`score`/`save`/`permissions`(仅省略或 `{}`)/`homepage`/`repository`/`license`/`i18n`。**无 `entry`/`cover`/`screenshots`**（后两者仅 Registry 条目字段）。V1 `capabilities` 仅 `storage`、`score`。
-- **静态 Registry**：索引 `registry/games.json`，`{registryVersion:1, generatedAt, games:[{id, version, …, package:{url, sha256, size, releasedAt}}]}`；`url` 必须 https、路径末段 `<id>-<version>.html`，或（仅本地 file Registry）Registry 目录内相对路径。默认 allowlist = `github.com`/`raw.githubusercontent.com`/`objects.githubusercontent.com`，可配置 `allowedHosts`；包 host 必须在 allowlist 或与索引同 host；重定向 ≤5 且不降级 http；缓存 `registry-cache.json`（TTL 6h、陈旧上限 14 天、离线回退、≤500 条/≤2 MiB）。
+- **静态 Registry**：索引 `registry/games.json`，`{registryVersion:1, generatedAt, games:[{id, version, …, package:{url, sha256, size, releasedAt}}]}`；`url` 必须 https、路径末段 `<id>-<version>.html`，或（仅本地 file Registry）Registry 目录内相对路径。默认 allowlist = `github.com`/`raw.githubusercontent.com`/`objects.githubusercontent.com`/`release-assets.githubusercontent.com`（PR #5 公网重定向补充），可配置 `allowedHosts`；包 host 必须在 allowlist 或与索引同 host；重定向 ≤5 且不降级 http；缓存 `registry-cache.json`（TTL 6h、陈旧上限 14 天、离线回退、≤500 条/≤2 MiB）。
 - **安装**：Host 下载/读取包（连接 10s / 整体 120s / 无数据 20s，边下边算 sha256）→ 校验 sha256/大小 → 解析 HTML 内嵌 manifest → 校验 id/version/sdkVersion/runtimeVersion/自包含 → 原子写 `packages/<id>/<version>/entry.html` → 原子写 `installations.json`。安装目录与 `saves/` 分离，卸载不删存档。
 - **更新 / 回滚**：Registry 版本更高 → Market 显示“更新”；保留 `current + 1 previousVersion` 供回滚，装第 3 个版本时删 previous；运行中禁止更新；新版本 `save.schemaVersion` 更高时需用户确认；不兼容版本不自动升级。
 - **卸载**：仅删 package 目录与 installation 记录；内置游戏不可卸载；默认保留存档/成绩，`deleteData:true` 二次确认后删除；运行中先暂停保存再卸载。
@@ -341,14 +341,16 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - V1-36：**V1.1 UI/呈现改进合入**：PR #1（Market header/hero/详情、侧边栏去状态、会话 Game tab 状态 pill；用户补充 gallery 视觉 `8ab8004`）合入 `b4c640b`；PR #2（Runtime 全出血、删除黑边/舞台内边距、`viewport` 降为推荐尺寸、安全区规范、Vanilla/React 模板、开发者指南 §4.4）合入 `58fb5ce`；用户 follow-up `395ed75` 把顶部安全区收敛为全宽 112px（控件 clearance 0–48px）、澄清 SDK viewport 为实测容器尺寸、React 模板类型检查/去 fetch polyfill。验证 787/787。`v1.0.0` tag 不动；发 `v1.1.0` 前先定版本与验证记录。
 - V1-37：**V1.1.0 发布**：PR #3（locale）合入 `192aa6a` 后，`package.json` 升 `1.1.0`，README/验证文档/开发者指南/证据索引更新；以发布提交打 tag `v1.1.0` 并推送。发布内容：UI 收口、Runtime 全出血、开发包呈现/安全区规范、宿主 locale 文案。`v1.0.0` tag 不动。
 
+- V1-38：**社区投稿 MVP 合入（PR #4）**：作者侧 `dsh-game-developer` Skill、submission/review/owner/catalog 契约、内容仓库模板/CI、维护者发布工具与官方 HTTPS + 随包 seed 兜底已合入 `2b45b2e`；包与 Runtime 协议不变。先校验候选再远端写入，draft 资产认证核验，撤下后仍保留不可变归属/审核历史，Git 回滚失败显式报告；CR4-01～06 全关闭。C-21 独立本地纠错、C-22 独立模拟器更新/旧 save 继续已有证据，不代表真实 Host 或公网发布通过。M4 与发布继续独立验收/授权。
+
+- V1-39：**受控 M4 与 V1.2.0**：受控作者 `heswy/dsh-game-test-author` 经真实内容仓库 PR #3/#4/#5 完成 1.0.0→1.0.1→撤下，目录为空、owner/review 审计保留；独立 Host 从固定目录快照安装/启动 SHA 一致，不等同真实 DSH App 验收。平台 PR #5 合入 `e247b93`：精确放行 GitHub Release 的 `release-assets.githubusercontent.com`；draft 认证 REST 数字资产 id、分页查找与 fail closed；脱敏 M4 日志已跟踪并纳入 check。用户授权合码/打 tag，平台版本升 1.2.0；内容仓库 toolchain pin 更新通过后续独立 PR，不自动修改其他仓库。
+
 ---
 
 ## 6. 当前状态与工作日志
 
 > 历史细节以 `git log`、`docs/V0-VERIFICATION.md`、`docs/V1-VERIFICATION.md` 为准；本节只保留最近 10 条工作日志（每阶段追加：日期、阶段、commit、结果、下一步）。
 
-- 2026-10-19 · **M3 真机代执行（桌面辅助控制）**：在用户真实 DSH Desktop 窗口内执行安装 Jump/Breakout、四款启动、平台暂停单层（4 款截图）、Continue 确认、Game tab 直连恢复（V1-22）、游戏内真实 Agent presence、Snake Game Over、卸载确认框、760px 窄窗；共 13 项通过、4 部分、3 阻塞（U-05 需回合结束观察/U-06 审批禁用/U-13 深色未生效）、3 未执行；应用全屏与系统深色已恢复，未卸载任何游戏。证据见 `docs/verification/v1/REAL-MACHINE-RESULTS.md` 与 `real-*.jpg`。
-- 2026-10-19 · **AskUserQuestion 提示修复 + U-05/深色主题真机证据**：用户截图确认任务完成提醒与深色主题均正常，已归档 `real-U-05-agent-completed.jpg`/`real-U-13-dark-theme.jpg` 并更新验收记录。针对「AskQuestion 无提示」：Host agent-adapter 增加 `ask_user_question` tool/call → waiting-user(waiting-question) 映射、tool/result 复位；host 测试 141/141 通过；PRD/契约/记忆同步。待重载 Host 后真机复测提问场景。
 - 2026-10-19 · **AskUserQuestion 提示出现 + 回答后不消失修复**：用户真机确认提问提醒已出现（2048/Breakout 游戏内鲸鱼「需要你回答一个问题 / 去处理」），并报告回答后状态未消失。根因：真实 `tool/result` 不带工具名，V1-25 的 name 匹配失效。已改为按快照 `source=question` 收尾；host 141/141；待再重载 Host 复测。
 - 2026-10-19 · **U-06/U-08 真机通过**：用户确认 AskUserQuestion 提醒回答后消失（`bcc3c92` 生效），U-08 关闭 DSH 重开后 Continue/进度正确。后续补跑 A-11 连续 5 分钟与收尾封板。
 - 2026-10-19 · **codex review 收口（fix/m3-review）**：CR-01 默认 Registry 随包（build/check/files + 冷启动安装测试）；CR-02 卸载删除含 `.bak` 且失败可重试；CR-03 新增 `POST /save-remove` 真实删除；CR-04/05 实例心跳/按实例释放/凭证 TTL 分离；CR-06 提问 callId/turn 关联；CR-07 日志入库+脱敏+check；CR-08 采集脚本断言/非零退出；CR-09 性能指标语义拆分。Host 149/149、全量 **780/780**、CHECK OK (23)；证据脚本（host-e2e/stability/reduced-motion/perf）全部通过。该分支后经两轮复核合入 main。
@@ -357,20 +359,23 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-19 · **UI/UX 收口合入（PR #1）**：Market header 只留市场/我的游戏、移除更新提示、上传按钮强化；Hero 去 kicker/meta、分区去序号；详情改紧凑缩略图；侧边 Game Market 去状态点；会话 Game tab 集成状态 pill（等你/完成/出错/已暂停）。用户随后补 gallery 视觉 `8ab8004`；PR 合入 `b4c640b`，verify 782/782。
 - 2026-10-19 · **全出血 Runtime + 开发包呈现规范（PR #2）**：删除舞台黑边/内边距/圆角黑框，Runtime 全出血；`viewport` 降级为推荐设计尺寸；开发者指南 §4.4 定义铺满/主题/响应式/安全区；Vanilla + React 模板改为全出血示例。用户 follow-up `395ed75` 统一顶部全宽 112px 安全带、SDK viewport 实测语义、React 模板类型检查；PR 合入 `58fb5ce`，main verify 787/787、CHECK OK (23)。
 - 2026-10-19 · **V1.1.0 发布**：PR #3（Game tab/sidebar 宿主 locale）合入 `192aa6a`；`package.json` 1.1.0；README/验证文档/记忆更新；发布提交（即 tag `v1.1.0` 指向的提交）推送；全量 787/787、CHECK OK (23)。
-- （待续）**当前状态（2026-10-19，V1.1.0 已发布）**：
+- 2026-10-19 · **社区投稿 MVP 复核通过并合码（PR #4）**：固定 head `c93a85a` 经 Codex 复跑 verify 835/835、CHECK OK (37)、registry 28/28；真实 ref lock 复现正确返回 `E_PUBLISH_ROLLBACK_FAILED`。用户授权后以 merge commit `2b45b2e` 合入 main；未发布、未打 tag。下一步 M4 公网闭环及真实 Host 安装/持久化、120 秒流程、跨机 save 验收。
+- 2026-10-19 · **PR #5 复核合入与 V1.2.0 发版**：固定 head `f862650` 验证 840/840、CHECK OK (38)、registry 31/31，两个 P2 全关闭；PR #5 合入 `e247b93`。用户随后授权合码/打 tag；本次合入项目记忆维护提交，升 package 1.2.0，更新发布说明并以 main 发布提交打 tag v1.2.0。真实 App 等剩余边界未改写为通过。
 
-- **发布**：`v1.1.0` tag 指向发布提交（已推送）；`main` 与 tag 同步；`package.json` **1.1.0**；上一版 `v1.0.0` 保留在 `611c0ed`。
-- **合并记录**：PR #1 `b4c640b`、PR #2 `58fb5ce`（follow-up `395ed75`）、PR #3 `192aa6a`。
-- **验证**：`npm run verify` **787/787**、`CHECK OK (23)`；V1.1 截图/证据：`docs/verification/fullbleed-runtime/`、`docs/verification/ui-polish/`、`docs/verification/ui-refinement/`。
-- **规范入口**：`docs/developer-guide.md` §4.4（全出血、安全区、viewport 推荐尺寸）；PRD v2.2 + V1.1 修订（D-037）；`docs/V1-CONTRACTS.md` / A-12 已同步。
-- **分支**：`main` 为发布线；PR 分支均已合入，可清理。
+**当前状态（2026-10-19，V1.2.0）**：
+
+- **发布**：`package.json` 1.2.0；tag `v1.2.0` 指向本次 main 发布提交。平台 Git tag 分发，不创建 GitHub Release 页面、不上传新游戏资产；历史 tag 不动。
+- **合并 / 验收**：PR #4 `2b45b2e`、PR #5 `e247b93`；已验收 head `f862650` 为 840/840、CHECK OK (38)、registry 31/31。本次版本/文档收口的独立验证结果见 `docs/releases/v1.2.0.md`。
+- **入口**：作者 `docs/community-submission.md`；维护者 `docs/community-operations.md`；契约 `docs/community-publishing-contracts.md`；Skill `skills/dsh-game-developer/SKILL.md`；任务指南 `docs/plans/2026-10-19-community-publishing-mvp.md`。
+- **受控 M4 已完成**：内容仓库 `heswy/dsh-game-registry` 已配置规则/不可变 Release；受控作者公网投稿→1.0.0→1.0.1→撤下闭环通过，目录为空且保留审计。独立 Host 安装/启动、Release 重定向与 SHA 核验已有归档；见 `m4-public-loop.md` / `external-content-repo.md`。
+- **下一步**：以独立内容仓库 PR 将 toolchain pin 从 `2b45b2e` 提升到本次平台发布提交并跑 CI；验证目标 AI 宿主的 Skill 安装/调用与真实外部作者/维护者生产流程。本次平台发版不自动改内容仓库。
+- **真实环境待验收**：真实 DSH App 安装与持久化、Host GM-4006 独立安装拒绝路径、完整真实 120 秒流程、跨机 save 传输、真实 Host 更新分发。C-22 save 恢复仍为模拟器证据。
+- **后续迭代**：V1.5 多资源包与既有滚动项（真实审批、桌面性能终值、字号/减少动效、DEV-03/07、2048 PB、Tab 键盘链路）保留。
 - **日常桌面端**：需要 dev 行时用户执行 `npm run dev:enable -- --yes` 后重启 DSH；Client 改动刷新页面即可；Host 改动需重启/重载插件行。
-- **滚动项（非 V1.1 阻塞）**：真实审批环境、桌面参考机性能终值（FPS/CPU/内存）、字号/减少动效真机项、DEV-03 热更新与 DEV-07 外部开发者体验、2048 破纪录反馈、完整 Tab 键盘链路；旧固定比例/内部留黑第三方包按 V1.1 迁移。
-- **下一步**：V1.5（多资源包、外部开发者体验）或优先处理滚动项；任何契约/发布动作先更新本记忆与 PRD，再执行（规则 §1）。
 
 ---
 
-## 7. 交接模板（子智能体完成后按此报告）
+## 7. 交接模板（开发 Agent 完成后按此报告）
 
 ```text
 分支：feat/xxx
@@ -379,5 +384,5 @@ commit：<hash>
 改动：<目录/文件列表>
 验证：<命令 + 结果>
 未完成/风险：<逐条>
-需要 Lead 处理：<契约变更/合并顺序/依赖>
+需要主会话处理：<契约变更/合并顺序/依赖>
 ```
