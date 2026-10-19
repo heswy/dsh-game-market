@@ -215,8 +215,11 @@ export async function createHarness(
   const directory = await fs.mkdtemp(path.join(tmpdir(), 'dsh-gm-host-'));
   const dataRoot = path.join(directory, 'data');
   const fake = createFakeContext({ knownEvents, failingEvents, withConnection });
+  // Isolate V0-style plugin tests from the bundled default Registry; tests that
+  // need it use createHostHarness with an explicit fixture.
+  const isolatedRegistry = { registry: { url: path.join(directory, 'missing-registry.json'), allowLocalFile: true } };
   try {
-    apply(fake.ctx, { dataRoot, builtinGamesRoot: fixtureRoot, ...config });
+    apply(fake.ctx, { dataRoot, builtinGamesRoot: fixtureRoot, ...isolatedRegistry, ...config });
   } catch (error) {
     fake.logs.push(['error', 'apply-threw', error]);
   }

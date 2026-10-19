@@ -2452,7 +2452,7 @@ export declare const game: Game;
 | `ready(timeoutMs?)` | 完成握手并发送 `ready`；返回 Runtime 信息。重复调用返回同一个 Promise | 无 | 默认 10000 | `GM-5001`、`GM-5002`、`GM-5003` |
 | `storage.save(key, data)` | 原子写入一个 key；返回实际字节数与新 `revision` | `ready` | 6000 | `GM-4031/4032/4131/4132/4133/4134/4092/5021` |
 | `storage.load(key)` | 读取一个 key；不存在返回 `null`（不抛错） | `ready` | 3000 | `GM-4031/4032/5022` |
-| `storage.remove(key)` | 删除一个 key；不存在视为成功 | `ready` | 3000 | `GM-4031/4032` |
+| `storage.remove(key)` | 真实删除一个 key（Host `POST /save-remove`）；不存在视为成功（`removed:false`）；删除释放 key/字节配额；删空后视为无存档 | `ready` | 3000 | `GM-4031/4032/4133` |
 | `session.start()` | 开始或接管当前 Play Session | `ready` | 4000 | `GM-4031/4033/4093` |
 | `session.end(opts?)` | 先尝试最终保存，再结束当前 Play Session | `ready` | 6000 | `GM-4031/4093` |
 | `score.submit(score, meta?)` | 提交本局分数；Host 更新最佳分与历史 | `ready` | 4000 | `GM-4002/4031/4290` |
@@ -3346,7 +3346,7 @@ F-07 明确禁止第三方 append 新类型 Session Event，且 Session Log 会�
 | 操作 | 删除 | 保留 |
 |---|---|---|
 | 卸载（默认） | package 目录、安装记录、`preferences.lastPlayedGameId` 若指向它 | 存档、成绩、会话记录 |
-| 卸载 + "同时删除数据" | 上述 + `saves/<id>/`、`scores/<id>.json`、`sessions/<id>.json` | 无 |
+| 卸载 + "同时删除数据" | 上述 + `saves/<id>/`（含 `.bak`）、`scores/<id>.json` + `.bak`、`sessions/<id>.json` + `.bak`、预览缓存；删除先于包移除执行 | 无（失败则整体可重试，不报告完全删除） |
 | 重装同 id | 覆盖 package | 自动继承全部历史数据 |
 
 "同时删除数据"必须是**二次确认**，且确认框内明确列出将被删除的内容与不可恢复性（文案归属 §9.5）：
@@ -3668,7 +3668,7 @@ dsh-game-market (repo)
         └── <id>-<version>.html
 ```
 
-- Registry 索引：`https://raw.githubusercontent.com/<owner>/dsh-game-market/main/registry/games.json`（任意 https 静态地址均可，默认指向官方仓库）。
+- Registry 索引：`https://raw.githubusercontent.com/<owner>/dsh-game-market/main/registry/games.json`（任意 https 静态地址均可）。**V1 默认分发为随包 file Registry**：`registry/games.json` + `registry/packages/<id>-<version>.html`（由 `scripts/build-registry.mjs` 从四款游戏构建确定性生成），全新环境无需网络即可发现/安装 Jump、2048、Breakout；远程 https 索引为可选项。
 - 包下载 URL 规则：
   1. 必须是 `https`；本地 file Registry 例外，允许 Registry 目录内的相对路径。
   2. host 必须属于 allowlist，**或与 Registry 索引同 host**（自建镜像/内网分发）。
@@ -3827,7 +3827,7 @@ export interface GameAgentState {
 | `approval/asked` | Session 持久事件（log-only，已核实） | 审批未决 | `waiting-user` | `approval` |
 | `approval/decided` | Session 持久事件 | 审批关闭 | `running` | `approval` |
 | `tool/call`（工具名 `ask_user_question`） | Session 持久事件（log-only，已核实） | 工具调用未返回、等待用户回答 | `waiting-user` | `question` |
-| `tool/result`（`waiting-user` 且 `source=question` 时） | Session 持久事件（payload 不携带工具名） | 问题已回答/中止 | `running` | `question` |
+| `tool/result`（`waiting-user` 且 `source=question` 时） | Session 持久事件（payload 不携带工具名；关联字段：`message.source.callId`） | 与待回答调用匹配的结果到达；旧的/同轮其他工具结果不清除 | `running` | `question` |
 | `agent/disposed` | Host 事件 | Agent 释放 | `idle` | `lifecycle` |
 | Host 启动/launch | 持久快照 | 恢复终止态 | `restore` | `restore` |
 
@@ -3860,7 +3860,7 @@ export interface GameAgentState {
 #### waiting-user 检测
 
 - **审批（主路径，已核实可行）。** 不直接监听 `ctx.approval`（它是决策面，返回值会影响审批结果），只读它写入的事件。`ctx.approval.request()` 会先追加 `approval/asked`、再追加 `approval/decided`，两者都是 log-only Session 事件（已核实 `dsh-user-approval` README）。Host 订阅这两个事件即可得到持久、可跨刷新恢复的等待态，不需要拦截别人的审批 waterfall，也不依赖 `ctx.approval` 的私有状态。
-- **提问（已实现，2026-10-19）。** `AskUserQuestion` 在 Session 日志中表现为普通 `tool/call`（工具名 `ask_user_question`），未回答期间工具结果不出现；Host 在读到该 `tool/call` 时置 `waiting-user`（`labelKey=agent.state.waiting.question`，`source=question`），读到对应 `tool/result` 后回到 `running`（真实 payload 不带工具名，按快照 `source=question` 收尾，不按事件名匹配）。只匹配工具名，不读参数/问题内容。**该检测不依赖 `userQuestions` 投影，也不依赖 `agent.session` 句柄**，因此比原 Spike S-14 方案更稳。若未来工具名变化，增加白名单别名即可。降级方案（保留）：
+- **提问（已实现，2026-10-19）。** `AskUserQuestion` 在 Session 日志中表现为普通 `tool/call`（工具名 `ask_user_question`），未回答期间工具结果不出现；Host 在读到该 `tool/call` 时置 `waiting-user`（`labelKey=agent.state.waiting.question`，`source=question`），读到对应 `tool/result` 后回到 `running`。**2026-10-19 复验收口**：提问时记录该调用的 `callId`（`tool/result` 在 `message.source.callId`）与 turn；只有匹配的结果才关闭等待，同轮其他工具/旧 turn 的结果不清除；`turn/end` 关闭被取消/中止的提问；真实结果不带工具名，不按事件名或问题正文匹配。只匹配工具名/关联字段，不读参数内容。**该检测不依赖 `userQuestions` 投影，也不依赖 `agent.session` 句柄**，因此比原 Spike S-14 方案更稳。若未来工具名变化，增加白名单别名即可。降级方案（保留）：
   1. 只识别审批等待；提问期间保持 `running`，不显示等待入口。这是可接受的 V1 降级，不影响“不打断工作”。
   2. Client 侧补充：Conversation 可见时，注册 `conversation.composer` chain 的 `select` 观察 `pendingInteraction`（类型 `approval | plan-review | question`），写入模块级 store；进入游戏后只作为初始值。**该路径不能覆盖“进入游戏后新出现的提问”**，因为 Conversation 在游戏面板激活时已卸载（F-05），所以只能作补充。
 - **优先级。** 同一时刻既有审批又有提问时，`waiting-user` 不变，label 取“等待审批”；不新增第二个状态。

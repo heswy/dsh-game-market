@@ -1,0 +1,42 @@
+{
+  "startedAt": "2026-10-19T03:43:59.012Z",
+  "environment": "isolated dsh web + headless Chrome 155 (CDP media emulation)",
+  "ok": true,
+  "checks": [
+    {
+      "name": "page matchMedia reduced",
+      "ok": true,
+      "details": {
+        "actual": true,
+        "expected": true
+      }
+    },
+    {
+      "name": "game iframe attached",
+      "ok": true,
+      "details": 1
+    },
+    {
+      "name": "game received reducedMotion=true",
+      "ok": true,
+      "details": {
+        "actual": true,
+        "expected": true
+      }
+    },
+    {
+      "name": "runtime reached playing",
+      "ok": true,
+      "details": 114
+    }
+  ],
+  "failures": [],
+  "pageMatchMediaReduced": true,
+  "launchToPlayingMs": 114,
+  "game": {
+    "reducedMotion": true,
+    "mode": "playing",
+    "theme": "light"
+  },
+  "iframeSessions": 1
+}

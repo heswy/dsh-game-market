@@ -1,0 +1,172 @@
+{
+  "startedAt": "2026-10-19T03:43:36.901Z",
+  "environment": "isolated dsh web + headless Chrome 155, warm cache, 1440x900",
+  "metrics": {
+    "marketShellMs": {
+      "samples": [
+        73,
+        59,
+        65
+      ],
+      "median": 65
+    },
+    "marketCardsReadyMs": {
+      "samples": [
+        73,
+        59,
+        65
+      ],
+      "median": 65
+    },
+    "launchToRuntimePlayingMs": {
+      "2048": {
+        "samples": [
+          106,
+          106
+        ],
+        "median": 106
+      },
+      "Breakout": {
+        "samples": [
+          106,
+          107
+        ],
+        "median": 107
+      },
+      "Jump": {
+        "samples": [
+          106,
+          107
+        ],
+        "median": 107
+      },
+      "Snake": {
+        "samples": [
+          106,
+          105
+        ],
+        "median": 106
+      }
+    }
+  },
+  "scriptVersion": 2,
+  "ok": true,
+  "checks": [
+    {
+      "name": "market click sample 1",
+      "ok": true
+    },
+    {
+      "name": "market shell sample 1",
+      "ok": true,
+      "details": 73
+    },
+    {
+      "name": "market cards-ready sample 1",
+      "ok": true,
+      "details": 73
+    },
+    {
+      "name": "market click sample 2",
+      "ok": true
+    },
+    {
+      "name": "market shell sample 2",
+      "ok": true,
+      "details": 59
+    },
+    {
+      "name": "market cards-ready sample 2",
+      "ok": true,
+      "details": 59
+    },
+    {
+      "name": "market click sample 3",
+      "ok": true
+    },
+    {
+      "name": "market shell sample 3",
+      "ok": true,
+      "details": 65
+    },
+    {
+      "name": "market cards-ready sample 3",
+      "ok": true,
+      "details": 65
+    },
+    {
+      "name": "Breakout sample 1 reached playing",
+      "ok": true,
+      "details": 106
+    },
+    {
+      "name": "Breakout sample 2 reached playing",
+      "ok": true,
+      "details": 107
+    },
+    {
+      "name": "Breakout all samples reached playing",
+      "ok": true,
+      "details": [
+        106,
+        107
+      ]
+    },
+    {
+      "name": "Jump sample 1 reached playing",
+      "ok": true,
+      "details": 106
+    },
+    {
+      "name": "Jump sample 2 reached playing",
+      "ok": true,
+      "details": 107
+    },
+    {
+      "name": "Jump all samples reached playing",
+      "ok": true,
+      "details": [
+        106,
+        107
+      ]
+    },
+    {
+      "name": "2048 sample 1 reached playing",
+      "ok": true,
+      "details": 106
+    },
+    {
+      "name": "2048 sample 2 reached playing",
+      "ok": true,
+      "details": 106
+    },
+    {
+      "name": "2048 all samples reached playing",
+      "ok": true,
+      "details": [
+        106,
+        106
+      ]
+    },
+    {
+      "name": "Snake sample 1 reached playing",
+      "ok": true,
+      "details": 106
+    },
+    {
+      "name": "Snake sample 2 reached playing",
+      "ok": true,
+      "details": 105
+    },
+    {
+      "name": "Snake all samples reached playing",
+      "ok": true,
+      "details": [
+        106,
+        105
+      ]
+    }
+  ],
+  "failures": [],
+  "finishedAt": "2026-10-19T03:43:36.903Z"
+}

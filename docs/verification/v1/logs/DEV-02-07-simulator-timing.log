@@ -1,0 +1,23 @@
+# DEV-02 Runtime Simulator
+# 2026-10-19T01:47:07Z
+--- simulator log ---
+Game Runtime Simulator: http://127.0.0.1:8791/
+  project: /private<tmp>/my-game
+  controls: agent running/waiting-user/completed, pause/resume, before-save, clear save, theme, locale
+  every bridge message is logged in the page and in the browser console
+Press Ctrl+C to stop.
+simulator GET / => 200
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DSH Game Runtime Simulator</title>
+    <
+
+# DEV-04/DEV-07 timing (create -> build -> validate -> pack)
+
+real	0m0.392s
+user	0m0.364s
+sys	0m0.046s
+DEV-07 elapsed above (template game to packed artifact); target <=30min

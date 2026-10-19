@@ -1,32 +1,28 @@
 #!/usr/bin/env node
 /**
- * M3 stability + reduced-motion evidence (isolated headless).
+ * A-11 evidence: continuous play in the isolated headless host.
  *
- * - A-11: active Breakout session for ~5 minutes; records runtime state and
- *   console/runtime errors.
- * - A-16: the same host with CDP `prefers-reduced-motion: reduce` and a 2048
- *   launch; verifies the game receives reducedMotion=true.
- *
- * Usage: node scripts/verification/stability.mjs
- * Outputs: docs/verification/v1/logs/A-11-A-16-stability.log
+ * Fails (non-zero exit) unless the Runtime stays alive AND the game itself keeps
+ * progressing (iframe debug hook: not paused, no overlay, ball/paddle moved),
+ * with zero page/runtime exceptions. See CR-08 in `codex 验收文档.md`.
  */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { ensureDshRuntime } from './lib-dsh.mjs';
+import { createChecker } from './assert.mjs';
 
 const ROOT = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
-const OUT = path.join(ROOT, 'docs/verification/v1/logs/A-11-A-16-stability.log');
-const BIN = '/tmp/dsh-inspect/dsh/node_modules/@deepseek-ai/dsh/lib/bin.js';
+const OUT = process.env.M3_STABILITY_OUT || path.join(ROOT, 'docs/verification/v1/logs/A-11-A-16-stability.log');
+const BIN = await ensureDshRuntime();
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const WORK = '/tmp/m3-stability';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const logLines = [];
-const log = (...parts) => { const line = parts.map((p) => (typeof p === 'string' ? p : JSON.stringify(p))).join(' '); logLines.push(line); console.log(line); };
-const results = { startedAt: new Date().toISOString(), a11: null, a16: null, errors: [] };
+const ensure = (dir) => fs.mkdirSync(dir, { recursive: true });
+const checker = createChecker('A-11');
 
-function ensure(dir) { fs.mkdirSync(dir, { recursive: true }); }
 async function run(cmd, args, opts = {}) {
   return new Promise((resolve) => {
     const child = spawn(cmd, args, { ...opts, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -53,22 +49,38 @@ class Cdp {
     const cdp = new Cdp();
     cdp.ws = new WebSocket(page.webSocketDebuggerUrl);
     await new Promise((res, rej) => { cdp.ws.onopen = res; cdp.ws.onerror = rej; });
-    cdp.id = 0; cdp.pending = new Map(); cdp.errors = [];
+    cdp.id = 0; cdp.pending = new Map(); cdp.sessions = []; cdp.errors = [];
     cdp.ws.onmessage = (e) => {
       const m = JSON.parse(e.data);
       if (m.id && cdp.pending.has(m.id)) { cdp.pending.get(m.id)(m.result); cdp.pending.delete(m.id); return; }
+      if (m.method === 'Target.attachedToTarget') cdp.sessions.push(m.params.sessionId);
       if (m.method === 'Runtime.exceptionThrown') cdp.errors.push(((m.params.exceptionDetails || {}).exception || {}).description || 'exception');
       if (m.method === 'Log.entryAdded' && m.params.entry.level === 'error') cdp.errors.push(m.params.entry.text);
     };
-    await cdp.send('Runtime.enable'); await cdp.send('Log.enable'); await cdp.send('Page.enable');
+    await cdp.send('Runtime.enable');
+    await cdp.send('Log.enable');
+    await cdp.send('Page.enable');
+    await cdp.send('Target.setDiscoverTargets', { discover: true });
+    await cdp.send('Target.setAutoAttach', { autoAttach: true, waitForDebuggerOnStart: false, flatten: true });
     return cdp;
   }
-  send(method, params = {}) { return new Promise((resolve) => { const id = ++this.id; this.pending.set(id, resolve); this.ws.send(JSON.stringify({ id, method, params })); }); }
+  send(method, params = {}, sid) { return new Promise((resolve) => { const id = ++this.id; this.pending.set(id, resolve); const msg = { id, method, params }; if (sid) msg.sessionId = sid; this.ws.send(JSON.stringify(msg)); }); }
   async eval(expr) { const r = await this.send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true }); return r && r.result ? r.result.value : null; }
-  async key(code, keyName) {
-    const keyCode = keyName === ' ' ? 32 : keyName === 'ArrowLeft' ? 37 : keyName === 'ArrowRight' ? 39 : code;
-    await this.send('Input.dispatchKeyEvent', { type: 'keyDown', windowsVirtualKeyCode: keyCode, nativeVirtualKeyCode: keyCode, key: keyName, code: keyName === ' ' ? 'Space' : keyName });
-    await this.send('Input.dispatchKeyEvent', { type: 'keyUp', windowsVirtualKeyCode: keyCode, nativeVirtualKeyCode: keyCode, key: keyName, code: keyName === ' ' ? 'Space' : keyName });
+  async evalInFrames(expr) {
+    const out = [];
+    for (const sid of [...new Set(this.sessions)]) {
+      try {
+        const r = await this.send('Runtime.evaluate', { expression: expr, returnByValue: true }, sid);
+        if (r && r.result && r.result.value !== undefined && r.result.value !== null) out.push(r.result.value);
+      } catch (_error) { /* frame went away */ }
+    }
+    return out;
+  }
+  async key(keyName) {
+    const code = keyName === ' ' ? 32 : keyName === 'ArrowLeft' ? 37 : 39;
+    const d = keyName === ' ' ? 'Space' : keyName;
+    await this.send('Input.dispatchKeyEvent', { type: 'keyDown', windowsVirtualKeyCode: code, nativeVirtualKeyCode: code, key: keyName, code: d });
+    await this.send('Input.dispatchKeyEvent', { type: 'keyUp', windowsVirtualKeyCode: code, nativeVirtualKeyCode: code, key: keyName, code: d });
   }
   close() { try { this.ws.close(); } catch (_error) { /* ignore */ } }
 }
@@ -99,84 +111,154 @@ async function enterBreakout(cdp) {
   await sleep(1500);
   const started = await cdp.eval(`(() => { const b = Array.from(document.querySelectorAll('.dgm-root button')).filter((x) => x.offsetParent !== null && !x.disabled).find((x) => /^(开始游戏|继续游戏|开始|继续)$/.test((x.innerText || '').trim())); if (!b) return false; b.click(); return true; })()`);
   await sleep(5000);
-  await cdp.eval(`(() => { const o = document.querySelector('.dgm-overlay'); if (!o) return false; const b = Array.from(o.querySelectorAll('button')).find((x) => /^(继续游戏|继续)$/.test((x.innerText || '').trim())); if (b) b.click(); return !!b; })()`);
-  await sleep(2000);
-  return started;
+  // The first launch of a saved game opens the platform resume dialog; keep
+  // clicking it until the runtime is actually playing, then return the game
+  // debug snapshot so callers can assert on real progression.
+  for (let i = 0; i < 60; i += 1) {
+    await sleep(300);
+    await cdp.eval(`(() => { const o = document.querySelector('.dgm-overlay'); if (!o) return false; const b = Array.from(o.querySelectorAll('button')).find((x) => /^(继续游戏|继续)$/.test((x.innerText || '').trim())); if (b) b.click(); return !!b; })()`);
+    const st = await cdp.eval(`(() => { const r = document.querySelector('.dgm-runtime'); return r ? r.dataset.runtimeState : null; })()`);
+    if (st === 'playing') {
+      await sleep(600);
+      const debug = await gameDebug(cdp);
+      if (debug && debug.runtimePaused === false) return { started, debug };
+    }
+  }
+  return { started, debug: null };
+}
+async function gameDebug(cdp) {
+  const values = await cdp.evalInFrames('typeof window.__dshBreakoutDebug === "function" ? JSON.stringify(window.__dshBreakoutDebug()) : null');
+  for (const value of values) { try { return JSON.parse(value); } catch (_error) { /* next */ } }
+  return null;
+}
+async function pressInGame(cdp, key, code) {
+  const expr = `(() => {
+    const opts = { key: ${JSON.stringify(key)}, code: ${JSON.stringify(code)}, bubbles: true, cancelable: true };
+    window.dispatchEvent(new KeyboardEvent('keydown', opts));
+    document.dispatchEvent(new KeyboardEvent('keydown', opts));
+    window.dispatchEvent(new KeyboardEvent('keyup', opts));
+    return true;
+  })()`;
+  const results = await cdp.evalInFrames(expr);
+  return results.length > 0;
+}
+async function clickGameOverlay(cdp) {
+  return cdp.evalInFrames(`(() => {
+    const button = Array.from(document.querySelectorAll('button')).find((b) => /继续|开始|Continue|Start|再来一局|新游戏|New run/i.test((b.innerText || '').trim()));
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+}
+async function continuePlatform(cdp) {
+  return cdp.eval(`(() => {
+    const overlay = document.querySelector('.dgm-overlay');
+    if (!overlay) return false;
+    const button = Array.from(overlay.querySelectorAll('button')).find((b) => /^(继续游戏|继续)$/.test((b.innerText || '').trim()));
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+}
+function progressFields(debug) {
+  if (!debug) return null;
+  return {
+    status: debug.status,
+    lives: debug.lives,
+    score: debug.score,
+    remaining: debug.remaining,
+    level: debug.level,
+    paddleX: Math.round(debug.paddleX || 0),
+    ballX: debug.ball ? Math.round(debug.ball.x) : null,
+    ballY: debug.ball ? Math.round(debug.ball.y) : null,
+    launched: debug.ball ? debug.ball.launched : null,
+  };
+}
+function moved(a, b) {
+  if (!a || !b) return false;
+  return a.status !== b.status || a.lives !== b.lives || a.score !== b.score ||
+    a.remaining !== b.remaining || a.level !== b.level || a.paddleX !== b.paddleX ||
+    a.ballX !== b.ballX || a.ballY !== b.ballY;
 }
 
+
+let host = null; let chrome = null; let cdp = null;
+async function finish(report) {
+  if (cdp) cdp.close();
+  if (chrome) chrome.kill();
+  try { if (host) host.child.kill(); } catch (_error) { /* ignore */ }
+  const result = {
+    ...report,
+    ok: checker.ok,
+    checks: checker.checks,
+    failures: checker.failures,
+    finishedAt: new Date().toISOString(),
+  };
+  fs.writeFileSync(OUT, JSON.stringify(result, null, 2));
+  console.log(JSON.stringify(result, null, 2));
+  process.exit(checker.exitCode());
+}
 async function main() {
-  ensure(WORK); fs.rmSync(WORK, { recursive: true, force: true }); ensure(WORK);
+  fs.rmSync(WORK, { recursive: true, force: true }); ensure(WORK);
   const home = await makeHome('breakout');
-  const host = await startHost(home, 58032);
-  let chrome = null; let cdp = null;
-  const timer = setTimeout(finish, 9 * 60 * 1000);
-  async function finish(reason) {
-    if (results.a11 === null) {
-      results.a11 = { error: reason || 'timeout', partial: true };
-      results.finishedAt = new Date().toISOString();
-      fs.writeFileSync(OUT, JSON.stringify(results, null, 2));
-      log('A-11 aborted:', reason || 'timeout');
+  host = await startHost(home, 58032);
+  fs.rmSync(`${WORK}/chrome`, { recursive: true, force: true });
+  chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=9459', `--user-data-dir=${WORK}/chrome`, '--no-first-run', '--no-default-browser-check', '--disable-gpu', '--window-size=1440,900', 'about:blank'], { stdio: 'ignore' });
+  await sleep(2500);
+  cdp = await Cdp.attach(9459);
+  await cdp.send('Page.navigate', { url: host.url });
+  await sleep(9000);
+  await dismissOnboarding(cdp);
+  const entered = await enterBreakout(cdp);
+  checker.check('breakout started', entered.started === true);
+  checker.check('breakout reached playing (not paused)', Boolean(entered.debug && entered.debug.runtimePaused === false), entered.debug && { runtimePaused: entered.debug.runtimePaused });
+  // Dismiss the game's own start overlay inside the iframe, then take the
+  // baseline snapshot used for progress checks.
+  await clickGameOverlay(cdp);
+  await continuePlatform(cdp);
+  await sleep(1500);
+  const debugStart = (await gameDebug(cdp)) || entered.debug;
+  const t0 = Date.now();
+  const ticks = [];
+  const progressSamples = [];
+  const maxMs = Number(process.env.M3_STABILITY_MS || 300 * 1000);
+  const sampleEvery = Math.max(1, Math.round(15000 / 2000));
+  const freeze = process.env.M3_STABILITY_FREEZE === '1';
+  let step = 0;
+  while (Date.now() - t0 < maxMs) {
+    if (!freeze) {
+      await continuePlatform(cdp);
+      const keys = [[' ', 'Space'], ['ArrowLeft', 'ArrowLeft'], ['ArrowRight', 'ArrowRight']];
+      const pair = keys[step % keys.length];
+      await pressInGame(cdp, pair[0], pair[1]);
     }
-    if (cdp) cdp.close();
-    if (chrome) chrome.kill();
-    try { host.child.kill(); } catch (_error) { /* ignore */ }
-    clearTimeout(timer);
-    process.exit(0);
-  }
-  try {
-    fs.rmSync(`${WORK}/chrome`, { recursive: true, force: true });
-    chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=9459', `--user-data-dir=${WORK}/chrome`, '--no-first-run', '--no-default-browser-check', '--disable-gpu', '--window-size=1440,900', 'about:blank'], { stdio: 'ignore' });
-    await sleep(2500);
-    cdp = await Cdp.attach(9459);
-    await cdp.send('Page.navigate', { url: host.url });
-    await sleep(9000);
-    await dismissOnboarding(cdp);
-    const started = await enterBreakout(cdp);
-    const t0 = Date.now();
-    const ticks = [];
-    let step = 0;
-    while (Date.now() - t0 < 300 * 1000) {
-      const keys = [' ', 'ArrowLeft', 'ArrowRight'];
-      await cdp.key(0, keys[step % 3]);
-      await sleep(2000);
-      if (step % 30 === 0) {
-        const st = await cdp.eval(`(() => { const r = document.querySelector('.dgm-runtime'); return r ? { state: r.dataset.runtimeState, overlay: (document.querySelector('.dgm-overlay') || {}).innerText || '' } : null; })()`);
-        ticks.push({ atSec: Math.round((Date.now() - t0) / 1000), st });
-      }
-      step += 1;
+    await sleep(2000);
+    if (step % sampleEvery === 0) {
+      const state = await cdp.eval(`(() => { const r = document.querySelector('.dgm-runtime'); return r ? { state: r.dataset.runtimeState, overlay: (document.querySelector('.dgm-overlay') || {}).innerText || '' } : null; })()`);
+      ticks.push({ atSec: Math.round((Date.now() - t0) / 1000), state });
+      const debug = await gameDebug(cdp);
+      if (debug) progressSamples.push({ atSec: Math.round((Date.now() - t0) / 1000), fields: progressFields(debug) });
     }
-    const finalState = await cdp.eval(`(() => { const r = document.querySelector('.dgm-runtime'); return r ? { state: r.dataset.runtimeState, overlay: (document.querySelector('.dgm-overlay') || {}).innerText || '' } : null; })()`);
-    results.a11 = { started, durationSec: Math.round((Date.now() - t0) / 1000), steps: step, finalState, errors: [...new Set(cdp.errors)], ticks };
-    log('A-11 result:', results.a11);
-
-    // A-16: reduced motion through CDP media emulation, fresh 2048 launch.
-    const home2 = await makeHome('reduced');
-    const host2 = await startHost(home2, 58033);
-    const cdp2 = await Cdp.attach(9459);
-    await cdp2.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
-    await cdp2.send('Page.navigate', { url: host2.url });
-    await sleep(9000);
-    await dismissOnboarding(cdp2);
-    await cdp2.eval(`(() => { const els = Array.from(document.querySelectorAll('button,a,[role="button"],div')).filter((n) => n.offsetParent !== null); const el = els.find((n) => (n.innerText || '').trim() === 'Game Market'); if (el) el.click(); return !!el; })()`);
-    await sleep(4000);
-    await cdp2.eval(`(() => { const leaf = Array.from(document.querySelectorAll('.dgm-root *')).find((n) => n.children.length === 0 && (n.textContent || '').trim() === '2048' && n.offsetParent !== null); if (!leaf) return false; const card = leaf.closest('button,[role="button"],[class*="card"],[class*="Card"]'); if (!card) return false; card.click(); return true; })()`);
-    await sleep(1500);
-    await cdp2.eval(`(() => { const b = Array.from(document.querySelectorAll('.dgm-root button')).filter((x) => x.offsetParent !== null && !x.disabled).find((x) => /^(继续游戏|开始游戏|开始|继续)$/.test((x.innerText || '').trim())); if (!b) return false; b.click(); return true; })()`);
-    await sleep(5000);
-    await cdp2.eval(`(() => { const o = document.querySelector('.dgm-overlay'); if (!o) return false; const b = Array.from(o.querySelectorAll('button')).find((x) => /^(继续游戏|继续)$/.test((x.innerText || '').trim())); if (b) b.click(); return !!b; })()`);
-    await sleep(2500);
-    const gameReduced = await cdp2.eval(`(() => { if (typeof window.__dsh2048Debug === 'function') return JSON.stringify(window.__dsh2048Debug()); const el = document.querySelector('.dgm-runtime'); return el ? JSON.stringify({ runtimeState: el.dataset.runtimeState }) : null; })()`);
-    results.a16 = { emulated: 'prefers-reduced-motion: reduce', pageReduced: await cdp2.eval(`window.matchMedia('(prefers-reduced-motion: reduce)').matches`), game: gameReduced };
-    cdp2.close(); host2.child.kill();
-    results.finishedAt = new Date().toISOString();
-    fs.writeFileSync(OUT, JSON.stringify(results, null, 2));
-    log('wrote', OUT);
-  } catch (error) {
-    results.error = String(error && error.message || error);
-    fs.writeFileSync(OUT, JSON.stringify(results, null, 2));
-    log('stability failed:', results.error);
-  } finally {
-    await finish();
+    step += 1;
   }
+  const debugEnd = await gameDebug(cdp);
+  const finalState = await cdp.eval(`(() => { const r = document.querySelector('.dgm-runtime'); return r ? { state: r.dataset.runtimeState, overlay: (document.querySelector('.dgm-overlay') || {}).innerText || '' } : null; })()`);
+  const distinctRealStates = new Set(
+    progressSamples
+      .map((sample) => JSON.stringify({ ...sample.fields, launched: undefined }))
+      .filter(Boolean)
+  ).size;
+  const anyMovement = progressSamples.some((sample, index) => index > 0 && moved(progressSamples[index - 1].fields, sample.fields));
+  const progressed = Boolean(progressSamples.length >= 5 && distinctRealStates >= 3 && anyMovement);
+  checker.check(`duration >= ${Math.round(maxMs / 1000)}s`, Date.now() - t0 >= maxMs - 2000);
+  checker.check('runtime stayed playing', finalState && finalState.state === 'playing', finalState);
+  checker.check('no tick observed a non-playing shell', ticks.every((tick) => tick.state && tick.state.state === 'playing'));
+  checker.check('periodic game progression observed', progressed, { samples: progressSamples.length, distinctRealStates, anyMovement, first: progressSamples[0], last: progressSamples[progressSamples.length - 1] });
+  checker.check('game not frozen at the end', Boolean(debugEnd && debugEnd.runtimePaused === false && debugEnd.loopRunning === true), debugEnd && { runtimePaused: debugEnd.runtimePaused, loopRunning: debugEnd.loopRunning, overlay: debugEnd.overlay });
+  checker.check('zero page/runtime exceptions', cdp.errors.length === 0, cdp.errors.slice(0, 10));
+  await finish({ environment: 'isolated dsh web + headless Chrome 155', durationSec: Math.round((Date.now() - t0) / 1000), steps: step, finalState, debugStart, debugEnd, progressed, progressSamples, errors: [...new Set(cdp.errors)], ticks, a11: true });
 }
-main();
+main().catch(async (error) => {
+  checker.check('stability run completed without throwing', false, String(error && error.message ? error.message : error));
+  await finish({ environment: 'isolated dsh web + headless Chrome 155', error: String(error && error.message ? error.message : error) });
+});

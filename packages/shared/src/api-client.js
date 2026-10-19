@@ -34,6 +34,7 @@ const DEFAULT_TIMEOUTS = Object.freeze({
   game: 3000,
   installed: 3000,
   save: 6000,
+  'save-remove': 6000,
   session: 5000,
   scores: 3000,
   score: 5000,
@@ -42,6 +43,7 @@ const DEFAULT_TIMEOUTS = Object.freeze({
   'agent-ack': 2000,
   launch: 8000,
   'runtime-release': 2000,
+  'runtime-renew': 2000,
   'dev-agent-state': 2000,
 });
 
@@ -138,6 +140,16 @@ export function createApiClient(options = {}) {
     getGame: (gameId) => call('game', { query: { id: gameId } }),
     getSave: (gameId, { includeData = false } = {}) =>
       call('save', { query: includeData ? { gameId, include: 'data' } : { gameId } }),
+    removeSave: ({ gameId, key, expectedRevision, operationId }) =>
+      call('save-remove', {
+        method: 'POST',
+        body: {
+          gameId,
+          key,
+          ...(expectedRevision === undefined ? {} : { expectedRevision }),
+          operationId: operationId || randomOperationId(),
+        },
+      }),
     setSave: ({ gameId, key, data, expectedRevision, operationId }) =>
       call('save', {
         method: 'POST',
@@ -219,7 +231,15 @@ export function createApiClient(options = {}) {
         retry: false,
       }),
     /** Tell the Host this runtime instance was left (unlocks update/uninstall). */
-    releaseRuntime: ({ gameId }) => call('runtime-release', { method: 'POST', body: { gameId }, retry: false }),
+    releaseRuntime: ({ gameId, instanceId }) =>
+      call('runtime-release', {
+        method: 'POST',
+        body: { gameId, ...(instanceId ? { instanceId } : {}) },
+        retry: false,
+      }),
+    /** Extend one live runtime instance while the game is still open. */
+    renewRuntime: ({ gameId, instanceId }) =>
+      call('runtime-renew', { method: 'POST', body: { gameId, instanceId }, retry: false }),
     /** Dev-only: requires Host config.devMode. */
     devSetAgentState: ({ sessionId, state, label, labelKey, turnId }) =>
       call('dev/agent-state', {

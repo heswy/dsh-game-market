@@ -91,7 +91,7 @@ export function createSavesService({ storage, catalog, logger = null, now }) {
   async function meta(gameId) {
     validateGameId(gameId);
     const current = await readCurrent(gameId);
-    if (!current) return null;
+    if (!current || Object.keys(current.values).length === 0) return null;
     const stored = await readMeta(gameId);
     return stored || deriveMeta(gameId, current);
   }
@@ -130,7 +130,7 @@ export function createSavesService({ storage, catalog, logger = null, now }) {
     validateGameId(gameId);
     const info = await catalog.get(gameId);
     const current = await readCurrent(gameId);
-    if (!current) {
+    if (!current || Object.keys(current.values).length === 0) {
       throw hostError(GM.SAVE_NOT_FOUND, 'Save not found', { retryable: false });
     }
     checkSchema(current, info);
@@ -215,9 +215,12 @@ export function createSavesService({ storage, catalog, logger = null, now }) {
       });
     }
     values[body.key] = data;
+    return writeValues({ gameId, info, currentRevision, storedMeta, values, reason: validateReason(body.reason) });
+  }
 
+  /** Durable write shared by save and remove (envelope + derived meta.json). */
+  async function writeValues({ gameId, info, currentRevision, storedMeta, values, reason }) {
     const savedAt = now().toISOString();
-    const reason = validateReason(body.reason);
     const saveSchemaVersion = saveSchemaVersionFor(info);
     const revisionValue = currentRevision + 1;
     const valuesBytes = jsonByteLength(values);
@@ -241,10 +244,11 @@ export function createSavesService({ storage, catalog, logger = null, now }) {
       });
     }
 
+    const keys = Object.keys(values).length;
     const metaValue = {
       schemaVersion: 1,
       gameId,
-      hasSave: true,
+      hasSave: keys > 0,
       saveSchemaVersion,
       savedAt,
       bytes: valuesBytes,
@@ -255,7 +259,7 @@ export function createSavesService({ storage, catalog, logger = null, now }) {
           : null,
       saveCount:
         (storedMeta && Number.isInteger(storedMeta.saveCount) ? storedMeta.saveCount : 0) + 1,
-      keys: Object.keys(values).length,
+      keys,
       revision: revisionValue,
     };
 
@@ -272,12 +276,74 @@ export function createSavesService({ storage, catalog, logger = null, now }) {
 
     return {
       gameId,
-      keys: Object.keys(values).length,
+      keys,
       bytes: valuesBytes,
       revision: revisionValue,
       updatedAt: savedAt,
     };
   }
 
-  return { get, save, meta, revision, paths, readCurrent };
+  /**
+   * Delete one key. A real delete (not `data:null`): the key disappears from
+   * the envelope, its bytes are released, and an empty save is reported as
+   * "no save" so Continue cannot point at it.
+   */
+  async function remove(body) {
+    if (!isPlainObject(body)) throw hostError(GM.INVALID_PARAM, 'Request body must be an object');
+    const gameId = validateGameId(body.gameId);
+    return serialiseSave(gameId, () => removeLocked(gameId, body));
+  }
+
+  async function removeLocked(gameId, body) {
+    const info = await catalog.get(gameId);
+    if (!Array.isArray(info.manifest.capabilities) || !info.manifest.capabilities.includes('storage')) {
+      throw hostError(GM.CAPABILITY_DENIED, 'Game did not declare the storage capability');
+    }
+    if (!isValidStorageKey(body.key)) {
+      throw hostError(GM.STORAGE_KEY_INVALID, 'Invalid storage key');
+    }
+    validateOperationId(body.operationId);
+    let expectedRevision;
+    if (body.expectedRevision !== undefined && body.expectedRevision !== null) {
+      if (!Number.isSafeInteger(body.expectedRevision) || body.expectedRevision < 0) {
+        throw hostError(GM.INVALID_PARAM, 'Invalid expectedRevision');
+      }
+      expectedRevision = body.expectedRevision;
+    }
+
+    const current = await readCurrent(gameId);
+    const storedMeta = current ? await readMeta(gameId) : null;
+    const currentRevision = current
+      ? Number.isInteger(current.revision)
+        ? current.revision
+        : storedMeta && Number.isInteger(storedMeta.revision)
+          ? storedMeta.revision
+          : 1
+      : 0;
+    if (expectedRevision !== undefined && expectedRevision !== currentRevision) {
+      throw hostError(GM.STORAGE_CONFLICT, 'Storage revision conflict', {
+        retryable: false,
+        details: { expectedRevision, actualRevision: currentRevision },
+      });
+    }
+    if (!current) {
+      return { gameId, key: body.key, removed: false, revision: 0, updatedAt: now().toISOString() };
+    }
+    checkSchema(current, info);
+    const values = copyValues(current);
+    if (!Object.prototype.hasOwnProperty.call(values, body.key)) {
+      return {
+        gameId,
+        key: body.key,
+        removed: false,
+        revision: currentRevision,
+        updatedAt: current.savedAt || now().toISOString(),
+      };
+    }
+    delete values[body.key];
+    const result = await writeValues({ gameId, info, currentRevision, storedMeta, values, reason: validateReason(body.reason) });
+    return { gameId, key: body.key, removed: true, revision: result.revision, updatedAt: result.updatedAt };
+  }
+
+  return { get, save, remove, meta, revision, paths, readCurrent };
 }

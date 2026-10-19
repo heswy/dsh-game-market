@@ -1,6 +1,10 @@
 node_modules/
 .DS_Store
 *.log
+# M3 verification evidence is intentionally tracked (must be readable from a
+# fresh clone); keep it sanitized via scripts/verification/sanitize-logs.mjs.
+!docs/verification/v1/logs/
+!docs/verification/v1/logs/*.log
 .prd-draft/
 worktrees/
 coverage/

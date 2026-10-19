@@ -1,0 +1,1051 @@
+[
+  {
+    "id": "dsh-game-market@0.0.0",
+    "name": "dsh-game-market",
+    "version": "0.0.0",
+    "size": 897582,
+    "unpackedSize": 3567825,
+    "shasum": "0ea48336c1c2486248ee9bb7294f28283c08e0a3",
+    "integrity": "sha512-vHZPMJPA5q8nvMVp8k3GmY6xLNje8lWw4R2l6OkaRQBU0JClLUo05igd+sOMemHFhU2OrDFBvVYGhmEXIuzMZg==",
+    "filename": "dsh-game-market-0.0.0.tgz",
+    "files": [
+      {
+        "path": "LICENSE",
+        "size": 1062,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 6663,
+        "mode": 420
+      },
+      {
+        "path": "client.js",
+        "size": 606066,
+        "mode": 420
+      },
+      {
+        "path": "cordis.patch.yml",
+        "size": 319,
+        "mode": 420
+      },
+      {
+        "path": "docs/developer-cli.md",
+        "size": 11774,
+        "mode": 420
+      },
+      {
+        "path": "docs/developer-guide.md",
+        "size": 15165,
+        "mode": 420
+      },
+      {
+        "path": "games/2048/build.mjs",
+        "size": 7151,
+        "mode": 420
+      },
+      {
+        "path": "games/2048/dist/index.html",
+        "size": 188313,
+        "mode": 420
+      },
+      {
+        "path": "games/2048/game.json",
+        "size": 697,
+        "mode": 420
+      },
+      {
+        "path": "games/2048/README.md",
+        "size": 17392,
+        "mode": 420
+      },
+      {
+        "path": "games/2048/src/game.js",
+        "size": 30173,
+        "mode": 420
+      },
+      {
+        "path": "games/2048/src/index.html.tpl",
+        "size": 41345,
+        "mode": 420
+      },
+      {
+        "path": "games/2048/src/logic.js",
+        "size": 16998,
+        "mode": 420
+      },
+      {
+        "path": "games/2048/src/render.js",
+        "size": 20563,
+        "mode": 420
+      },
+      {
+        "path": "games/2048/test/build.test.js",
+        "size": 5078,
+        "mode": 420
+      },
+      {
+        "path": "games/2048/test/logic.test.js",
+        "size": 17345,
+        "mode": 420
+      },
+      {
+        "path": "games/breakout/build.mjs",
+        "size": 4953,
+        "mode": 420
+      },
+      {
+        "path": "games/breakout/dist/index.html",
+        "size": 166406,
+        "mode": 420
+      },
+      {
+        "path": "games/breakout/game.json",
+        "size": 753,
+        "mode": 420
+      },
+      {
+        "path": "games/breakout/README.md",
+        "size": 10272,
+        "mode": 420
+      },
+      {
+        "path": "games/breakout/src/game.js",
+        "size": 30155,
+        "mode": 420
+      },
+      {
+        "path": "games/breakout/src/index.html.tpl",
+        "size": 13889,
+        "mode": 420
+      },
+      {
+        "path": "games/breakout/src/logic.js",
+        "size": 20677,
+        "mode": 420
+      },
+      {
+        "path": "games/breakout/src/render.js",
+        "size": 21599,
+        "mode": 420
+      },
+      {
+        "path": "games/breakout/test/logic.test.js",
+        "size": 15269,
+        "mode": 420
+      },
+      {
+        "path": "games/breakout/test/save.test.js",
+        "size": 6571,
+        "mode": 420
+      },
+      {
+        "path": "games/breakout/test/stability.test.js",
+        "size": 1704,
+        "mode": 420
+      },
+      {
+        "path": "games/jump/build.mjs",
+        "size": 6845,
+        "mode": 420
+      },
+      {
+        "path": "games/jump/dist/index.html",
+        "size": 210814,
+        "mode": 420
+      },
+      {
+        "path": "games/jump/game.json",
+        "size": 640,
+        "mode": 420
+      },
+      {
+        "path": "games/jump/README.md",
+        "size": 15217,
+        "mode": 420
+      },
+      {
+        "path": "games/jump/src/game.js",
+        "size": 57896,
+        "mode": 420
+      },
+      {
+        "path": "games/jump/src/icon.png",
+        "size": 22684,
+        "mode": 420
+      },
+      {
+        "path": "games/jump/src/index.html.tpl",
+        "size": 24955,
+        "mode": 420
+      },
+      {
+        "path": "games/jump/src/logic.js",
+        "size": 18108,
+        "mode": 420
+      },
+      {
+        "path": "games/jump/test/logic.test.js",
+        "size": 11509,
+        "mode": 420
+      },
+      {
+        "path": "games/jump/test/save.test.js",
+        "size": 10626,
+        "mode": 420
+      },
+      {
+        "path": "games/snake/dist/index.html",
+        "size": 139932,
+        "mode": 420
+      },
+      {
+        "path": "games/snake/game.json",
+        "size": 551,
+        "mode": 420
+      },
+      {
+        "path": "games/snake/README.md",
+        "size": 4993,
+        "mode": 420
+      },
+      {
+        "path": "games/snake/src/game.js",
+        "size": 33514,
+        "mode": 420
+      },
+      {
+        "path": "games/snake/src/index.html.tpl",
+        "size": 17701,
+        "mode": 420
+      },
+      {
+        "path": "games/snake/src/logic.js",
+        "size": 10447,
+        "mode": 420
+      },
+      {
+        "path": "games/snake/src/resume.js",
+        "size": 574,
+        "mode": 420
+      },
+      {
+        "path": "games/snake/test/logic.test.js",
+        "size": 10307,
+        "mode": 420
+      },
+      {
+        "path": "games/snake/test/package.test.js",
+        "size": 4223,
+        "mode": 420
+      },
+      {
+        "path": "games/snake/test/resume.test.js",
+        "size": 796,
+        "mode": 420
+      },
+      {
+        "path": "icon.svg",
+        "size": 418,
+        "mode": 420
+      },
+      {
+        "path": "index.js",
+        "size": 356,
+        "mode": 420
+      },
+      {
+        "path": "locale/en.json",
+        "size": 122,
+        "mode": 420
+      },
+      {
+        "path": "locale/zh.json",
+        "size": 113,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 1546,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/package.json",
+        "size": 118,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/agent-adapter.js",
+        "size": 20611,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/config.js",
+        "size": 9305,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/dev-games.js",
+        "size": 5955,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/download.js",
+        "size": 16798,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/entry.js",
+        "size": 23032,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/errors.js",
+        "size": 3592,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/games.js",
+        "size": 31587,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/health.js",
+        "size": 3899,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/host.js",
+        "size": 4783,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/http.js",
+        "size": 4091,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/ids.js",
+        "size": 1175,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/index.js",
+        "size": 246,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/install-lock.js",
+        "size": 6686,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/install.js",
+        "size": 36557,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/installations.js",
+        "size": 5497,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/maintenance.js",
+        "size": 9837,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/plugin.js",
+        "size": 6904,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/preferences.js",
+        "size": 6235,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/registry.js",
+        "size": 24674,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/resolver.js",
+        "size": 1373,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/router.js",
+        "size": 3763,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/routes.js",
+        "size": 7024,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/saves.js",
+        "size": 12838,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/scores.js",
+        "size": 6772,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/semver.js",
+        "size": 8072,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/serial.js",
+        "size": 741,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/sessions.js",
+        "size": 7334,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/storage.js",
+        "size": 12391,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/src/validation.js",
+        "size": 6217,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/agent.js",
+        "size": 16674,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/games.js",
+        "size": 7192,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/health.js",
+        "size": 10024,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/launch-entry.js",
+        "size": 10250,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/preferences.js",
+        "size": 4427,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/saves.js",
+        "size": 15440,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/scores.js",
+        "size": 6543,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/sessions.js",
+        "size": 7137,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/storage.js",
+        "size": 7320,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/v1-games.js",
+        "size": 12492,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/v1-install.js",
+        "size": 29936,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/v1-launch.js",
+        "size": 12006,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/v1-maintenance.js",
+        "size": 6074,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/cases/v1-registry.js",
+        "size": 18674,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/fixtures/games-broken/snake/game.json",
+        "size": 517,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/fixtures/games/snake/dist/index.html",
+        "size": 549,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/fixtures/games/snake/game.json",
+        "size": 587,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/fixtures/games/snake/preview/icon.png",
+        "size": 68,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/index.js",
+        "size": 1363,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/support/harness.js",
+        "size": 11097,
+        "mode": 420
+      },
+      {
+        "path": "packages/host/test/support/packages.js",
+        "size": 10846,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/package.json",
+        "size": 121,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/src/bridge.js",
+        "size": 10460,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/src/controller.js",
+        "size": 25314,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/src/index.js",
+        "size": 662,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/src/requests.js",
+        "size": 11972,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/src/scheduler.js",
+        "size": 5676,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/src/state-machine.js",
+        "size": 2346,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/test/bridge.test.js",
+        "size": 8285,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/test/controller.test.js",
+        "size": 19990,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/test/helpers/fakes.js",
+        "size": 9472,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/test/integration.test.js",
+        "size": 9317,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/test/requests.test.js",
+        "size": 8358,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/test/scheduler.test.js",
+        "size": 3997,
+        "mode": 420
+      },
+      {
+        "path": "packages/runtime/test/state-machine.test.js",
+        "size": 2279,
+        "mode": 420
+      },
+      {
+        "path": "packages/sdk/package.json",
+        "size": 251,
+        "mode": 420
+      },
+      {
+        "path": "packages/sdk/README.md",
+        "size": 2888,
+        "mode": 420
+      },
+      {
+        "path": "packages/sdk/src/bridge-client.js",
+        "size": 11932,
+        "mode": 420
+      },
+      {
+        "path": "packages/sdk/src/errors.js",
+        "size": 1483,
+        "mode": 420
+      },
+      {
+        "path": "packages/sdk/src/event-hub.js",
+        "size": 2250,
+        "mode": 420
+      },
+      {
+        "path": "packages/sdk/src/index.d.ts",
+        "size": 6815,
+        "mode": 420
+      },
+      {
+        "path": "packages/sdk/src/index.js",
+        "size": 635,
+        "mode": 420
+      },
+      {
+        "path": "packages/sdk/src/sdk.js",
+        "size": 13522,
+        "mode": 420
+      },
+      {
+        "path": "packages/sdk/src/validate.js",
+        "size": 3509,
+        "mode": 420
+      },
+      {
+        "path": "packages/sdk/src/version.js",
+        "size": 6172,
+        "mode": 420
+      },
+      {
+        "path": "packages/sdk/test/sdk.test.js",
+        "size": 26784,
+        "mode": 420
+      },
+      {
+        "path": "packages/shared/package.json",
+        "size": 339,
+        "mode": 420
+      },
+      {
+        "path": "packages/shared/src/api-client.js",
+        "size": 9414,
+        "mode": 420
+      },
+      {
+        "path": "packages/shared/src/constants.js",
+        "size": 6656,
+        "mode": 420
+      },
+      {
+        "path": "packages/shared/src/contracts.js",
+        "size": 14506,
+        "mode": 420
+      },
+      {
+        "path": "packages/shared/src/errors.js",
+        "size": 11879,
+        "mode": 420
+      },
+      {
+        "path": "packages/shared/src/index.js",
+        "size": 254,
+        "mode": 420
+      },
+      {
+        "path": "packages/shared/src/installation.js",
+        "size": 6892,
+        "mode": 420
+      },
+      {
+        "path": "packages/shared/src/manifest.js",
+        "size": 26001,
+        "mode": 420
+      },
+      {
+        "path": "packages/shared/src/protocol.js",
+        "size": 7892,
+        "mode": 384
+      },
+      {
+        "path": "packages/shared/src/registry.js",
+        "size": 17548,
+        "mode": 420
+      },
+      {
+        "path": "packages/shared/test/installation.test.js",
+        "size": 4159,
+        "mode": 420
+      },
+      {
+        "path": "packages/shared/test/manifest.test.js",
+        "size": 8407,
+        "mode": 420
+      },
+      {
+        "path": "packages/shared/test/registry.test.js",
+        "size": 7240,
+        "mode": 420
+      },
+      {
+        "path": "registry/games.json",
+        "size": 3490,
+        "mode": 420
+      },
+      {
+        "path": "registry/packages/2048-1.0.0.html",
+        "size": 188313,
+        "mode": 420
+      },
+      {
+        "path": "registry/packages/breakout-1.0.0.html",
+        "size": 166406,
+        "mode": 420
+      },
+      {
+        "path": "registry/packages/jump-1.0.0.html",
+        "size": 210814,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/create-dsh-game.mjs",
+        "size": 309,
+        "mode": 493
+      },
+      {
+        "path": "scripts/cli/dev-server.mjs",
+        "size": 6859,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/dsh-game.mjs",
+        "size": 432,
+        "mode": 493
+      },
+      {
+        "path": "scripts/cli/lib/cli-error.mjs",
+        "size": 1446,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/lib/cli.mjs",
+        "size": 16534,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/lib/create.mjs",
+        "size": 10263,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/lib/dev-harness.mjs",
+        "size": 27568,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/lib/fs-utils.mjs",
+        "size": 2795,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/lib/issues.mjs",
+        "size": 7607,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/lib/pack.mjs",
+        "size": 3331,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/lib/paths.mjs",
+        "size": 1670,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/lib/project.mjs",
+        "size": 16168,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/lib/publish.mjs",
+        "size": 14308,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/lib/validator.mjs",
+        "size": 6439,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/README.md",
+        "size": 1956,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/test-support/helpers.mjs",
+        "size": 4080,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/test/build.test.js",
+        "size": 5013,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/test/cli.test.js",
+        "size": 2680,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/test/create.test.js",
+        "size": 7047,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/test/dev-server.test.js",
+        "size": 4042,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/test/pack.test.js",
+        "size": 2198,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/test/publish.test.js",
+        "size": 6708,
+        "mode": 420
+      },
+      {
+        "path": "scripts/cli/test/validate.test.js",
+        "size": 8209,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/dsh-game.config.json",
+        "size": 117,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/index.html",
+        "size": 442,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/manifest.json",
+        "size": 691,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/package.json",
+        "size": 716,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/README.md",
+        "size": 4823,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/scripts/cli.mjs",
+        "size": 2062,
+        "mode": 493
+      },
+      {
+        "path": "templates/react/scripts/dev.mjs",
+        "size": 233,
+        "mode": 493
+      },
+      {
+        "path": "templates/react/scripts/pack.mjs",
+        "size": 208,
+        "mode": 493
+      },
+      {
+        "path": "templates/react/scripts/publish.mjs",
+        "size": 224,
+        "mode": 493
+      },
+      {
+        "path": "templates/react/scripts/validate.mjs",
+        "size": 271,
+        "mode": 493
+      },
+      {
+        "path": "templates/react/sdk/index.d.ts",
+        "size": 6662,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/src/App.tsx",
+        "size": 16164,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/src/game/i18n.ts",
+        "size": 2378,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/src/game/loop.ts",
+        "size": 1138,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/src/game/render.ts",
+        "size": 6772,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/src/game/storage.ts",
+        "size": 2293,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/src/main.tsx",
+        "size": 405,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/src/sdk.ts",
+        "size": 524,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/src/styles.css",
+        "size": 2504,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/tsconfig.json",
+        "size": 613,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/vendor/dsh-game-sdk.d.ts",
+        "size": 281,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/vendor/dsh-game-sdk.js",
+        "size": 70930,
+        "mode": 420
+      },
+      {
+        "path": "templates/react/vite.config.ts",
+        "size": 1437,
+        "mode": 420
+      },
+      {
+        "path": "templates/README.md",
+        "size": 1988,
+        "mode": 420
+      },
+      {
+        "path": "templates/vanilla/dsh-game.config.json",
+        "size": 116,
+        "mode": 420
+      },
+      {
+        "path": "templates/vanilla/index.html",
+        "size": 635,
+        "mode": 420
+      },
+      {
+        "path": "templates/vanilla/manifest.json",
+        "size": 696,
+        "mode": 420
+      },
+      {
+        "path": "templates/vanilla/README.md",
+        "size": 6014,
+        "mode": 420
+      },
+      {
+        "path": "templates/vanilla/scripts/build.mjs",
+        "size": 198,
+        "mode": 493
+      },
+      {
+        "path": "templates/vanilla/scripts/cli.mjs",
+        "size": 2062,
+        "mode": 493
+      },
+      {
+        "path": "templates/vanilla/scripts/dev.mjs",
+        "size": 215,
+        "mode": 493
+      },
+      {
+        "path": "templates/vanilla/scripts/pack.mjs",
+        "size": 208,
+        "mode": 493
+      },
+      {
+        "path": "templates/vanilla/scripts/publish.mjs",
+        "size": 224,
+        "mode": 493
+      },
+      {
+        "path": "templates/vanilla/scripts/validate.mjs",
+        "size": 373,
+        "mode": 493
+      },
+      {
+        "path": "templates/vanilla/src/i18n.js",
+        "size": 2496,
+        "mode": 420
+      },
+      {
+        "path": "templates/vanilla/src/main.js",
+        "size": 12576,
+        "mode": 420
+      },
+      {
+        "path": "templates/vanilla/src/render.js",
+        "size": 10620,
+        "mode": 420
+      },
+      {
+        "path": "templates/vanilla/src/storage.js",
+        "size": 2641,
+        "mode": 420
+      },
+      {
+        "path": "templates/vanilla/src/styles.css",
+        "size": 1951,
+        "mode": 420
+      }
+    ],
+    "entryCount": 207,
+    "bundled": []
+  }
+]

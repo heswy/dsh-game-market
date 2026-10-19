@@ -79,6 +79,15 @@ export function isRuntimeLoadingState(state) {
 }
 
 /** True once the game can receive keyboard input. */
+/** A runtime instance id is required to release only our own launch binding. */
+export function hasRuntimeInstanceId(value) {
+  return typeof value === 'string' && value.length > 0;
+}
+
+export function shouldReleaseRuntimeInstance(gameId, instanceId) {
+  return typeof gameId === 'string' && gameId.length > 0 && hasRuntimeInstanceId(instanceId);
+}
+
 export function isRuntimeInteractiveState(state) {
   return state === 'playing' || state === 'paused' || state === 'saving';
 }

@@ -1,0 +1,118 @@
+{
+  "registryVersion": 1,
+  "generatedAt": "2026-10-18T00:00:00.000Z",
+  "games": [
+    {
+      "id": "2048",
+      "name": "2048",
+      "version": "1.0.0",
+      "description": "4×4 数字拼图：滑动、合并，冲击 2048。每局一次撤销，进度自动保存，随时可以继续。",
+      "author": {
+        "name": "DSH Game Market"
+      },
+      "categories": [
+        "puzzle"
+      ],
+      "tags": [
+        "numbers",
+        "keyboard",
+        "single-player",
+        "short-run"
+      ],
+      "capabilities": [
+        "storage",
+        "score"
+      ],
+      "sdkVersion": "^1.0.0",
+      "runtimeVersion": "^1.0.0",
+      "preferredTheme": "game-defined",
+      "package": {
+        "url": "packages/2048-1.0.0.html",
+        "sha256": "b18549098084316aa9da70b19fe2f8e335fa8c621e95cc55e235d8528d34239c",
+        "size": 188313,
+        "releasedAt": "2026-10-18T00:00:00.000Z"
+      },
+      "cover": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/docs/verification/v0/market.png",
+      "license": "MIT",
+      "featured": false,
+      "quickPlay": false,
+      "publishedAt": "2026-10-18T00:00:00.000Z",
+      "updatedAt": "2026-10-18T00:00:00.000Z"
+    },
+    {
+      "id": "breakout",
+      "name": "Breakout",
+      "version": "1.0.0",
+      "description": "经典打砖块：移动挡板反弹球，击碎普通与坚硬砖块，闯过 5 个关卡。鼠标或键盘都能玩，支持暂停、自动保存与 Continue。",
+      "author": {
+        "name": "DSH Game Market"
+      },
+      "categories": [
+        "arcade"
+      ],
+      "tags": [
+        "arcade",
+        "breakout",
+        "keyboard",
+        "mouse",
+        "short-run"
+      ],
+      "capabilities": [
+        "storage",
+        "score"
+      ],
+      "sdkVersion": "^1.0.0",
+      "runtimeVersion": "^1.0.0",
+      "preferredTheme": "game-defined",
+      "package": {
+        "url": "packages/breakout-1.0.0.html",
+        "sha256": "89930a0879604d69db2caf9f607a0589357a2fa37f0d8cf4db2a7430034a863a",
+        "size": 166406,
+        "releasedAt": "2026-10-18T00:00:00.000Z"
+      },
+      "cover": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/docs/verification/v0/market.png",
+      "license": "MIT",
+      "featured": false,
+      "quickPlay": false,
+      "publishedAt": "2026-10-18T00:00:00.000Z",
+      "updatedAt": "2026-10-18T00:00:00.000Z"
+    },
+    {
+      "id": "jump",
+      "name": "Jump",
+      "version": "1.0.0",
+      "description": "纵向平台跳跃：自动弹跳，踩上移动、易碎与弹簧平台，向云端挑战更高分数。",
+      "author": {
+        "name": "DSH"
+      },
+      "categories": [
+        "arcade"
+      ],
+      "tags": [
+        "jump",
+        "arcade",
+        "endless",
+        "keyboard"
+      ],
+      "capabilities": [
+        "storage",
+        "score"
+      ],
+      "sdkVersion": "^1.0.0",
+      "runtimeVersion": "^1.0.0",
+      "preferredTheme": "game-defined",
+      "package": {
+        "url": "packages/jump-1.0.0.html",
+        "sha256": "61327aedea20f238b3f19bd03ed20651ae5a5a300bf95658f82a0d2f00e67dc6",
+        "size": 210814,
+        "releasedAt": "2026-10-18T00:00:00.000Z"
+      },
+      "cover": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/docs/verification/v0/market.png",
+      "license": "MIT",
+      "featured": false,
+      "quickPlay": true,
+      "publishedAt": "2026-10-18T00:00:00.000Z",
+      "updatedAt": "2026-10-18T00:00:00.000Z"
+    }
+  ]
+}

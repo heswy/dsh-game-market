@@ -6,6 +6,7 @@ import {
   deriveLoadPhase,
   isRuntimeLoadingState,
   isSafeEntryUrl,
+  shouldReleaseRuntimeInstance,
   validateLaunchInfo,
 } from '../src/runtime-utils.js';
 import {
@@ -47,6 +48,14 @@ function launchInfo(overrides) {
     ...(overrides || {}),
   };
 }
+
+test('runtime release requires our own instance id (CR-05)', () => {
+  assert.equal(shouldReleaseRuntimeInstance('snake', 'a'.repeat(32)), true);
+  for (const value of [null, undefined, '', 0, false, {}]) {
+    assert.equal(shouldReleaseRuntimeInstance('snake', value), false);
+  }
+  assert.equal(shouldReleaseRuntimeInstance('', 'a'.repeat(32)), false);
+});
 
 test('entry URL guard only accepts the same-origin relative entry route', function () {
   assert.equal(isSafeEntryUrl('/api/game-market/entry?gameId=snake'), true);

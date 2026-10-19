@@ -36,6 +36,7 @@ async function setup(t, specs, options = {}) {
   const host = await createHostHarness(t, {
     config: { ...fileRegistryConfig(fixture), ...(options.config || {}) },
     http: options.http,
+    ...(options.prepareDataRoot ? { prepareDataRoot: options.prepareDataRoot } : {}),
   });
   await host.host.registry.ready();
   return { fixture, host };
@@ -414,6 +415,113 @@ export function register() {
     assert.equal(await host.pathExists('saves/jump'), false);
     assert.equal(await host.pathExists('scores/jump.json'), false);
     assert.equal(await host.pathExists('sessions/jump.json'), false);
+  });
+
+  test('deleteData also removes backups so reinstall starts clean', async (t) => {
+    const { host } = await setup(t, [{ manifest: { id: 'jump' } }]);
+    await install(host, 'jump');
+    // Two writes create `.bak` siblings for scores/sessions; two saves create one for the save.
+    for (let i = 0; i < 2; i += 1) {
+      await host.data(ROUTES.SAVE, {
+        body: { gameId: 'jump', key: 'current', data: { score: i + 1 }, operationId: nextOp('save') },
+      });
+      await host.data(ROUTES.SCORE, { body: { gameId: 'jump', score: i + 1, operationId: nextOp('score') } });
+      const started = await host.data(ROUTES.SESSION, {
+        body: { gameId: 'jump', action: 'start', operationId: nextOp('session-start') },
+      });
+      await host.data(ROUTES.SESSION, {
+        body: {
+          gameId: 'jump',
+          action: 'end',
+          playSessionId: started.playSessionId,
+          outcome: 'completed',
+          operationId: nextOp('session-end'),
+        },
+      });
+    }
+    assert.equal(await host.pathExists('scores/jump.json.bak'), true);
+    assert.equal(await host.pathExists('sessions/jump.json.bak'), true);
+    assert.equal(await host.pathExists('saves/jump/current.json.bak'), true);
+
+    const removed = await host.data(ROUTES.UNINSTALL, {
+      body: {
+        gameId: 'jump',
+        deleteData: true,
+        confirmDataDeletion: true,
+        operationId: nextOp('del-confirm-backups'),
+      },
+    });
+    assert.equal(removed.dataDeleted, true);
+    for (const rel of [
+      'saves/jump',
+      'scores/jump.json',
+      'scores/jump.json.bak',
+      'sessions/jump.json',
+      'sessions/jump.json.bak',
+    ]) {
+      assert.equal(await host.pathExists(rel), false, `${rel} should be deleted`);
+    }
+
+    await install(host, 'jump');
+    const save = await host.requestJson(ROUTES.SAVE, { query: { gameId: 'jump', include: 'data' } });
+    assert.equal(save.response.status, 404);
+    assertError(save.payload, GM.SAVE_NOT_FOUND);
+  });
+
+  test('deleteData failure keeps the game installed and is retryable', async (t) => {
+    const { host } = await setup(t, [{ manifest: { id: 'jump' } }], {
+      prepareDataRoot: async (dataRoot) => {
+        await fs.mkdir(dataRoot, { recursive: true });
+        await fs.mkdir(path.join(dataRoot, 'trash'), { recursive: true });
+        await fs.chmod(path.join(dataRoot, 'trash'), 0o500);
+      },
+    });
+    await install(host, 'jump');
+    await host.data(ROUTES.SAVE, {
+      body: { gameId: 'jump', key: 'current', data: { score: 1 }, operationId: nextOp('save-fail') },
+    });
+    const failed = await host.requestJson(ROUTES.UNINSTALL, {
+      body: {
+        gameId: 'jump',
+        deleteData: true,
+        confirmDataDeletion: true,
+        operationId: nextOp('del-fail'),
+      },
+    });
+    assert.equal(failed.response.status, 503);
+    assertError(failed.payload, GM.INSTALL_IO);
+    // Data-first ordering: the package and its data are still present.
+    assert.equal(await host.pathExists('packages/jump/1.0.0/entry.html'), true);
+    assert.equal(await host.pathExists('saves/jump/current.json'), true);
+    const installations = await host.readDataJson('installations.json');
+    assert.ok(installations.games.jump);
+    await fs.chmod(path.join(host.dataRoot, 'trash'), 0o700).catch(() => undefined);
+  });
+
+  test('deleteData surfaces permission errors instead of treating data as missing', async (t) => {
+    const { host } = await setup(t, [{ manifest: { id: 'jump' } }]);
+    await install(host, 'jump');
+    await host.data(ROUTES.SCORE, { body: { gameId: 'jump', score: 20, operationId: nextOp('score-perm') } });
+    const scoresDir = host.filePath('scores');
+    t.after(async () => { await fs.chmod(scoresDir, 0o700).catch(() => undefined); });
+    await fs.chmod(scoresDir, 0o000);
+
+    const failed = await host.requestJson(ROUTES.UNINSTALL, {
+      body: {
+        gameId: 'jump',
+        deleteData: true,
+        confirmDataDeletion: true,
+        operationId: nextOp('del-perm'),
+      },
+    });
+    assert.equal(failed.response.status, 503);
+    assertError(failed.payload, GM.INSTALL_IO);
+    await fs.chmod(scoresDir, 0o700);
+    // No half-delete: package and data remain, retry is possible.
+    assert.equal(await host.pathExists('packages/jump/1.0.0/entry.html'), true);
+    assert.equal(await host.pathExists('scores/jump.json'), true);
+    const installations = await host.readDataJson('installations.json');
+    assert.ok(installations.games.jump);
   });
 
   test('built-in games cannot be uninstalled (GM-4038)', async (t) => {

@@ -189,6 +189,54 @@ export function register() {
     assert.equal(completed.state, 'completed');
   });
 
+  test('question wait is only cleared by its own tool result (and turn end)', async (t) => {
+    const host = await createHarness(t);
+    const sessionId = 'ses-question-correlated';
+    sessionEvent(host, sessionId, 'turn/start', { turn: 5 });
+    sessionEvent(host, sessionId, 'tool/call', { turn: 5, step: 1, name: 'ask_user_question', callId: 'call-q' });
+    const asked = await agentState(host, sessionId);
+    assert.equal(asked.state, 'waiting-user');
+
+    // Older-turn result and a parallel tool result in the same turn must not clear it.
+    sessionEvent(host, sessionId, 'tool/result', {
+      turn: 4,
+      step: 1,
+      message: { role: 'tool', source: { callId: 'call-old' }, content: [] },
+    });
+    assert.equal((await agentState(host, sessionId)).state, 'waiting-user');
+    sessionEvent(host, sessionId, 'tool/result', {
+      turn: 5,
+      step: 1,
+      message: { role: 'tool', source: { callId: 'call-parallel' }, content: [] },
+    });
+    assert.equal((await agentState(host, sessionId)).state, 'waiting-user');
+    // Same-turn result without a callId is not provably ours either.
+    sessionEvent(host, sessionId, 'tool/result', {
+      turn: 5,
+      step: 1,
+      message: { role: 'tool', content: [] },
+    });
+    assert.equal((await agentState(host, sessionId)).state, 'waiting-user');
+
+    sessionEvent(host, sessionId, 'tool/result', {
+      turn: 5,
+      step: 1,
+      message: { role: 'tool', source: { callId: 'call-q' }, content: [] },
+    });
+    const answered = await agentState(host, sessionId);
+    assert.equal(answered.state, 'running');
+    assert.equal(answered.source, 'question');
+
+    // Cancelling/aborting a question via the matching turn end closes it; an
+    // older turn end must be ignored.
+    sessionEvent(host, sessionId, 'tool/call', { turn: 6, step: 1, name: 'ask_user_question', callId: 'call-q2' });
+    assert.equal((await agentState(host, sessionId)).state, 'waiting-user');
+    sessionEvent(host, sessionId, 'turn/end', { turn: 5, reason: { kind: 'aborted' } });
+    assert.equal((await agentState(host, sessionId)).state, 'waiting-user');
+    sessionEvent(host, sessionId, 'turn/end', { turn: 6, reason: { kind: 'aborted' } });
+    assert.equal((await agentState(host, sessionId)).state, 'idle');
+  });
+
   test('waiting-user has highest priority and survives lower-priority events', async (t) => {
     const host = await createHarness(t);
     const sessionId = 'ses-wait-1';

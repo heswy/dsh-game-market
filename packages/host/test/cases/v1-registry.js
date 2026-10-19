@@ -20,6 +20,25 @@ function fileRegistryConfig(fixture) {
   return { registry: { url: fixture.indexPath, allowLocalFile: true } };
 }
 
+test('bundled default registry lets a fresh storage discover and install first-party games', async (t) => {
+  const host = await createHostHarness(t);
+  await host.host.registry.ready();
+  const list = await host.data(ROUTES.GAMES, { query: { limit: 50 } });
+  const ids = new Set(list.items.map((item) => item.id));
+  for (const id of ['snake', 'jump', '2048', 'breakout']) assert.equal(ids.has(id), true, id);
+  assert.equal(list.items.find((item) => item.id === 'jump').installed, false);
+
+  const installed = await host.data(ROUTES.INSTALL, {
+    body: { gameId: 'jump', operationId: 'default-registry-install' },
+  });
+  assert.equal(installed.version, '1.0.0');
+  assert.equal(installed.source, 'registry');
+  const launchInfo = await host.data(ROUTES.LAUNCH, { body: { gameId: 'jump' } });
+  const entry = await host.request(launchInfo.entryUrl);
+  assert.equal(entry.status, 200);
+  assert.equal(entry.headers.get('x-entry-sha256'), installed.sha256);
+});
+
 async function writeCacheFile(dataRoot, sourceUrl, games, fetchedAt) {
   await fs.mkdir(dataRoot, { recursive: true });
   await fs.writeFile(

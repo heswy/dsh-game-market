@@ -3,9 +3,11 @@
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { ensureDshRuntime } from './lib-dsh.mjs';
+import { createChecker } from './assert.mjs';
 const ROOT = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const OUT = path.join(ROOT, 'docs/verification/v1/logs/A-16-reduced-motion.log');
-const BIN = '/tmp/dsh-inspect/dsh/node_modules/@deepseek-ai/dsh/lib/bin.js';
+const BIN = await ensureDshRuntime();
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const WORK = '/tmp/m3-a16';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -51,19 +53,39 @@ async function main() {
   await sleep(1500);
   const t0 = Date.now();
   await ev(`(() => { const b = Array.from(document.querySelectorAll('.dgm-root button')).filter((x) => x.offsetParent !== null && !x.disabled).find((x) => /^(继续游戏|开始游戏|开始|继续)$/.test((x.innerText || '').trim())); if (!b) return false; b.click(); return true; })()`);
-  await ev(`(() => { const o = document.querySelector('.dgm-overlay'); if (!o) return false; const b = Array.from(o.querySelectorAll('button')).find((x) => /^(继续游戏|继续)$/.test((x.innerText || '').trim())); if (b) b.click(); return !!b; })()`);
   let playingMs = null;
-  for (let i = 0; i < 60; i += 1) { await sleep(100); const st = await ev(`(() => { const r = document.querySelector('.dgm-runtime'); return r ? r.dataset.runtimeState : null; })()`); if (st === 'playing') { playingMs = Date.now() - t0; break; } }
+  for (let i = 0; i < 90; i += 1) {
+    await sleep(100);
+    await ev(`(() => { const o = document.querySelector('.dgm-overlay'); if (!o) return false; const b = Array.from(o.querySelectorAll('button')).find((x) => /^(继续游戏|继续)$/.test((x.innerText || '').trim())); if (b) b.click(); return !!b; })()`);
+    const st = await ev(`(() => { const r = document.querySelector('.dgm-runtime'); return r ? r.dataset.runtimeState : null; })()`);
+    if (st === 'playing') { playingMs = Date.now() - t0; break; }
+  }
   await sleep(1500);
   for (const sid of sessions) { try { await send('Runtime.enable', {}, sid); } catch (_e) { /* ignore */ } }
   let game = null;
   for (const sid of sessions) {
     const r = await send('Runtime.evaluate', { expression: 'typeof window.__dsh2048Debug === "function" ? JSON.stringify(window.__dsh2048Debug()) : null', returnByValue: true }, sid).catch(() => null);
-    if (r && r.result && r.result.value) game = JSON.parse(r.result.value);
+    if (r && r.result && r.result.value) { try { game = JSON.parse(r.result.value); } catch (_error) { /* ignore */ } }
   }
-  const result = { startedAt: new Date().toISOString(), pageMatchMediaReduced: mockReduced, launchToPlayingMs: playingMs, game: game && { reducedMotion: game.reducedMotion, mode: game.mode, theme: game.theme }, iframeSessions: sessions.length };
+  const checker = createChecker('A-16');
+  checker.equal('page matchMedia reduced', mockReduced, true);
+  checker.check('game iframe attached', sessions.length > 0, sessions.length);
+  checker.equal('game received reducedMotion=true', game && game.reducedMotion, true);
+  checker.check('runtime reached playing', playingMs !== null, playingMs);
+  const result = {
+    startedAt: new Date().toISOString(),
+    environment: 'isolated dsh web + headless Chrome 155 (CDP media emulation)',
+    ok: checker.ok,
+    checks: checker.checks,
+    failures: checker.failures,
+    pageMatchMediaReduced: mockReduced,
+    launchToPlayingMs: playingMs,
+    game: game && { reducedMotion: game.reducedMotion, mode: game.mode, theme: game.theme },
+    iframeSessions: sessions.length,
+  };
   fs.writeFileSync(OUT, JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result, null, 2));
-  chrome.kill(); host.child.kill(); process.exit(0);
+  chrome.kill(); host.child.kill();
+  process.exit(checker.exitCode());
 }
 main().catch((error) => { console.error(error); process.exit(1); });

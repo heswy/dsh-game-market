@@ -1,0 +1,9 @@
+# AE-09 CLI publish (emit registry entry + upload plan, offline)
+# 2026-10-19T01:47:30Z
+published my-game@1.0.0
+  entry:     /private<tmp>/my-game/dist/registry-entry.json
+  upload:    /private<tmp>/my-game/dist/upload-plan.md
+  checklist: /private<tmp>/my-game/dist/review-checklist.md
+  sha256:    cdeb9c0bb9dd607f653be2b31ad6adac96d05dc8c381a75432a1c286c52506fb
+  package:   https://raw.githubusercontent.com/heswy/dsh-game-market/main/docs/verification/v1/fixtures/packages/my-game-1.0.0.html
+exit=0

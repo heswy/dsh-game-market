@@ -1,0 +1,13 @@
+# AE-04 node --test (2026-10-19T01:35:13Z)
+✔ V0 games stay compatible through the legacy window (V1-07) (0.616916ms)
+✔ the contract validators run end to end on a package sample (1.344584ms)
+✔ M0 contract docs exist and match the frozen surface (3.154125ms)
+✔ TBD-10 launch binding TTL is frozen in constants (0.165584ms)
+ℹ tests 767
+ℹ suites 0
+ℹ pass 767
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9236.248

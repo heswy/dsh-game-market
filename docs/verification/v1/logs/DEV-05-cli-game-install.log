@@ -1,0 +1,4 @@
+installed my-game 1.0.0 changed= true
+launch mode= start entryUrl= /api/game-market/entry
+entry status= 200 bytes= 106931 manifest= true sha= cdeb9c0bb9dd607f653be2b31ad6adac96d05dc8c381a75432a1c286c52506fb
+canContinue= true saveKeys= 1

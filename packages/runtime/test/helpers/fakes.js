@@ -217,6 +217,27 @@ export function createFakeApi() {
         updatedAt: state.save.updatedAt,
       });
     },
+    removeSave: function removeSave(payload) {
+      calls.push(['removeSave', payload]);
+      const current = state.save || { gameId: payload.gameId, values: {}, revision: 0, updatedAt: null };
+      const values = Object.assign({}, current.values);
+      const existed = Object.prototype.hasOwnProperty.call(values, payload.key);
+      delete values[payload.key];
+      state.nextRevision += 1;
+      state.save = {
+        gameId: payload.gameId,
+        values,
+        revision: state.nextRevision,
+        updatedAt: '2026-10-18T00:00:00.000Z',
+      };
+      return Promise.resolve({
+        gameId: payload.gameId,
+        key: payload.key,
+        removed: existed,
+        revision: state.save.revision,
+        updatedAt: state.save.updatedAt,
+      });
+    },
     getSave: function getSave(gameId, options) {
       calls.push(['getSave', gameId, options]);
       if (!state.save) {

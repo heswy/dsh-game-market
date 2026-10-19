@@ -1047,6 +1047,7 @@ window.__ModuleLoader__.load({
       installLockWaitMs: 10000,
       /** How long a /entry launcher binding stays valid (TBD-10). */
       entryBindingTtlMs: 10 * 60 * 1000,
+      runtimeRenewMs: 60 * 1000,
       /** UI animation durations (ms). */
       motion: Object.freeze({
         panel: 240,
@@ -2627,6 +2628,7 @@ window.__ModuleLoader__.load({
       game: 3000,
       installed: 3000,
       save: 6000,
+      'save-remove': 6000,
       session: 5000,
       scores: 3000,
       score: 5000,
@@ -2635,6 +2637,7 @@ window.__ModuleLoader__.load({
       'agent-ack': 2000,
       launch: 8000,
       'runtime-release': 2000,
+      'runtime-renew': 2000,
       'dev-agent-state': 2000,
     });
 
@@ -2731,6 +2734,16 @@ window.__ModuleLoader__.load({
         getGame: (gameId) => call('game', { query: { id: gameId } }),
         getSave: (gameId, { includeData = false } = {}) =>
           call('save', { query: includeData ? { gameId, include: 'data' } : { gameId } }),
+        removeSave: ({ gameId, key, expectedRevision, operationId }) =>
+          call('save-remove', {
+            method: 'POST',
+            body: {
+              gameId,
+              key,
+              ...(expectedRevision === undefined ? {} : { expectedRevision }),
+              operationId: operationId || randomOperationId(),
+            },
+          }),
         setSave: ({ gameId, key, data, expectedRevision, operationId }) =>
           call('save', {
             method: 'POST',
@@ -2812,7 +2825,15 @@ window.__ModuleLoader__.load({
             retry: false,
           }),
         /** Tell the Host this runtime instance was left (unlocks update/uninstall). */
-        releaseRuntime: ({ gameId }) => call('runtime-release', { method: 'POST', body: { gameId }, retry: false }),
+        releaseRuntime: ({ gameId, instanceId }) =>
+          call('runtime-release', {
+            method: 'POST',
+            body: { gameId, ...(instanceId ? { instanceId } : {}) },
+            retry: false,
+          }),
+        /** Extend one live runtime instance while the game is still open. */
+        renewRuntime: ({ gameId, instanceId }) =>
+          call('runtime-renew', { method: 'POST', body: { gameId, instanceId }, retry: false }),
         /** Dev-only: requires Host config.devMode. */
         devSetAgentState: ({ sessionId, state, label, labelKey, turnId }) =>
           call('dev/agent-state', {
@@ -8190,11 +8211,20 @@ window.__ModuleLoader__.load({
     }
 
     /** True once the game can receive keyboard input. */
+    /** A runtime instance id is required to release only our own launch binding. */
+    function hasRuntimeInstanceId(value) {
+      return typeof value === 'string' && value.length > 0;
+    }
+
+    function shouldReleaseRuntimeInstance(gameId, instanceId) {
+      return typeof gameId === 'string' && gameId.length > 0 && hasRuntimeInstanceId(instanceId);
+    }
+
     function isRuntimeInteractiveState(state) {
       return state === 'playing' || state === 'paused' || state === 'saving';
     }
 
-    return { isSafeEntryUrl, validateLaunchInfo, deriveLoadPhase, isRuntimeLoadingState, isRuntimeInteractiveState };
+    return { isSafeEntryUrl, validateLaunchInfo, deriveLoadPhase, isRuntimeLoadingState, hasRuntimeInstanceId, shouldReleaseRuntimeInstance, isRuntimeInteractiveState };
     })();
 
     // module: packages/shared/src/protocol.js
@@ -8957,15 +8987,12 @@ window.__ModuleLoader__.load({
         const gameId = requireGameId();
         const key = params.key;
         assertStorageKey(key);
+        if (typeof api.removeSave !== 'function') {
+          throw errorOf(GM.HOST_UNAVAILABLE, 'Host API does not support save removal');
+        }
         let result;
         try {
-          if (typeof api.removeSave === 'function') {
-            result = await api.removeSave({ gameId, key });
-          } else {
-            // V0 Host API only exposes POST /save; `data: null` means "remove this key".
-            // (Interface gap reported to Lead; see runtime README/report.)
-            result = await api.setSave({ gameId, key, data: null });
-          }
+          result = await api.removeSave({ gameId, key });
         } catch (error) {
           onSaveOutcome({ ok: false, error: normalizeApiError(error) });
           throw error;
@@ -10568,6 +10595,7 @@ window.__ModuleLoader__.load({
     const getApiClient = __mods["packages/client/src/api.js"].getApiClient;
     const MAIN_PANEL_KEY = __mods["packages/client/src/constants.js"].MAIN_PANEL_KEY;
     const isRuntimeLoadingState = __mods["packages/client/src/runtime-utils.js"].isRuntimeLoadingState;
+    const shouldReleaseRuntimeInstance = __mods["packages/client/src/runtime-utils.js"].shouldReleaseRuntimeInstance;
     const validateLaunchInfo = __mods["packages/client/src/runtime-utils.js"].validateLaunchInfo;
     const createRuntimeController = __mods["packages/client/src/runtime-adapter.js"].createRuntimeController;
     const destroyRuntime = __mods["packages/client/src/runtime-adapter.js"].destroyRuntime;
@@ -10981,25 +11009,50 @@ window.__ModuleLoader__.load({
         [autoResuming, runtime.state, busy]
       );
 
+      // Keep the live instance from expiring while the game stays open. A crash or
+      // closed window simply stops renewing, so the Host TTL still reclaims it.
+      React.useEffect(
+        function renewRuntimeInstance() {
+          const info = runtime.launchInfo;
+          if (!info || typeof info.instanceId !== 'string' || info.instanceId.length === 0) return;
+          const api = getApiClient();
+          if (!api || typeof api.renewRuntime !== 'function') return;
+          const timer = setInterval(function renew() {
+            Promise.resolve(api.renewRuntime({ gameId: runtime.gameId, instanceId: info.instanceId })).catch(
+              function ignore() {}
+            );
+          }, TIMING.runtimeRenewMs);
+          return function stopRenew() {
+            clearInterval(timer);
+          };
+        },
+        [runtime.launchInfo, runtime.gameId]
+      );
+
       const isResumeMode = runtime.mode === 'resume-paused' && !resumeConfirmed && !autoResuming;
       const saveStatus = runtime.saveStatus;
       const showSavePill = saveStatus !== 'idle' || runtime.lastSaveAt > 0;
 
-      function releaseHostInstance(gameId) {
+      function releaseHostInstance(gameId, instanceId) {
         if (typeof gameId !== 'string' || gameId.length === 0) return;
+        // Without our own instance id, skip release entirely: the legacy fallback
+        // would release every instance of this game (CR-05).
+        if (!shouldReleaseRuntimeInstance(gameId, instanceId)) return;
         const api = getApiClient();
         if (!api || typeof api.releaseRuntime !== 'function') return;
-        Promise.resolve(api.releaseRuntime({ gameId })).catch(function ignore() {});
+        Promise.resolve(api.releaseRuntime({ gameId, instanceId })).catch(function ignore() {});
       }
 
       function destroyCurrent() {
-        const gameId = store.getState().runtime.gameId;
+        const view = store.getState();
+        const gameId = view.runtime.gameId;
+        const instanceId = view.runtime.launchInfo ? view.runtime.launchInfo.instanceId : null;
         const controller = controllerRef.current;
         controllerRef.current = null;
         destroyRuntime(controller);
-        // Leaving the Runtime unlocks update/uninstall while keeping the Play
-        // Session (and therefore Continue) intact.
-        releaseHostInstance(gameId);
+        // Release only this runtime instance; other windows keep their protection.
+        // The Play Session (and therefore Continue) stays intact.
+        releaseHostInstance(gameId, instanceId);
       }
 
       function completeLeave(target, reason, saveStale) {

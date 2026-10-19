@@ -1,0 +1,27 @@
+# AE-01 npm run verify
+# 2026-10-19T01:34:41Z commit=d0b1db7
+✔ oversized packages are rejected before parsing (11.821458ms)
+✔ BOM and invalid UTF-8 are rejected as E_PKG_HTML_INVALID / GM-4222 (0.606583ms)
+✔ an id/version mismatch in a package-style file name is rejected (9.136708ms)
+✔ incompatible SDK/runtime ranges are rejected (GM-4261 / GM-4260) (0.237042ms)
+✔ reports are capped at 50 items with truncated:true (0.150709ms)
+✔ warnings are reported but do not fail validation (0.099209ms)
+✔ the CLI exits 0/1/2 for valid, invalid and usage inputs and prints JSON with --json (321.717458ms)
+✔ V0 flow: snake market, launch, save, continue, score, agent presence (162.381417ms)
+✔ V1 versions are frozen at SDK/Runtime 1.0.0 with protocol 1 (0.704166ms)
+✔ V1 route table is complete, unique and prefixed (0.116ms)
+✔ package limits match the single-file contract (0.053625ms)
+✔ internal E_* codes translate to public GM-* codes (0.12975ms)
+✔ GM codes map to the PRD HTTP status (0.072541ms)
+✔ V0 games stay compatible through the legacy window (V1-07) (0.581792ms)
+✔ the contract validators run end to end on a package sample (1.533917ms)
+✔ M0 contract docs exist and match the frozen surface (3.942417ms)
+✔ TBD-10 launch binding TTL is frozen in constants (0.070833ms)
+ℹ tests 767
+ℹ suites 0
+ℹ pass 767
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8928.591875

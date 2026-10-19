@@ -1,6 +1,6 @@
 # DSH Game Market · V1 验证记录（骨架）
 
-> **状态（2026-10-19）：自动化部分已执行；真机部分待执行。**
+> **状态（2026-10-19）：自动化已执行；真机代执行完成 18 项通过/2 部分/2 阻塞；codex review CR-01..09 已在 `fix/m3-review` 修复并复验，等待复核/发布决定。**
 > 自动化结果与证据路径汇总见 [`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./verification/v1/AUTOMATED-EVIDENCE.md)；
 > 真机执行清单见 [`docs/verification/v1/REAL-MACHINE-CHECKLIST.md`](./verification/v1/REAL-MACHINE-CHECKLIST.md)。
 > 本文件保留完整验收结构与统计口径；§2 已按实际执行结果填写，§3 的真机表仍待执行（未执行项不得预填通过）。
@@ -75,6 +75,25 @@ V1 自动化汇总（2026-10-19 实际执行）
 - 结论：自动化部分 通过（AE-01..17）；AE-18 待人工复核
 ```
 
+### 2.2 codex review（CR-01..09）修复复验
+
+> 基线：分支 `fix/m3-review`（基于 `ff99c74`）。修复清单、回归与证据见
+> [`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./verification/v1/AUTOMATED-EVIDENCE.md) §8。
+
+| CR | 修复摘要 | 回归证据 | 状态 |
+|---|---|---|---|
+| CR-01 | 随包默认 Registry + `registry/packages/*`、build/check/files 落地 | `check` 23 项；Host 冷启动默认 Registry 安装测试；`node --test` 780/780 | 关闭 |
+| CR-02 | 删除数据含 `.bak`、preflight 全部路径（仅 ENOENT 视为缺失）、失败 `GM-5036` 保留安装与数据 | Host 备份删除 + chmod 000 权限注入测试 | 关闭 |
+| CR-03 | 新增 `POST /save-remove`，真实删 key/释放配额；`data:null` 为普通值 | Host saves / runtime / 契约测试 | 关闭 |
+| CR-04 | entry 凭证 TTL 与实例寿命拆分；`/runtime-renew` 心跳 | 续期/过期/无心跳回收测试 | 关闭 |
+| CR-05 | release 支持 `instanceId`；Client 无 instanceId 时跳过 release（不再走旧版全释放） | 双实例回归 + runtime-utils 无实例 ID 单测 | 关闭 |
+| CR-06 | 有 callId 时无名/并行结果不清除；turn/end 只匹配本 turn | 无名同轮/旧 turn/取消回归 | 关闭 |
+| CR-07 | 日志入库 + sanitize + check 规则 | 22 个日志已跟踪（`check` 断言） | 关闭 |
+| CR-08 | 采集脚本断言 + 非零退出；A-11 周期采样真实推进；冻结自测必须失败；perf 全样本必须成功 | `logs/A-11-freeze-selftest.log`（exit 1）+ 正式 A-11/perf ok=true | 关闭 |
+| CR-09 | 性能指标拆分 shell / cards-ready / runtime-playing；详情等待移出计时；全样本断言 | `logs/perf-reference.log`（ok=true；launch 105–107ms） | 关闭 |
+
+自动化命令：`npm run verify` → **最终测试数见验证日志**（Host 150/150）、`CHECK OK (23)`；证据脚本全部返回 0；冻结自测按预期返回 1。
+
 ## 3. 真机证据表（待执行）
 
 > **自动化已覆盖的部分见 §2 与 `docs/verification/v1/AUTOMATED-EVIDENCE.md` §5 的 FM/SEC 映射；本节只登记真机结果。**
@@ -94,7 +113,7 @@ V1 自动化汇总（2026-10-19 实际执行）
 | 状态 | 数量 | 条目 |
 |---|---|---|
 | 通过（真机） | 18 | U-02、U-03、U-04（presence）、U-05（完成提醒）、U-06 提问提醒（出现+回答后消失）、U-08（应用级关闭重开）、U-09（Snake）、U-11（确认框）、U-13 深色、A-03/A-04/A-05/A-08/A-13/A-15（键盘游玩）、V1-22/V1-23 |
-| 通过（自动化补充） | 2 | A-11（headless 5 分钟）、A-16（CDP 减少动效）；启动性能参考值见 AUTOMATED-EVIDENCE §8 |
+| 通过（自动化补充） | 2 | A-11（headless 5 分钟，带内部推进断言）、A-16（CDP 减少动效，带 iframe 断言）；性能见 §2.2/证据 §4 |
 | 部分 | 2 | U-09（PB 反馈未触发）、U-14（完整 Tab 流程） |
 | 阻塞 | 2 | U-06 真实审批（环境禁用）、U-13 放大字号 |
 | 未执行 | 3 | U-15 减少动效、性能测量、DEV-03/DEV-07 |
@@ -241,9 +260,9 @@ V1 真机结论（全部条目执行后填写）
 
 | # | 项 | 状态 |
 |---|---|---|
-| 1 | 自动化已执行；真机由 Lead 代执行 13 项通过、4 部分、3 阻塞、3 未执行（见 §3.0 / REAL-MACHINE-RESULTS.md） | 进行中（剩余阻塞项待补） |
+| 1 | 自动化已执行；真机代执行 18 项通过/2 部分/2 阻塞（见 §3.0 / REAL-MACHINE-RESULTS.md）；CR-01..09 修复并复验（§2.2） | 等待 codex 复核与发布决定 |
 | 2 | `FM-10..FM-14`、`SEC-10` 场景标题仍为占位，需 Lead 校正后执行 | 待确认 |
-| 3 | 测试用 HTTPS Registry：使用仓库 raw.githubusercontent.com fixture（已实际安装成功） | 已确认 |
+| 3 | 测试用 HTTPS Registry：本轮使用本地自签 TLS 测试服务（devMode 放宽 loopback）；公共 raw CDN 在本环境连接不稳定，不再作为发布阻塞 | 已确认（本地 TLS） |
 | 4 | CSP `frame-ancestors` allowlist 实测为 `'self' http://127.0.0.1:* http://localhost:*`；真实 DSH 宿主 origin 待真机确认（TBD-05） | 待真机确认 |
 | 5 | headless Chrome：155.0.8059.85，1440×900 / 720×900 | 已填 |
 | 6 | 截图目录与 fixtures/logs/results 已创建 | 已完成 |
@@ -262,3 +281,4 @@ V1 真机结论（全部条目执行后填写）
 |---|---|---|
 | 2026-10-18 | 初稿：V1 验证骨架（环境/自动化占位/真机表/截图槽位/未覆盖项），不填任何结果 | contract-docs |
 | 2026-10-19 | 自动化部分执行完成（AE-01..17 通过，AE-18 部分）；补齐环境表/自动化结果/截图/夹具；真机表待执行 | Lead |
+| 2026-10-19 | 真机代执行（U-05/U-06/U-08 等通过）；codex review CR-01..09 修复并复验（`fix/m3-review`），`npm run verify` 780/780 | Lead |

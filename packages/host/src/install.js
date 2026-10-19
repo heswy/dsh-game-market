@@ -88,8 +88,11 @@ async function pathExists(target) {
   try {
     await fs.lstat(target);
     return true;
-  } catch (_error) {
-    return false;
+  } catch (error) {
+    // Only "missing" is a negative result. EACCES/EPERM etc. must surface so
+    // deleteData cannot silently skip data it failed to inspect (CR-02).
+    if (error && (error.code === 'ENOENT' || error.code === 'ENOTDIR')) return false;
+    throw fsIoError(error, 'Could not inspect data path');
   }
 }
 
@@ -907,19 +910,55 @@ export function createInstallService({
     if (await isRunning(gameId)) {
       throw hostError(GM.UPDATE_GAME_RUNNING, 'Exit the game before uninstalling', { retryable: true });
     }
+    let dataDeleted = false;
+    if (deleteData) {
+      // Delete the complete data set BEFORE the package so a partial failure
+      // keeps the game installed and retryable. `.bak` siblings must go too:
+      // the storage layer can recover primary files from them.
+      const dataPaths = [
+        storage.filePath(SAVES_DIR, gameId),
+        storage.filePath(SCORES_DIR, `${gameId}.json`),
+        storage.filePath(SCORES_DIR, `${gameId}.json.bak`),
+        storage.filePath(SESSIONS_DIR, `${gameId}.json`),
+        storage.filePath(SESSIONS_DIR, `${gameId}.json.bak`),
+        storage.filePath(PREVIEW_CACHE_DIR, gameId),
+      ];
+      // Preflight every path so a permission error cannot delete half the
+      // data and still report a clean failure.
+      const failures = [];
+      for (const target of dataPaths) {
+        try {
+          await pathExists(target);
+        } catch (_error) {
+          failures.push(target);
+        }
+      }
+      if (failures.length > 0) {
+        throw hostError(GM.INSTALL_IO, 'Some game data could not be deleted', {
+          retryable: true,
+          details: { failedPaths: failures.length, phase: 'preflight' },
+        });
+      }
+      for (const target of dataPaths) {
+        try {
+          await moveToTrash(target, gameId);
+        } catch (_error) {
+          failures.push(target);
+        }
+      }
+      if (failures.length > 0) {
+        throw hostError(GM.INSTALL_IO, 'Some game data could not be deleted', {
+          retryable: true,
+          details: { failedPaths: failures.length, phase: 'delete' },
+        });
+      }
+      dataDeleted = true;
+    }
     const versionDirectory = storage.filePath(PACKAGES_DIR, gameId, record.version);
     await moveToTrash(versionDirectory, gameId);
     await fs.rmdir(storage.filePath(PACKAGES_DIR, gameId)).catch(() => undefined);
     await installations.remove(gameId);
     if (entry && typeof entry.invalidateGame === 'function') entry.invalidateGame(gameId);
-    let dataDeleted = false;
-    if (deleteData) {
-      await moveToTrash(storage.filePath(SAVES_DIR, gameId), gameId).catch(() => undefined);
-      await moveToTrash(storage.filePath(SCORES_DIR, `${gameId}.json`), gameId).catch(() => undefined);
-      await moveToTrash(storage.filePath(SESSIONS_DIR, `${gameId}.json`), gameId).catch(() => undefined);
-      await moveToTrash(storage.filePath(PREVIEW_CACHE_DIR, gameId), gameId).catch(() => undefined);
-      dataDeleted = true;
-    }
     if (preferences && typeof preferences.read === 'function') {
       try {
         const current = await preferences.read();

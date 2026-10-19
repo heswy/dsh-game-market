@@ -82,7 +82,7 @@
 | TBD-08 | `/install` 是否同步 | **已冻结（同步）** | 无异步 job 查询路由；Host 内部有 job 状态机，API 同步等待结果（§6.3） |
 | TBD-09 | 内置游戏是否写 `installations.json` | **已冻结（Lead 裁决：不写）** | 内置 `snake` 由 Host 内置目录 `games/snake` 直接服务；Market 列表合成为 `source:'builtin'` 记录；不写 `installations.json`，不参与安装/更新/卸载 |
 | TBD-10 | `/entry` 绑定有效期 | **已冻结（Lead 裁决）** | `TIMING.entryBindingTtlMs = 10 分钟`；Host 内存维护 launch 绑定（instance/nonce/gameId/version），退出/卸载/超时即失效 |
-| TBD-11 | 存档删除语义 | **已冻结（V0 语义保留）** | `POST /save` 中 `data:null` 表示删除该 key |
+| TBD-11 | 存档删除语义 | **V1 修订（CR-03）** | 真实删除走 `POST /save-remove`；`POST /save` 的 `data:null` 只是普通 JSON null，不再表示删除 |
 | TBD-12 | 手动刷新 Registry 节流 | **已冻结** | `registryRefreshThrottleMs = 5 分钟`；节流时 `GM-4290` |
 | TBD-13 | 内置游戏入口文件名 | **已冻结（沿用 V0）** | Bundle 内 `games/snake/dist/index.html`；Registry 包必须 `<id>-<version>.html` |
 | TBD-14 | 安装子阶段超时 | **已冻结** | `installVerifyMs=15s`、`installMoveMs=30s`（`constants.js#TIMING`） |
@@ -574,7 +574,7 @@ HTTP 状态族：`400x→400`、`403x→403`、`404x→404`、`409x→409`、`41
 
 | 项 | 规则 |
 |---|---|
-| 默认位置 | Bundle 内 `registry/games.json`（`REGISTRY_FILE='games.json'`；本地 file Registry） |
+| 默认位置 | Bundle 内 `registry/games.json`（`REGISTRY_FILE='games.json'`；本地 file Registry）。V1 同时随包分发 `registry/packages/<id>-<version>.html`（由 `scripts/build-registry.mjs` 从 `games/*/dist` 确定性生成），`package.json.files` 必须包含 `registry/**`；全新插件存储可直接发现并安装 Jump/2048/Breakout |
 | 可配置 | `config.registryUrl`：HTTPS URL 或本地文件路径；默认指向 Bundle 内索引 |
 | 大小 | ≤2 MiB（`LIMITS.registryBytes`） |
 | 拉取超时 | 连接 10s / 无数据 20s / 整体 120s（与包下载一致） |
@@ -850,7 +850,7 @@ Host 内部 job 状态机：`queued → downloading → verifying → installing
 | 内置游戏 | 不可卸载（`E_UNINSTALL_BUILTIN` → `GM-4038`，`reason:'builtin'`） |
 | 运行中 | **活跃 Runtime 实例**（`/launch` 后未收到 `/runtime-release`）→ `GM-4096`；**未结束的 Play Session 不算运行中**（它是 Continue 的依据，不阻塞更新/卸载）；其他安装/卸载进行中 → `GM-4097` |
 | 默认行为 | 删除安装目录与安装记录；**保留** `saves/`、`scores/`、`sessions/` 与 `preferences` 历史；重新安装后可 Continue |
-| `deleteData:true` | 需二次确认：请求必须带 `confirmDataDeletion:true`；否则 `GM-4002`；确认后删除该游戏存档/成绩/Session/预览缓存 |
+| `deleteData:true` | 需二次确认：请求必须带 `confirmDataDeletion:true`；否则 `GM-4002`；确认后删除该游戏的完整数据集合：`saves/<id>/`、`scores/<id>.json` + `.bak`、`sessions/<id>.json` + `.bak`、预览缓存。删除在包移除**之前**执行；任一数据删除失败 → `GM-5036` 可重试，游戏仍保持已安装，不返回“完全删除成功” |
 | 软删除 | 目录先移动到 `trash/<id>-<ts>/`，`installations.json` 原子更新后再清理 trash；清理失败保留 trash，下次启动清理超过 7 天的 trash |
 | 幂等 | 未安装的游戏 → 200 `{removed:false, ignored:true}`（不报错）；同 operationId 重复 → 返回同一结果 |
 | 缓存 | Registry 缓存不因卸载变化；`preferences.lastPlayedGameId` 若指向被删游戏则清空 |
@@ -933,7 +933,8 @@ Host 内部 job 状态机：`queued → downloading → verifying → installing
 | `POST /uninstall` | body `{gameId, deleteData?, confirmDataDeletion?, operationId}` | `{gameId, removed: boolean, dataDeleted: boolean}` | operationId；未安装幂等 | 10s | GM-4002/4037/4038/4096/4097/5036 |
 | `POST /registry-refresh` | body `{operationId?, force?}` | `{refreshedAt, count, etag: string 或 null, source: string}`（Host 可追加 `truncated`/`changed`） | 并发合并；5 分钟节流 | 30s | GM-4290（节流）、GM-5032 |
 | `GET /save` | `gameId` `include?`（`data`） | `{gameId, keys, bytes, revision, updatedAt, values?}` | 是 | 3s | GM-4041/4098/5024/5025 |
-| `POST /save` | body `{gameId, key, data, expectedRevision?, operationId}`；`data:null`=删除 key | `{gameId, key, keys, bytes, revision, updatedAt, removed?}` | operationId + `expectedRevision` CAS | 6s | GM-4092/4131/4132/4133/4134/4099/5024/5025 |
+| `POST /save` | body `{gameId, key, data, expectedRevision?, operationId}` | `{gameId, key, keys, bytes, revision, updatedAt}` | operationId + `expectedRevision` CAS | 6s | GM-4092/4131/4132/4133/4134/4099/5024/5025 |
+| `POST /save-remove` | body `{gameId, key, expectedRevision?, operationId}` | `{gameId, key, removed, revision, updatedAt}` | operationId + 可选 CAS；重复删除幂等（`removed:false`） | 6s | GM-4092/4133/4032/4041/4099/5024/5025 |
 | `POST /session` | body `{gameId, action:'start' 或 'end', dshSessionId?, playSessionId?, outcome?, score?, operationId}` | start：`{playSessionId, startedAt, adopted}`；end：`{playSessionId, startedAt, endedAt, outcome, score, ignored}` | operationId；start 采用未结束 Session；end 对已结束幂等 | 4s/6s | GM-4002/4093/4042 |
 | `GET /scores` | `gameId` | `{best: {value, achievedAt, playSessionId, meta?} 或 null, history: [...], direction}` | 是 | 3s | GM-4005/4042/5022 |
 | `POST /score` | body `{gameId, score, meta?, playSessionId?, operationId}` | `{best, isBest, submittedAt}` | operationId | 4s | GM-4006/4032/4002/4131/4092 |
@@ -942,7 +943,8 @@ Host 内部 job 状态机：`queued → downloading → verifying → installing
 | `GET /agent-state` | `sessionId`(必填) | `AgentSnapshot`（§9.1），支持 ETag/304 | 是 | 3s | GM-4002 |
 | `POST /agent-ack` | body `{sessionId, seq}` | `{state, seq}` | 是（seq 幂等） | 3s | GM-4002 |
 | `POST /launch` | body `{gameId, version?, dshSessionId?, mode?: 'start' 或 'resume-paused'}` | `LaunchInfo`（§7.3） | 否（每次新 instance） | 5s | GM-4042/4043/4260/4261/4093 |
-| `POST /runtime-release` | body `{gameId}` | `{gameId, released}` | 是（重复 release 幂等） | 2s | GM-4002 |
+| `POST /runtime-release` | body `{gameId, instanceId?}`；带 `instanceId` 时只释放该实例（多窗口安全），不带为兼容旧 Client 的全量释放 | `{gameId, instanceId?, released}` | 是（重复/未知实例 `released:0`） | 2s | GM-4002 |
+| `POST /runtime-renew` | body `{gameId, instanceId}`；Client 每 60s 心跳，延长该实例运行有效期 | `{instanceId, gameId, version, expiresAt}` | 是（同实例重复续期） | 2s | GM-4002 |
 | `GET /entry`（HEAD 同） | `gameId` `version` `instance` `nonce` | raw HTML + 安全头（§7.4） | 是（只读；绑定校验） | 20s | GM-4002/4042/4043/4221/4225/5015 |
 | `GET /preview`（HEAD 同） | `gameId` `version?` `file`（icon/cover/screenshot-N） | 图片字节（png/webp/jpeg）+ 头 | 是 | 10s | GM-4043/4002 |
 | `POST /dev/agent-state`（仅 devMode） | body `{sessionId, state, label?, labelKey?, turnId?}` | `AgentSnapshot` | 否（状态写入） | 3s | GM-4002/GM-4042（非 devMode 路由不存在） |
@@ -1063,9 +1065,11 @@ interface LaunchInfo {
 
 ### 7.3.1 `/runtime-release`（运行态归属）
 
-- Client 在 Runtime 卸载/离开（返回工作、返回市场、面板被替换、插件停用）时调用 `POST /runtime-release {gameId}`，Host 删除该游戏的 live instance 绑定。
-- 语义：`/launch` 产生的实例在 release 前视为“运行中”，阻止更新/卸载；未结束的 Play Session 只是 Continue 依据，**不再**阻止更新/卸载。
-- 幂等：重复 release 返回 `released: 0`；Host 重启后实例表为空。
+- Client 在 Runtime 装卸载/离开（返回工作、返回市场、面板被替换、插件停用）时调用 `POST /runtime-release {gameId, instanceId}`，Host 只删除该实例的 live 绑定（同款游戏其他窗口不受影响）。
+- **Entry 凭证 TTL 与运行实例生命周期分离**：`entryExpiresAt` 是 `/entry` 一次性凭证的固定 TTL；`expiresAt` 是运行实例有效期，由 Client 每 60s `POST /runtime-renew` 续期。续期不会延长已过期的 entry 凭证。
+- 语义：`/launch` 产生的实例在 release/过期前视为“运行中”，阻止更新/卸载；未结束的 Play Session 只是 Continue 依据，**不再**阻止更新/卸载。
+- 崩溃/断连/关闭窗口：心跳停止，实例在 `entryBindingTtlMs` 后过期回收；Host 重启后实例表为空。
+- 幂等：重复 release/未知实例返回 `released: 0`。
 
 ### 7.3.2 Game tab 返回直连恢复（V1-22）
 
@@ -1231,7 +1235,7 @@ interface GameRuntimeInfo {
 
 interface StorageSaveResult { key: string; bytes: number; revision: number; updatedAt: string | null }
 interface StorageLoadResult { key: string; data: JsonValue; revision: number; updatedAt: string | null }
-interface StorageRemoveResult { key: string; removed: true; revision: number }
+interface StorageRemoveResult { key: string; removed: boolean; revision: number }
 
 interface SessionStartResult { playSessionId: string | null; startedAt: string | null; adopted: boolean }
 interface SessionEndResult {
@@ -1428,7 +1432,7 @@ interface AgentSnapshot {
 
 - Host 是唯一状态源：游戏/Client 不能伪造；鲸鱼 UI 只读快照。
 - 1s 轮询（页面可见且绑定 Session 时）；`ETag`（`W/"<hostEpoch>:<seq>"`）协商，304 不更新 UI。
-- Host 事件源：真实 `session/event`（V0.3 修复）；映射含 turn/start|end、approval/asked|decided、tool/call|result。其中 `tool/call` 的工具名为 `ask_user_question` 时映射为 `waiting-user`（`agent.state.waiting.question`，source `question`），其 `tool/result` 关闭等待（真实 payload 不带工具名，按快照 `source=question` 收尾）；仅匹配工具名，不读参数内容。
+- Host 事件源：真实 `session/event`（V0.3 修复）；映射含 turn/start|end、approval/asked|decided、tool/call|result。其中 `tool/call` 工具名为 `ask_user_question` 时映射为 `waiting-user`（`agent.state.waiting.question`，source `question`）：记录该调用的 `callId`（`tool/result` 在 `message.source.callId`）与 turn，只有匹配的 `tool/result` 才关闭等待；其他工具/旧 turn 的结果不清除；`turn/end` 关闭被取消的提问。仅匹配工具名，不读参数内容。
 - `labelKey` 使用稳定 key（如 `agent.state.waiting.approval`），Client 在 V1 本地化；游戏忽略。
 - `completed`/`error` 的未读通过 `POST /agent-ack` 确认；ack 后快照转 idle（当前实现语义）。
 

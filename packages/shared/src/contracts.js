@@ -108,6 +108,7 @@ export const ROUTES = Object.freeze({
   UNINSTALL: `${API_BASE}/uninstall`,
   REGISTRY_REFRESH: `${API_BASE}/registry-refresh`,
   SAVE: `${API_BASE}/save`,
+  SAVE_REMOVE: `${API_BASE}/save-remove`,
   SESSION: `${API_BASE}/session`,
   SCORES: `${API_BASE}/scores`,
   SCORE: `${API_BASE}/score`,
@@ -116,6 +117,7 @@ export const ROUTES = Object.freeze({
   AGENT_ACK: `${API_BASE}/agent-ack`,
   LAUNCH: `${API_BASE}/launch`,
   RUNTIME_RELEASE: `${API_BASE}/runtime-release`,
+  RUNTIME_RENEW: `${API_BASE}/runtime-renew`,
   ENTRY: `${API_BASE}/entry`,
   PREVIEW: `${API_BASE}/preview`,
   /** Registered only when config.devMode === true. */
