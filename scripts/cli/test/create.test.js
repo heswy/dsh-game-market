@@ -116,7 +116,7 @@ test('create-dsh-game supports the react template with a generated vendor SDK', 
   assert.equal(pkg.name, 'react-game');
   assert.ok(pkg.dependencies.react);
   assert.ok(pkg.devDependencies.vite);
-  assert.equal(pkg.scripts.build, 'vite build');
+  assert.equal(pkg.scripts.build, 'tsc --noEmit && vite build');
   const vendor = fs.readFileSync(path.join(result.targetDir, 'vendor/dsh-game-sdk.js'), 'utf8');
   assert.ok(vendor.includes('createGameSDK'));
   assert.ok(vendor.includes('isGameError'));

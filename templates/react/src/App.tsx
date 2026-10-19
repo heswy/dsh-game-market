@@ -60,8 +60,9 @@ export function App(): ReactElement {
   const [hud, setHud] = useState<Hud>({ score: 0, best: null, lives: 3, time: 0 });
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const target = canvasRef.current;
+    if (!target) return;
+    const canvas: HTMLCanvasElement = target;
     const game = getGame();
     gameRef.current = game;
     const renderer = createRenderer(canvas);
@@ -120,7 +121,8 @@ export function App(): ReactElement {
     loop = createLoop((dt) => {
       if (phaseRef.current === 'playing') {
         update(dt);
-        if (phaseRef.current === 'over') {
+        // update() may finish the game and mutate the ref.
+        if ((phaseRef.current as Phase) === 'over') {
           loop.stop();
           render();
           return false;
@@ -443,13 +445,6 @@ export function App(): ReactElement {
 
   return (
     <main className="app">
-      <header className="app-header">
-        <span className="app-title">{i18n.t('title')}</span>
-        <span className="app-stats" aria-hidden="true">
-          {i18n.t('score')} {hud.score} · {i18n.t('best')} {hud.best === null ? '—' : hud.best} · {i18n.t('lives')}{' '}
-          {'●'.repeat(Math.max(0, hud.lives)) || '—'} · {i18n.t('time')} {time}
-        </span>
-      </header>
       <canvas ref={canvasRef} className="game-canvas" tabIndex={0} aria-label={i18n.t('title')} />
       <footer className="app-footer">
         <span>{hint}</span>

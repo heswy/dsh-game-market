@@ -133,6 +133,18 @@ test('handshake sends init with instance, limits, theme and viewport then acknow
   );
 });
 
+test('init and ready report measured viewport, independent of manifest design size', async () => {
+  const context = makeContext();
+  context.container.rect = { width: 640, height: 480 };
+  await context.controller.launch(makeLaunchInfo({ viewport: { width: 720, height: 720, fit: 'contain' } }));
+  const iframe = await handshake(context);
+  const init = messagesOf(iframe, (message) => message.event === EVENTS.INIT)[0];
+  const ready = messagesOf(iframe, (message) => message.kind === 'res' && message.id === 'ready-req')[0];
+  assert.deepEqual(init.data.viewport, { width: 640, height: 480, dpr: 2 });
+  assert.deepEqual(ready.result.viewport, init.data.viewport);
+  context.controller.destroy();
+});
+
 test('hello retries re-send init with the same identity', async () => {
   const context = makeContext();
   await context.controller.launch(makeLaunchInfo());

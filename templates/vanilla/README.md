@@ -64,11 +64,12 @@ already full-bleed (`#app` fills the viewport, no outer frame).
 
 Keep these platform overlay safe areas clear:
 
-- **top-left 112×48** — back / pause controls
+- **top 112px across the viewport** — back / pause, save status and macOS clearance
 - **bottom-right 96×96** — Agent presence
 
 `manifest.viewport` is only a recommended design size; handle `resize` and
-`game.runtime.viewport` instead of hard-coding a resolution. See the developer
+`game.runtime.viewport` (a read-only actual-size snapshot, not an event) instead of hard-coding a resolution.
+Expanded Agent messages may temporarily cover the bottom-right 254×184; keep unique controls out of that area. See the developer
 guide §4.4 for the full contract.
 
 ## Rename the package / game id

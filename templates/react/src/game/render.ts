@@ -62,16 +62,17 @@ function rounded(ctx: CanvasRenderingContext2D, x: number, y: number, width: num
 }
 
 export function createRenderer(canvas: HTMLCanvasElement): Renderer {
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Canvas 2D context is unavailable');
+  const context = canvas.getContext('2d');
+  if (!context) throw new Error('Canvas 2D context is unavailable');
+  const ctx: CanvasRenderingContext2D = context;
   let width = 960;
   let height = 540;
   let dpr = 1;
 
   function resize(): { width: number; height: number; dpr: number } {
     const rect = canvas.getBoundingClientRect();
-    width = Math.max(320, Math.round(rect.width || 960));
-    height = Math.max(240, Math.round(rect.height || 540));
+    width = Math.max(1, Math.round(rect.width || 960));
+    height = Math.max(1, Math.round(rect.height || 540));
     dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
@@ -103,10 +104,10 @@ export function createRenderer(canvas: HTMLCanvasElement): Renderer {
     for (const [label, value, color] of items) {
       ctx.fillStyle = COLORS.muted;
       ctx.font = '500 11px ui-sans-serif, -apple-system, "PingFang SC", sans-serif';
-      ctx.fillText(label, x, 22);
+      ctx.fillText(label, x, 128);
       ctx.fillStyle = color;
       ctx.font = '700 18px ui-monospace, SFMono-Regular, Menlo, monospace';
-      ctx.fillText(value, x, 42);
+      ctx.fillText(value, x, 148);
       x += Math.max(ctx.measureText(label).width, ctx.measureText(value).width) + 28;
     }
   }

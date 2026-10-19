@@ -4,7 +4,7 @@
 >
 > **v2.2 修订（2026-10-18，用户决策锁定）**：包格式从「`.dshgame` zip 归档」改为**单文件自包含 HTML + 内嵌 manifest v1**（`<script type="application/json" id="dsh-game-manifest">`，全文恰好一处，manifest 文本 ≤64 KiB）；V1 不引入 zip/解压/文件列表/压缩炸弹等概念，多文件资源推迟到 V1.5。随之统一：安装目录为 `packages/<id>/<version>/entry.html`；Registry 索引为 `registry/games.json`（`registryVersion: 1`），条目 `package = { url, sha256, size, releasedAt }`；新增 Host `POST /install-local`（raw `text/html`，≤20 MiB，`source: 'local'`，Client 负责二次确认）；包 URL 准入改为 host allowlist（默认 `github.com`/`raw.githubusercontent.com`/`objects.githubusercontent.com`，可配置 `allowedHosts`），删除「只允许 `/releases/download/`」的硬限制；V1 首发锁定四款 `snake`/`jump`/`2048`/`breakout`，DSH-native Demo 从 V1 阻塞范围移除。包内 `entry`、`cover`、`screenshots` 字段退出 manifest：文件本身即入口，封面/截图仅作为 Registry 条目字段。决策记录见 12.1 D-034/D-035/D-036。
 >
-> **V1.1 呈现规范修订（2026-10-19，用户决策锁定）**：Runtime 舞台改为**全出血（edge-to-edge）**，删除黑色舞台背景/letterbox/舞台内边距；`manifest.viewport` 仅作为推荐设计分辨率与 SDK `viewport` 初值，不再驱动平台等比缩放；游戏必须铺满视口并遵守平台悬浮控件安全区。开发包规范见 `docs/developer-guide.md` §4.4，决策记录 D-037。
+> **V1.1 呈现规范修订（2026-10-19，用户决策锁定）**：Runtime 舞台改为**全出血（edge-to-edge）**，删除黑色舞台背景/letterbox/舞台内边距；`manifest.viewport` 仅作为推荐设计分辨率（SDK `viewport` 为实际容器尺寸），不再驱动平台等比缩放；游戏必须铺满视口并遵守平台悬浮控件安全区。开发包规范见 `docs/developer-guide.md` §4.4，决策记录 D-037。
 >
 > **阅读路径**：
 > - 产品 / 设计：0–7 章 → 9 章（交互规格）→ 12 章（决策与风险）
@@ -2308,7 +2308,7 @@ V1 的 `publish` **不调用任何服务端 API**：它产出可直接粘进 `re
 3. `lifecycle.on("pause")` → 停 `requestAnimationFrame`、停所有计时器、立即 `save`；`resume` → 按真实经过时间重算 `dt`，**不得把暂停时长计入游戏时间**。
 4. `document.visibilitychange` 与 `blur` 时按 pause 处理（D-005 关键节点）。
 5. 键盘：canvas 自动获得焦点；不拦截 `Escape`（Runtime 用它返回）；可用 Tab 离开画布。
-6. 尺寸：监听 `resize`，最小 320×240，DPR 上限 2。
+6. 尺寸：监听 `resize`，按 canvas 实际 CSS 尺寸绘制（不强制放大最小逻辑尺寸），DPR 上限 2；HUD 遵守 §9.6.1 安全区。
 7. 无网络、无外部资源：模板不得包含 `fetch`/CDN 引用/远程字体；图片、字体、音频一律内联或 `data:` URL。
 8. 分数：结束调用 `game.score.submit(score)`，并对 `GM-4006`（分数超出 Manifest 声明范围，见 §8.13）做可见处理（不静默吞掉）。
 9. 文案集中在 `src/i18n.js`，提供 `zh`/`en` 两套。
@@ -4950,9 +4950,9 @@ Hero：16:9 或 21:9 封面，最高 320px，底部 64px 渐隐遮罩
 - Runtime 占满 Main Panel，左侧 Sidebar 保留；**不注册新面板**，只切换插件内部页面状态，状态放在组件外（F-05）。
 - **全出血舞台（V1.1）**：iframe 直接铺满 Main Panel，无舞台内边距、无圆角黑框、无 letterbox；不再按 Manifest `viewport` 做 `contain` 等比缩放。游戏负责绘制完整视口背景（亮/暗主题都要覆盖）。
 - 顶部按 `--dsh-frame-top-clearance`（macOS 48px，其它 0）只用于**悬浮控件**定位；控件直接叠在游戏画面上，不额外占据黑色安全带。
-- 平台悬浮控件安全区：**左上 112×48** 放返回/暂停，**右下 96×96** 放 Agent Presence；游戏应将关键 HUD 移出这些区域。开发者规范见 `docs/developer-guide.md` §4.4。
+- 平台悬浮控件安全区：**顶部全宽 112px** 放返回/暂停，**右下 96×96** 放 Agent Presence；游戏应将关键 HUD 移出这些区域。开发者规范见 `docs/developer-guide.md` §4.4。
 - iframe 填满舞台：`sandbox` 按 8.4 定义，无 `allow-same-origin`；`referrerpolicy="no-referrer"`；不接收平台 header、不注入脚本到游戏内。
-- `manifest.viewport` 仅作为推荐设计分辨率与 `init.viewport` 初值；游戏必须响应 `resize` / SDK `viewport`，不硬编码 960×540，也不在内部再留黑边。
+- `manifest.viewport` 仅作为推荐设计分辨率（`init.viewport` 为实际容器尺寸）；游戏必须响应 `resize` / SDK `viewport`，不硬编码 960×540，也不在内部再留黑边。
 
 #### 9.6.2 悬浮控件与自动隐藏
 
@@ -5078,7 +5078,7 @@ Esc 规则（必须精确，否则会与游戏冲突）：
 - 距舞台右、下边缘各 24px；舞台圆角内缘再留 8px；窗口宽度 < 600px 时距边缘 16px。
 - 气泡：宽 180–260px，内边距 10×12，圆角 14px，距鲸鱼 8px，默认在左上方展开；超出视口时自动翻转到上方或左侧。
 - 气泡最大高度 96px；不覆盖暂停菜单与顶部控件；与顶部控件的最小距离 12px。
-- 游戏关键内容安全区：右下 96×96 由平台占用；V1 不提供 Manifest 自定义安全区字段（避免扩大校验面），平台不在其它位置覆盖游戏。
+- 游戏关键内容安全区：顶部全宽 112px 与右下 96×96 为常驻控件避让区；鲸鱼展开气泡可临时覆盖右下 254×184。游戏从 iframe CSS 像素边缘量起，无需访问父页 CSS 变量；V1 不提供 Manifest 自定义安全区字段。
 
 #### 9.7.4 动效红线
 
@@ -5774,7 +5774,7 @@ M4 V1 发布验收（约 1 周）
 | D-034 | V1 包格式 = 单文件自包含 HTML + 内嵌 manifest v1（`<script type="application/json" id="dsh-game-manifest">`，全文恰好一处、文本 ≤64 KiB）；不引入 zip/归档/解压；取代 D-010/D-032 | 单文件最易校验、运行最稳；多文件资源 V1.5 再评估 | 用户决策（2026-10-18） | 已定 |
 | D-035 | 目录/命名统一：`packages/<id>/<version>/entry.html`；Registry 索引 `registry/games.json`（`registryVersion: 1`）；保留当前 + 1 个 previousVersion；Registry 包 URL host allowlist（`github.com`/`raw.githubusercontent.com`/`objects.githubusercontent.com` + 可配置 `allowedHosts`），重定向 ≤5 且不得降级 http | 统一契约、避免实现分歧 | 用户决策（2026-10-18） | 已定 |
 | D-036 | V1 首发只做四款：`snake`（内置）/`jump`/`2048`/`breakout`；DSH-native Demo 由用户亲自带人后续推进，不阻塞 V1 验收/发布 | 收敛范围、保证首发质量 | 用户决策（2026-10-18） | 已定 |
-| D-037 | Runtime 舞台全出血（edge-to-edge），删除黑色舞台背景/letterbox/舞台内边距；`viewport` 仅作推荐设计分辨率与 SDK 初值，不再驱动平台缩放；游戏铺满视口并遵守左上 112×48、右下 96×96 安全区；开发包规范写入开发者指南 §4.4/模板 | 消除黑边、统一第三方接入规范 | 用户决策（2026-10-19） | 已定 |
+| D-037 | Runtime 舞台全出血（edge-to-edge），删除黑色舞台背景/letterbox/舞台内边距；`viewport` 仅作推荐设计分辨率；SDK viewport 为实际容器尺寸，不再驱动平台缩放；游戏铺满视口并遵守顶部全宽 112px、右下 96×96 安全区；开发包规范写入开发者指南 §4.4/模板 | 消除黑边、统一第三方接入规范 | 用户决策（2026-10-19） | 已定 |
 
 ### 12.2 待验证项（Spike 清单）
 

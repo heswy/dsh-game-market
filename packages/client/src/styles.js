@@ -1513,7 +1513,8 @@ export const CSS = `
 .dgm-runtime-controls {
   position: absolute;
   z-index: 6;
-  top: calc(var(--dsh-frame-top-clearance, 0px) + 12px);
+  /* Bounded by the documented 112px top UI safety band. */
+  top: calc(clamp(0px, var(--dsh-frame-top-clearance, 0px), 48px) + 12px);
   left: 16px;
   right: 16px;
   display: flex;

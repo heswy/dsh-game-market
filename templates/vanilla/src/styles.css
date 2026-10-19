@@ -48,7 +48,7 @@ body {
  * - The platform renders the iframe edge-to-edge; the game must paint the whole
  *   viewport and must NOT create its own letterbox / outer frame.
  * - Keep the platform overlay safe areas clear:
- *     top-left   112 x 48  (back / pause controls)
+ *     top 112px across the viewport (controls, save status, macOS clearance)
  *     bottom-right 96 x 96 (Agent presence)
  *   The hint pill below avoids the bottom-right corner.
  */
@@ -71,8 +71,8 @@ body {
 
 #game {
   flex: 1 1 auto;
-  min-width: 320px;
-  min-height: 240px;
+  min-width: 0;
+  min-height: 0;
   width: 100%;
   height: 100%;
   border: 0;
@@ -88,18 +88,20 @@ body {
 
 .hint {
   position: absolute;
-  left: 50%;
+  left: 16px;
+  right: 112px;
   bottom: 14px;
   z-index: 2;
   margin: 0;
   padding: 6px 12px;
-  transform: translateX(-50%);
+  width: fit-content;
+  max-width: calc(100% - 128px);
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--panel);
   color: var(--muted);
   font-size: 12px;
-  white-space: nowrap;
+  white-space: normal;
   pointer-events: none;
   user-select: none;
   backdrop-filter: blur(8px);

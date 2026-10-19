@@ -337,6 +337,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - V1-32：**验收可复查/可判定**：`.gitignore` 例外 + sanitize 脚本把证据日志纳入 Git；`assert.mjs` 统一断言并让采集脚本失败非零退出；A-11 断言游戏内部推进；性能指标拆 shell/cards-ready/runtime-playing 并多次采样。
 - V1-33：**codex 复核第二轮收口**：CR-02 `pathExists` 仅 ENOENT 视为缺失 + 删除前 preflight；CR-05 Client 无 instanceId 不调用 release（`shouldReleaseRuntimeInstance`）；CR-06 有 callId 时无名/并行结果不清除、turn/end 只匹配本 turn；CR-08 冻结自测必须 exit 1、perf 全样本断言、A-11 周期采样真实推进；CR-09 详情等待移出计时（launch 实测 105–107ms）。codex 审核文档归档到 `docs/reviews/2026-10-19-codex-acceptance-review.md`（此前误随首轮修复提交，已用 git mv 说明）。
 - V1-34：**V1.0.0 发布**：`fix/m3-review` 两轮复核通过后以 `--no-ff` 合入 `main`（`643fcb9`），`package.json` 版本置 `1.0.0`，tag `v1.0.0` 推送；README 更新为 V1 首发状态；V1 验证文档/证据/真机结论归档。发布后滚动项：真实审批环境、桌面参考机性能终值、字号/减少动效真机项、DEV-03/07、2048 PB 反馈、完整 Tab 键盘链路（均已在验证文档 §5 记录）。
+- V1-35：**PR #2 全出血呈现契约复核**：平台常驻控件避让区统一为顶部全宽 112px（控件 clearance 限制 0–48px）和右下 96×96；鲸鱼展开消息可临时覆盖右下 254×184。manifest viewport 仅为推荐设计尺寸，SDK init/ready viewport 为实际容器 CSS 尺寸与 DPR。Vanilla/React 模板同步全出血、HUD 避让与实际尺寸绘制；React 构建先类型检查，禁用带 fetch 的 Vite preload polyfill。
 
 ---
 
