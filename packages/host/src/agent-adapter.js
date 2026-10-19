@@ -148,6 +148,16 @@ export function toolLabelKey(payload) {
   return AGENT_LABEL_KEYS.running;
 }
 
+/**
+ * `AskUserQuestion` is a plain tool call in the session log: the question stays
+ * open until the user answers, but there is no dedicated session event. Treat
+ * the call as the waiting signal and its result as answered/aborted.
+ */
+export function isQuestionTool(payload) {
+  const name = extractToolName(payload).toLowerCase();
+  return name.includes('ask_user_question') || name.includes('askuserquestion');
+}
+
 /** Defensive error detection for turn results (Spike S-15 field names vary). */
 export function payloadIndicatesError(payload) {
   if (!isPlainObject(payload)) return false;
@@ -400,6 +410,14 @@ export function createAgentAdapter({ hostEpoch, now, logger = null, maxSessions 
           });
         }
         case 'tool/call': {
+          if (isQuestionTool(data)) {
+            return apply(sessionId, {
+              state: 'waiting-user',
+              labelKey: AGENT_LABEL_KEYS['waiting-question'],
+              source: 'question',
+              turnId: turnId,
+            });
+          }
           if (snapshot.state === 'waiting-user' || snapshot.state === 'completed' || snapshot.state === 'error') {
             return cloneSnapshot(snapshot);
           }
@@ -411,13 +429,14 @@ export function createAgentAdapter({ hostEpoch, now, logger = null, maxSessions 
           });
         }
         case 'tool/result': {
-          if (snapshot.state === 'waiting-user' || snapshot.state === 'completed' || snapshot.state === 'error') {
+          const answeredQuestion = snapshot.state === 'waiting-user' && isQuestionTool(data);
+          if (!answeredQuestion && (snapshot.state === 'waiting-user' || snapshot.state === 'completed' || snapshot.state === 'error')) {
             return cloneSnapshot(snapshot);
           }
           return apply(sessionId, {
             state: 'running',
-            labelKey: toolLabelKey(data),
-            source: 'tool',
+            labelKey: AGENT_LABEL_KEYS.running,
+            source: answeredQuestion ? 'question' : 'tool',
             turnId: snapshot.turnId,
           });
         }

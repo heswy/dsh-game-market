@@ -165,6 +165,29 @@ export function register() {
     assert.equal(error.seq, 8);
   });
 
+  test('AskUserQuestion tool call maps to a waiting-user question presence', async (t) => {
+    const host = await createHarness(t);
+    const sessionId = 'ses-question-1';
+    sessionEvent(host, sessionId, 'turn/start', { turn: 3 });
+    sessionEvent(host, sessionId, 'tool/call', { turn: 3, step: 2, name: 'ask_user_question' });
+    const asked = await agentState(host, sessionId);
+    assert.equal(asked.state, 'waiting-user');
+    assert.equal(asked.labelKey, AGENT_LABEL_KEYS['waiting-question']);
+    assert.equal(asked.label, AGENT_LABELS_ZH['waiting-question']);
+    assert.equal(asked.source, 'question');
+    assert.equal(asked.turnId, 'turn-3');
+
+    sessionEvent(host, sessionId, 'tool/result', { turn: 3, step: 2, name: 'ask_user_question' });
+    const answered = await agentState(host, sessionId);
+    assert.equal(answered.state, 'running');
+    assert.equal(answered.labelKey, AGENT_LABEL_KEYS.running);
+    assert.equal(answered.source, 'question');
+
+    sessionEvent(host, sessionId, 'turn/end', { turn: 3, reason: { kind: 'completed' } });
+    const completed = await agentState(host, sessionId);
+    assert.equal(completed.state, 'completed');
+  });
+
   test('waiting-user has highest priority and survives lower-priority events', async (t) => {
     const host = await createHarness(t);
     const sessionId = 'ses-wait-1';

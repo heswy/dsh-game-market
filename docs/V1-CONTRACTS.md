@@ -1428,7 +1428,7 @@ interface AgentSnapshot {
 
 - Host 是唯一状态源：游戏/Client 不能伪造；鲸鱼 UI 只读快照。
 - 1s 轮询（页面可见且绑定 Session 时）；`ETag`（`W/"<hostEpoch>:<seq>"`）协商，304 不更新 UI。
-- Host 事件源：真实 `session/event`（V0.3 修复），映射规则保持 V0（turn/end、approval/asked/decided、tool/call 等）。
+- Host 事件源：真实 `session/event`（V0.3 修复）；映射含 turn/start|end、approval/asked|decided、tool/call|result。其中 `tool/call` 的工具名为 `ask_user_question` 时映射为 `waiting-user`（`agent.state.waiting.question`，source `question`），其 `tool/result` 关闭等待；仅匹配工具名，不读参数内容。
 - `labelKey` 使用稳定 key（如 `agent.state.waiting.approval`），Client 在 V1 本地化；游戏忽略。
 - `completed`/`error` 的未读通过 `POST /agent-ack` 确认；ack 后快照转 idle（当前实现语义）。
 

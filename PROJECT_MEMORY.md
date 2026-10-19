@@ -326,6 +326,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - V1-22：**会话 Game tab 返回 = 直接恢复，不再弹平台确认**（`autoResume: true`）：用户点击 Game tab 本身就是确认，Runtime 进入 paused 后立即 resume；Market 详情「继续游戏」/Agent 恢复等其他路径仍保留 D-024 一次确认。原因：用户验收时把平台确认弹窗视为剩余“双层提示”（2026-10-19）。
 - V1-23：**暂停 UI 归属统一**：平台发起的 `pause` 只冻结/保存游戏，**不渲染游戏自己的暂停面板**（否则与平台「已暂停」弹窗双层）；本地暂停（游戏内按 P/Esc）仍画自己的暂停面板。四款游戏已统一：breakout/jump/2048/snake 的平台暂停路径均 `hideOverlay()`；已用真实平台 E2E 验证（四款平台暂停时游戏层 0 个可见 overlay，恢复后游戏继续）。
 - V1-24：**M3 自动化证据归档与真机分工**：自动化可覆盖的验收（构建/测试/CLI/Registry/安装生命周期/安全头/存档/拒绝矩阵/幂等）已执行并归档于 `docs/verification/v1/`；真机只保留交互/真实 Agent/性能/故障注入。证据纪律：不预填通过、模拟标注、未执行写「未执行」。
+- V1-25：**AskUserQuestion 提示**：`AskUserQuestion` 在 Session 日志里是普通 `tool/call`（工具名 `ask_user_question`），未回答期间没有 `tool/result`；Host 在 `tool/call` 时置 `waiting-user`（`agent.state.waiting.question`，source=question），`tool/result` 后回 running。仅匹配工具名，不读问题/参数内容；不依赖 `userQuestions` 投影（比 PRD 原 Spike S-14 方案更稳）。Host 单测覆盖；需重载 Host（插件行 off/on 或重启 DSH）后真机复测。
 
 ---
 
@@ -356,6 +357,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-19 · **平台暂停双层修复**：用户点平台暂停出现平台弹窗+游戏暂停面板。已统一四款游戏：生命周期 `pause` 只冻结、隐藏自身 overlay，平台暂停菜单为唯一暂停 UI；本地暂停不受影响。E2E（隔离 DSH 真实 Host/Runtime）：breakout/jump/2048 平台暂停后游戏层可见 overlay=0，暂停→继续后 runtime playing；snake 内置同步修复并验证。`npm run verify` 767/767。需刷新页面 + 重装三个本地游戏。
 - 2026-10-19 · **M3 自动化完成并交付真机清单**：`npm run verify` 767/767；确定性构建 byte-identical；CLI create/build/validate/pack/publish 通过；file+HTTPS Registry 安装/更新/卸载/重装 Continue 通过（host E2E）；entry CSP/no-store/sha 头通过；存档配额/CAS/损坏恢复通过；恶意包矩阵返回 GM-5015/4221/4225/4240/4232/4234/4135；UI 9 张截图；`docs/V1-VERIFICATION.md` §1/§2 填充。**真机待执行**：见 `docs/verification/v1/REAL-MACHINE-CHECKLIST.md`；性能/故障注入/SEC 运行时攻击列为剩余。
 - 2026-10-19 · **M3 真机代执行（桌面辅助控制）**：在用户真实 DSH Desktop 窗口内执行安装 Jump/Breakout、四款启动、平台暂停单层（4 款截图）、Continue 确认、Game tab 直连恢复（V1-22）、游戏内真实 Agent presence、Snake Game Over、卸载确认框、760px 窄窗；共 13 项通过、4 部分、3 阻塞（U-05 需回合结束观察/U-06 审批禁用/U-13 深色未生效）、3 未执行；应用全屏与系统深色已恢复，未卸载任何游戏。证据见 `docs/verification/v1/REAL-MACHINE-RESULTS.md` 与 `real-*.jpg`。
+- 2026-10-19 · **AskUserQuestion 提示修复 + U-05/深色主题真机证据**：用户截图确认任务完成提醒与深色主题均正常，已归档 `real-U-05-agent-completed.jpg`/`real-U-13-dark-theme.jpg` 并更新验收记录。针对「AskQuestion 无提示」：Host agent-adapter 增加 `ask_user_question` tool/call → waiting-user(waiting-question) 映射、tool/result 复位；host 测试 141/141 通过；PRD/契约/记忆同步。待重载 Host 后真机复测提问场景。
 - （待续）
 
 **当前状态 / 待用户确认**：

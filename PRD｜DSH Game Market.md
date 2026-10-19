@@ -3826,7 +3826,8 @@ export interface GameAgentState {
 | `turn/end`（错误/取消） | 同上 | 读取结果字段；字段名 **待验证（Spike S-15）** | `error` | `turn` |
 | `approval/asked` | Session 持久事件（log-only，已核实） | 审批未决 | `waiting-user` | `approval` |
 | `approval/decided` | Session 持久事件 | 审批关闭 | `running` | `approval` |
-| `userQuestions` 投影 `questions.active` 非空 | `ctx.sessionProjections.stateOf(session, 'userQuestions')`，**待验证（Spike S-14）** | 存在 awaiting 问题 | `waiting-user` | `question` |
+| `tool/call`（工具名 `ask_user_question`） | Session 持久事件（log-only，已核实） | 工具调用未返回、等待用户回答 | `waiting-user` | `question` |
+| `tool/result`（对应 `ask_user_question`） | Session 持久事件 | 问题已回答/中止 | `running` | `question` |
 | `agent/disposed` | Host 事件 | Agent 释放 | `idle` | `lifecycle` |
 | Host 启动/launch | 持久快照 | 恢复终止态 | `restore` | `restore` |
 
@@ -3859,7 +3860,7 @@ export interface GameAgentState {
 #### waiting-user 检测
 
 - **审批（主路径，已核实可行）。** 不直接监听 `ctx.approval`（它是决策面，返回值会影响审批结果），只读它写入的事件。`ctx.approval.request()` 会先追加 `approval/asked`、再追加 `approval/decided`，两者都是 log-only Session 事件（已核实 `dsh-user-approval` README）。Host 订阅这两个事件即可得到持久、可跨刷新恢复的等待态，不需要拦截别人的审批 waterfall，也不依赖 `ctx.approval` 的私有状态。
-- **提问（需 Spike）。** `userQuestions` 是 Session projection，由工具调用与结果派生；Host 可用 `ctx.sessionProjections.stateOf(agent.session, 'userQuestions')` 读取 `questions.active`（已核实该调用形态存在于随包实现）。但第三方插件能否稳定拿到 `agent.session`、投影是否总在组合中，**待验证（Spike S-14）**。验证方法：注册一个 `agent/created` 拿到 agent，触发一次 `ask_user_question`，在 200ms 内读投影并断言 active 非空；再回答，断言清空。降级方案：
+- **提问（已实现，2026-10-19）。** `AskUserQuestion` 在 Session 日志中表现为普通 `tool/call`（工具名 `ask_user_question`），未回答期间工具结果不出现；Host 在读到该 `tool/call` 时置 `waiting-user`（`labelKey=agent.state.waiting.question`，`source=question`），读到对应 `tool/result` 后回到 `running`。只匹配工具名，不读参数/问题内容。**该检测不依赖 `userQuestions` 投影，也不依赖 `agent.session` 句柄**，因此比原 Spike S-14 方案更稳。若未来工具名变化，增加白名单别名即可。降级方案（保留）：
   1. 只识别审批等待；提问期间保持 `running`，不显示等待入口。这是可接受的 V1 降级，不影响“不打断工作”。
   2. Client 侧补充：Conversation 可见时，注册 `conversation.composer` chain 的 `select` 观察 `pendingInteraction`（类型 `approval | plan-review | question`），写入模块级 store；进入游戏后只作为初始值。**该路径不能覆盖“进入游戏后新出现的提问”**，因为 Conversation 在游戏面板激活时已卸载（F-05），所以只能作补充。
 - **优先级。** 同一时刻既有审批又有提问时，`waiting-user` 不变，label 取“等待审批”；不新增第二个状态。
