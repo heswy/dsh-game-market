@@ -58,11 +58,11 @@
 
 | 指标 | 目标 | 实测（中位数 / 样本） | 说明 |
 |---|---|---|---|
-| Market 外壳出现（`.dgm-root` 挂载） | — | **72ms**（75/69/72） | 仅 DOM 外壳，不代表可交互 |
-| Market 卡片就绪（`.dgm-card` 可见） | ≤500ms（PRD 首屏） | **72ms**（76/70/72） | 隔离 headless 参考值，桌面终值待真机录屏 |
-| 四款 launch→runtime playing | ≈≤1500ms（A-03 近似） | Breakout **1336ms**、Jump **1326ms**、2048 **1334ms**、Snake **1329ms**（各 2 次） | 从详情操作到 Runtime `playing`；不等于游戏首帧可操作 |
+| Market 外壳出现（`.dgm-root` 挂载） | — | **65ms**（73/59/65） | 仅 DOM 外壳，不代表可交互 |
+| Market 卡片就绪（`.dgm-card` 可见） | ≤500ms（PRD 首屏） | **65ms**（73/59/65） | 隔离 headless 参考值，桌面终值待真机录屏 |
+| 四款 launch→runtime playing | ≈≤1500ms（A-03 近似） | Breakout **107ms**、Jump **107ms**、2048 **106ms**、Snake **106ms**（各 2 次，且每次都必须成功） | 计时起点为详情页就绪后点击启动按钮；详情等待与人为 sleep 均移出计时窗口；不等于游戏首帧可操作 |
 | file Registry 刷新 | ≤2s | **9ms** | 本机 file 源 |
-| HTTPS Registry 刷新 | ≤2s | **5046ms**（本地 TLS test server 首次握手） | 仅验收用本地自签 TLS，不代表生产 CDN |
+| HTTPS Registry 刷新 | ≤2s | **5046ms**（本地 TLS test server 首次握手，仅链路可用性证据） | 仅验收用本地自签 TLS，不代表生产 CDN；不作为性能结论 |
 | 安装 | ≤5s | file 17–23ms；本地 TLS HTTPS 41ms | fixture 包 ~100–210KB，非 5MiB |
 | FPS / 暂停 CPU / 内存 | PRD §10.5 | **未测量** | 需真机 Activity Monitor/Profiler |
 
@@ -121,21 +121,21 @@
 
 | 编号 | 修复 | 回归与证据 | 状态 |
 |---|---|---|---|
-| CR-01 默认 Registry 缺失 | 新增 `scripts/build-registry.mjs`：随包生成 `registry/games.json` + `registry/packages/<id>-<version>.html`（3 款可安装游戏）；`build.mjs` 接入；`package.json.files` 含 `registry/**`；`check.mjs` 校验索引/包/大小/sha/cover；Host 新增默认 Registry 冷启动安装测试 | `check` 23 项通过；Host 测试 149/149；`node --test` **777/777**；证据 `logs/AE-02`、`logs/AE-10-15-host.log`、`logs/npm-pack.log`（分发目录包含 `registry/games.json` + 3 个包） | 关闭 |
-| CR-02 删除数据遗留备份 | `uninstallLocked` 先删完整数据集合（saves 目录、scores/sessions 的 `.json` + `.bak`、预览缓存），再移除包；失败抛 `GM-5036`（503，可重试）且保留安装；新增备份删除 + 权限注入失败回归 | 新增 2 条 Host 回归（含 `.bak`、失败注入） | 关闭 |
+| CR-01 默认 Registry 缺失 | 新增 `scripts/build-registry.mjs`：随包生成 `registry/games.json` + `registry/packages/<id>-<version>.html`（3 款可安装游戏）；`build.mjs` 接入；`package.json.files` 含 `registry/**`；`check.mjs` 校验索引/包/大小/sha/cover；Host 新增默认 Registry 冷启动安装测试 | `check` 23 项通过；Host 测试 150/150；`node --test` **780/780**；证据 `logs/AE-02`、`logs/AE-10-15-host.log`、`logs/npm-pack.log`（分发目录包含 `registry/games.json` + 3 个包） | 关闭 |
+| CR-02 删除数据遗留备份 | `pathExists` 仅把 `ENOENT/ENOTDIR` 当“不存在”，其余错误上抛；删除前对完整数据集合做 preflight，全部可访问才执行删除，再移除包；失败 `GM-5036`（503）且保留安装与数据 | 备份删除测试；scores 目录 `chmod 000` 权限注入测试（不产生半删除） | 关闭 |
 | CR-03 `storage.remove()` 写 null | 新增 `POST /save-remove`（shared route/api-client/Host saves/runtime/SDK 链路）；真实删除 key、释放配额；删空 → 404/无 Continue；`data:null` 保留为普通值；新增 Host/Runtime/契约回归 | `saves` 新测试（删除/配额/幂等/CAS/null 区别）；runtime 18/18 | 关闭 |
 | CR-04 Entry TTL 当作实例寿命 | 拆分 `entryExpiresAt`（一次性凭证）与 `expiresAt`（实例寿命）；新增 `POST /runtime-renew`，Client 每 60s 心跳续期；崩溃停止心跳后按 TTL 回收 | Host 生命周期测试（续期超原 TTL、凭证过期但实例存活、无心跳回收） | 关闭 |
-| CR-05 release 按 gameId 全释放 | `POST /runtime-release` 支持 `instanceId`，只释放匹配实例；错误 gameId/实例不释放他人；旧无 instanceId 调用保留兼容；Client 发送 launchInfo.instanceId | 双实例回归（释放 A 不影响 B、错误实例 0） | 关闭 |
+| CR-05 release 按 gameId 全释放 | `POST /runtime-release` 支持 `instanceId`，只释放匹配实例；**Client 在无 launchInfo/instanceId 时直接跳过 release，绝不走旧版全释放路径**（`shouldReleaseRuntimeInstance`）；错误实例不释放他人 | 双实例回归 + `runtime-utils` 客户端单测（null/空值均不释放） | 关闭 |
 | CR-06 无关 tool/result 清提问 | 记录待回答调用的 `callId` 与 turn（`message.source.callId`）；仅匹配结果关闭；旧 turn/同轮其他工具不清除；`turn/end` 收尾取消/中止的提问 | 新增关联回归 + 取消回归；Host 149/149 | 关闭 |
-| CR-07 验收日志未入库 | `.gitignore` 增加 `docs/verification/v1/logs/` 例外；新增 `scripts/verification/sanitize-logs.mjs`（路径脱敏 + 密钥模式扫描）；`check.mjs` 断言文档引用日志存在且未被忽略；日志已加入 Git | 25 个日志文件已跟踪；`check` 23 项含日志规则 | 关闭 |
-| CR-08 采集脚本失败仍退出 0 | 新增 `scripts/verification/assert.mjs`；`stability.mjs`/`reduced-motion.mjs`/`perf.mjs`/`host-e2e.mjs` 全部断言并在失败时非零退出；A-11 改为校验游戏内部推进（iframe debug：未暂停、状态变化），不再只看 Runtime 外壳；清理 finally 保证进程退出 | 本轮 `stability` 曾因“未真正 playing/未推进”失败 → 修正后通过，证明断言生效；日志 `A-11-A-16-stability.log`、`AE-10-15-host.log`、`perf-reference.log` | 关闭 |
-| CR-09 性能探针语义不符 | `perf.mjs` 拆成 Market shell / cards-ready 两个指标，3 次采样取中位数；游戏指标改名为 launch→runtime playing（不再称“可操作”）；失败/超时断言失败 | 新指标见 §4；`perf-reference.log`（ok=true） | 关闭 |
+| CR-07 验收日志未入库 | `.gitignore` 增加 `docs/verification/v1/logs/` 例外；新增 `scripts/verification/sanitize-logs.mjs`（路径脱敏 + 密钥模式扫描）；`check.mjs` 断言文档引用日志存在且未被忽略；日志已加入 Git | 26 个日志文件已跟踪；`check` 23 项含日志规则 | 关闭 |
+| CR-08 采集脚本失败仍退出 0 | 新增 `assert.mjs`；四个采集脚本全部断言并在失败时非零退出；A-11 改为**周期采样（15s/次）游戏内部字段并要求 ≥5 样本、≥3 个真实状态、发生移动/分数/剩余砖块变化**；`M3_STABILITY_FREEZE=1` 冻结自测确认 exit 1；perf 每个样本都必须成功（不用 any 放宽）；失败仍有清理与报告 | 冻结自测日志 `logs/A-11-freeze-selftest.log`（ok=false, exit 1）；正式 A-11 `logs/A-11-A-16-stability.log`（19 样本/8 状态/anyMovement=true, ok=true） | 关闭 |
+| CR-09 性能探针语义不符 | `perf.mjs` 拆成 Market shell / cards-ready 两个指标，3 次采样取中位数；游戏指标改名为 launch→runtime playing（不再称“可操作”）；**详情页就绪等待与人为 sleep 移出计时窗口，计时从点击启动按钮开始**；失败/超时断言失败 | 新指标见 §4；`perf-reference.log`（ok=true，所有样本成功） | 关闭 |
 
 ### 8.2 复验结果（修正后）
 
 | 项 | 结果 | 证据 |
 |---|---|---|
-| A-11 连续 5 分钟 | **通过（headless 隔离，带断言）**：301 秒、150 次输入、0 异常、末态 playing、游戏内部推进（`progressed=true`，iframe 状态从 start/未发射到 launched） | `logs/A-11-A-16-stability.log` |
+| A-11 连续 5 分钟 | **通过（headless 隔离，带断言）**：301 秒、150 次输入、0 异常、末态 playing；周期采样 19 次、8 个不同内部状态、`anyMovement=true`（分数/生命/剩余砖块/球位置变化）；冻结自测 `M3_STABILITY_FREEZE=1` 返回 1 | `logs/A-11-A-16-stability.log`、`logs/A-11-freeze-selftest.log` |
 | A-16 减少动效 | **通过（CDP 模拟，带断言）**：页面 matchMedia=true，游戏 iframe `reducedMotion=true`，Runtime playing | `logs/A-16-reduced-motion.log` |
 | 性能 | 见 §4（shell 72ms / cards-ready 72ms / launch 1326–1336ms） | `logs/perf-reference.log` |
 | Host E2E | **通过**：file/HTTPS Registry 安装、更新、卸载重装 Continue、entry 安全头、恶意矩阵、存档契约、幂等并发全部断言通过 | `results/AE-10-15-host.json`（ok=true） |

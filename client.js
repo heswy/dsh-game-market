@@ -8211,11 +8211,20 @@ window.__ModuleLoader__.load({
     }
 
     /** True once the game can receive keyboard input. */
+    /** A runtime instance id is required to release only our own launch binding. */
+    function hasRuntimeInstanceId(value) {
+      return typeof value === 'string' && value.length > 0;
+    }
+
+    function shouldReleaseRuntimeInstance(gameId, instanceId) {
+      return typeof gameId === 'string' && gameId.length > 0 && hasRuntimeInstanceId(instanceId);
+    }
+
     function isRuntimeInteractiveState(state) {
       return state === 'playing' || state === 'paused' || state === 'saving';
     }
 
-    return { isSafeEntryUrl, validateLaunchInfo, deriveLoadPhase, isRuntimeLoadingState, isRuntimeInteractiveState };
+    return { isSafeEntryUrl, validateLaunchInfo, deriveLoadPhase, isRuntimeLoadingState, hasRuntimeInstanceId, shouldReleaseRuntimeInstance, isRuntimeInteractiveState };
     })();
 
     // module: packages/shared/src/protocol.js
@@ -10586,6 +10595,7 @@ window.__ModuleLoader__.load({
     const getApiClient = __mods["packages/client/src/api.js"].getApiClient;
     const MAIN_PANEL_KEY = __mods["packages/client/src/constants.js"].MAIN_PANEL_KEY;
     const isRuntimeLoadingState = __mods["packages/client/src/runtime-utils.js"].isRuntimeLoadingState;
+    const shouldReleaseRuntimeInstance = __mods["packages/client/src/runtime-utils.js"].shouldReleaseRuntimeInstance;
     const validateLaunchInfo = __mods["packages/client/src/runtime-utils.js"].validateLaunchInfo;
     const createRuntimeController = __mods["packages/client/src/runtime-adapter.js"].createRuntimeController;
     const destroyRuntime = __mods["packages/client/src/runtime-adapter.js"].destroyRuntime;
@@ -11025,6 +11035,9 @@ window.__ModuleLoader__.load({
 
       function releaseHostInstance(gameId, instanceId) {
         if (typeof gameId !== 'string' || gameId.length === 0) return;
+        // Without our own instance id, skip release entirely: the legacy fallback
+        // would release every instance of this game (CR-05).
+        if (!shouldReleaseRuntimeInstance(gameId, instanceId)) return;
         const api = getApiClient();
         if (!api || typeof api.releaseRuntime !== 'function') return;
         Promise.resolve(api.releaseRuntime({ gameId, instanceId })).catch(function ignore() {});

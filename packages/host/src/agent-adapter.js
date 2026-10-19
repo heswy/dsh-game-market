@@ -410,6 +410,11 @@ export function createAgentAdapter({ hostEpoch, now, logger = null, maxSessions 
           });
         case 'turn/end': {
           if (snapshot.state === 'waiting-user' && snapshot.source === 'question') {
+            const pending = questionWaits.get(sessionId);
+            // A turn end for a different turn must not clear this question.
+            if (pending && pending.turnId && turnId !== null && pending.turnId !== turnId) {
+              return cloneSnapshot(snapshot);
+            }
             questionWaits.delete(sessionId);
           } else if (
             snapshot.state === 'waiting-user' ||
@@ -467,10 +472,12 @@ export function createAgentAdapter({ hostEpoch, now, logger = null, maxSessions 
           let answeredQuestion = false;
           if (snapshot.state === 'waiting-user' && snapshot.source === 'question') {
             const resultCallId = extractToolCallId(data);
-            if (pendingQuestion && pendingQuestion.callId && resultCallId) {
-              answeredQuestion = pendingQuestion.callId === resultCallId;
+            if (pendingQuestion && pendingQuestion.callId) {
+              // Once we know the call id, a result without one is not provably
+              // ours; keep waiting (parallel tools may finish first).
+              answeredQuestion = resultCallId === pendingQuestion.callId;
             } else if (pendingQuestion && pendingQuestion.turnId) {
-              answeredQuestion = turnId === null || turnId === pendingQuestion.turnId;
+              answeredQuestion = turnId !== null && turnId === pendingQuestion.turnId;
             } else {
               answeredQuestion = true;
             }

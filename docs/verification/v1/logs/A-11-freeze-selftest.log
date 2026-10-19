@@ -1,0 +1,221 @@
+{
+  "environment": "isolated dsh web + headless Chrome 155",
+  "durationSec": 20,
+  "steps": 10,
+  "finalState": {
+    "state": "playing",
+    "overlay": ""
+  },
+  "debugStart": {
+    "status": "ready",
+    "level": 1,
+    "lives": 1,
+    "score": 140,
+    "best": 170,
+    "paddleX": 480,
+    "ball": {
+      "x": 480,
+      "y": 487.5,
+      "launched": false
+    },
+    "remaining": 34,
+    "loopRunning": true,
+    "runtimePaused": false,
+    "localPaused": false,
+    "overlay": null,
+    "sessionActive": true,
+    "restoredSave": true,
+    "saveStatus": "saved"
+  },
+  "debugEnd": {
+    "status": "ready",
+    "level": 1,
+    "lives": 1,
+    "score": 140,
+    "best": 170,
+    "paddleX": 480,
+    "ball": {
+      "x": 480,
+      "y": 487.5,
+      "launched": false
+    },
+    "remaining": 34,
+    "loopRunning": true,
+    "runtimePaused": false,
+    "localPaused": false,
+    "overlay": null,
+    "sessionActive": true,
+    "restoredSave": true,
+    "saveStatus": "saved"
+  },
+  "progressed": false,
+  "progressSamples": [
+    {
+      "atSec": 2,
+      "fields": {
+        "status": "ready",
+        "lives": 1,
+        "score": 140,
+        "remaining": 34,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 18,
+      "fields": {
+        "status": "ready",
+        "lives": 1,
+        "score": 140,
+        "remaining": 34,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    }
+  ],
+  "errors": [],
+  "ticks": [
+    {
+      "atSec": 2,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 18,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    }
+  ],
+  "a11": true,
+  "ok": false,
+  "checks": [
+    {
+      "name": "breakout started",
+      "ok": true
+    },
+    {
+      "name": "breakout reached playing (not paused)",
+      "ok": true,
+      "details": {
+        "runtimePaused": false
+      }
+    },
+    {
+      "name": "duration >= 20s",
+      "ok": true
+    },
+    {
+      "name": "runtime stayed playing",
+      "ok": true,
+      "details": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "name": "no tick observed a non-playing shell",
+      "ok": true
+    },
+    {
+      "name": "periodic game progression observed",
+      "ok": false,
+      "details": {
+        "samples": 2,
+        "distinctRealStates": 1,
+        "anyMovement": false,
+        "first": {
+          "atSec": 2,
+          "fields": {
+            "status": "ready",
+            "lives": 1,
+            "score": 140,
+            "remaining": 34,
+            "level": 1,
+            "paddleX": 480,
+            "ballX": 480,
+            "ballY": 488,
+            "launched": false
+          }
+        },
+        "last": {
+          "atSec": 18,
+          "fields": {
+            "status": "ready",
+            "lives": 1,
+            "score": 140,
+            "remaining": 34,
+            "level": 1,
+            "paddleX": 480,
+            "ballX": 480,
+            "ballY": 488,
+            "launched": false
+          }
+        }
+      }
+    },
+    {
+      "name": "game not frozen at the end",
+      "ok": true,
+      "details": {
+        "runtimePaused": false,
+        "loopRunning": true,
+        "overlay": null
+      }
+    },
+    {
+      "name": "zero page/runtime exceptions",
+      "ok": true,
+      "details": []
+    }
+  ],
+  "failures": [
+    {
+      "name": "periodic game progression observed",
+      "ok": false,
+      "details": {
+        "samples": 2,
+        "distinctRealStates": 1,
+        "anyMovement": false,
+        "first": {
+          "atSec": 2,
+          "fields": {
+            "status": "ready",
+            "lives": 1,
+            "score": 140,
+            "remaining": 34,
+            "level": 1,
+            "paddleX": 480,
+            "ballX": 480,
+            "ballY": 488,
+            "launched": false
+          }
+        },
+        "last": {
+          "atSec": 18,
+          "fields": {
+            "status": "ready",
+            "lives": 1,
+            "score": 140,
+            "remaining": 34,
+            "level": 1,
+            "paddleX": 480,
+            "ballX": 480,
+            "ballY": 488,
+            "launched": false
+          }
+        }
+      }
+    }
+  ],
+  "finishedAt": "2026-10-19T03:44:53.186Z"
+}

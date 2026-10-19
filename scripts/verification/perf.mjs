@@ -83,22 +83,29 @@ async function dismissOnboarding(cdp) {
 async function openMarket(cdp) {
   return cdp.eval(`(() => { const els = Array.from(document.querySelectorAll('button,a,[role="button"],div')).filter((n) => n.offsetParent !== null); const el = els.find((n) => (n.innerText || '').trim() === 'Game Market'); if (!el) return false; el.click(); return true; })()`);
 }
-async function clickGame(cdp, name, primaryRe) {
+async function waitFor(cdp, expr, timeoutMs = 6000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (await cdp.eval(expr)) return true;
+    await sleep(100);
+  }
+  return false;
+}
+async function openGameDetail(cdp, name) {
   const opened = await cdp.eval(`(() => {
     const cards = Array.from(document.querySelectorAll('.dgm-root .dgm-card'));
     const card = cards.find((c) => (c.innerText || '').includes(${JSON.stringify(name)}));
-    if (card) { card.click(); return 'card'; }
-    const leaf = Array.from(document.querySelectorAll('.dgm-root *')).find((n) => n.children.length === 0 && (n.textContent || '').trim() === ${JSON.stringify(name)} && n.offsetParent !== null);
-    if (!leaf) return false;
-    const closest = leaf.closest('button,[role="button"],[class*="card"],[class*="Card"]');
-    if (!closest) return false;
-    closest.click();
-    return 'leaf';
+    if (!card) return false;
+    card.click();
+    return true;
   })()`);
   if (!opened) return { opened: false };
-  await sleep(1200);
-  const clicked = await cdp.eval(`(() => { const b = Array.from(document.querySelectorAll('.dgm-root button')).filter((x) => x.offsetParent !== null && !x.disabled).find((x) => ${primaryRe}.test((x.innerText || '').trim())); if (!b) return false; b.click(); return true; })()`);
-  return { opened, clicked, page: await cdp.eval(`(() => { const r = document.querySelector('.dgm-root'); return r ? r.dataset.page : null; })()`) };
+  // Wait for the detail action outside the measured interval.
+  const ready = await waitFor(cdp, `!!Array.from(document.querySelectorAll('.dgm-root button')).find((x) => x.offsetParent !== null && !x.disabled && /^(继续游戏|开始游戏|开始|继续)$/.test((x.innerText || '').trim()))`, 8000);
+  return { opened: true, ready };
+}
+async function clickPrimary(cdp, primaryRe) {
+  return cdp.eval(`(() => { const b = Array.from(document.querySelectorAll('.dgm-root button')).filter((x) => x.offsetParent !== null && !x.disabled).find((x) => ${primaryRe}.test((x.innerText || '').trim())); if (!b) return false; b.click(); return true; })()`);
 }
 let host = null; let chrome = null; let cdp = null;
 async function finish(report) {
@@ -151,20 +158,27 @@ async function main() {
       await dismissOnboarding(cdp);
       await openMarket(cdp);
       await sleep(2500);
+      const ready = await waitFor(cdp, `document.querySelectorAll('.dgm-root .dgm-card').length > 0`, 8000);
+      if (!ready) { attempts.push(null); checker.check(`${name} market cards sample ${sample + 1}`, false); continue; }
+      const detail = await openGameDetail(cdp, name);
+      if (!detail.opened || !detail.ready) { attempts.push(null); checker.check(`${name} detail ready sample ${sample + 1}`, false, detail); continue; }
+      // Start the clock immediately before the actual primary click: the detail
+      // readiness wait above is outside the measured launch interval (CR-09).
       const t0 = Date.now();
-      const entered = await clickGame(cdp, name, /^(继续游戏|开始游戏|开始|继续)$/);
-      if (!entered.opened || !entered.clicked) { attempts.push(null); checker.check(`${name} entry sample ${sample + 1}`, false, entered); continue; }
+      const clicked = await clickPrimary(cdp, /^(继续游戏|开始游戏|开始|继续)$/);
+      if (!clicked) { attempts.push(null); checker.check(`${name} primary click sample ${sample + 1}`, false); continue; }
       let playingMs = null;
-      for (let i = 0; i < 120; i += 1) {
+      for (let i = 0; i < 150; i += 1) {
         await sleep(100);
         await cdp.eval(`(() => { const o = document.querySelector('.dgm-overlay'); if (!o) return false; const b = Array.from(o.querySelectorAll('button')).find((x) => /^(继续游戏|继续)$/.test((x.innerText || '').trim())); if (b) b.click(); return !!b; })()`);
         const st = await cdp.eval(`(() => { const r = document.querySelector('.dgm-runtime'); return r ? r.dataset.runtimeState : null; })()`);
         if (st === 'playing') { playingMs = Date.now() - t0; break; }
       }
       attempts.push(playingMs);
+      checker.check(`${name} sample ${sample + 1} reached playing`, typeof playingMs === 'number', playingMs);
     }
     gameSamples[name] = attempts;
-    checker.check(`${name} runtime-playing sample reached`, attempts.some((v) => typeof v === 'number'), attempts);
+    checker.check(`${name} all samples reached playing`, attempts.length === 2 && attempts.every((v) => typeof v === 'number'), attempts);
   }
   const result = {
     startedAt: new Date().toISOString(),

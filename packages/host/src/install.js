@@ -88,8 +88,11 @@ async function pathExists(target) {
   try {
     await fs.lstat(target);
     return true;
-  } catch (_error) {
-    return false;
+  } catch (error) {
+    // Only "missing" is a negative result. EACCES/EPERM etc. must surface so
+    // deleteData cannot silently skip data it failed to inspect (CR-02).
+    if (error && (error.code === 'ENOENT' || error.code === 'ENOTDIR')) return false;
+    throw fsIoError(error, 'Could not inspect data path');
   }
 }
 
@@ -920,7 +923,22 @@ export function createInstallService({
         storage.filePath(SESSIONS_DIR, `${gameId}.json.bak`),
         storage.filePath(PREVIEW_CACHE_DIR, gameId),
       ];
+      // Preflight every path so a permission error cannot delete half the
+      // data and still report a clean failure.
       const failures = [];
+      for (const target of dataPaths) {
+        try {
+          await pathExists(target);
+        } catch (_error) {
+          failures.push(target);
+        }
+      }
+      if (failures.length > 0) {
+        throw hostError(GM.INSTALL_IO, 'Some game data could not be deleted', {
+          retryable: true,
+          details: { failedPaths: failures.length, phase: 'preflight' },
+        });
+      }
       for (const target of dataPaths) {
         try {
           await moveToTrash(target, gameId);
@@ -931,7 +949,7 @@ export function createInstallService({
       if (failures.length > 0) {
         throw hostError(GM.INSTALL_IO, 'Some game data could not be deleted', {
           retryable: true,
-          details: { failedPaths: failures.length },
+          details: { failedPaths: failures.length, phase: 'delete' },
         });
       }
       dataDeleted = true;

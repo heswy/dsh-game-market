@@ -1,5 +1,5 @@
 {
-  "startedAt": "2026-10-19T03:12:04.274Z",
+  "startedAt": "2026-10-19T03:43:59.012Z",
   "environment": "isolated dsh web + headless Chrome 155 (CDP media emulation)",
   "ok": true,
   "checks": [
@@ -27,12 +27,12 @@
     {
       "name": "runtime reached playing",
       "ok": true,
-      "details": 108
+      "details": 114
     }
   ],
   "failures": [],
   "pageMatchMediaReduced": true,
-  "launchToPlayingMs": 108,
+  "launchToPlayingMs": 114,
   "game": {
     "reducedMotion": true,
     "mode": "playing",

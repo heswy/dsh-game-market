@@ -498,6 +498,32 @@ export function register() {
     await fs.chmod(path.join(host.dataRoot, 'trash'), 0o700).catch(() => undefined);
   });
 
+  test('deleteData surfaces permission errors instead of treating data as missing', async (t) => {
+    const { host } = await setup(t, [{ manifest: { id: 'jump' } }]);
+    await install(host, 'jump');
+    await host.data(ROUTES.SCORE, { body: { gameId: 'jump', score: 20, operationId: nextOp('score-perm') } });
+    const scoresDir = host.filePath('scores');
+    t.after(async () => { await fs.chmod(scoresDir, 0o700).catch(() => undefined); });
+    await fs.chmod(scoresDir, 0o000);
+
+    const failed = await host.requestJson(ROUTES.UNINSTALL, {
+      body: {
+        gameId: 'jump',
+        deleteData: true,
+        confirmDataDeletion: true,
+        operationId: nextOp('del-perm'),
+      },
+    });
+    assert.equal(failed.response.status, 503);
+    assertError(failed.payload, GM.INSTALL_IO);
+    await fs.chmod(scoresDir, 0o700);
+    // No half-delete: package and data remain, retry is possible.
+    assert.equal(await host.pathExists('packages/jump/1.0.0/entry.html'), true);
+    assert.equal(await host.pathExists('scores/jump.json'), true);
+    const installations = await host.readDataJson('installations.json');
+    assert.ok(installations.games.jump);
+  });
+
   test('built-in games cannot be uninstalled (GM-4038)', async (t) => {
     const { host } = await setup(t, []);
     const { response, payload } = await host.requestJson(ROUTES.UNINSTALL, {

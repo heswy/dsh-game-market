@@ -9,7 +9,7 @@ import { store, agentSnapshotReceived, runtimePatched, runtimeFailed, runtimeRet
 import { applyRuntimeEvent, acknowledgeCompleted, finishLeave, gameNameFromState, recordPausedGame } from '../actions.js';
 import { getApiClient } from '../api.js';
 import { MAIN_PANEL_KEY } from '../constants.js';
-import { isRuntimeLoadingState, validateLaunchInfo } from '../runtime-utils.js';
+import { isRuntimeLoadingState, shouldReleaseRuntimeInstance, validateLaunchInfo } from '../runtime-utils.js';
 import { createRuntimeController, destroyRuntime, forwardAgentState, pauseRuntimeBounded, resumeRuntime } from '../runtime-adapter.js';
 import { normalizeUiError, runtimeErrorBodyKey, runtimeErrorRetryable, runtimeErrorTitleKey, uiError } from '../ui-errors.js';
 import { derivePresenceState } from '../presence.js';
@@ -432,6 +432,9 @@ export function RuntimeView(props) {
 
   function releaseHostInstance(gameId, instanceId) {
     if (typeof gameId !== 'string' || gameId.length === 0) return;
+    // Without our own instance id, skip release entirely: the legacy fallback
+    // would release every instance of this game (CR-05).
+    if (!shouldReleaseRuntimeInstance(gameId, instanceId)) return;
     const api = getApiClient();
     if (!api || typeof api.releaseRuntime !== 'function') return;
     Promise.resolve(api.releaseRuntime({ gameId, instanceId })).catch(function ignore() {});

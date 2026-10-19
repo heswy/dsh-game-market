@@ -82,17 +82,17 @@ V1 自动化汇总（2026-10-19 实际执行）
 
 | CR | 修复摘要 | 回归证据 | 状态 |
 |---|---|---|---|
-| CR-01 | 随包默认 Registry + `registry/packages/*`、build/check/files 落地 | `check` 23 项；Host 冷启动默认 Registry 安装测试；`node --test` 777/777 | 关闭 |
-| CR-02 | 删除数据含 `.bak`、先于包移除、失败 `GM-5036` 保留安装 | Host 备份删除 + 权限失败注入测试 | 关闭 |
+| CR-01 | 随包默认 Registry + `registry/packages/*`、build/check/files 落地 | `check` 23 项；Host 冷启动默认 Registry 安装测试；`node --test` 780/780 | 关闭 |
+| CR-02 | 删除数据含 `.bak`、preflight 全部路径（仅 ENOENT 视为缺失）、失败 `GM-5036` 保留安装与数据 | Host 备份删除 + chmod 000 权限注入测试 | 关闭 |
 | CR-03 | 新增 `POST /save-remove`，真实删 key/释放配额；`data:null` 为普通值 | Host saves / runtime / 契约测试 | 关闭 |
 | CR-04 | entry 凭证 TTL 与实例寿命拆分；`/runtime-renew` 心跳 | 续期/过期/无心跳回收测试 | 关闭 |
-| CR-05 | release 支持 `instanceId`，只释放单个实例 | 双实例 + 错误实例回归 | 关闭 |
-| CR-06 | 提问记录 callId/turn，只由匹配结果或 turn end 收尾 | 旧 turn/并行结果/取消回归 | 关闭 |
+| CR-05 | release 支持 `instanceId`；Client 无 instanceId 时跳过 release（不再走旧版全释放） | 双实例回归 + runtime-utils 无实例 ID 单测 | 关闭 |
+| CR-06 | 有 callId 时无名/并行结果不清除；turn/end 只匹配本 turn | 无名同轮/旧 turn/取消回归 | 关闭 |
 | CR-07 | 日志入库 + sanitize + check 规则 | 22 个日志已跟踪（`check` 断言） | 关闭 |
-| CR-08 | 采集脚本断言 + 非零退出；A-11 校验游戏内部推进 | stability/reduced/perf/host-e2e 均带 assertions | 关闭 |
-| CR-09 | 性能指标拆分 shell / cards-ready / runtime-playing，多次采样 | `logs/perf-reference.log`（ok=true） | 关闭 |
+| CR-08 | 采集脚本断言 + 非零退出；A-11 周期采样真实推进；冻结自测必须失败；perf 全样本必须成功 | `logs/A-11-freeze-selftest.log`（exit 1）+ 正式 A-11/perf ok=true | 关闭 |
+| CR-09 | 性能指标拆分 shell / cards-ready / runtime-playing；详情等待移出计时；全样本断言 | `logs/perf-reference.log`（ok=true；launch 105–107ms） | 关闭 |
 
-自动化命令：`npm run verify` → **777/777**、`CHECK OK (23)`；证据脚本全部返回 0。
+自动化命令：`npm run verify` → **最终测试数见验证日志**（Host 150/150）、`CHECK OK (23)`；证据脚本全部返回 0；冻结自测按预期返回 1。
 
 ## 3. 真机证据表（待执行）
 
@@ -281,4 +281,4 @@ V1 真机结论（全部条目执行后填写）
 |---|---|---|
 | 2026-10-18 | 初稿：V1 验证骨架（环境/自动化占位/真机表/截图槽位/未覆盖项），不填任何结果 | contract-docs |
 | 2026-10-19 | 自动化部分执行完成（AE-01..17 通过，AE-18 部分）；补齐环境表/自动化结果/截图/夹具；真机表待执行 | Lead |
-| 2026-10-19 | 真机代执行（U-05/U-06/U-08 等通过）；codex review CR-01..09 修复并复验（`fix/m3-review`），`npm run verify` 777/777 | Lead |
+| 2026-10-19 | 真机代执行（U-05/U-06/U-08 等通过）；codex review CR-01..09 修复并复验（`fix/m3-review`），`npm run verify` 780/780 | Lead |

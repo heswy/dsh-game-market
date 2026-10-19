@@ -22,33 +22,301 @@
     "loopRunning": true,
     "runtimePaused": false,
     "localPaused": false,
-    "overlay": "start",
-    "sessionActive": true,
-    "restoredSave": true,
-    "saveStatus": "idle"
-  },
-  "debugEnd": {
-    "status": "playing",
-    "level": 1,
-    "lives": 1,
-    "score": 140,
-    "best": 170,
-    "paddleX": 480,
-    "ball": {
-      "x": 480,
-      "y": 487.5,
-      "launched": true
-    },
-    "remaining": 34,
-    "loopRunning": true,
-    "runtimePaused": false,
-    "localPaused": false,
     "overlay": null,
     "sessionActive": true,
     "restoredSave": true,
     "saveStatus": "saved"
   },
+  "debugEnd": {
+    "status": "over",
+    "level": 1,
+    "lives": 0,
+    "score": 30,
+    "best": 170,
+    "paddleX": 480,
+    "ball": {
+      "x": 233.17475128303363,
+      "y": 527.3855961067691,
+      "launched": false
+    },
+    "remaining": 45,
+    "loopRunning": true,
+    "runtimePaused": false,
+    "localPaused": false,
+    "overlay": "result",
+    "sessionActive": false,
+    "restoredSave": false,
+    "saveStatus": "saved"
+  },
   "progressed": true,
+  "progressSamples": [
+    {
+      "atSec": 2,
+      "fields": {
+        "status": "over",
+        "lives": 0,
+        "score": 150,
+        "remaining": 33,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 697,
+        "ballY": 528,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 18,
+      "fields": {
+        "status": "ready",
+        "lives": 1,
+        "score": 40,
+        "remaining": 44,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 34,
+      "fields": {
+        "status": "ready",
+        "lives": 1,
+        "score": 20,
+        "remaining": 46,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 50,
+      "fields": {
+        "status": "ready",
+        "lives": 1,
+        "score": 20,
+        "remaining": 46,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 66,
+      "fields": {
+        "status": "ready",
+        "lives": 2,
+        "score": 10,
+        "remaining": 47,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 83,
+      "fields": {
+        "status": "ready",
+        "lives": 2,
+        "score": 10,
+        "remaining": 47,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 99,
+      "fields": {
+        "status": "ready",
+        "lives": 2,
+        "score": 10,
+        "remaining": 47,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 115,
+      "fields": {
+        "status": "over",
+        "lives": 0,
+        "score": 30,
+        "remaining": 45,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 215,
+        "ballY": 529,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 131,
+      "fields": {
+        "status": "over",
+        "lives": 0,
+        "score": 30,
+        "remaining": 45,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 746,
+        "ballY": 529,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 147,
+      "fields": {
+        "status": "over",
+        "lives": 0,
+        "score": 30,
+        "remaining": 45,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 727,
+        "ballY": 527,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 163,
+      "fields": {
+        "status": "ready",
+        "lives": 1,
+        "score": 40,
+        "remaining": 44,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 179,
+      "fields": {
+        "status": "ready",
+        "lives": 1,
+        "score": 20,
+        "remaining": 46,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 195,
+      "fields": {
+        "status": "ready",
+        "lives": 1,
+        "score": 20,
+        "remaining": 46,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 211,
+      "fields": {
+        "status": "ready",
+        "lives": 2,
+        "score": 10,
+        "remaining": 47,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 227,
+      "fields": {
+        "status": "ready",
+        "lives": 2,
+        "score": 10,
+        "remaining": 47,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 243,
+      "fields": {
+        "status": "playing",
+        "lives": 1,
+        "score": 80,
+        "remaining": 40,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 431,
+        "ballY": 449,
+        "launched": true
+      }
+    },
+    {
+      "atSec": 259,
+      "fields": {
+        "status": "ready",
+        "lives": 1,
+        "score": 20,
+        "remaining": 46,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 275,
+      "fields": {
+        "status": "ready",
+        "lives": 1,
+        "score": 20,
+        "remaining": 46,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    },
+    {
+      "atSec": 291,
+      "fields": {
+        "status": "ready",
+        "lives": 1,
+        "score": 20,
+        "remaining": 46,
+        "level": 1,
+        "paddleX": 480,
+        "ballX": 480,
+        "ballY": 488,
+        "launched": false
+      }
+    }
+  ],
   "errors": [],
   "ticks": [
     {
@@ -59,28 +327,126 @@
       }
     },
     {
-      "atSec": 62,
+      "atSec": 18,
       "state": {
         "state": "playing",
         "overlay": ""
       }
     },
     {
-      "atSec": 122,
+      "atSec": 34,
       "state": {
         "state": "playing",
         "overlay": ""
       }
     },
     {
-      "atSec": 182,
+      "atSec": 50,
       "state": {
         "state": "playing",
         "overlay": ""
       }
     },
     {
-      "atSec": 242,
+      "atSec": 66,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 83,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 99,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 115,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 131,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 147,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 163,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 179,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 195,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 211,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 227,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 243,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 259,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 275,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 291,
       "state": {
         "state": "playing",
         "overlay": ""
@@ -118,29 +484,49 @@
       "ok": true
     },
     {
-      "name": "game progressed internally",
+      "name": "periodic game progression observed",
       "ok": true,
       "details": {
-        "start": {
-          "ball": {
-            "x": 480,
-            "y": 487.5,
+        "samples": 19,
+        "distinctRealStates": 8,
+        "anyMovement": true,
+        "first": {
+          "atSec": 2,
+          "fields": {
+            "status": "over",
+            "lives": 0,
+            "score": 150,
+            "remaining": 33,
+            "level": 1,
+            "paddleX": 480,
+            "ballX": 697,
+            "ballY": 528,
             "launched": false
-          },
-          "paddleX": 480,
-          "score": 140,
-          "remaining": 34
+          }
         },
-        "end": {
-          "ball": {
-            "x": 480,
-            "y": 487.5,
-            "launched": true
-          },
-          "paddleX": 480,
-          "score": 140,
-          "remaining": 34
+        "last": {
+          "atSec": 291,
+          "fields": {
+            "status": "ready",
+            "lives": 1,
+            "score": 20,
+            "remaining": 46,
+            "level": 1,
+            "paddleX": 480,
+            "ballX": 480,
+            "ballY": 488,
+            "launched": false
+          }
         }
+      }
+    },
+    {
+      "name": "game not frozen at the end",
+      "ok": true,
+      "details": {
+        "runtimePaused": false,
+        "loopRunning": true,
+        "overlay": "result"
       }
     },
     {
@@ -150,5 +536,5 @@
     }
   ],
   "failures": [],
-  "finishedAt": "2026-10-19T03:21:50.154Z"
+  "finishedAt": "2026-10-19T03:41:48.027Z"
 }

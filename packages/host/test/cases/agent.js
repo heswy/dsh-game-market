@@ -210,6 +210,13 @@ export function register() {
       message: { role: 'tool', source: { callId: 'call-parallel' }, content: [] },
     });
     assert.equal((await agentState(host, sessionId)).state, 'waiting-user');
+    // Same-turn result without a callId is not provably ours either.
+    sessionEvent(host, sessionId, 'tool/result', {
+      turn: 5,
+      step: 1,
+      message: { role: 'tool', content: [] },
+    });
+    assert.equal((await agentState(host, sessionId)).state, 'waiting-user');
 
     sessionEvent(host, sessionId, 'tool/result', {
       turn: 5,
@@ -220,8 +227,11 @@ export function register() {
     assert.equal(answered.state, 'running');
     assert.equal(answered.source, 'question');
 
-    // Cancelling/aborting a question via turn end must not leave a stuck wait.
+    // Cancelling/aborting a question via the matching turn end closes it; an
+    // older turn end must be ignored.
     sessionEvent(host, sessionId, 'tool/call', { turn: 6, step: 1, name: 'ask_user_question', callId: 'call-q2' });
+    assert.equal((await agentState(host, sessionId)).state, 'waiting-user');
+    sessionEvent(host, sessionId, 'turn/end', { turn: 5, reason: { kind: 'aborted' } });
     assert.equal((await agentState(host, sessionId)).state, 'waiting-user');
     sessionEvent(host, sessionId, 'turn/end', { turn: 6, reason: { kind: 'aborted' } });
     assert.equal((await agentState(host, sessionId)).state, 'idle');

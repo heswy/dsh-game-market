@@ -1,26 +1,26 @@
 {
-  "startedAt": "2026-10-19T03:06:00.341Z",
+  "startedAt": "2026-10-19T03:45:09.192Z",
   "commit": "",
   "scenarios": {
     "fileRegistry": {
-      "home": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-JzU3VB",
-      "refreshMs": 10,
+      "home": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-cNTXTZ",
+      "refreshMs": 12,
       "cache": {
         "state": "fresh",
         "sourceUrl": "/Users/orange/Orange Field/Matterhorn/dsh-game-market/docs/verification/v1/fixtures/registry-file.json",
-        "fetchedAt": "2026-10-19T03:06:00.348Z",
+        "fetchedAt": "2026-10-19T03:45:09.199Z",
         "truncated": false,
         "count": 4,
         "lastError": null
       },
       "install": {
         "2048": {
-          "ms": 19,
+          "ms": 18,
           "version": "1.0.0",
           "sha": "7e65cb5e4c8065a1f7d525893cd6733468f9c08d10615bd3462331764acb162a"
         },
         "jump": {
-          "ms": 21,
+          "ms": 23,
           "version": "1.0.0",
           "sha": "92b26f477df4dce0110e928b947947e107d889646dee3bb1a7d2ea12a2782293"
         },
@@ -32,17 +32,17 @@
       },
       "layout": {
         "2048": {
-          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-JzU3VB/storages/dsh-game-market/packages/2048/1.0.0/entry.html",
+          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-cNTXTZ/storages/dsh-game-market/packages/2048/1.0.0/entry.html",
           "exists": true,
           "sha": "7e65cb5e4c8065a1f7d525893cd6733468f9c08d10615bd3462331764acb162a"
         },
         "jump": {
-          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-JzU3VB/storages/dsh-game-market/packages/jump/1.0.0/entry.html",
+          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-cNTXTZ/storages/dsh-game-market/packages/jump/1.0.0/entry.html",
           "exists": true,
           "sha": "92b26f477df4dce0110e928b947947e107d889646dee3bb1a7d2ea12a2782293"
         },
         "breakout": {
-          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-JzU3VB/storages/dsh-game-market/packages/breakout/1.0.0/entry.html",
+          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-cNTXTZ/storages/dsh-game-market/packages/breakout/1.0.0/entry.html",
           "exists": true,
           "sha": "32d4f224bed8c2ac9ef4c90d9d3fc51477995e694ae06352129a2c126bad7e37"
         }
@@ -84,13 +84,13 @@
       "beforeVersion": "1.0.0",
       "updateResult": "1.0.1",
       "afterVersion": "1.0.1",
-      "updateMs": 15,
+      "updateMs": 19,
       "changed": true
     },
     "httpsRegistry": {
-      "refreshMs": 5046,
+      "refreshMs": 5037,
       "refreshOk": true,
-      "installMs": 41,
+      "installMs": 37,
       "version": "1.0.0",
       "transport": "https (local TLS, self-signed, devMode loopback)"
     },
@@ -167,7 +167,7 @@
         "keys": 1,
         "bytes": 23,
         "revision": 1,
-        "updatedAt": "2026-10-19T03:06:06.102Z"
+        "updatedAt": "2026-10-19T03:45:14.629Z"
       },
       "tooLarge": {
         "error": {
@@ -212,7 +212,7 @@
       ]
     }
   },
-  "finishedAt": "2026-10-19T03:06:06.807Z",
+  "finishedAt": "2026-10-19T03:45:15.219Z",
   "lines": 18,
   "ok": true,
   "checks": [

@@ -15,7 +15,7 @@ import { ensureDshRuntime } from './lib-dsh.mjs';
 import { createChecker } from './assert.mjs';
 
 const ROOT = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
-const OUT = path.join(ROOT, 'docs/verification/v1/logs/A-11-A-16-stability.log');
+const OUT = process.env.M3_STABILITY_OUT || path.join(ROOT, 'docs/verification/v1/logs/A-11-A-16-stability.log');
 const BIN = await ensureDshRuntime();
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const WORK = '/tmp/m3-stability';
@@ -131,6 +131,56 @@ async function gameDebug(cdp) {
   for (const value of values) { try { return JSON.parse(value); } catch (_error) { /* next */ } }
   return null;
 }
+async function pressInGame(cdp, key, code) {
+  const expr = `(() => {
+    const opts = { key: ${JSON.stringify(key)}, code: ${JSON.stringify(code)}, bubbles: true, cancelable: true };
+    window.dispatchEvent(new KeyboardEvent('keydown', opts));
+    document.dispatchEvent(new KeyboardEvent('keydown', opts));
+    window.dispatchEvent(new KeyboardEvent('keyup', opts));
+    return true;
+  })()`;
+  const results = await cdp.evalInFrames(expr);
+  return results.length > 0;
+}
+async function clickGameOverlay(cdp) {
+  return cdp.evalInFrames(`(() => {
+    const button = Array.from(document.querySelectorAll('button')).find((b) => /继续|开始|Continue|Start|再来一局|新游戏|New run/i.test((b.innerText || '').trim()));
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+}
+async function continuePlatform(cdp) {
+  return cdp.eval(`(() => {
+    const overlay = document.querySelector('.dgm-overlay');
+    if (!overlay) return false;
+    const button = Array.from(overlay.querySelectorAll('button')).find((b) => /^(继续游戏|继续)$/.test((b.innerText || '').trim()));
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+}
+function progressFields(debug) {
+  if (!debug) return null;
+  return {
+    status: debug.status,
+    lives: debug.lives,
+    score: debug.score,
+    remaining: debug.remaining,
+    level: debug.level,
+    paddleX: Math.round(debug.paddleX || 0),
+    ballX: debug.ball ? Math.round(debug.ball.x) : null,
+    ballY: debug.ball ? Math.round(debug.ball.y) : null,
+    launched: debug.ball ? debug.ball.launched : null,
+  };
+}
+function moved(a, b) {
+  if (!a || !b) return false;
+  return a.status !== b.status || a.lives !== b.lives || a.score !== b.score ||
+    a.remaining !== b.remaining || a.level !== b.level || a.paddleX !== b.paddleX ||
+    a.ballX !== b.ballX || a.ballY !== b.ballY;
+}
+
 
 let host = null; let chrome = null; let cdp = null;
 async function finish(report) {
@@ -162,38 +212,51 @@ async function main() {
   const entered = await enterBreakout(cdp);
   checker.check('breakout started', entered.started === true);
   checker.check('breakout reached playing (not paused)', Boolean(entered.debug && entered.debug.runtimePaused === false), entered.debug && { runtimePaused: entered.debug.runtimePaused });
-  await cdp.key(' ');
-  await sleep(4000);
-  const debugStart = entered.debug || (await gameDebug(cdp));
+  // Dismiss the game's own start overlay inside the iframe, then take the
+  // baseline snapshot used for progress checks.
+  await clickGameOverlay(cdp);
+  await continuePlatform(cdp);
+  await sleep(1500);
+  const debugStart = (await gameDebug(cdp)) || entered.debug;
   const t0 = Date.now();
   const ticks = [];
+  const progressSamples = [];
+  const maxMs = Number(process.env.M3_STABILITY_MS || 300 * 1000);
+  const sampleEvery = Math.max(1, Math.round(15000 / 2000));
+  const freeze = process.env.M3_STABILITY_FREEZE === '1';
   let step = 0;
-  const MAX_MS = 300 * 1000;
-  while (Date.now() - t0 < MAX_MS) {
-    const keys = [' ', 'ArrowLeft', 'ArrowRight'];
-    await cdp.key(keys[step % 3]);
+  while (Date.now() - t0 < maxMs) {
+    if (!freeze) {
+      await continuePlatform(cdp);
+      const keys = [[' ', 'Space'], ['ArrowLeft', 'ArrowLeft'], ['ArrowRight', 'ArrowRight']];
+      const pair = keys[step % keys.length];
+      await pressInGame(cdp, pair[0], pair[1]);
+    }
     await sleep(2000);
-    if (step % 30 === 0) {
+    if (step % sampleEvery === 0) {
       const state = await cdp.eval(`(() => { const r = document.querySelector('.dgm-runtime'); return r ? { state: r.dataset.runtimeState, overlay: (document.querySelector('.dgm-overlay') || {}).innerText || '' } : null; })()`);
       ticks.push({ atSec: Math.round((Date.now() - t0) / 1000), state });
+      const debug = await gameDebug(cdp);
+      if (debug) progressSamples.push({ atSec: Math.round((Date.now() - t0) / 1000), fields: progressFields(debug) });
     }
     step += 1;
   }
   const debugEnd = await gameDebug(cdp);
   const finalState = await cdp.eval(`(() => { const r = document.querySelector('.dgm-runtime'); return r ? { state: r.dataset.runtimeState, overlay: (document.querySelector('.dgm-overlay') || {}).innerText || '' } : null; })()`);
-  const progressed = Boolean(
-    debugStart && debugEnd &&
-    (debugStart.ball.x !== debugEnd.ball.x || debugStart.ball.y !== debugEnd.ball.y ||
-      debugStart.ball.launched !== debugEnd.ball.launched ||
-      debugStart.paddleX !== debugEnd.paddleX || debugStart.status !== debugEnd.status ||
-      debugEnd.score > debugStart.score || debugEnd.remaining < debugStart.remaining)
-  );
-  checker.check('duration >= 300s', Date.now() - t0 >= MAX_MS - 2000);
+  const distinctRealStates = new Set(
+    progressSamples
+      .map((sample) => JSON.stringify({ ...sample.fields, launched: undefined }))
+      .filter(Boolean)
+  ).size;
+  const anyMovement = progressSamples.some((sample, index) => index > 0 && moved(progressSamples[index - 1].fields, sample.fields));
+  const progressed = Boolean(progressSamples.length >= 5 && distinctRealStates >= 3 && anyMovement);
+  checker.check(`duration >= ${Math.round(maxMs / 1000)}s`, Date.now() - t0 >= maxMs - 2000);
   checker.check('runtime stayed playing', finalState && finalState.state === 'playing', finalState);
   checker.check('no tick observed a non-playing shell', ticks.every((tick) => tick.state && tick.state.state === 'playing'));
-  checker.check('game progressed internally', progressed, { start: debugStart && { ball: debugStart.ball, paddleX: debugStart.paddleX, score: debugStart.score, remaining: debugStart.remaining }, end: debugEnd && { ball: debugEnd.ball, paddleX: debugEnd.paddleX, score: debugEnd.score, remaining: debugEnd.remaining } });
+  checker.check('periodic game progression observed', progressed, { samples: progressSamples.length, distinctRealStates, anyMovement, first: progressSamples[0], last: progressSamples[progressSamples.length - 1] });
+  checker.check('game not frozen at the end', Boolean(debugEnd && debugEnd.runtimePaused === false && debugEnd.loopRunning === true), debugEnd && { runtimePaused: debugEnd.runtimePaused, loopRunning: debugEnd.loopRunning, overlay: debugEnd.overlay });
   checker.check('zero page/runtime exceptions', cdp.errors.length === 0, cdp.errors.slice(0, 10));
-  await finish({ environment: 'isolated dsh web + headless Chrome 155', durationSec: Math.round((Date.now() - t0) / 1000), steps: step, finalState, debugStart, debugEnd, progressed, errors: [...new Set(cdp.errors)], ticks, a11: true });
+  await finish({ environment: 'isolated dsh web + headless Chrome 155', durationSec: Math.round((Date.now() - t0) / 1000), steps: step, finalState, debugStart, debugEnd, progressed, progressSamples, errors: [...new Set(cdp.errors)], ticks, a11: true });
 }
 main().catch(async (error) => {
   checker.check('stability run completed without throwing', false, String(error && error.message ? error.message : error));
