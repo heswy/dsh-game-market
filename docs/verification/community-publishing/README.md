@@ -1,5 +1,7 @@
 # 社区投稿与 GitHub 上架 MVP · 验证记录
 
+> 2026-10-19 最终状态：Codex 在 `c93a85a` 复核通过，CR4-01～06 全关闭；用户授权后 PR #4 已以 `2b45b2ec004fa622f9d4567b65d4b978a13a4e90` 合入 main。固定 head 独立复跑 verify 835/835、CHECK OK (37)、registry 28/28；真实 ref lock 复现正确报告回滚失败。合并提交与验收 head 文件树一致。未发布、未打新 tag；M4 与下列真实环境边界继续待验收。
+
 基线：`main@c106ac1`（v1.1.0）→ 分支 `feat/community-publishing`。
 方案：`docs/plans/2026-10-19-community-publishing-mvp.md`；契约：
 `docs/community-publishing-contracts.md`。
@@ -38,7 +40,7 @@
 | C-14 更新保留数据 | 部分 | 既有安装/更新测试；发布工具 1.0.1 流程未真实执行 |
 | C-15 撤下语义 | 通过（本地 catalog） | 删除 catalog 条目后生成索引移除，owner/review 保留；真实缓存/已安装行为待 M4 |
 | C-16 权限边界 | 部分 | 工具只调用参数数组；不打印 token；内容仓库 CI 只读/固定 commit；真实权限矩阵待 M4 |
-| C-17 首发全量回归 | 通过 | `npm run verify` 819/819；四款游戏/安装/更新既有测试不回归 |
+| C-17 首发全量回归 | 通过 | `npm run verify` 835/835；四款游戏/安装/更新既有测试不回归 |
 | C-18 开发包呈现 | 通过（文档/模板） | 全出血/112px/96×96 写入 Skill references + 模板；浏览器实测在之前 V1.1 证据 |
 | C-19 Skill 可获取 | 通过（本地） | 目录 + 确定性归档 + manifest + VERSION；`skill.test.js`；React/Node 工具获取路径见 `docs/community-submission.md` |
 | C-20 Skill 实际开发 | 通过（独立评估） | 独立 AI 仅凭 Skill 产出 Ember Drift 1.0.0（156,912 bytes, sha256 `f882e1…`）+ submission/report/media；浏览器 QA 与提交材料见 `skill-evaluation.md` 与 `artifacts/skill-eval/` |
@@ -62,7 +64,7 @@
 
 | 编号 | 问题 | 修复 | 回归 |
 |---|---|---|---|
-| CR4-01 | 完整目录校验发生在 Release 发布之后 | `prepare` 先在临时目录生成并校验完整候选目录（含历史基线），通过后才允许远端写入；commit 前失败会回滚文件、Git index 与临时分支，回滚失败显式报 `E_PUBLISH_ROLLBACK_FAILED`（Git helper 非零状态会抛异常，调用方不忽略）；`--history-base` 支持指定基线 | `prepare.test.js`：dry-run 历史冲突零 GitHub 调用；真实 Git 仓库 pre-commit hook 拒绝后 status 干净、分支删除、可直接重试；回滚失败显式报错；真实 Git ref lock 冲突返回 `E_PUBLISH_ROLLBACK_FAILED` 并指出残留分支 |
+| CR4-01 | 完整目录校验发生在 Release 发布之后 | `prepare` 先在临时目录生成并校验完整候选目录（含历史基线），通过后才允许远端写入；commit 前失败会回滚文件、Git index 与临时分支，回滚失败显式报 `E_PUBLISH_ROLLBACK_FAILED`（Git helper 非零状态会抛异常，调用方不忽略）；程序化测试通过 `historyBaseDir` 指定基线（CLI 无 `--history-base` 参数） | `prepare.test.js`：dry-run 历史冲突零 GitHub 调用；真实 Git 仓库 pre-commit hook 拒绝后 status 干净、分支删除、可直接重试；回滚失败显式报错；真实 Git ref lock 冲突返回 `E_PUBLISH_ROLLBACK_FAILED` 并指出残留分支 |
 | CR4-02 | 恢复 draft 只检查文件名 | 发布前用认证接口读取 draft 附件字节并核对大小/SHA；不匹配保持 draft 并拒绝；上传后发布前再次认证校验完整性 | 新增 mismatched draft 资产测试；draft 完整性校验 |
 | CR4-03 | 目录 CI 不校验历史约束 | 新增 `validateAgainstBase`：版本只能递增、同版本 release/source/author/publishedAt 不可变、owner 不可替换、历史 review 不可改写；**撤下后仍独立遍历基线全部 owners/reviews 保护审计，撤下 ID 重新上架必须同 owner 且版本高于已审核版本**；CI checkout PR base 并传 `--base-dir`；恢复分支必须基于最新 origin/main | `catalog.test.js` 回退/owner/review/撤下 + 撤下后删除/改写审计与重新上架版本测试；`prepare.test.js` stale resume |
 | CR4-04 | 合法空官方目录错误触发 seed | 官方快照成功加载（含空数组）即 authoritative；`refresh` 空目录成功不再报错 | Host 新增“空官方目录不显示 seed”测试 |

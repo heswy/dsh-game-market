@@ -1,5 +1,7 @@
 # PR #4 CR4-01..06 复核修复记录
 
+> 2026-10-19 最终状态：Codex 在 `c93a85a` 复核通过，CR4-01～06 全关闭；用户授权后 PR #4 已以 `2b45b2ec004fa622f9d4567b65d4b978a13a4e90` 合入 main。固定 head 独立复跑 verify 835/835、CHECK OK (37)、registry 28/28；真实 ref lock 复现正确报告回滚失败。合并提交与验收 head 文件树一致。未发布、未打新 tag；M4 与下列真实环境边界继续待验收。
+
 复核基线：`2b5e1ed`；本轮修复分支 `feat/community-publishing`（提交见 PR #4）。
 
 | 编号 | 级别 | 复现要点 | 修复证据 |

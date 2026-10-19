@@ -49,6 +49,8 @@ V0 已完成并验收，验证游戏是贪吃蛇（snake）。
 
 ## 社区投稿（V1.2）
 
+**main 已合入，尚未发布**：[PR #4](https://github.com/heswy/dsh-game-market/pull/4) 合并提交 `2b45b2e`，验收 head `c93a85a`；Codex 复跑 verify **835/835**、`CHECK OK (37)`、registry **28/28**，CR4-01～06 全关闭。最新已发布版本仍为上文的 v1.1.0；V1.2 是后续发行代号。验收范围与未完成项见[社区投稿验证记录](./docs/verification/community-publishing/README.md)。
+
 除首发四款外，平台提供一条基于 GitHub 的社区投稿/审核/上架链路，不需要自建服务器：
 
 - 作者：按 [`docs/community-submission.md`](./docs/community-submission.md) 准备单文件包、素材和 `submission.json`；可用 [`skills/dsh-game-developer/`](./skills/dsh-game-developer/SKILL.md) 指导 AI 从玩法到打包/验证。
