@@ -42,8 +42,8 @@
 | C-18 开发包呈现 | 通过（文档/模板） | 全出血/112px/96×96 写入 Skill references + 模板；浏览器实测在之前 V1.1 证据 |
 | C-19 Skill 可获取 | 通过（本地） | 目录 + 确定性归档 + manifest + VERSION；`skill.test.js`；React/Node 工具获取路径见 `docs/community-submission.md` |
 | C-20 Skill 实际开发 | 通过（独立评估） | 独立 AI 仅凭 Skill 产出 Ember Drift 1.0.0（156,912 bytes, sha256 `f882e1…`）+ submission/report/media；浏览器 QA 与提交材料见 `skill-evaluation.md` 与 `artifacts/skill-eval/` |
-| C-21 Skill 纠错/证据 | 部分 | 真实 QA/错误记录已归档；提交草稿/待补字段已通过新的 draft 契约验证；独立评估未覆盖“非法包输入→修复重验”专项，待补 |
-| C-22 Skill 更新/权限 | 部分 | 平台发布工具 1.0.0→1.0.1 测试通过；独立 AI update 评估未覆盖；Skill 明确不授予发布权限；evaluator 报告已归档 |
+| C-21 Skill 纠错/证据 | 通过（独立评估） | 两个独立非法包（重复 manifest `GM-4221`、外链脚本 `GM-4225`）被真实 CLI 拒绝，按 Skill 修复后 build/validate/pack/sha 全部通过；见 `skill-evaluation-c21-c22.md` 与 `artifacts/skill-eval/c21-c22/` |
+| C-22 Skill 更新/权限 | 通过（独立模拟） | 独立 AI 完成 1.0.1 更新并注入 1.0.0 save 验证 Continue/score/lives/saveVersion；为本地模拟，真实 Host 安装仍待 M4；Skill 不授予发布权限 |
 
 ## 3. 外部待配置（M4，无法由本会话完成）
 
@@ -76,5 +76,5 @@
 - 输入、产物路径、包摘要、浏览器 QA 见 [`skill-evaluation.md`](./skill-evaluation.md)；
 - 游戏包/QA JSON/截图归档在 `artifacts/skill-eval/`；
 - 独立评估在 `/tmp` 的仓库外目录完成，未修改平台仓库、未执行发布；
-- 未覆盖：C-21 非法包输入→修复重验、C-22 独立 AI 1.0.1 更新/权限边界；这两项
-  仍需补一次独立评估，不能用平台单测替代。
+- C-21/C-22 独立评估已完成：见 [`skill-evaluation-c21-c22.md`](./skill-evaluation-c21-c22.md)；
+  仍为本地/模拟证据，真实 Host 安装与完整 120 秒流程待补。

@@ -1,0 +1,9 @@
+00-update-build	0	npm run build 
+01-update-validate	0	npm run validate 
+02-update-pack	0	npm run pack 
+03-update-validate-packed-json	0	node <repo>/scripts/cli/dsh-game.mjs validate dist/c21-invalid-1.0.1.html --json 
+04-update-sha256-check	0	shasum -a 256 -c c21-invalid-1.0.1.html.sha256 
+05-update-sha256-manual	0	shasum -a 256 c21-invalid-1.0.1.html 
+10-demo-update-build	0	npm run build 
+12-reconfirm-build-validate-pack	0	npm run validate 
+13-reconfirm-pack	0	npm run pack 

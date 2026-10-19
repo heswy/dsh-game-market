@@ -1,0 +1,192 @@
+{
+  "generatedAt": "2026-10-19T09:15:28.187Z",
+  "classification": "locally-simulated",
+  "steps": [
+    {
+      "at": "2026-10-19T09:15:29.058Z",
+      "step": "fresh-1.0.1-page",
+      "header": "c21-invalid@1.0.1 · C21 Invalid · instance 69a10fc5…",
+      "locale": "zh-CN",
+      "hud": {
+        "hint": "接住落下的星星，别让它们掉到地上",
+        "badge": "v1.0.1"
+      },
+      "save": null
+    },
+    {
+      "at": "2026-10-19T09:15:29.060Z",
+      "step": "injected-1.0.0-save",
+      "save": {
+        "saveVersion": 1,
+        "score": 20,
+        "lives": 2,
+        "elapsed": 6.547700000001515,
+        "stars": [
+          {
+            "x": 0.8600121411629268,
+            "y": 0.7972233606130104,
+            "vy": 0.25936732301025817,
+            "r": 14.990077461679267,
+            "tone": "star"
+          },
+          {
+            "x": 0.8942292549475925,
+            "y": 0.783650196952106,
+            "vy": 0.35729907292649804,
+            "r": 9.659282804809674,
+            "tone": "star"
+          },
+          {
+            "x": 0.26086887622893096,
+            "y": 0.4804827036732734,
+            "vy": 0.37447600146355586,
+            "r": 10.12474289101156,
+            "tone": "star"
+          },
+          {
+            "x": 0.7290081121255558,
+            "y": 0.12868603031209846,
+            "vy": 0.3573720606241969,
+            "r": 9.465856295534262,
+            "tone": "star"
+          }
+        ],
+        "spawnIn": 0.4181847999999873,
+        "speed": 0.2785724000000182,
+        "basket": 0.9452090691663548,
+        "gameOver": false
+      },
+      "revision": 1,
+      "identical": true
+    },
+    {
+      "at": "2026-10-19T09:15:29.971Z",
+      "step": "after-reload",
+      "hud": {
+        "hint": "检测到未完成的存档，按空格继续",
+        "badge": "v1.0.1"
+      },
+      "save": {
+        "saveVersion": 1,
+        "score": 20,
+        "lives": 2,
+        "elapsed": 6.547700000001515,
+        "stars": [
+          {
+            "x": 0.8600121411629268,
+            "y": 0.7972233606130104,
+            "vy": 0.25936732301025817,
+            "r": 14.990077461679267,
+            "tone": "star"
+          },
+          {
+            "x": 0.8942292549475925,
+            "y": 0.783650196952106,
+            "vy": 0.35729907292649804,
+            "r": 9.659282804809674,
+            "tone": "star"
+          },
+          {
+            "x": 0.26086887622893096,
+            "y": 0.4804827036732734,
+            "vy": 0.37447600146355586,
+            "r": 10.12474289101156,
+            "tone": "star"
+          },
+          {
+            "x": 0.7290081121255558,
+            "y": 0.12868603031209846,
+            "vy": 0.3573720606241969,
+            "r": 9.465856295534262,
+            "tone": "star"
+          }
+        ],
+        "spawnIn": 0.4181847999999873,
+        "speed": 0.2785724000000182,
+        "basket": 0.9452090691663548,
+        "gameOver": false
+      },
+      "identical": true
+    },
+    {
+      "at": "2026-10-19T09:15:31.267Z",
+      "step": "after-space",
+      "hud": {
+        "hint": "← → / A D 移动，鼠标或触摸也可控制；Tab 离开画布",
+        "badge": "v1.0.1"
+      }
+    },
+    {
+      "at": "2026-10-19T09:15:32.173Z",
+      "step": "final-save",
+      "save": {
+        "saveVersion": 1,
+        "score": 32,
+        "lives": 1,
+        "elapsed": 7.7475720000015125,
+        "stars": [
+          {
+            "x": 0.26086887622893096,
+            "y": 0.9298059725013538,
+            "vy": 0.37447600146355586,
+            "r": 10.12474289101156,
+            "tone": "star"
+          },
+          {
+            "x": 0.7290081121255558,
+            "y": 0.5574867594373744,
+            "vy": 0.3573720606241969,
+            "r": 9.465856295534262,
+            "tone": "star"
+          },
+          {
+            "x": 0.6107117325331609,
+            "y": 0.1338919012651337,
+            "vy": 0.23476560866224144,
+            "r": 12.365493223948071,
+            "tone": "star"
+          }
+        ],
+        "spawnIn": 0.1275522239999876,
+        "speed": 0.29297086400001815,
+        "basket": 0.9452090691663548,
+        "gameOver": false
+      },
+      "comparison": {
+        "scoreBefore": 20,
+        "scoreAfter": 32,
+        "elapsedBefore": 6.547700000001515,
+        "elapsedAfter": 7.7475720000015125,
+        "livesBefore": 2,
+        "livesAfter": 1,
+        "saveVersionBefore": 1,
+        "saveVersionAfter": 1,
+        "sameKeys": true
+      }
+    }
+  ],
+  "checks": {
+    "freshHeaderIs101": true,
+    "freshSaveEmpty": true,
+    "injectedExactly": true,
+    "continueOffered": true,
+    "saveSurvived": true,
+    "codeIs101": true,
+    "continued": true,
+    "scorePreserved": true,
+    "timeAdvanced": true,
+    "livesPreserved": true,
+    "saveVersionStable": true,
+    "saveShapeStable": true,
+    "noExternalRequests": true,
+    "noConsoleErrors": true
+  },
+  "errors": [],
+  "requests": [
+    "http://127.0.0.1:4391/",
+    "http://127.0.0.1:4391/game?instance=69a10fc52fdedec3e3be16ccfed3ff04&nonce=5699e1807c07510f88a6e728ef814e83",
+    "http://127.0.0.1:4391/favicon.ico",
+    "http://127.0.0.1:4391/game?instance=10a6ad73b318236f7af725aeed4625e6&nonce=58aec09bd31db594252bff612fbc7228"
+  ],
+  "failedChecks": []
+}

@@ -40,6 +40,12 @@ test('content-repo CLI scripts run from a checkout path containing spaces', asyn
   assert.equal(assets.status, 0, assets.stderr + assets.stdout);
   assert.equal(JSON.parse(assets.stdout).ok, true);
 
+  const base = path.join(directory, 'trusted base');
+  await fs.cp(target, base, { recursive: true });
+  const history = run('scripts/registry/validate-catalog.mjs', ['--registry-dir', target, '--base-dir', base, '--json'], { cwd: target });
+  assert.equal(history.status, 0, history.stderr + history.stdout);
+  assert.equal(JSON.parse(history.stdout).history.ok, true);
+
   const packed = run('scripts/registry/pack-skill.mjs', ['--out', path.join(directory, 'skill out')]);
   assert.equal(packed.status, 0, packed.stderr + packed.stdout);
   assert.match(packed.stdout, /dsh-game-developer-1\.0\.0\.tar\.gz/);

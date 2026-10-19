@@ -1,0 +1,21 @@
+00-baseline-build	0	npm run build 
+00-baseline-validate	0	npm run validate 
+00-baseline-pack	0	npm run pack 
+01-break-manifest-build	1	npm run build 
+02-break-external-script-build	1	npm run build 
+03-pre-duplicate-build	0	npm run build 
+04-break-duplicate-manifest-validate	1	node <repo>/scripts/cli/dsh-game.mjs validate <tmp>/dsh-c21-c22/evidence-c21/artifacts/c21-invalid-1.0.0.duplicate-manifest.html 
+05-break-external-script-validate	1	node <repo>/scripts/cli/dsh-game.mjs validate <tmp>/dsh-c21-c22/evidence-c21/artifacts/c21-invalid-1.0.0.external-script.html 
+06-fixed-build	0	npm run build 
+07-fixed-validate	0	npm run validate 
+08-fixed-pack	0	npm run pack 
+09-determinism-rebuild	0	npm run build 
+10-validate-json	0	node <repo>/scripts/cli/dsh-game.mjs validate dist/index.html --json 
+11-validate-packed-json	0	node <repo>/scripts/cli/dsh-game.mjs validate dist/c21-invalid-1.0.0.html --json 
+12-pack-json	0	node <repo>/scripts/cli/dsh-game.mjs pack . --json 
+13-sha256-check	0	shasum -a 256 -c c21-invalid-1.0.0.html.sha256 
+14-sha256-manual	0	shasum -a 256 c21-invalid-1.0.0.html 
+16-reconfirm-build-validate-pack	0	npm run validate 
+17-reconfirm-pack	0	npm run pack 
+18a-reconstructed-break-manifest	1	npm run build 
+18b-reconstructed-break-external-script	1	npm run build 
