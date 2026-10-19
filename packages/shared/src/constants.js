@@ -171,3 +171,13 @@ export const BUILTIN_GAMES = Object.freeze([
 ]);
 
 export const AGENT_ACK_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Official community Registry index (V1.2 community publishing MVP).
+ *
+ * This is the single default URL used by the Host when no explicit Registry is
+ * configured. It is intentionally a constant (not scattered through call
+ * sites); until the content repository is created and publicly verified, the
+ * Host MUST fall back to the bundled `registry/games.json` seed on failure.
+ */
+export const DEFAULT_OFFICIAL_REGISTRY_URL = 'https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json';

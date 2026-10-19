@@ -6,3 +6,4 @@ export * from './api-client.js';
 export * from './manifest.js';
 export * from './registry.js';
 export * from './installation.js';
+export * from './community.js';

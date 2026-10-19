@@ -433,7 +433,11 @@ export async function refreshRegistryAction(options) {
   try {
     const data = await api.refreshRegistry({ force: opts.force !== false });
     if (opts.silent !== true) {
-      pushToast(target, { kind: 'success', textKey: 'toast.registryRefreshed', id: opts.toastId, at: opts.now });
+      if (data && data.fallback === true) {
+        pushToast(target, { kind: 'info', textKey: 'toast.registryFallback', id: opts.toastId, at: opts.now });
+      } else {
+        pushToast(target, { kind: 'success', textKey: 'toast.registryRefreshed', id: opts.toastId, at: opts.now });
+      }
     }
     await loadCatalog({ store: target, api: api, now: opts.now });
     return { ok: true, data: data };

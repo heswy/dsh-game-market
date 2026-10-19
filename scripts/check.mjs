@@ -166,6 +166,19 @@ if (!allowMissing) {
   requiredFile('scripts/cli/dsh-game.mjs');
   requiredFile('scripts/cli/create-dsh-game.mjs');
   requiredFile('templates/vanilla/manifest.json');
+  requiredFile('templates/registry/README.md');
+  requiredFile('templates/registry/toolchain.lock.json');
+  requiredFile('templates/registry/.github/ISSUE_TEMPLATE/submit-game.yml');
+  requiredFile('templates/registry/.github/workflows/validate-catalog.yml');
+  requiredFile('scripts/registry/generate-catalog.mjs');
+  requiredFile('scripts/registry/validate-catalog.mjs');
+  requiredFile('scripts/registry/validate-assets.mjs');
+  requiredFile('scripts/registry/prepare.mjs');
+  requiredFile('scripts/registry/init-content-repo.mjs');
+  requiredFile('scripts/registry/pack-skill.mjs');
+  requiredFile('skills/dsh-game-developer/SKILL.md');
+  requiredFile('skills/dsh-game-developer/VERSION');
+  requiredFile('docs/community-publishing-contracts.md');
   // V1 contract modules (M0): manifest/single-file package, Registry, install layout.
   requiredFile('packages/shared/src/manifest.js');
   requiredFile('packages/shared/src/registry.js');
@@ -264,6 +277,47 @@ function collectJs(dir, out) {
     fail('verification logs are not tracked by Git (CR-07)');
   }
   ok('verification logs tracked');
+})();
+
+// Community publishing artifacts (V1.2): Skill metadata, content-repo template
+// placeholders and shared validators must stay in sync with the contracts doc.
+(function checkCommunityPublishing() {
+  const skillPath = path.join(root, 'skills/dsh-game-developer/SKILL.md');
+  if (fs.existsSync(skillPath)) {
+    const skill = fs.readFileSync(skillPath, 'utf8');
+    if (!/^---\nname: dsh-game-developer\ndescription: /m.test(skill)) {
+      fail('skills/dsh-game-developer/SKILL.md frontmatter must declare name: dsh-game-developer');
+    }
+    const versionFile = path.join(root, 'skills/dsh-game-developer/VERSION');
+    if (!fs.existsSync(versionFile) || !/^\d+\.\d+\.\d+\s*$/.test(fs.readFileSync(versionFile, 'utf8'))) {
+      fail('skills/dsh-game-developer/VERSION must be semver');
+    }
+    for (const file of fs.readdirSync(path.join(root, 'skills/dsh-game-developer')).filter((name) => name.endsWith('.md') || name === 'VERSION')) {
+      const text = fs.readFileSync(path.join(root, 'skills/dsh-game-developer', file), 'utf8');
+      if (text.includes('/Users/')) fail(`skill file leaks a machine-specific path: ${file}`);
+    }
+  }
+  const lockPath = path.join(root, 'templates/registry/toolchain.lock.json');
+  if (fs.existsSync(lockPath)) {
+    try {
+      const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+      for (const key of ['platformRepo', 'commit', 'platformVersion', 'generatedAt']) {
+        if (typeof lock[key] !== 'string' || lock[key].length === 0) fail(`content registry template toolchain.lock.json missing ${key}`);
+      }
+      const lockText = fs.readFileSync(lockPath, 'utf8');
+      if (!lockText.includes('__PLATFORM_COMMIT__')) fail('content registry template must keep __PLATFORM_COMMIT__ placeholder');
+    } catch (error) {
+      fail(`content registry template toolchain.lock.json is invalid: ${error.message}`);
+    }
+  }
+  const communityPath = path.join(root, 'packages/shared/src/community.js');
+  if (fs.existsSync(communityPath)) {
+    const source = fs.readFileSync(communityPath, 'utf8');
+    for (const name of ['validateSubmission', 'validateReview', 'validateOwner', 'validateCatalogEntry', 'generateRegistryIndex']) {
+      if (!source.includes(`export function ${name}`)) fail(`shared community validator missing ${name}`);
+    }
+  }
+  ok('community publishing artifacts');
 })();
 
 // Report

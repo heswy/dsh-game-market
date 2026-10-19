@@ -125,6 +125,11 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
   const sleep = typeof http.sleep === 'function' ? http.sleep : undefined;
   const resolveHost = typeof http.resolveHost === 'function' ? http.resolveHost : undefined;
   const retries = Number.isInteger(http.retries) && http.retries >= 0 ? http.retries : 0;
+  const cacheFileName =
+    typeof registrySettings.cacheFile === 'string' && registrySettings.cacheFile.length > 0
+      ? registrySettings.cacheFile
+      : REGISTRY_CACHE_FILE;
+  const persistCache = registrySettings.persistCache !== false;
 
   let cache = null;
   let loaded = false;
@@ -136,7 +141,7 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
   let offline = false;
 
   function cacheFilePath() {
-    return storage.filePath(REGISTRY_CACHE_FILE);
+    return storage.filePath(cacheFileName);
   }
 
   function cacheMatchesSource(value) {
@@ -203,6 +208,7 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
   }
 
   async function persist(nextCache) {
+    if (!persistCache) return;
     try {
       await storage.writeJson(cacheFilePath(), nextCache);
     } catch (error) {

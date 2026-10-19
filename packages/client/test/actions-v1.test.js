@@ -106,6 +106,21 @@ test('loadCatalog normalizes games and records refresh time, registry and health
   assert.equal(state.health.registry.count, 1);
 });
 
+test('seed Registry snapshots are usable, not offline', async function () {
+  const store = createStore();
+  const api = fakeApi({
+    health: async function health() {
+      return { ok: true, registry: { state: 'seed', activeSource: 'seed', fallback: true, count: 3 } };
+    },
+  });
+  const result = await loadCatalog({ store: store, api: api, now: 777 });
+  assert.equal(result.ok, true);
+  assert.equal(result.offline, false);
+  assert.equal(store.getState().market.offline, false);
+  assert.equal(store.getState().market.registry.state, 'seed');
+  assert.equal(store.getState().market.registry.fallback, true);
+});
+
 test('the catalog follows nextCursor pages until the list is complete', async function () {
   const store = createStore();
   const calls = [];
@@ -357,6 +372,20 @@ test('registry refresh handles success, throttling and offline failures', async 
   const success = await refreshRegistryAction({ store: successStore, api: fakeApi(), now: 1 });
   assert.equal(success.ok, true);
   assert.equal(successStore.getState().toasts[0].textKey, 'toast.registryRefreshed');
+
+  const fallbackStore = createStore();
+  const fallback = await refreshRegistryAction({
+    store: fallbackStore,
+    api: fakeApi({
+      refreshRegistry: async function refreshRegistry() {
+        return { count: 3, fallback: true, activeSource: 'seed' };
+      },
+    }),
+    now: 2,
+  });
+  assert.equal(fallback.ok, true);
+  assert.equal(fallbackStore.getState().toasts[0].textKey, 'toast.registryFallback');
+  assert.equal(fallbackStore.getState().toasts[0].kind, 'info');
 
   const throttledStore = createStore();
   const throttled = await refreshRegistryAction({

@@ -251,6 +251,7 @@ export async function createHostHarness(
     now,
     hostEpoch,
     prepareDataRoot,
+    useDefaultRegistry = false,
   } = {}
 ) {
   const directory = await fs.mkdtemp(path.join(tmpdir(), 'dsh-gm-host-v1-'));
@@ -265,8 +266,14 @@ export async function createHostHarness(
     installLockWaitMs: 500,
     ...http,
   };
+  // Most unit tests must not reach for the layered official HTTPS source. A
+  // missing explicit source keeps the V1 single-source offline semantics; the
+  // layered default is exercised by the dedicated community-publishing tests.
+  const registryIsolation = useDefaultRegistry
+    ? {}
+    : { registry: { url: path.join(directory, 'missing-registry.json'), allowLocalFile: true } };
   const host = createHost({
-    config: { dataRoot, builtinGamesRoot: fixtureRoot, ...config },
+    config: { dataRoot, builtinGamesRoot: fixtureRoot, ...registryIsolation, ...config },
     env: { DSH_HOME: home, ...env },
     logger: fake.logger,
     http: httpOptions,

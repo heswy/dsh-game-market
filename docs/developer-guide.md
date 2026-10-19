@@ -364,7 +364,19 @@ npm run publish -- --url <https package URL> --cover <https cover URL>
 4. Host 拉取 Registry 后即可在 Market 看到并安装；Host 会重新下载并复验 sha256、
    manifest、自包含与版本兼容性（CLI 的校验结果不被信任）。
 
-### 7.3 版本与兼容
+### 7.3 社区投稿（V1.2）
+
+官方首发目录之外的游戏通过 GitHub 内容仓库投稿，而不是直接修改平台 `registry/`：
+
+- 作者流程/字段/自测：`docs/community-submission.md`；
+- 维护者审核与上架（dry-run/execute）：`docs/community-operations.md`；
+- 数据契约/幂等/默认源与 seed：`docs/community-publishing-contracts.md`；
+- AI 开发：`skills/dsh-game-developer/`（不授予发布权限）。
+
+`scripts/registry/prepare.mjs --execute` 只会创建 catalog PR，不会自动合并；合并
+才是上架。
+
+### 7.4 版本与兼容
 
 - 更新版本 = 修改 `manifest.json` 的 `version`，重新 build/pack/publish；
 - 平台只在 Registry 版本更高时显示 Update，不自动更新；

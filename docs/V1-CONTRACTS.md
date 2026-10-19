@@ -1494,6 +1494,42 @@ interface AgentSnapshot {
 
 ---
 
+## 10.1 V1.2 社区投稿扩展（2026-10-19）
+
+运行时包/Registry/安装/SDK 契约不变；本扩展只新增作者投稿、维护者审核、内容仓库
+目录和默认源分层。**权威字段与流程见 `docs/community-publishing-contracts.md`**，
+实现校验器 `packages/shared/src/community.js`。
+
+| 数据 | 位置 | 说明 |
+|---|---|---|
+| `submission` | 作者提交/Issue Form/资料 PR | `schemaVersion:1`；作者数字 GitHub ID、固定源码 commit、包/素材 HTTPS+sha256+size、许可、selfTest |
+| `review` | `reviews/<id>/<version>.json` | 维护者批准；绑定包 sha/size、每张素材 sha、sourceCommit、reviewer/time/evidence；任何变化批准失效 |
+| `owner` | `owners/<id>.json` | 稳定 GitHub 数字身份；更新必须匹配 |
+| `catalog` | `catalog/<id>.json` | 当前版本源记录；release 资产 URL/摘要、source、review、selfTest |
+| 生成索引 | `registry/games.json` | 仅由 catalog 生成并随源 PR 提交；按 id 排序、固定时间戳、字节确定 |
+
+维护者工具：
+
+```bash
+node scripts/registry/prepare.mjs --submission <json> --review <json> --registry-dir <dir>          # dry-run，零远端写入
+node scripts/registry/prepare.mjs --submission <json> --review <json> --registry-dir <dir> --execute # draft Release → 公开校验 → 目录/索引 → PR（不合并）
+```
+
+幂等/失败：repo+id+version+批准 SHA；同版本同摘要可继续，同版本不同摘要拒绝
+（`E_PUBLISH_VERSION_IMMUTABLE`）；上传/公开下载/索引/PR 失败不改变生产目录。
+工具不得自动合并 catalog PR；合并是唯一生产开关。
+
+默认源分层（`packages/host/src/registry-layered.js`）：
+
+| 条件 | active source | state |
+|---|---|---|
+| 无显式配置；remote fresh/stale | official（绝不与 seed 合并） | fresh/stale/offline |
+| 无显式配置；remote cold/expired/非法/网络失败 | bundled seed（file；不写 remote cache） | seed |
+| 显式 env/config URL | 原有单源语义（无自动官方/seed 回退） | 原状态 |
+
+Snapshot 增加 `activeSource`/`fallback`/`official`/`seed` 字段（客户端只需识别
+`state==='seed'` 显示随包提示并允许重试；不进入 Registry schema）。
+
 ## 11. V1 明确不做
 
 | 项 | 处置 |
@@ -1524,6 +1560,7 @@ interface AgentSnapshot {
 | `shared/src/installation.js` | 布局常量（`PACKAGES_DIR`/`ENTRY_FILE`/`SAVES_DIR`/`SESSIONS_DIR`/`SCORES_DIR`/`PREVIEW_CACHE_DIR`/`STAGING_DIR`/`TRASH_DIR`/`LOGS_DIR`/`LOG_FILE`）、`INSTALLATIONS_SCHEMA_VERSION`、`INSTALL_SOURCES`、`INSTALL_JOB_STATES`、`COMPAT_STATUSES`、`KEPT_PREVIOUS_VERSIONS=1`、`entryStoragePath()`、`installationPackagePath()`、`validateInstallationsFile()`、`versionsToPrune()` |
 | `shared/src/errors.js` | `GM.*`（V0 + V1 全部错误码）、`INTERNAL_TO_GM`、`gmForInternal()`、`httpStatusFor()`、`makeGameError()` |
 | `shared/src/contracts.js` | `ROUTES.*`（含 `INSTALL`/`INSTALL_LOCAL`/`UNINSTALL`/`REGISTRY_REFRESH`）、V0/V1 数据形状注释 |
+| `shared/src/community.js` | `SUBMISSION_SCHEMA_VERSION=1`、`REVIEW_SCHEMA_VERSION=1`、`OWNER_SCHEMA_VERSION=1`、`CATALOG_SCHEMA_VERSION=1`、`validateSubmission()`、`validateReview()`、`validateOwner()`、`validateCatalogEntry()`、`catalogEntryFromSubmission()`、`generateRegistryIndex()`；`shared/src/constants.js` 新增 `DEFAULT_OFFICIAL_REGISTRY_URL` |
 | `tests/v1-contracts.test.js` | 版本/路由/限制/E→GM/legacy V0/端到端包校验断言；改契约必须同步改本文件 + 本文 + 记忆 |
 
 ## 附录 B：变更记录
@@ -1531,3 +1568,4 @@ interface AgentSnapshot {
 | 日期 | 变更 | 作者 |
 |---|---|---|
 | 2026-10-18 | 初稿：按用户锁定口径落 V1 契约；对齐 M0 `packages/shared`（manifest/registry/installation/errors/contracts）与 `tests/v1-contracts.test.js`；TBD-05/07/09/10 仍待 Lead/M1a 裁决 | contract-docs |
+| 2026-10-19 | V1.2 社区投稿扩展：submission/review/owner/catalog + 维护者工具 + 默认官方目录/seed 分层；运行时契约不变 | Lead |

@@ -15,6 +15,7 @@ import { createInstallationsStore } from './installations.js';
 import { createMaintenanceService } from './maintenance.js';
 import { createPreferencesService } from './preferences.js';
 import { createGameResolver } from './resolver.js';
+import { createLayeredRegistryService } from './registry-layered.js';
 import { createRegistryService } from './registry.js';
 import { createRouteTable } from './routes.js';
 import { createRouter } from './router.js';
@@ -61,7 +62,10 @@ export function createHost({
   const installations = createInstallationsStore({ storage, logger, now });
   const catalog = createGameCatalog({ root: settings.builtinGamesRoot, logger });
   const devCatalog = createDevCatalog({ settings, logger, now });
-  const registry = createRegistryService({ storage, settings, logger, now, http });
+  const registry =
+    settings.registry.mode === 'layered'
+      ? createLayeredRegistryService({ storage, settings, logger, now, http })
+      : createRegistryService({ storage, settings, logger, now, http });
   const lock = createInstallLock({
     storage,
     logger,

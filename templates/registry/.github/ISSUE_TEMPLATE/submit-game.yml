@@ -1,0 +1,95 @@
+name: Submit a game
+description: Submit a new game or an update for the DSH Game Market community catalog.
+title: "[submission] <game-id> <version>"
+labels: ["submission"]
+body:
+  - type: dropdown
+    id: submission_type
+    attributes:
+      label: Submission type
+      options: [new, update]
+    validations:
+      required: true
+  - type: input
+    id: game_id
+    attributes:
+      label: Game ID
+      description: Lowercase package id (`^[a-z0-9][a-z0-9-]{1,46}[a-z0-9]$`, no `--`).
+    validations:
+      required: true
+  - type: input
+    id: name_version
+    attributes:
+      label: Name and version
+      description: e.g. Orbit Catch, 1.0.0 (strict semver subset).
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description, categories, controls, languages
+      description: 1–2 sentence description, 1–3 categories, controls and locales.
+    validations:
+      required: true
+  - type: input
+    id: github_author
+    attributes:
+      label: GitHub author and contact
+      description: GitHub login, numeric user ID (not just the login), and contact.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source repository and fixed commit SHA
+      description: Public source repo URL + exact commit. Build instructions must reproduce the package.
+    validations:
+      required: true
+  - type: textarea
+    id: package
+    attributes:
+      label: Package URL, SHA-256, byte size and .sha256 URL
+      description: Must be a public HTTPS URL ending in `<id>-<version>.html`.
+    validations:
+      required: true
+  - type: textarea
+    id: media
+    attributes:
+      label: Cover and 1–5 screenshots
+      description: Public HTTPS URLs plus SHA-256, byte size and format (PNG/WebP/JPEG).
+    validations:
+      required: true
+  - type: textarea
+    id: licensing
+    attributes:
+      label: Code/assets license and archive permission
+      description: License for code, license/source for images/audio/fonts, and permission to archive and distribute the exact package.
+    validations:
+      required: true
+  - type: checkboxes
+    id: self_test
+    attributes:
+      label: Self-test (all required)
+      options:
+        - label: ready / pause / resume / before-save / Continue
+          required: true
+        - label: keyboard, narrow window, light/dark theme
+          required: true
+        - label: full-bleed + top 112px / bottom-right 96x96 safe areas
+          required: true
+        - label: no external network request in the package
+          required: true
+  - type: textarea
+    id: update_notes
+    attributes:
+      label: For updates only
+      description: Changelog, old-save compatibility and breaking changes.
+    validations:
+      required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional notes
+      description: Test report, screenshots, known limitations. Do not paste credentials.
+    validations:
+      required: false
