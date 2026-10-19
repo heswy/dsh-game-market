@@ -9629,6 +9629,7 @@ window.__ModuleLoader__.load({
           runtimeVersion: launchInfo.runtimeVersion,
           sdkVersion: launchInfo.sdkVersion,
           supportedSdkRange: SUPPORTED_SDK_RANGE,
+          launchMode: launchInfo.mode,
           locale: environment.locale,
           theme: environment.theme,
           reducedMotion: environment.reducedMotion,

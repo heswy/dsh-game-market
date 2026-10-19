@@ -237,6 +237,7 @@ export function createGameController(options = {}) {
       runtimeVersion: launchInfo.runtimeVersion,
       sdkVersion: launchInfo.sdkVersion,
       supportedSdkRange: SUPPORTED_SDK_RANGE,
+      launchMode: launchInfo.mode,
       locale: environment.locale,
       theme: environment.theme,
       reducedMotion: environment.reducedMotion,

@@ -1016,6 +1016,7 @@ async function boot() {
 
   try {
     const info = await game.ready();
+    if (info.launchMode === 'resume-paused') runtimePaused = true;
     applyTheme(info.theme);
     applyReducedMotion(info.reducedMotion === true || systemPrefersReducedMotion());
     personalBest = await loadBest();

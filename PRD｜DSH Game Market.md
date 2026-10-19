@@ -2405,6 +2405,8 @@ export interface GameRuntimeInfo {
   runtimeVersion: string | null;
   gameId: string;
   gameVersion: string;
+  /** 平台启动模式；resume-paused 表示平台弹窗是唯一确认，游戏不得再弹自己的继续/开始界面。 */
+  launchMode: 'start' | 'resume-paused';
   locale: string;
   theme: 'light' | 'dark';
   reducedMotion: boolean;

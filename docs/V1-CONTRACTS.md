@@ -1067,6 +1067,12 @@ interface LaunchInfo {
 - 语义：`/launch` 产生的实例在 release 前视为“运行中”，阻止更新/卸载；未结束的 Play Session 只是 Continue 依据，**不再**阻止更新/卸载。
 - 幂等：重复 release 返回 `released: 0`；Host 重启后实例表为空。
 
+### 7.3.2 `launchMode` 随 init 显式下发（M1 hotfix）
+
+- Runtime 在 `init` 事件中额外发送 `launchMode`（等于 `/launch` 的 `mode`）；SDK 暴露为 `game.runtime.launchMode`。
+- 原因：平台 `resume-paused` 启动会额外发 `pause` 生命周期事件，但桌面端（Electron）存在事件时序差异；游戏不能只靠 `pause` 判断是否隐藏自己的“继续/开始”界面。
+- 规约：`launchMode === 'resume-paused'` 时，平台弹窗是**唯一**确认层；游戏应直接恢复存档并保持暂停，等平台 `resume` 后开玩。`start` 时按原逻辑展示游戏自己的开始界面。
+
 ### 7.4 资源路由：`/entry` 与 `/preview`
 
 **`GET|HEAD /entry`** 查询参数：`gameId`、`version`、`instance`（32 hex）、`nonce`（32 hex）。
@@ -1207,6 +1213,7 @@ interface GameRuntimeInfo {
   readonly runtimeVersion: string | null; // '1.0.0'；ready 前为 null（PRD §8.3）
   readonly gameId: string;
   readonly gameVersion: string;
+  readonly launchMode: 'start' | 'resume-paused'; // init 显式下发；见 §7.3.2
   readonly locale: string;              // 随 DSH 界面语言，如 'zh-CN' / 'en-US'
   readonly theme: 'light' | 'dark';
   readonly reducedMotion: boolean;

@@ -167,6 +167,8 @@ export interface GameRuntimeInfo {
   readonly theme: 'light' | 'dark';
   readonly reducedMotion: boolean;
   readonly capabilities: readonly Capability[];
+  /** How the platform launched this run (resume-paused = platform modal is the only confirmation). */
+  readonly launchMode: 'start' | 'resume-paused';
   readonly viewport: Readonly<{ width: number; height: number; dpr: number }>;
   readonly ready: boolean;
 }

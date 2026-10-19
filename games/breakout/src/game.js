@@ -943,6 +943,7 @@ function boot() {
   game.ready().then(async function onReady(info) {
     runtimeReady = true;
     applyRuntimeInfo(info);
+    if (info.launchMode === 'resume-paused') runtimePaused = true;
     best = await loadBest();
     const loaded = await loadSavedState();
     if (loaded.error) {
@@ -964,6 +965,7 @@ function boot() {
       // Platform resume-paused launch: the platform modal is the only
       // confirmation (D-024). Restore quietly into the paused state; the later
       // `resume` event starts play (see onRuntimeResume).
+      stopLoop();
       if (state.status === 'playing') setPaused(state, true);
       hideOverlay(false);
       showPausedOverlay();

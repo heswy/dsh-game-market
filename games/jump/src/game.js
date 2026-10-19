@@ -1796,6 +1796,7 @@ async function boot() {
   try {
     const info = await game.ready();
     applyRuntimeInfo(info);
+    if (info.launchMode === 'resume-paused') runtimePaused = true;
     best = await loadBest();
     bestAtRunStart = best;
     updateScores();

@@ -993,6 +993,7 @@ async function boot() {
   try {
     const info = await game.ready();
     applyRuntime(info);
+    if (info.launchMode === 'resume-paused') runtimePaused = true;
     best = await loadBest();
     bestAtGameStart = best;
     const loaded = await loadSavedState();

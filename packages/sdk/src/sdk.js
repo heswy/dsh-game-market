@@ -35,6 +35,7 @@ function createRuntimeState() {
     theme: 'light',
     reducedMotion: false,
     capabilities: Object.freeze([]),
+    launchMode: 'start',
     viewport: Object.freeze({ width: 0, height: 0, dpr: 1 }),
     ready: false,
   };
@@ -128,6 +129,7 @@ export function createGameSDK(options = {}) {
     if (init.theme === 'dark' || init.theme === 'light') runtimeState.theme = init.theme;
     if (typeof init.reducedMotion === 'boolean') runtimeState.reducedMotion = init.reducedMotion;
     if (Array.isArray(init.capabilities)) runtimeState.capabilities = Object.freeze(init.capabilities.slice());
+    if (init.launchMode === 'start' || init.launchMode === 'resume-paused') runtimeState.launchMode = init.launchMode;
     if (init.viewport) applyViewport(init.viewport);
   }
 

@@ -160,10 +160,18 @@ test('ready performs the hello -> init -> ready handshake and exposes runtime in
   assert.equal(info.theme, 'dark');
   assert.equal(info.ready, true);
   assert.equal(info.protocolVersion, 1);
+  assert.equal(info.launchMode, 'start');
   assert.deepEqual(info.capabilities, ['storage', 'score']);
   assert.deepEqual(info.viewport, { width: 960, height: 540, dpr: 2 });
   assert.equal(harness.game.runtime, info);
   assert.equal(harness.game.runtime.ready, true);
+});
+
+test('launchMode from init is exposed on game.runtime (resume-paused)', async () => {
+  const harness = createHarness();
+  const info = await harness.handshake({ launchMode: 'resume-paused' });
+  assert.equal(info.launchMode, 'resume-paused');
+  assert.equal(harness.game.runtime.launchMode, 'resume-paused');
 });
 
 test('hello retries every 250ms until init arrives', async () => {
