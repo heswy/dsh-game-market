@@ -11,6 +11,7 @@ import {
   findResumableGame,
   pausedBelongsToSession,
   RESUME_WINDOW_MS,
+  deriveTabStatus,
 } from '../src/chip-state.js';
 
 const NOW = 1_800_000_000_000;
@@ -217,4 +218,27 @@ test('sidebar completed clears after acknowledgement and DSH status supplements 
     deriveSidebarStatus(state({ agent: null, agentFetchedAt: 0 }), NOW, { dshStatus: pending }),
     SIDEBAR_STATUS.WAITING
   );
+});
+
+test('deriveTabStatus surfaces waiting/error/completed/resume only', () => {
+  const now = 1000 * 1000;
+  function agent(overrides) {
+    return { state: 'running', sessionId: 's1', since: new Date(now - 60_000).toISOString(), seq: 2, ...overrides };
+  }
+  const base = { bindingSessionId: 's1', agentFetchedAt: now, acknowledged: null, pausedGame: null };
+  assert.equal(deriveTabStatus({ ...base, agent: agent({ state: 'waiting-user' }) }, now), 'waiting');
+  assert.equal(deriveTabStatus({ ...base, agent: agent({ state: 'error' }) }, now), 'error');
+  assert.equal(deriveTabStatus({ ...base, agent: agent({ state: 'completed' }) }, now), 'completed');
+  assert.equal(
+    deriveTabStatus({ ...base, agent: agent({ state: 'completed' }), acknowledged: { sessionId: 's1', seq: 2 } }, now),
+    null
+  );
+  assert.equal(
+    deriveTabStatus({ ...base, agent: null, pausedGame: { gameId: 'jump', sessionId: 's1', at: now - 1000 } }, now),
+    'resume'
+  );
+  assert.equal(deriveTabStatus({ ...base, agent: null, pausedGame: { gameId: 'jump', sessionId: 's2', at: now - 1000 } }, now), null);
+  assert.equal(deriveTabStatus({ ...base, agent: agent({ state: 'running' }) }, now), null);
+  // stale snapshot must not badge
+  assert.equal(deriveTabStatus({ ...base, agentFetchedAt: now - 60 * 60 * 1000, agent: agent({ state: 'waiting-user' }) }, now), null);
 });

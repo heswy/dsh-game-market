@@ -43,6 +43,7 @@ window.__ModuleLoader__.load({
       'market.tab.mygames': '我的游戏',
       'market.backToChat': '返回会话',
       'market.localInstall': '安装本地游戏',
+      'market.upload': '上传游戏',
       'market.localInstall.title': '从本地安装游戏？',
       'market.localInstall.body': '选择一个自包含的 .html 游戏包。本地文件不经过商店校验，请只安装你信任的来源。',
       'market.localInstall.warning': '本地安装不会校验文件来源。',
@@ -335,6 +336,10 @@ window.__ModuleLoader__.load({
 
       'entry.chip.game': '游戏',
       'entry.tab.game': '游戏',
+      'entry.tab.badge.waiting': '等你',
+      'entry.tab.badge.completed': '完成',
+      'entry.tab.badge.error': '出错',
+      'entry.tab.badge.resume': '已暂停',
       'entry.tab.opening': '正在打开游戏…',
       'entry.chip.running.resume': 'Agent 正在工作 · 继续上一局',
       'entry.chip.running.choose': 'Agent 正在工作 · 来一局？',
@@ -464,6 +469,7 @@ window.__ModuleLoader__.load({
       'market.tab.mygames': 'My Games',
       'market.backToChat': 'Back to conversation',
       'market.localInstall': 'Install local game',
+      'market.upload': 'Upload game',
       'market.localInstall.title': 'Install a game from this device?',
       'market.localInstall.body': 'Choose a self-contained .html game package. Local files are not verified by the store, so only install sources you trust.',
       'market.localInstall.warning': 'Local installs do not verify where the file came from.',
@@ -756,6 +762,10 @@ window.__ModuleLoader__.load({
 
       'entry.chip.game': 'Game',
       'entry.tab.game': 'Game',
+      'entry.tab.badge.waiting': 'Action',
+      'entry.tab.badge.completed': 'Done',
+      'entry.tab.badge.error': 'Issue',
+      'entry.tab.badge.resume': 'Paused',
       'entry.tab.opening': 'Opening games…',
       'entry.chip.running.resume': 'Agent working · Resume last game',
       'entry.chip.running.choose': 'Agent working · Play a round?',
@@ -3743,6 +3753,33 @@ window.__ModuleLoader__.load({
     }
 
     /**
+     * Conversation Game-tab badge (CR: sidebar no longer carries state).
+     * Only states worth surfacing are returned; a quiet running game stays plain.
+     * @param {object} state module store state
+     * @param {number} [now]
+     * @param {{sessionId?:string|null, resumeWindowMs?:number, staleMs?:number}} [options]
+     * @returns {'waiting'|'error'|'completed'|'resume'|null}
+     */
+    function deriveTabStatus(state, now, options) {
+      const clock = finiteNumber(now) ? now : Date.now();
+      const opts = options && typeof options === 'object' ? options : {};
+      const sessionId = Object.prototype.hasOwnProperty.call(opts, 'sessionId')
+        ? opts.sessionId
+        : state.bindingSessionId;
+      const agent = state && state.agent ? state.agent : null;
+      const fresh = isAgentFresh(state && state.agentFetchedAt, clock, opts.staleMs);
+      const matches = agentMatchesSession(agent, sessionId);
+      const trusted = fresh && matches;
+
+      if (trusted && agent.state === 'waiting-user') return 'waiting';
+      if (trusted && agent.state === 'error') return 'error';
+      if (trusted && agent.state === 'completed' && !agentAcknowledged(state, agent)) return 'completed';
+      const paused = activePausedGame(state && state.pausedGame, clock, opts.resumeWindowMs);
+      if (paused && pausedBelongsToSession(paused, sessionId)) return 'resume';
+      return null;
+    }
+
+    /**
      * Sidebar dot: waiting > error > completed-unread > running > resume > hidden.
      * `dshStatus` is the optional `useSessionStatus` value for the current Session;
      * it supplements the Host snapshot while the latter is still arriving.
@@ -3801,7 +3838,7 @@ window.__ModuleLoader__.load({
       }
     }
 
-    return { RESUME_WINDOW_MS, CHIP_STATUS, SIDEBAR_STATUS, isAgentFresh, agentMatchesSession, deriveTurnKey, activePausedGame, pausedBelongsToSession, findResumableGame, waitingKind, deriveChipState, deriveSidebarStatus, sidebarLabelKey };
+    return { RESUME_WINDOW_MS, CHIP_STATUS, SIDEBAR_STATUS, isAgentFresh, agentMatchesSession, deriveTurnKey, activePausedGame, pausedBelongsToSession, findResumableGame, waitingKind, deriveChipState, deriveTabStatus, deriveSidebarStatus, sidebarLabelKey };
     })();
 
     // module: packages/client/src/format.js
@@ -5721,6 +5758,16 @@ window.__ModuleLoader__.load({
       );
     }
 
+    function UploadIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h(
+        'svg',
+        svgProps(size, '0 0 16 16'),
+        h('path', { d: 'M8 10.6V3.2M5.3 5.9 8 3.2l2.7 2.7' }),
+        h('path', { d: 'M3.4 12.5h9.2' })
+      );
+    }
+
     function DownloadIcon(props) {
       const size = props && typeof props.size === 'number' ? props.size : 14;
       return h(
@@ -5851,7 +5898,7 @@ window.__ModuleLoader__.load({
       );
     }
 
-    return { GamepadIcon, BackIcon, PlayIcon, PauseIcon, SaveIcon, GameMarketIcon, SearchIcon, CloseIcon, CheckIcon, MoreIcon, TrashIcon, DownloadIcon, RefreshIcon, ChevronRightIcon, ChevronLeftIcon, ClockIcon, TrophyIcon, FolderOpenIcon, ShieldIcon, WhaleIcon };
+    return { GamepadIcon, BackIcon, PlayIcon, PauseIcon, SaveIcon, GameMarketIcon, SearchIcon, CloseIcon, CheckIcon, MoreIcon, TrashIcon, UploadIcon, DownloadIcon, RefreshIcon, ChevronRightIcon, ChevronLeftIcon, ClockIcon, TrophyIcon, FolderOpenIcon, ShieldIcon, WhaleIcon };
     })();
 
     // module: packages/client/src/styles.js
@@ -5963,7 +6010,7 @@ window.__ModuleLoader__.load({
       align-items: center;
       gap: 12px;
       flex: none;
-      min-height: calc(var(--dsh-frame-top-clearance, 0px) + 52px);
+      min-height: calc(var(--dsh-frame-top-clearance, 0px) + 54px);
       padding: var(--dsh-frame-top-clearance, 0px) 20px 0;
       border-bottom: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
       background: color-mix(in srgb, var(--dgm-bg) 92%, transparent);
@@ -6006,9 +6053,9 @@ window.__ModuleLoader__.load({
     .dgm-tabs {
       display: inline-flex;
       align-items: stretch;
-      gap: 18px;
-      height: 52px;
-      margin-left: 6px;
+      gap: 24px;
+      height: 54px;
+      margin-left: 4px;
     }
 
     .dgm-tab {
@@ -6019,23 +6066,23 @@ window.__ModuleLoader__.load({
       background: transparent;
       color: var(--dgm-fg-tertiary);
       font: inherit;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.01em;
       cursor: pointer;
       transition: color 140ms ease-out;
     }
     .dgm-tab:hover { color: var(--dgm-fg); }
-    .dgm-tab[data-active='true'] { color: var(--dgm-fg); }
+    .dgm-tab[data-active='true'] { color: var(--dgm-brand); }
     .dgm-tab[data-active='true']::after {
       content: "";
       position: absolute;
       left: 0;
       right: 0;
       bottom: -1px;
-      height: 2px;
-      border-radius: 2px;
-      background: var(--dgm-fg);
+      height: 2.5px;
+      border-radius: 999px;
+      background: var(--dgm-brand);
     }
     .dgm-tab:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 1px; }
 
@@ -6097,12 +6144,24 @@ window.__ModuleLoader__.load({
 
     .dgm-search-toggle { display: none; }
 
-    .dgm-header-sync {
-      color: var(--dgm-fg-tertiary);
-      font-size: 11px;
-      white-space: nowrap;
-      font-variant-numeric: tabular-nums;
+    .dgm-upload {
+      height: 32px;
+      padding: 0 12px;
+      gap: 6px;
+      flex: none;
+      border-color: color-mix(in srgb, var(--dgm-brand) 30%, transparent);
+      background: color-mix(in srgb, var(--dgm-brand) 9%, transparent);
+      color: color-mix(in srgb, var(--dgm-brand) 88%, var(--dgm-fg));
+      font-size: 12px;
+      font-weight: 600;
     }
+    .dgm-upload:hover {
+      background: color-mix(in srgb, var(--dgm-brand) 15%, transparent);
+      border-color: color-mix(in srgb, var(--dgm-brand) 44%, transparent);
+      color: var(--dgm-brand);
+    }
+    .dgm-upload svg { flex: none; }
+    .dgm-upload-label { white-space: nowrap; }
 
     .dgm-header-dot {
       width: 6px;
@@ -6206,11 +6265,11 @@ window.__ModuleLoader__.load({
     .dgm-hero {
       position: relative;
       display: grid;
-      grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
       align-items: center;
-      gap: 28px;
-      min-height: 248px;
-      padding: 20px;
+      gap: 26px;
+      min-height: 224px;
+      padding: 18px;
       border-radius: var(--dgm-radius-xl);
       background:
         radial-gradient(120% 120% at 0% 0%, hsl(var(--dgm-tone-h, 220) var(--dgm-tone-s, 50%) 50% / 0.12), transparent 58%),
@@ -6237,7 +6296,7 @@ window.__ModuleLoader__.load({
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 10px;
+      gap: 8px;
       min-width: 0;
       padding-right: 20px;
     }
@@ -6255,7 +6314,7 @@ window.__ModuleLoader__.load({
     .dgm-hero-title {
       margin: 0;
       max-width: 18ch;
-      font-size: clamp(26px, 3.4cqw, 40px);
+      font-size: clamp(25px, 3.2cqw, 36px);
       font-weight: 600;
       line-height: 1.04;
       letter-spacing: -0.025em;
@@ -6290,9 +6349,9 @@ window.__ModuleLoader__.load({
     }
 
     .dgm-hero-cta {
-      min-width: 132px;
-      height: 40px;
-      margin-top: 4px;
+      min-width: 128px;
+      height: 38px;
+      margin-top: 6px;
       font-size: 13px;
     }
 
@@ -6327,7 +6386,7 @@ window.__ModuleLoader__.load({
       box-shadow: var(--dgm-shadow-soft);
     }
 
-    .dgm-section { margin-top: 44px; }
+    .dgm-section { margin-top: 38px; }
     .dgm-section:first-child { margin-top: 0; }
 
     .dgm-section-head {
@@ -6335,7 +6394,7 @@ window.__ModuleLoader__.load({
       align-items: flex-end;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       flex-wrap: wrap;
     }
     .dgm-section-titles { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
@@ -6348,9 +6407,9 @@ window.__ModuleLoader__.load({
     }
     .dgm-section-title {
       margin: 0;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
-      letter-spacing: -0.012em;
+      letter-spacing: -0.01em;
     }
     .dgm-section-meta { color: var(--dgm-fg-tertiary); font-size: 11px; }
 
@@ -6359,7 +6418,7 @@ window.__ModuleLoader__.load({
     .dgm-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 20px;
+      gap: 18px;
     }
 
     /* ---------- Game card ---------- */
@@ -6377,7 +6436,7 @@ window.__ModuleLoader__.load({
 
     .dgm-card-cover {
       position: relative;
-      aspect-ratio: 3 / 2;
+      aspect-ratio: 16 / 9;
       border-radius: var(--dgm-radius-lg);
       overflow: hidden;
       border: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
@@ -6794,7 +6853,7 @@ window.__ModuleLoader__.load({
 
     .dgm-skeleton-card { display: flex; flex-direction: column; gap: 9px; }
     .dgm-skeleton-cover {
-      aspect-ratio: 3 / 2;
+      aspect-ratio: 16 / 9;
       border-radius: var(--dgm-radius-lg);
       background: var(--dgm-surface);
       animation: dgm-shimmer 1400ms ease-in-out infinite;
@@ -7024,20 +7083,21 @@ window.__ModuleLoader__.load({
     /* ---------- Detail ---------- */
 
     .dgm-detail { display: flex; flex-direction: column; }
+    .dgm-detail-head {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      min-width: 0;
+    }
+    .dgm-detail-head-copy { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
     .dgm-detail-hero {
       position: relative;
-      width: 100%;
-      height: clamp(200px, 30cqw, 320px);
-      border-radius: var(--dgm-radius-xl);
+      width: 224px;
+      aspect-ratio: 16 / 9;
+      flex: none;
+      border-radius: var(--dgm-radius-lg);
       overflow: hidden;
       box-shadow: var(--dgm-shadow-soft);
-    }
-    .dgm-detail-hero-fade {
-      position: absolute;
-      inset: auto 0 0 0;
-      height: 96px;
-      background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--dgm-bg) 72%, transparent));
-      pointer-events: none;
     }
     .dgm-detail-cols {
       position: relative;
@@ -7047,9 +7107,9 @@ window.__ModuleLoader__.load({
       justify-content: space-between;
       gap: 48px;
       padding: 0 4px;
-      margin-top: 18px;
+      margin-top: 20px;
     }
-    .dgm-detail-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding-top: 8px; }
+    .dgm-detail-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding-top: 4px; }
     .dgm-detail-title-line { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
     .dgm-detail-title {
       margin: 0;
@@ -7648,7 +7708,8 @@ window.__ModuleLoader__.load({
 
     @container (max-width: 839px) {
       .dgm-header { padding-left: 12px; padding-right: 12px; gap: 8px; }
-      .dgm-header-sync { display: none; }
+      .dgm-upload-label { display: none; }
+      .dgm-upload { width: 32px; padding: 0; justify-content: center; }
       .dgm-search { display: none; }
       .dgm-search-toggle { display: inline-flex; }
       .dgm-root[data-search-open='true'] .dgm-search {
@@ -7672,8 +7733,9 @@ window.__ModuleLoader__.load({
       .dgm-hero-intro { grid-template-columns: minmax(0, 1fr); }
       .dgm-section { margin-top: 34px; }
       .dgm-section-head { align-items: flex-start; }
-      .dgm-page { padding: 18px 16px 40px; }
-      .dgm-detail-hero { height: clamp(180px, 34cqw, 260px); }
+      .dgm-page { padding: 20px 16px 40px; }
+      .dgm-detail-head { align-items: flex-start; gap: 14px; }
+      .dgm-detail-hero { width: 152px; }
       .dgm-preview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .dgm-toasts { right: 12px; bottom: 12px; }
       .dgm-lightbox { padding: 52px 12px; }
@@ -11921,7 +11983,6 @@ window.__ModuleLoader__.load({
     const nextGridIndex = __mods["packages/client/src/keyboard.js"].nextGridIndex;
     const formatCount = __mods["packages/client/src/format.js"].formatCount;
     const formatRelativeTime = __mods["packages/client/src/format.js"].formatRelativeTime;
-    const formatScore = __mods["packages/client/src/format.js"].formatScore;
     const PlayIcon = __mods["packages/client/src/icons.js"].PlayIcon;
     const EmptyBlock = __mods["packages/client/src/components/state-views.js"].EmptyBlock;
     const ErrorBlock = __mods["packages/client/src/components/state-views.js"].ErrorBlock;
@@ -11939,11 +12000,6 @@ window.__ModuleLoader__.load({
 
     const h = React.createElement;
 
-    function heroLastPlayed(game, t, locale, now) {
-      const relative = game.lastPlayedAt ? formatRelativeTime(game.lastPlayedAt, now, locale) : '';
-      return relative ? t('market.hero.lastPlayed', { relativeTime: relative }) : '';
-    }
-
     function Hero(props) {
       const game = props.hero;
       const t = props.t;
@@ -11956,7 +12012,6 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { className: 'dgm-hero-intro-copy' },
-            h('p', { className: 'dgm-hero-kicker' }, t('market.section.continue')),
             h('h2', { className: 'dgm-hero-title', id: 'dgm-hero-title' }, t('market.hero.empty.title')),
             h('p', { className: 'dgm-hero-body' }, t('market.hero.empty.body')),
             h(
@@ -11979,8 +12034,6 @@ window.__ModuleLoader__.load({
           )
         );
       }
-      const meta = heroLastPlayed(game, t, locale, now);
-      const best = typeof game.bestScore === 'number' ? t('market.hero.best', { score: formatScore(game.bestScore, locale) }) : '';
       const tone = coverTone(game);
       return h(
         'section',
@@ -11998,7 +12051,6 @@ window.__ModuleLoader__.load({
         h(
           'div',
           { className: 'dgm-hero-copy' },
-          h('p', { className: 'dgm-hero-kicker' }, t('market.section.continue')),
           h(
             'h2',
             { className: 'dgm-hero-title', id: 'dgm-hero-title' },
@@ -12014,16 +12066,6 @@ window.__ModuleLoader__.load({
               game.name || game.id
             )
           ),
-          h(
-            'p',
-            { className: 'dgm-hero-meta' },
-            meta,
-            meta && best ? h('span', { className: 'dgm-hero-sep', 'aria-hidden': 'true' }, '·') : null,
-            best
-          ),
-          game.canContinue
-            ? h('p', { className: 'dgm-hero-status' }, t('market.hero.paused'))
-            : null,
           h(
             'button',
             {
@@ -12097,7 +12139,6 @@ window.__ModuleLoader__.load({
         { className: 'dgm-section', 'aria-labelledby': props.id },
         h(SectionHeader, {
           id: props.id,
-          kicker: h('span', { 'aria-hidden': 'true' }, props.index),
           title: props.title,
           meta: props.meta,
         }),
@@ -12229,7 +12270,7 @@ window.__ModuleLoader__.load({
               sections.quick.length > 0
                 ? h(
                     Section,
-                    { index: '01', id: 'dgm-quick-title', title: t('market.section.quick'), meta: null },
+                    { id: 'dgm-quick-title', title: t('market.section.quick'), meta: null },
                     h(GameGrid, {
                       games: sections.quick,
                       t: t,
@@ -12242,7 +12283,7 @@ window.__ModuleLoader__.load({
               sections.popular.length > 0
                 ? h(
                     Section,
-                    { index: '02', id: 'dgm-popular-title', title: t('market.section.popular'), meta: null },
+                    { id: 'dgm-popular-title', title: t('market.section.popular'), meta: null },
                     h(GameGrid, {
                       games: sections.popular,
                       t: t,
@@ -12255,7 +12296,7 @@ window.__ModuleLoader__.load({
               sections.newGames.length > 0
                 ? h(
                     Section,
-                    { index: '03', id: 'dgm-new-title', title: t('market.section.new'), meta: null },
+                    { id: 'dgm-new-title', title: t('market.section.new'), meta: null },
                     h(GameGrid, {
                       games: sections.newGames,
                       t: t,
@@ -12274,7 +12315,6 @@ window.__ModuleLoader__.load({
                   h(
                     'div',
                     { className: 'dgm-section-titles' },
-                    h('p', { className: 'dgm-section-kicker', 'aria-hidden': 'true' }, '04'),
                     h('h2', { className: 'dgm-section-title', id: 'dgm-all-title' }, t('market.section.all'))
                   ),
                   h(FilterChips, {
@@ -12300,27 +12340,6 @@ window.__ModuleLoader__.load({
                     })
               )
             ),
-        h(
-          'footer',
-          { className: 'dgm-footer' },
-          market.refreshedAt > 0
-            ? h(
-                'span',
-                { className: 'dgm-footer-text' },
-                t('market.footer.synced', {
-                  relativeTime: formatRelativeTime(new Date(market.refreshedAt).toISOString(), now, locale),
-                })
-              )
-            : null,
-          market.offline
-            ? h(
-                'span',
-                { className: 'dgm-footer-offline' },
-                h('span', { className: 'dgm-dot', 'aria-hidden': 'true' }),
-                t('market.footer.offline')
-              )
-            : null
-        )
       );
     }
 
@@ -13115,12 +13134,7 @@ window.__ModuleLoader__.load({
 
     function DetailHero(props) {
       const game = props.game;
-      return h(
-        'div',
-        { className: 'dgm-detail-hero' },
-        h(GameCover, { game: game, variant: 'detail' }),
-        h('span', { className: 'dgm-detail-hero-fade', 'aria-hidden': 'true' })
-      );
+      return h('div', { className: 'dgm-detail-hero' }, h(GameCover, { game: game, variant: 'detail' }));
     }
 
     /** Detail page body. */
@@ -13207,7 +13221,6 @@ window.__ModuleLoader__.load({
       return h(
         'div',
         { className: 'dgm-detail' },
-        h(DetailHero, { game: game }),
         h(
           'div',
           { className: 'dgm-detail-cols' },
@@ -13216,21 +13229,30 @@ window.__ModuleLoader__.load({
             { className: 'dgm-detail-main' },
             h(
               'div',
-              { className: 'dgm-detail-title-line' },
-              h('h1', { className: 'dgm-detail-title', tabIndex: -1, 'data-page-heading': true }, game.name || game.id),
-              game.updateAvailable && game.updateVersion
-                ? h('span', { className: 'dgm-pill dgm-pill-update' }, t('detail.update.available', { version: game.updateVersion }))
-                : null,
-              game.installed
-                ? h(
-                    'span',
-                    { className: 'dgm-pill dgm-pill-installed' },
-                    h(CheckIcon, { size: 11 }),
-                    t('market.card.installed')
-                  )
-                : null
+              { className: 'dgm-detail-head' },
+              h(DetailHero, { game: game }),
+              h(
+                'div',
+                { className: 'dgm-detail-head-copy' },
+                h(
+                  'div',
+                  { className: 'dgm-detail-title-line' },
+                  h('h1', { className: 'dgm-detail-title', tabIndex: -1, 'data-page-heading': true }, game.name || game.id),
+                  game.updateAvailable && game.updateVersion
+                    ? h('span', { className: 'dgm-pill dgm-pill-update' }, t('detail.update.available', { version: game.updateVersion }))
+                    : null,
+                  game.installed
+                    ? h(
+                        'span',
+                        { className: 'dgm-pill dgm-pill-installed' },
+                        h(CheckIcon, { size: 11 }),
+                        t('market.card.installed')
+                      )
+                    : null
+                ),
+                subtitleParts.length > 0 ? h('p', { className: 'dgm-detail-subtitle' }, subtitleParts.join(' · ')) : null
+              )
             ),
-            subtitleParts.length > 0 ? h('p', { className: 'dgm-detail-subtitle' }, subtitleParts.join(' · ')) : null,
             h(
               'div',
               { className: `dgm-detail-description${longDescription && !expanded ? ' is-collapsed' : ''}` },
@@ -14139,10 +14161,9 @@ window.__ModuleLoader__.load({
     const getMarketApi = __mods["packages/client/src/api.js"].getMarketApi;
     const makeT = __mods["packages/client/src/locale.js"].makeT;
     const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
-    const formatRelativeTime = __mods["packages/client/src/format.js"].formatRelativeTime;
     const BackIcon = __mods["packages/client/src/icons.js"].BackIcon;
-    const FolderOpenIcon = __mods["packages/client/src/icons.js"].FolderOpenIcon;
     const MoreIcon = __mods["packages/client/src/icons.js"].MoreIcon;
+    const UploadIcon = __mods["packages/client/src/icons.js"].UploadIcon;
     const StyleTag = __mods["packages/client/src/styles.js"].StyleTag;
     const backToConversation = __mods["packages/client/src/navigation.js"].backToConversation;
     const openGameMarket = __mods["packages/client/src/navigation.js"].openGameMarket;
@@ -14695,7 +14716,7 @@ window.__ModuleLoader__.load({
               'h1',
               {
                 key: 'title',
-                className: 'dgm-title',
+                className: 'dgm-sr-only',
                 tabIndex: -1,
                 'data-page-heading': true,
               },
@@ -14763,15 +14784,6 @@ window.__ModuleLoader__.load({
                   })
                 )
               : null,
-            state.market.refreshedAt > 0
-              ? h(
-                  'span',
-                  { key: 'sync', className: 'dgm-header-sync' },
-                  t('panel.synced', {
-                    relativeTime: formatRelativeTime(new Date(state.market.refreshedAt).toISOString(), now, locale),
-                  })
-                )
-              : null,
             state.market.offline
               ? h('span', {
                   key: 'offline',
@@ -14787,12 +14799,13 @@ window.__ModuleLoader__.load({
                   {
                     key: 'local',
                     type: 'button',
-                    className: 'dgm-icon-btn dgm-local-install',
+                    className: 'dgm-btn dgm-upload dgm-local-install',
                     onClick: handlePickFile,
-                    'aria-label': t('market.localInstall'),
-                    title: t('market.localInstall'),
+                    'aria-label': t('market.upload'),
+                    title: t('market.localInstall.body'),
                   },
-                  h(FolderOpenIcon, { size: 15 })
+                  h(UploadIcon, { size: 14 }),
+                  h('span', { className: 'dgm-upload-label' }, t('market.upload'))
                 )
               : null,
           ];
@@ -15083,85 +15096,26 @@ window.__ModuleLoader__.load({
     const React = __react;
     const store = __mods["packages/client/src/store.js"].store;
     const sessionBound = __mods["packages/client/src/store.js"].sessionBound;
-    const deriveSidebarStatus = __mods["packages/client/src/chip-state.js"].deriveSidebarStatus;
-    const sidebarLabelKey = __mods["packages/client/src/chip-state.js"].sidebarLabelKey;
     const GameMarketIcon = __mods["packages/client/src/icons.js"].GameMarketIcon;
-    const makeT = __mods["packages/client/src/locale.js"].makeT;
     const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
+    const translate = __mods["packages/client/src/locale.js"].translate;
     const openGameMarket = __mods["packages/client/src/navigation.js"].openGameMarket;
-    const useActivePanel = __mods["packages/client/src/hooks.js"].useActivePanel;
-    const useClock = __mods["packages/client/src/hooks.js"].useClock;
     const useSessionBinding = __mods["packages/client/src/hooks.js"].useSessionBinding;
-    const useStoreState = __mods["packages/client/src/hooks.js"].useStoreState;
     /**
      * Sidebar entry icon.
      *
      * The host sidebar owns the row button, focus ring, aria-label and the
-     * `selectPanel` click (verified in `ui-sidebar`'s `PanelRow`). This component is
-     * therefore the glyph + status dot only. `interactive` is an opt-in fallback for
-     * hosts that do not wrap the glyph; it is never enabled by the DSH row.
+     * `selectPanel` click. This component is the glyph only: runtime state lives on
+     * the session Game tab, not on the sidebar row (UX review 2026-10-19).
      */
 
     const h = React.createElement;
 
-    const STATUS_COLORS = Object.freeze({
-      running: 'var(--dsw-alias-label-secondary, #5c6470)',
-      waiting: 'var(--dsw-alias-state-business-primary, #4d6bfe)',
-      error: 'var(--dsw-alias-state-error-primary, #c93c37)',
-      completed: 'var(--dsw-alias-state-success-primary, #1a7f37)',
-      resume: 'var(--dsw-alias-label-tertiary, #7a828e)',
-    });
-
-    function StatusGlyph(props) {
-      const status = props.status;
-      const color = STATUS_COLORS[status] || STATUS_COLORS.running;
-      const base = {
-        position: 'absolute',
-        top: '-3px',
-        right: '-3px',
-        width: '10px',
-        height: '10px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        pointerEvents: 'none',
-      };
-      let glyph = null;
-      if (status === 'waiting') {
-        glyph = h('circle', { cx: 5, cy: 5, r: 3.6, fill: 'transparent', stroke: color, strokeWidth: 2 });
-      } else if (status === 'completed') {
-        glyph = [
-          h('circle', { key: 'ring', cx: 5, cy: 5, r: 4.1, fill: 'transparent', stroke: color, strokeWidth: 1 }),
-          h('circle', { key: 'dot', cx: 5, cy: 5, r: 2.7, fill: color }),
-        ];
-      } else if (status === 'error') {
-        glyph = h('circle', { cx: 5, cy: 5, r: 3.4, fill: color });
-      } else if (status === 'resume') {
-        glyph = [
-          h('rect', { key: 'a', x: 2.4, y: 2.2, width: 1.7, height: 5.6, rx: 0.8, fill: color }),
-          h('rect', { key: 'b', x: 5.9, y: 2.2, width: 1.7, height: 5.6, rx: 0.8, fill: color }),
-        ];
-      } else if (status === 'running') {
-        glyph = h('circle', { cx: 5, cy: 5, r: 2.4, fill: color });
-      }
-      if (!glyph) return null;
-      return h(
-        'span',
-        { style: base, 'data-status': status },
-        h('svg', { width: 10, height: 10, viewBox: '0 0 10 10', 'aria-hidden': 'true', focusable: 'false' }, glyph)
-      );
-    }
-
     function GameMarketSidebarIcon(props) {
       const size = props && typeof props.size === 'number' ? props.size : 18;
       const interactive = Boolean(props && props.interactive === true);
-      const state = useStoreState();
-      const now = useClock(1000);
       const diagnosticRef = React.useRef(false);
       const binding = useSessionBinding(props || {}, diagnosticRef);
-      const activePanelId = useActivePanel(props || {}, diagnosticRef);
-      const locale = detectLocale();
-      const t = makeT(props && props.t, locale);
 
       React.useEffect(
         function bindCurrentSession() {
@@ -15172,18 +15126,11 @@ window.__ModuleLoader__.load({
         [binding.sessionId]
       );
 
-      const status = deriveSidebarStatus(state, now, {
-        sessionId: binding.sessionId || state.bindingSessionId,
-        dshStatus: binding.dshStatus,
-        activePanelId: activePanelId,
-      });
-      const label = t(sidebarLabelKey(status));
       const buttonProps = interactive
         ? {
             role: 'button',
             tabIndex: 0,
-            'aria-label': label,
-            'data-status': status,
+            'aria-label': translate(detectLocale(), 'sidebar.label'),
             style: { cursor: 'pointer', position: 'relative', display: 'inline-flex', color: 'inherit' },
             onClick: openGameMarket,
             onKeyDown: function activate(event) {
@@ -15195,14 +15142,106 @@ window.__ModuleLoader__.load({
           }
         : { 'aria-hidden': 'true', style: { position: 'relative', display: 'inline-flex', color: 'inherit' } };
 
-      return h('span', buttonProps, h(GameMarketIcon, { size: size }), h(StatusGlyph, { status: status }));
+      return h('span', buttonProps, h(GameMarketIcon, { size: size }));
     }
 
     return { GameMarketSidebarIcon };
     })();
 
+    // module: packages/client/src/components/game-tab-label.js
+    __mods["packages/client/src/components/game-tab-label.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    const store = __mods["packages/client/src/store.js"].store;
+    const deriveTabStatus = __mods["packages/client/src/chip-state.js"].deriveTabStatus;
+    const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
+    const translate = __mods["packages/client/src/locale.js"].translate;
+    const useClock = __mods["packages/client/src/hooks.js"].useClock;
+    const useStoreState = __mods["packages/client/src/hooks.js"].useStoreState;
+    /**
+     * Conversation "Game" tab label with a compact state badge.
+     *
+     * The host renders a view's `label` as the tab button child, so this component
+     * is mounted inside that button and subscribes to the module store directly.
+     * The sidebar entry deliberately carries no state (UX review 2026-10-19): the
+     * status belongs to this session-level Game button.
+     */
+
+    const h = React.createElement;
+
+    const BADGE_STYLES = Object.freeze({
+      waiting: { color: '#4d6bfe', background: 'rgba(77, 107, 254, 0.13)' },
+      completed: { color: '#178a4c', background: 'rgba(23, 138, 76, 0.13)' },
+      error: { color: '#c93c37', background: 'rgba(201, 60, 55, 0.13)' },
+      resume: { color: '#b26b00', background: 'rgba(178, 107, 0, 0.14)' },
+    });
+
+    const BADGE_KEYS = Object.freeze({
+      waiting: 'entry.tab.badge.waiting',
+      completed: 'entry.tab.badge.completed',
+      error: 'entry.tab.badge.error',
+      resume: 'entry.tab.badge.resume',
+    });
+
+    function GameTabLabel() {
+      const state = useStoreState();
+      const now = useClock(1000);
+      const locale = detectLocale();
+      const status = deriveTabStatus(state, now, { sessionId: state.bindingSessionId });
+      const badge = status ? BADGE_STYLES[status] : null;
+      return h(
+        'span',
+        {
+          style: {
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            lineHeight: '1',
+          },
+        },
+        translate(locale, 'entry.tab.game'),
+        badge
+          ? h(
+              'span',
+              {
+                'data-game-tab-status': status,
+                style: {
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  height: '18px',
+                  padding: '0 7px',
+                  borderRadius: '999px',
+                  fontSize: '10.5px',
+                  fontWeight: 700,
+                  letterSpacing: '0.01em',
+                  whiteSpace: 'nowrap',
+                  color: badge.color,
+                  background: badge.background,
+                },
+              },
+              h('span', {
+                'aria-hidden': 'true',
+                style: {
+                  width: '5px',
+                  height: '5px',
+                  borderRadius: '50%',
+                  background: 'currentColor',
+                },
+              }),
+              translate(locale, BADGE_KEYS[status])
+            )
+          : null
+      );
+    }
+
+    return { GameTabLabel };
+    })();
+
     // module: packages/client/src/main.js
     __mods["packages/client/src/main.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
     const NS = __mods["packages/client/src/locale.js"].NS;
     const ZH = __mods["packages/client/src/locale.js"].ZH;
     const EN = __mods["packages/client/src/locale.js"].EN;
@@ -15219,6 +15258,7 @@ window.__ModuleLoader__.load({
     const GameMarketPanel = __mods["packages/client/src/components/panel.js"].GameMarketPanel;
     const GameEntryView = __mods["packages/client/src/components/game-entry-view.js"].GameEntryView;
     const GameMarketSidebarIcon = __mods["packages/client/src/components/sidebar-icon.js"].GameMarketSidebarIcon;
+    const GameTabLabel = __mods["packages/client/src/components/game-tab-label.js"].GameTabLabel;
     /**
      * DSH Client plugin entry.
      *
@@ -15230,6 +15270,8 @@ window.__ModuleLoader__.load({
      */
 
     const inject = ['slots', 'layout', 'locale'];
+
+    const h = React.createElement;
 
     function noopDisposer() {
       return function noop() {};
@@ -15290,19 +15332,10 @@ window.__ModuleLoader__.load({
         return translate('zh', 'sidebar.label');
       }
 
+      // The host renders the resolved label value as the tab's children; returning
+      // a component gives the tab a live, session-level status badge.
       function gameTabLabel() {
-        try {
-          if (boundTranslate === null && ctx.locale && typeof ctx.locale.bind === 'function') {
-            boundTranslate = ctx.locale.bind(NS);
-          }
-          if (typeof boundTranslate === 'function') {
-            const value = boundTranslate('entry.tab.game');
-            if (typeof value === 'string' && value.length > 0 && value !== 'entry.tab.game') return value;
-          }
-        } catch (error) {
-          reportDiagnostic('game-tab-label-failed', error);
-        }
-        return translate('zh', 'entry.tab.game');
+        return h(GameTabLabel, null);
       }
 
       function injectSlot(slotName, callback) {

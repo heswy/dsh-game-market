@@ -257,12 +257,7 @@ function PreviewThumb(props) {
 
 function DetailHero(props) {
   const game = props.game;
-  return h(
-    'div',
-    { className: 'dgm-detail-hero' },
-    h(GameCover, { game: game, variant: 'detail' }),
-    h('span', { className: 'dgm-detail-hero-fade', 'aria-hidden': 'true' })
-  );
+  return h('div', { className: 'dgm-detail-hero' }, h(GameCover, { game: game, variant: 'detail' }));
 }
 
 /** Detail page body. */
@@ -349,7 +344,6 @@ export function GameDetail(props) {
   return h(
     'div',
     { className: 'dgm-detail' },
-    h(DetailHero, { game: game }),
     h(
       'div',
       { className: 'dgm-detail-cols' },
@@ -358,21 +352,30 @@ export function GameDetail(props) {
         { className: 'dgm-detail-main' },
         h(
           'div',
-          { className: 'dgm-detail-title-line' },
-          h('h1', { className: 'dgm-detail-title', tabIndex: -1, 'data-page-heading': true }, game.name || game.id),
-          game.updateAvailable && game.updateVersion
-            ? h('span', { className: 'dgm-pill dgm-pill-update' }, t('detail.update.available', { version: game.updateVersion }))
-            : null,
-          game.installed
-            ? h(
-                'span',
-                { className: 'dgm-pill dgm-pill-installed' },
-                h(CheckIcon, { size: 11 }),
-                t('market.card.installed')
-              )
-            : null
+          { className: 'dgm-detail-head' },
+          h(DetailHero, { game: game }),
+          h(
+            'div',
+            { className: 'dgm-detail-head-copy' },
+            h(
+              'div',
+              { className: 'dgm-detail-title-line' },
+              h('h1', { className: 'dgm-detail-title', tabIndex: -1, 'data-page-heading': true }, game.name || game.id),
+              game.updateAvailable && game.updateVersion
+                ? h('span', { className: 'dgm-pill dgm-pill-update' }, t('detail.update.available', { version: game.updateVersion }))
+                : null,
+              game.installed
+                ? h(
+                    'span',
+                    { className: 'dgm-pill dgm-pill-installed' },
+                    h(CheckIcon, { size: 11 }),
+                    t('market.card.installed')
+                  )
+                : null
+            ),
+            subtitleParts.length > 0 ? h('p', { className: 'dgm-detail-subtitle' }, subtitleParts.join(' · ')) : null
+          )
         ),
-        subtitleParts.length > 0 ? h('p', { className: 'dgm-detail-subtitle' }, subtitleParts.join(' · ')) : null,
         h(
           'div',
           { className: `dgm-detail-description${longDescription && !expanded ? ' is-collapsed' : ''}` },

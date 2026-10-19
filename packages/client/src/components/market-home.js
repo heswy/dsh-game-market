@@ -2,7 +2,7 @@
 import React from 'react';
 import { authorName, categoryLabel, coverTone, filterCatalog, installedGames, primaryCategory, selectHero, selectSections } from '../catalog.js';
 import { countColumns, nextGridIndex } from '../keyboard.js';
-import { formatCount, formatRelativeTime, formatScore } from '../format.js';
+import { formatCount, formatRelativeTime } from '../format.js';
 import { PlayIcon } from '../icons.js';
 import { EmptyBlock, ErrorBlock, InlineBanner, LoadingBlock, SectionHeader, SkeletonCards } from './state-views.js';
 import { GameCard } from './game-card.js';
@@ -12,11 +12,6 @@ import { SKELETON_DELAY_MS, SLOW_LOAD_MS } from '../constants.js';
 import { useDelayedFlag } from '../hooks.js';
 
 const h = React.createElement;
-
-function heroLastPlayed(game, t, locale, now) {
-  const relative = game.lastPlayedAt ? formatRelativeTime(game.lastPlayedAt, now, locale) : '';
-  return relative ? t('market.hero.lastPlayed', { relativeTime: relative }) : '';
-}
 
 function Hero(props) {
   const game = props.hero;
@@ -30,7 +25,6 @@ function Hero(props) {
       h(
         'div',
         { className: 'dgm-hero-intro-copy' },
-        h('p', { className: 'dgm-hero-kicker' }, t('market.section.continue')),
         h('h2', { className: 'dgm-hero-title', id: 'dgm-hero-title' }, t('market.hero.empty.title')),
         h('p', { className: 'dgm-hero-body' }, t('market.hero.empty.body')),
         h(
@@ -53,8 +47,6 @@ function Hero(props) {
       )
     );
   }
-  const meta = heroLastPlayed(game, t, locale, now);
-  const best = typeof game.bestScore === 'number' ? t('market.hero.best', { score: formatScore(game.bestScore, locale) }) : '';
   const tone = coverTone(game);
   return h(
     'section',
@@ -72,7 +64,6 @@ function Hero(props) {
     h(
       'div',
       { className: 'dgm-hero-copy' },
-      h('p', { className: 'dgm-hero-kicker' }, t('market.section.continue')),
       h(
         'h2',
         { className: 'dgm-hero-title', id: 'dgm-hero-title' },
@@ -88,16 +79,6 @@ function Hero(props) {
           game.name || game.id
         )
       ),
-      h(
-        'p',
-        { className: 'dgm-hero-meta' },
-        meta,
-        meta && best ? h('span', { className: 'dgm-hero-sep', 'aria-hidden': 'true' }, '·') : null,
-        best
-      ),
-      game.canContinue
-        ? h('p', { className: 'dgm-hero-status' }, t('market.hero.paused'))
-        : null,
       h(
         'button',
         {
@@ -171,7 +152,6 @@ function Section(props) {
     { className: 'dgm-section', 'aria-labelledby': props.id },
     h(SectionHeader, {
       id: props.id,
-      kicker: h('span', { 'aria-hidden': 'true' }, props.index),
       title: props.title,
       meta: props.meta,
     }),
@@ -303,7 +283,7 @@ export function MarketHome(props) {
           sections.quick.length > 0
             ? h(
                 Section,
-                { index: '01', id: 'dgm-quick-title', title: t('market.section.quick'), meta: null },
+                { id: 'dgm-quick-title', title: t('market.section.quick'), meta: null },
                 h(GameGrid, {
                   games: sections.quick,
                   t: t,
@@ -316,7 +296,7 @@ export function MarketHome(props) {
           sections.popular.length > 0
             ? h(
                 Section,
-                { index: '02', id: 'dgm-popular-title', title: t('market.section.popular'), meta: null },
+                { id: 'dgm-popular-title', title: t('market.section.popular'), meta: null },
                 h(GameGrid, {
                   games: sections.popular,
                   t: t,
@@ -329,7 +309,7 @@ export function MarketHome(props) {
           sections.newGames.length > 0
             ? h(
                 Section,
-                { index: '03', id: 'dgm-new-title', title: t('market.section.new'), meta: null },
+                { id: 'dgm-new-title', title: t('market.section.new'), meta: null },
                 h(GameGrid, {
                   games: sections.newGames,
                   t: t,
@@ -348,7 +328,6 @@ export function MarketHome(props) {
               h(
                 'div',
                 { className: 'dgm-section-titles' },
-                h('p', { className: 'dgm-section-kicker', 'aria-hidden': 'true' }, '04'),
                 h('h2', { className: 'dgm-section-title', id: 'dgm-all-title' }, t('market.section.all'))
               ),
               h(FilterChips, {
@@ -374,27 +353,6 @@ export function MarketHome(props) {
                 })
           )
         ),
-    h(
-      'footer',
-      { className: 'dgm-footer' },
-      market.refreshedAt > 0
-        ? h(
-            'span',
-            { className: 'dgm-footer-text' },
-            t('market.footer.synced', {
-              relativeTime: formatRelativeTime(new Date(market.refreshedAt).toISOString(), now, locale),
-            })
-          )
-        : null,
-      market.offline
-        ? h(
-            'span',
-            { className: 'dgm-footer-offline' },
-            h('span', { className: 'dgm-dot', 'aria-hidden': 'true' }),
-            t('market.footer.offline')
-          )
-        : null
-    )
   );
 }
 

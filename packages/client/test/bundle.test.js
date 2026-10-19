@@ -124,6 +124,12 @@ test('apply registers locale, main panel, sidebar row and header chip inside eff
   assert.equal(registered[2].options.name, 'conversation.view');
   assert.equal(registered[2].options.id, 'game');
   assert.equal(registered[2].options.order, 100);
+  // The Game tab owns the runtime-status badge now; its label is a component
+  // element, not a static string (sidebar carries no state).
+  assert.equal(typeof registered[2].options.label, 'function');
+  const tabLabel = registered[2].options.label();
+  assert.equal(typeof tabLabel, 'object');
+  assert.equal(typeof tabLabel.type, 'function');
   assert.equal(typeof registered[1].options.label, 'function');
   assert.equal(registered[1].options.label(), 'Game Market');
   assert.ok(effects.length >= 3);
