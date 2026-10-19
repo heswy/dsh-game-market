@@ -374,6 +374,48 @@ test('a failed rollback is reported explicitly, never silently swallowed', async
   );
 });
 
+test('a real git branch-ref lock during rollback reports E_PUBLISH_ROLLBACK_FAILED', async (t) => {
+  const ctx = await context();
+  t.after(() => ctx.cleanup());
+  const run = (args) => execFileSync('git', args, { cwd: ctx.content, encoding: 'utf8' }).trim();
+  run(['init', '-q']);
+  run(['config', 'user.email', 'maintainer@example.com']);
+  run(['config', 'user.name', 'Maintainer']);
+  run(['add', '-A']);
+  run(['commit', '-q', '-m', 'init content repo']);
+  run(['branch', '-M', 'main']);
+  const origin = path.join(ctx.base, 'origin-lock.git');
+  await fs.mkdir(origin, { recursive: true });
+  execFileSync('git', ['init', '-q', '--bare', origin], { encoding: 'utf8' });
+  run(['remote', 'add', 'origin', origin]);
+  run(['push', '-q', '-u', 'origin', 'main']);
+
+  const branch = `catalog/jump-v1.0.0-${ctx.fixtures.pkgSha.slice(0, 8)}`;
+  const hooks = path.join(ctx.base, 'hooks-lock');
+  await fs.mkdir(path.join(hooks), { recursive: true });
+  await fs.writeFile(
+    path.join(hooks, 'pre-commit'),
+    `#!/bin/sh\nmkdir -p .git/refs/heads/catalog\n: > ".git/refs/heads/${branch}.lock"\nexit 1\n`,
+    { mode: 0o755 }
+  );
+  run(['config', 'core.hooksPath', hooks]);
+
+  const git = createGit({ cwd: ctx.content });
+  const github = makeFakeGithub();
+  await assert.rejects(
+    () => preparePublish({ submissionPath: ctx.submissionPath, reviewPath: ctx.reviewPath, registryDir: ctx.content, execute: true, repo: 'example/registry', git, github, http: ctx.http }),
+    (error) => error.code === 'E_PUBLISH_ROLLBACK_FAILED' &&
+      error.details && error.details.original === 'E_PUBLISH_GIT' &&
+      /branch/.test(String(error.details.rollback))
+  );
+  assert.equal(run(['rev-parse', '--abbrev-ref', 'HEAD']), 'main', 'main branch must be restored');
+  assert.notEqual(run(['branch', '--list', branch]), '', 'the locked temporary branch is expected to remain and be reported');
+  await fs.rm(path.join(ctx.content, '.git', 'refs', 'heads', branch + '.lock'), { force: true });
+  execFileSync('git', ['branch', '-D', branch], { cwd: ctx.content, encoding: 'utf8' });
+  await fs.rm(path.join(hooks, 'pre-commit'));
+  assert.equal(run(['branch', '--format=%(refname:short)']), 'main');
+});
+
 test('same version with different bytes is immutable', async (t) => {
   const ctx = await context();
   t.after(() => ctx.cleanup());

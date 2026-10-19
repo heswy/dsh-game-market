@@ -63,10 +63,12 @@ export function createGit({ cwd, runner } = {}) {
       return call(['worktree', 'remove', '--force', target], { allowFailure: true }).stdout;
     },
     resetPaths(paths) {
-      return call(['reset', '-q', '--', ...paths], { allowFailure: true }).status;
+      // Must throw: rollbackLocal relies on exceptions to report failures.
+      return call(['reset', '-q', '--', ...paths]).stdout;
     },
     deleteBranch(branch) {
-      return call(['branch', '-D', branch], { allowFailure: true }).status;
+      // Must throw: a locked/remaining branch is a rollback failure, not noise.
+      return call(['branch', '-D', branch]).stdout;
     },
     checkout(branch) {
       return call(['checkout', branch]);
