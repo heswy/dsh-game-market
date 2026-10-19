@@ -52,7 +52,7 @@ export function GameMarketPanel(props) {
   const diagnosticRef = React.useRef(false);
   const activePanelId = useActivePanel(props, diagnosticRef);
   const binding = useSessionBinding(props, diagnosticRef);
-  const locale = detectLocale();
+  const locale = detectLocale(props && props.t);
   const t = makeT(props && props.t, locale);
   const rootRef = React.useRef(null);
   const scrollRef = React.useRef(null);

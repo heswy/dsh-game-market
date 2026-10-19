@@ -10,17 +10,24 @@ export function FilterChips(props) {
   const t = props.t;
   const value = props.value;
   const buttons = React.useRef([]);
-  const selectedIndex = Math.max(0, CATEGORY_FILTERS.indexOf(value));
+  const categories = Array.isArray(props.games)
+    ? CATEGORY_FILTERS.filter(function available(id) {
+        return id === 'all' || id === value || props.games.some(function matches(game) {
+          return Array.isArray(game.categories) && game.categories.includes(id);
+        });
+      })
+    : CATEGORY_FILTERS;
+  const selectedIndex = Math.max(0, categories.indexOf(value));
 
   function handleKeyDown(event, index) {
     if (!event) return;
     const key = event.key;
     if (key === 'Enter' || key === ' ' || key === 'Spacebar') {
       event.preventDefault();
-      if (props.onChange) props.onChange(CATEGORY_FILTERS[index]);
+      if (props.onChange) props.onChange(categories[index]);
       return;
     }
-    const next = nextChipIndex(index, key, CATEGORY_FILTERS.length);
+    const next = nextChipIndex(index, key, categories.length);
     if (next !== index) {
       event.preventDefault();
       const target = buttons.current[next];
@@ -31,7 +38,7 @@ export function FilterChips(props) {
   return h(
     'div',
     { className: 'dgm-chips', role: 'group', 'aria-label': t('market.filter.a11y') },
-    CATEGORY_FILTERS.map(function renderChip(category, index) {
+    categories.map(function renderChip(category, index) {
       const active = category === value;
       const label = category === 'all' ? t('market.filter.all') : t(categoryLabelKey(category));
       return h(

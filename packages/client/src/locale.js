@@ -124,7 +124,7 @@ export const ZH = Object.freeze({
   'mygames.progress.generic': '继续上次进度',
   'mygames.progress.none': '还没有进度',
   'mygames.best': '最高 {score}',
-  'mygames.lastPlayed': '{relativeTime}玩过',
+  'mygames.lastPlayed': '上次游玩 · {relativeTime}',
   'mygames.neverPlayed': '还没玩过',
   'mygames.update.available': '可更新至 {version}',
   'mygames.update.incompatible': '更新需要更新的 Runtime',
@@ -431,6 +431,25 @@ export const ZH = Object.freeze({
   'runtime.diagnostic.copied': '已复制',
   'runtime.toast.resumed': '已恢复上一局',
   'runtime.toast.saveGap': '上次未能保存，已从更早的存档恢复',
+  'time.justNow': '刚刚',
+  'market.library.count': '{count} 款游戏',
+  'market.hero.eyebrow': '接着上次玩',
+  'market.hero.description': '进度已保存，随时回来继续。',
+  'market.hero.details': '查看详情',
+  'market.intro.title': '游戏时间',
+  'market.intro.body': '挑一款喜欢的，轻松玩一局。',
+  'mygames.intro': '你的游戏，都在这里。',
+  'mygames.count': '已收藏 {count} 款',
+  'detail.about': '关于这款游戏',
+  'detail.controls': '怎么玩',
+  'detail.controls.keyboard': '方向键 / WASD',
+  'detail.controls.snake': '控制方向，收集食物，避开自己。',
+  'detail.controls.2048': '滑动合并相同数字，每局可撤销一次。',
+  'detail.controls.breakout': '鼠标或方向键移动挡板，空格发球。',
+  'detail.controls.jump': '左右移动落在平台上，向更高处跳跃。',
+  'detail.save.note': '进度自动保存，下次接着玩。',
+  'detail.manage': '管理游戏',
+  'detail.info': '游戏信息',
 });
 
 export const EN = Object.freeze({
@@ -550,7 +569,7 @@ export const EN = Object.freeze({
   'mygames.progress.generic': 'Continue where you left off',
   'mygames.progress.none': 'No progress yet',
   'mygames.best': 'Best {score}',
-  'mygames.lastPlayed': 'Played {relativeTime}',
+  'mygames.lastPlayed': 'Last played · {relativeTime}',
   'mygames.neverPlayed': 'Not played yet',
   'mygames.update.available': 'Update to {version}',
   'mygames.update.incompatible': 'Update needs a newer Runtime',
@@ -862,6 +881,25 @@ export const EN = Object.freeze({
   'a11y.live.completed': 'Agent finished the task.',
   'a11y.live.error': 'The agent ran into a problem.',
   'a11y.live.returned': 'Back in the conversation.',
+  'time.justNow': 'just now',
+  'market.library.count': '{count} games',
+  'market.hero.eyebrow': 'Pick up where you left off',
+  'market.hero.description': 'Your progress is saved. Come back whenever you like.',
+  'market.hero.details': 'View details',
+  'market.intro.title': 'Time to play',
+  'market.intro.body': 'Find a favorite. Make a little time for play.',
+  'mygames.intro': 'All your games, in one place.',
+  'mygames.count': '{count} games in your library',
+  'detail.about': 'About this game',
+  'detail.controls': 'How to play',
+  'detail.controls.keyboard': 'Arrow keys / WASD',
+  'detail.controls.snake': 'Change direction, collect food, and avoid your tail.',
+  'detail.controls.2048': 'Slide to merge matching numbers. Undo once per game.',
+  'detail.controls.breakout': 'Move with your mouse or arrow keys. Press Space to launch.',
+  'detail.controls.jump': 'Move left and right to land on platforms and climb higher.',
+  'detail.save.note': 'Progress saves automatically. Pick up next time.',
+  'detail.manage': 'Manage game',
+  'detail.info': 'Game information',
 });
 
 export const LOCALES = Object.freeze({
@@ -879,7 +917,16 @@ export function normalizeLocale(tag) {
 }
 
 /** Browser language, falling back to the zh-first V0 default. */
-export function detectLocale() {
+export function detectLocale(seat) {
+  // The host language can differ from navigator.language (e.g. a Chinese UI
+  // in an English browser). Use the same language for copy, dates and categories.
+  if (typeof seat === 'function') {
+    try {
+      const label = seat('market.tab.market');
+      if (label === ZH['market.tab.market']) return 'zh';
+      if (label === EN['market.tab.market']) return 'en';
+    } catch (_error) { /* dictionary may not be registered yet */ }
+  }
   try {
     const nav = globalThis.navigator;
     if (nav && typeof nav.language === 'string' && nav.language.length > 0) return normalizeLocale(nav.language);

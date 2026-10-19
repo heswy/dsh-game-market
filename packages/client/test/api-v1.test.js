@@ -209,7 +209,11 @@ test('network failures and caller aborts are distinguishable', async function ()
   );
 });
 
-test('request timeouts are reported as timed out transport errors', async function () {
+test('request timeouts are reported as timed out transport errors', async function (t) {
+  // The fake fetch has no socket handle; unlike real I/O it cannot keep Node
+  // alive while the API's unref'd timeout fires. Own that lifetime in this test.
+  const keepAlive = setInterval(function keepPendingFetchAlive() {}, 1000);
+  t.after(function cleanup() { clearInterval(keepAlive); });
   const api = createMarketApi({
     fetchImpl: function fetchImpl(url, init) {
       return new Promise(function pending(resolve, reject) {

@@ -136,7 +136,7 @@ window.__ModuleLoader__.load({
       'mygames.progress.generic': '继续上次进度',
       'mygames.progress.none': '还没有进度',
       'mygames.best': '最高 {score}',
-      'mygames.lastPlayed': '{relativeTime}玩过',
+      'mygames.lastPlayed': '上次游玩 · {relativeTime}',
       'mygames.neverPlayed': '还没玩过',
       'mygames.update.available': '可更新至 {version}',
       'mygames.update.incompatible': '更新需要更新的 Runtime',
@@ -443,6 +443,25 @@ window.__ModuleLoader__.load({
       'runtime.diagnostic.copied': '已复制',
       'runtime.toast.resumed': '已恢复上一局',
       'runtime.toast.saveGap': '上次未能保存，已从更早的存档恢复',
+      'time.justNow': '刚刚',
+      'market.library.count': '{count} 款游戏',
+      'market.hero.eyebrow': '接着上次玩',
+      'market.hero.description': '进度已保存，随时回来继续。',
+      'market.hero.details': '查看详情',
+      'market.intro.title': '游戏时间',
+      'market.intro.body': '挑一款喜欢的，轻松玩一局。',
+      'mygames.intro': '你的游戏，都在这里。',
+      'mygames.count': '已收藏 {count} 款',
+      'detail.about': '关于这款游戏',
+      'detail.controls': '怎么玩',
+      'detail.controls.keyboard': '方向键 / WASD',
+      'detail.controls.snake': '控制方向，收集食物，避开自己。',
+      'detail.controls.2048': '滑动合并相同数字，每局可撤销一次。',
+      'detail.controls.breakout': '鼠标或方向键移动挡板，空格发球。',
+      'detail.controls.jump': '左右移动落在平台上，向更高处跳跃。',
+      'detail.save.note': '进度自动保存，下次接着玩。',
+      'detail.manage': '管理游戏',
+      'detail.info': '游戏信息',
     });
 
     const EN = Object.freeze({
@@ -562,7 +581,7 @@ window.__ModuleLoader__.load({
       'mygames.progress.generic': 'Continue where you left off',
       'mygames.progress.none': 'No progress yet',
       'mygames.best': 'Best {score}',
-      'mygames.lastPlayed': 'Played {relativeTime}',
+      'mygames.lastPlayed': 'Last played · {relativeTime}',
       'mygames.neverPlayed': 'Not played yet',
       'mygames.update.available': 'Update to {version}',
       'mygames.update.incompatible': 'Update needs a newer Runtime',
@@ -874,6 +893,25 @@ window.__ModuleLoader__.load({
       'a11y.live.completed': 'Agent finished the task.',
       'a11y.live.error': 'The agent ran into a problem.',
       'a11y.live.returned': 'Back in the conversation.',
+      'time.justNow': 'just now',
+      'market.library.count': '{count} games',
+      'market.hero.eyebrow': 'Pick up where you left off',
+      'market.hero.description': 'Your progress is saved. Come back whenever you like.',
+      'market.hero.details': 'View details',
+      'market.intro.title': 'Time to play',
+      'market.intro.body': 'Find a favorite. Make a little time for play.',
+      'mygames.intro': 'All your games, in one place.',
+      'mygames.count': '{count} games in your library',
+      'detail.about': 'About this game',
+      'detail.controls': 'How to play',
+      'detail.controls.keyboard': 'Arrow keys / WASD',
+      'detail.controls.snake': 'Change direction, collect food, and avoid your tail.',
+      'detail.controls.2048': 'Slide to merge matching numbers. Undo once per game.',
+      'detail.controls.breakout': 'Move with your mouse or arrow keys. Press Space to launch.',
+      'detail.controls.jump': 'Move left and right to land on platforms and climb higher.',
+      'detail.save.note': 'Progress saves automatically. Pick up next time.',
+      'detail.manage': 'Manage game',
+      'detail.info': 'Game information',
     });
 
     const LOCALES = Object.freeze({
@@ -891,7 +929,16 @@ window.__ModuleLoader__.load({
     }
 
     /** Browser language, falling back to the zh-first V0 default. */
-    function detectLocale() {
+    function detectLocale(seat) {
+      // The host language can differ from navigator.language (e.g. a Chinese UI
+      // in an English browser). Use the same language for copy, dates and categories.
+      if (typeof seat === 'function') {
+        try {
+          const label = seat('market.tab.market');
+          if (label === ZH['market.tab.market']) return 'zh';
+          if (label === EN['market.tab.market']) return 'en';
+        } catch (_error) { /* dictionary may not be registered yet */ }
+      }
       try {
         const nav = globalThis.navigator;
         if (nav && typeof nav.language === 'string' && nav.language.length > 0) return normalizeLocale(nav.language);
@@ -3843,6 +3890,7 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/format.js
     __mods["packages/client/src/format.js"] = (function () {
+    const translate = __mods["packages/client/src/locale.js"].translate;
     /** Locale-aware formatting helpers (no host DOM reads). */
 
     /** Browser locale for `Intl`; zh-first fallback keeps V0 copy consistent. */
@@ -3876,6 +3924,7 @@ window.__ModuleLoader__.load({
       const clock = typeof now === 'number' && Number.isFinite(now) ? now : Date.now();
       const diffSeconds = Math.round((then - clock) / 1000);
       const abs = Math.abs(diffSeconds);
+      if (diffSeconds <= 0 && abs < 60) return translate(locale || preferredLocale(), 'time.justNow');
       let value = diffSeconds;
       let unit = 'second';
       if (abs >= 86400 * 30) {
@@ -5915,7 +5964,7 @@ window.__ModuleLoader__.load({
       --dgm-bg: var(--dsw-alias-bg-base, #ffffff);
       --dgm-fg: var(--dsw-alias-label-primary, #1f2328);
       --dgm-fg-secondary: var(--dsw-alias-label-secondary, #5c6470);
-      --dgm-fg-tertiary: var(--dsw-alias-label-tertiary, #7a828e);
+      --dgm-fg-tertiary: var(--dsw-alias-label-tertiary, #6b7380);
       --dgm-border: var(--dsw-alias-border-l1, rgba(31, 35, 40, 0.12));
       --dgm-border-strong: var(--dsw-alias-border-l2, rgba(31, 35, 40, 0.2));
       --dgm-surface: var(--dsw-alias-bg-layer-1, #f6f7f9);
@@ -5959,9 +6008,7 @@ window.__ModuleLoader__.load({
       height: 100%;
       min-height: 0;
       overflow: hidden;
-      background:
-        radial-gradient(120% 52% at 50% -12%, color-mix(in srgb, var(--dgm-brand) 6%, transparent), transparent 62%),
-        var(--dgm-bg);
+      background: var(--dgm-bg);
       color: var(--dgm-fg);
       font-family: var(--dgm-font);
       font-size: 13px;
@@ -6253,9 +6300,9 @@ window.__ModuleLoader__.load({
 
     .dgm-page {
       width: 100%;
-      max-width: 1120px;
+      max-width: 1180px;
       margin: 0 auto;
-      padding: 24px 20px 48px;
+      padding: 32px 40px 56px;
     }
 
     /* ---------- Market home ---------- */
@@ -6265,25 +6312,21 @@ window.__ModuleLoader__.load({
     .dgm-hero {
       position: relative;
       display: grid;
-      grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
       align-items: center;
-      gap: 26px;
-      min-height: 224px;
-      padding: 18px;
-      border-radius: var(--dgm-radius-xl);
-      background:
-        radial-gradient(120% 120% at 0% 0%, hsl(var(--dgm-tone-h, 220) var(--dgm-tone-s, 50%) 50% / 0.12), transparent 58%),
-        color-mix(in srgb, var(--dgm-surface) 70%, transparent);
-      overflow: hidden;
+      gap: clamp(24px, 4cqw, 56px);
+      padding: 0 0 32px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--dgm-border);
     }
 
     .dgm-hero-art {
       position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
-      border-radius: var(--dgm-radius-lg);
+      border-radius: 18px;
       overflow: hidden;
-      box-shadow: var(--dgm-shadow-soft);
+      box-shadow: none;
     }
     .dgm-hero-art-fade {
       position: absolute;
@@ -6313,11 +6356,10 @@ window.__ModuleLoader__.load({
 
     .dgm-hero-title {
       margin: 0;
-      max-width: 18ch;
-      font-size: clamp(25px, 3.2cqw, 36px);
-      font-weight: 600;
-      line-height: 1.04;
-      letter-spacing: -0.025em;
+      font-size: clamp(30px, 4cqw, 48px);
+      font-weight: 650;
+      letter-spacing: -0.045em;
+      line-height: 1.08;
       text-wrap: balance;
     }
 
@@ -6870,8 +6912,9 @@ window.__ModuleLoader__.load({
       display: flex;
       align-items: center;
       gap: 14px;
-      min-height: 72px;
-      padding: 12px;
+      min-height: 104px;
+      padding: 16px 12px;
+      border-bottom: 1px solid var(--dgm-border);
     }
     .dgm-skeleton-thumb { width: 64px; height: 48px; flex: none; border-radius: 10px; background: var(--dgm-surface); animation: dgm-shimmer 1400ms ease-in-out infinite; }
     .dgm-skeleton-col { display: flex; flex-direction: column; gap: 8px; flex: 1 1 auto; }
@@ -6891,16 +6934,17 @@ window.__ModuleLoader__.load({
 
     /* ---------- My Games ---------- */
 
-    .dgm-mygames { max-width: 940px; margin: 0 auto; }
+    .dgm-mygames { max-width: 920px; margin: 0 auto; }
     .dgm-list { display: flex; flex-direction: column; gap: 2px; }
     .dgm-row {
       position: relative;
       display: grid;
-      grid-template-columns: 64px minmax(0, 1fr) auto;
+      grid-template-columns: 96px minmax(0, 1fr) auto;
       align-items: center;
       gap: 14px;
-      min-height: 72px;
-      padding: 12px;
+      min-height: 104px;
+      padding: 16px 12px;
+      border-bottom: 1px solid var(--dgm-border);
       border-radius: var(--dgm-radius-md);
       background: transparent;
       transition: background-color 140ms ease-out;
@@ -6908,8 +6952,8 @@ window.__ModuleLoader__.load({
     .dgm-row:hover, .dgm-row:focus-within { background: var(--dgm-hover); }
     .dgm-row-cover {
       position: relative;
-      width: 64px;
-      height: 48px;
+      width: 96px;
+      height: 64px;
       padding: 0;
       overflow: hidden;
       border: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
@@ -6970,10 +7014,10 @@ window.__ModuleLoader__.load({
     .dgm-row-meta > span { min-width: 0; }
     .dgm-row-best { color: var(--dgm-fg-tertiary); }
     .dgm-row-controls { display: flex; align-items: center; gap: 8px; flex: none; }
-    .dgm-row-play { height: 32px; min-width: 76px; }
+    .dgm-row-play { height: 40px; min-width: 92px; }
     .dgm-row-update-btn { flex: none; }
     .dgm-row-update-failed { color: var(--dgm-danger); font-size: 11px; font-weight: 600; }
-    .dgm-row-menu-btn { width: 28px; height: 28px; }
+    .dgm-row-menu-btn { width: 40px; height: 40px; }
     .dgm-row-progress { display: flex; flex-direction: column; gap: 5px; max-width: 340px; }
     .dgm-row-progress-text { color: var(--dgm-fg-secondary); font-size: 11px; font-variant-numeric: tabular-nums; }
 
@@ -7085,29 +7129,28 @@ window.__ModuleLoader__.load({
     .dgm-detail { display: flex; flex-direction: column; }
     .dgm-detail-head {
       display: flex;
+      flex-direction: row;
       align-items: center;
-      gap: 20px;
-      min-width: 0;
+      gap: 28px;
     }
-    .dgm-detail-head-copy { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+    .dgm-detail-head-copy { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
     .dgm-detail-hero {
       position: relative;
-      width: 224px;
-      aspect-ratio: 16 / 9;
+      width: 46%;
+      aspect-ratio: 16 / 10;
       flex: none;
-      border-radius: var(--dgm-radius-lg);
+      border-radius: 14px;
       overflow: hidden;
-      box-shadow: var(--dgm-shadow-soft);
     }
     .dgm-detail-cols {
       position: relative;
       z-index: 1;
       display: grid;
-      grid-template-columns: minmax(0, 680px) 320px;
+      grid-template-columns: minmax(0, 1fr) 280px;
       justify-content: space-between;
-      gap: 48px;
-      padding: 0 4px;
-      margin-top: 20px;
+      gap: 40px;
+      padding: 0;
+      margin-top: 0;
     }
     .dgm-detail-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding-top: 4px; }
     .dgm-detail-title-line { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
@@ -7206,10 +7249,10 @@ window.__ModuleLoader__.load({
       display: flex;
       flex-direction: column;
       gap: 18px;
-      padding: 20px;
-      border: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
+      padding: 24px;
+      border: 1px solid var(--dgm-border);
       border-radius: 16px;
-      background: color-mix(in srgb, var(--dgm-surface) 58%, transparent);
+      background: var(--dgm-bg);
     }
     .dgm-primary { display: flex; flex-direction: column; gap: 8px; }
     .dgm-primary-btn { width: 100%; height: 40px; font-size: 14px; }
@@ -7688,6 +7731,70 @@ window.__ModuleLoader__.load({
       to { transform: translateY(0); }
     }
 
+    /* ---------- Gallery composition and interaction ---------- */
+    .dgm-game-artwork { display: block; width: 100%; height: 100%; }
+    .dgm-cover-art:has(.dgm-game-artwork) { background: none; }
+    .dgm-cover-art { transition: transform 240ms var(--dgm-ease-out); }
+    .dgm-card:hover .dgm-cover-art { transform: scale(1.035); }
+    .dgm-hero-art .dgm-cover-art { transition: transform 320ms var(--dgm-ease-out); }
+    .dgm-hero:focus-within .dgm-cover-art { transform: scale(1.025); }
+    .dgm-hero-art-fade { display: none; }
+    .dgm-hero-kicker { color: var(--dgm-fg-secondary); margin: 0 0 4px; font: inherit; font-size: 12px; letter-spacing: 0; text-transform: none; }
+    .dgm-hero-body { font-size: 14px; line-height: 1.65; margin: 4px 0 12px; color: var(--dgm-fg-secondary); }
+    .dgm-hero-cta { height: 42px; padding: 0 22px; font-size: 14px; margin: 0; }
+    .dgm-hero-details { appearance: none; display: inline-flex; align-items: center; height: 36px; border: 0; background: transparent; color: var(--dgm-fg-secondary); padding: 0; font-size: 12px; cursor: pointer; }
+    .dgm-hero-details:hover { color: var(--dgm-brand); text-decoration: underline; text-underline-offset: 4px; }
+    .dgm-page-intro { margin: 0 0 12px; }
+    .dgm-page-title { margin: 0; font-size: 30px; font-weight: 650; letter-spacing: -0.035em; line-height: 1.25; }
+    .dgm-page-intro p, .dgm-library-head p { color: var(--dgm-fg-secondary); font-size: 13px; margin: 8px 0 0; }
+    .dgm-section { margin-top: 28px; }
+    .dgm-section-head { gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+    .dgm-section-titles { display: flex; flex-direction: row; align-items: baseline; gap: 12px; }
+    .dgm-catalog-count { color: var(--dgm-fg-tertiary); font-size: 12px; white-space: nowrap; }
+    .dgm-section-title { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+    .dgm-grid { gap: 24px; }
+    .dgm-card-cover { box-shadow: none; border-radius: 12px; }
+    .dgm-card-title { font-size: 15px; line-height: 1.5; }
+    .dgm-card { gap: 0; }
+    .dgm-card-text { padding: 12px 0 0; gap: 3px; }
+    .dgm-card-meta { font-size: 12px; color: var(--dgm-fg-secondary); }
+    .dgm-card-installed { width: 24px; height: 24px; border-radius: 50%; backdrop-filter: blur(8px); }
+    .dgm-card-play { width: 40px; height: 40px; }
+    .dgm-chips { gap: 4px; flex-wrap: wrap; }
+    .dgm-chip { min-height: 34px; padding: 6px 12px; border-radius: 8px; }
+    .dgm-chip[data-active='true'] { color: var(--dgm-brand); }
+    .dgm-chip-mark { display: none; }
+    .dgm-library-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding: 4px 12px 24px; border-bottom: 1px solid var(--dgm-border); }
+    .dgm-library-count { color: var(--dgm-fg-secondary); font-size: 12px; white-space: nowrap; }
+    .dgm-row { border-radius: 0; gap: 20px; }
+    .dgm-row-title-btn { font-size: 15px; }
+    .dgm-row-meta { gap: 0; line-height: 1.8; }
+    .dgm-row-best { color: var(--dgm-fg-secondary); }
+    .dgm-row-controls { position: relative; }
+    .dgm-about-title { font-size: 14px; font-weight: 600; margin: 18px 0 0; }
+    .dgm-detail-subtitle { font-size: 13px; line-height: 1.6; }
+    .dgm-detail-description { font-size: 14px; color: var(--dgm-fg-secondary); }
+    .dgm-detail-taxonomy { margin: 12px 0; }
+    .dgm-howto { display: flex; flex-direction: column; gap: 10px; }
+    .dgm-howto p { margin: 0; font-size: 13px; color: var(--dgm-fg-secondary); line-height: 1.7; }
+    .dgm-howto-save { display: flex; align-items: center; gap: 7px; }
+    .dgm-detail-rail { gap: 18px; border: 0; border-left: 1px solid var(--dgm-border); border-radius: 0; padding-top: 4px; background: transparent; }
+    .dgm-primary-btn { height: 44px; gap: 8px; }
+    .dgm-detail-head-copy .dgm-primary { margin-top: 12px; align-self: flex-start; min-width: 160px; }
+    .dgm-detail-head-copy .dgm-secondary-btn { text-align: left; padding-left: 0; }
+    .dgm-detail-meta { font-size: 12px; gap: 12px; }
+    .dgm-rail-title { font-family: var(--dgm-font); font-size: 12px; letter-spacing: 0; text-transform: none; color: var(--dgm-fg-secondary); }
+    .dgm-rail-body { font-size: 12px; line-height: 1.7; }
+    .dgm-rail-note { color: var(--dgm-fg-secondary); line-height: 1.7; }
+    .dgm-rail-actions { display: block; padding-top: 14px; border-top: 1px solid var(--dgm-border); }
+    .dgm-rail-actions summary { cursor: pointer; font-size: 12px; color: var(--dgm-fg-secondary); padding: 6px 0; }
+    .dgm-rail-actions[open] .dgm-btn { display: flex; margin-top: 6px; }
+    .dgm-menu[data-opens-up='true'] { top: auto; bottom: calc(100% + 6px); transform-origin: bottom right; }
+    .dgm-menu { animation: dgm-menu-enter 160ms var(--dgm-ease-out); transform-origin: top right; }
+    @keyframes dgm-menu-enter { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: none; } }
+    .dgm-home, .dgm-mygames, .dgm-detail { animation: dgm-fade 180ms var(--dgm-ease-out); }
+    @media (hover: none) { .dgm-card-play { width: 44px; height: 44px; opacity: 1; transform: none; } }
+
     /* ---------- Responsive (container width, PRD 9.3.2) ---------- */
 
     @container (max-width: 1079px) {
@@ -7696,14 +7803,12 @@ window.__ModuleLoader__.load({
     }
 
     @container (max-width: 899px) {
-      .dgm-detail-cols { grid-template-columns: minmax(0, 1fr); gap: 20px; margin-top: -18px; }
-      .dgm-detail-rail { position: static; order: -1; backdrop-filter: none; background: transparent; border: 0; border-bottom: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent); border-radius: 0; padding: 0 0 18px; }
+      .dgm-detail-cols { grid-template-columns: minmax(0, 1fr); gap: 24px; margin-top: 0; }
+      .dgm-detail-rail { position: static; order: 0; border-radius: 12px; padding: 20px; }
       .dgm-detail-main { padding-top: 0; }
       .dgm-primary-btn { max-width: 480px; }
       .dgm-rail-block { padding-top: 0; border-top: 0; }
-      .dgm-detail-rail .dgm-detail-meta,
-      .dgm-detail-rail .dgm-leaderboard,
-      .dgm-detail-rail .dgm-rail-actions { display: none; }
+      .dgm-detail-rail .dgm-detail-meta { display: grid; }
     }
 
     @container (max-width: 839px) {
@@ -7726,7 +7831,7 @@ window.__ModuleLoader__.load({
         box-shadow: var(--dgm-shadow-soft);
       }
       .dgm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-      .dgm-hero { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px; }
+      .dgm-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; padding: 0 0 24px; }
       .dgm-hero-art { aspect-ratio: 16 / 9; }
       .dgm-hero-copy { padding-right: 0; }
       .dgm-hero-intro-art { display: none; }
@@ -7734,8 +7839,8 @@ window.__ModuleLoader__.load({
       .dgm-section { margin-top: 34px; }
       .dgm-section-head { align-items: flex-start; }
       .dgm-page { padding: 20px 16px 40px; }
-      .dgm-detail-head { align-items: flex-start; gap: 14px; }
-      .dgm-detail-hero { width: 152px; }
+      .dgm-detail-head { align-items: center; gap: 24px; }
+      .dgm-detail-hero { width: 46%; }
       .dgm-preview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .dgm-toasts { right: 12px; bottom: 12px; }
       .dgm-lightbox { padding: 52px 12px; }
@@ -7750,15 +7855,31 @@ window.__ModuleLoader__.load({
       .dgm-page { padding: 14px 12px 32px; }
       .dgm-grid { grid-template-columns: minmax(0, 1fr); }
       .dgm-card-cover { aspect-ratio: 16 / 9; }
-      .dgm-hero { border-radius: 16px; }
+      .dgm-hero { grid-template-columns: 1fr; gap: 20px; }
+      .dgm-hero-copy { gap: 6px; }
+      .dgm-hero-art { aspect-ratio: 16 / 9; }
+      .dgm-hero-title { font-size: 30px; }
+      .dgm-library-head { padding: 8px 0 20px; align-items: flex-start; flex-direction: column; gap: 8px; }
+      .dgm-page-title { font-size: 26px; }
+      .dgm-row { grid-template-columns: 64px minmax(0, 1fr); padding: 16px 0; gap: 12px; }
+      .dgm-row-cover { width: 64px; height: 48px; }
+      .dgm-row-controls { grid-column: 2; justify-content: flex-start; }
+      .dgm-row-meta .dgm-sep { margin: 0 5px; }
+      .dgm-row-meta { font-size: 12px; }
+      .dgm-row-play { height: 44px; }
+      .dgm-row-menu-btn { width: 44px; height: 44px; }
+      .dgm-section-head { flex-direction: column; gap: 12px; }
+      .dgm-detail-head { flex-direction: column; align-items: stretch; gap: 20px; }
+      .dgm-detail-hero { width: 100%; aspect-ratio: 16 / 9; }
+      .dgm-detail-head-copy .dgm-primary { align-self: stretch; }
+      .dgm-detail-rail { padding: 20px 0; border-left: 0; border-top: 1px solid var(--dgm-border); }
+      .dgm-detail-rail .dgm-primary { position: sticky; bottom: 0; }
+
       .dgm-hero-title { font-size: 26px; }
       .dgm-section { margin-top: 28px; }
       .dgm-section-title { font-size: 16px; }
-      .dgm-row { grid-template-columns: 56px minmax(0, 1fr) auto; gap: 10px; min-height: 80px; padding: 10px 8px; }
-      .dgm-row-cover { width: 56px; height: 42px; }
       .dgm-row-update { display: none; }
       .dgm-row-update-btn { display: none; }
-      .dgm-row-meta { font-size: 11px; }
       .dgm-detail-title { font-size: 26px; }
       .dgm-preview-grid { grid-template-columns: minmax(0, 1fr); }
       .dgm-detail-cols { padding: 0; }
@@ -7767,8 +7888,7 @@ window.__ModuleLoader__.load({
       .dgm-dialog { padding: 16px; }
       .dgm-runtime-controls { left: 12px; right: 12px; }
       .dgm-presence { right: 16px; bottom: 16px; }
-      .dgm-detail-meta,
-      .dgm-detail-rail .dgm-permissions { display: none; }
+
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -7779,6 +7899,7 @@ window.__ModuleLoader__.load({
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
       }
+      .dgm-cover-art { transform: none !important; }
       .dgm-whale-btn[data-state='running'] .dgm-whale,
       .dgm-whale-btn[data-state='waiting-user'] .dgm-whale-halo { animation: none !important; }
       .dgm-whale-btn[data-state='waiting-user'] .dgm-whale-halo { opacity: 1; }
@@ -8163,7 +8284,7 @@ window.__ModuleLoader__.load({
     function isMenuOpenKey(event) {
       if (!event) return false;
       if (event.key === 'F10' && event.shiftKey) return true;
-      return event.key === 'ArrowRight' && !event.metaKey && !event.ctrlKey && !event.altKey;
+      return (event.key === 'ArrowRight' || event.key === 'ArrowDown') && !event.metaKey && !event.ctrlKey && !event.altKey;
     }
 
     /** Enter/Space activation helper for role="link"/"button" nodes. */
@@ -11669,6 +11790,74 @@ window.__ModuleLoader__.load({
     return { SkeletonCards, SkeletonRows, SkeletonDetail, LoadingBlock, ErrorBlock, EmptyBlock, InlineBanner, SectionHeader };
     })();
 
+    // module: packages/client/src/components/game-artwork.js
+    __mods["packages/client/src/components/game-artwork.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    /** First-party cover illustrations. Inline vectors stay sharp and work offline. */
+    const h = React.createElement;
+    const IDS = ['2048', 'snake', 'breakout', 'jump'];
+    function hasGameArtwork(id) { return IDS.includes(id); }
+
+    function GameArtwork(props) {
+      const id = props.id;
+      const rect = (x, y, width, height, fill, rx = 12, more = {}) => h('rect', { x, y, width, height, fill, rx, ...more });
+      const circle = (cx, cy, r, fill, more = {}) => h('circle', { cx, cy, r, fill, ...more });
+      const path = (d, stroke, width, more = {}) => h('path', { d, fill: 'none', stroke, strokeWidth: width, strokeLinecap: 'round', strokeLinejoin: 'round', ...more });
+      let art;
+      if (id === '2048') {
+        art = h('g', null,
+          rect(0, 0, 640, 400, '#e9e1d4', 0),
+          circle(530, 20, 240, '#f1eade'), circle(60, 410, 180, '#d7ccba'),
+          h('g', { transform: 'translate(178 62) rotate(-10 142 142)' },
+            rect(-10, 6, 300, 280, '#c8baa6', 30),
+            rect(0, 0, 280, 280, '#b9a88f', 26),
+            ...[[16, 16, '2', '#f6f0e5', '#79684f'], [148, 16, '8', '#f3c578', '#815328'], [16, 148, '16', '#eda05d', '#fff7ed'], [148, 148, '32', '#db7450', '#fff7ed']].map(([x,y,n,bg,fg]) => h('g', { key:n }, rect(x,y,116,116,bg,17), h('text', { x:x+58,y:y+77, fill:fg, textAnchor:'middle', fontFamily:'Georgia, serif', fontSize:63,fontWeight:700 },n)))
+          ),
+          path('M 506 268 h 50 m -25 -25 v 50', '#ae9b7d', 3),
+          circle(112, 102, 5, '#b5a68e'), circle(542, 130, 3, '#b5a68e')
+        );
+      } else if (id === 'snake') {
+        art = h('g', null,
+          rect(0,0,640,400,'#163d35',0),circle(570,30,235,'#1d4b40'),circle(35,420,210,'#10342d'),
+          ...Array.from({length:9},(_,i)=>path(`M ${88+i*58} 46 v 310`,'#2c5548',1,{key:'v'+i})),
+          ...Array.from({length:6},(_,i)=>path(`M 70 ${55+i*58} h 510`,'#2c5548',1,{key:'h'+i})),
+          path('M 174 283 H 232 Q 262 283 262 253 V 161 Q 262 128 295 128 H 373 Q 404 128 404 160 V 214 Q 404 244 434 244 H 464','#0c2b25',46,{transform:'translate(0 10)'}),
+          path('M 174 283 H 232 Q 262 283 262 253 V 161 Q 262 128 295 128 H 373 Q 404 128 404 160 V 214 Q 404 244 434 244 H 464','#c4df8c',40),
+          circle(458,235,3.5,'#19372b'),circle(458,253,3.5,'#19372b'),
+          circle(172,126,17,'#eeac74'),path('M 172 107 q 2 -17 15 -17','#d7e3ae',5),
+          circle(172,283,7,'#9fbd72')
+        );
+      } else if (id === 'breakout') {
+        art = h('g', null,
+          rect(0,0,640,400,'#192b50',0),circle(585,45,210,'#233961'),
+          ...Array.from({length:4},(_,r)=>Array.from({length:6},(_,c)=>rect(115+c*70,67+r*39,60,28,['#ee9a83','#f3bb80','#e9d6a8','#8ebdb5'][r],6,{key:r+'-'+c,opacity:r===3&&c===3?0.15:1}))),
+          path('M 352 188 L 280 290 L 376 356','#90aacb',2,{strokeDasharray:'6 10',opacity:0.7}),
+          circle(309,249,15,'#14233f'),circle(309,243,13,'#fff6de'),
+          rect(240,335,150,17,'#8ebdb5',8),rect(251,335,128,5,'#c7e2d9',3),
+          circle(71,262,3,'#5b7296'),circle(556,291,4,'#5b7296')
+        );
+      } else if (id === 'jump') {
+        art = h('g', null,
+          rect(0,0,640,400,'#282d49',0),circle(518,-10,230,'#343b5e'),circle(86,398,180,'#21283f'),
+          ...[[100,70,3],[174,170,2],[466,90,3],[550,245,2],[375,38,2]].map(([x,y,r],i)=>circle(x,y,r,'#939ab6',{key:i})),
+          rect(90,326,120,16,'#90b8a1',8),rect(407,218,122,16,'#90b8a1',8),rect(235,110,98,13,'#729686',6),
+          path('M 221 312 Q 278 310 297 256','#efc788',3,{strokeDasharray:'6 9'}),
+          h('g', {transform:'translate(265 147) rotate(10 48 48)'},
+            path('M 46 4 v -19','#b8d6c4',5),circle(46,-21,8,'#f3d18b'),
+            rect(0,3,96,94,'#b8d6c4',26),rect(13,20,70,48,'#202e3d',17),
+            circle(34,43,7,'#e9f8dc'),circle(63,43,7,'#e9f8dc'),
+            path('M 24 99 l -10 13 M 71 99 l 11 13','#f0cd8a',10),
+            rect(33,78,30,7,'#729686',3)
+          )
+        );
+      } else return null;
+      return h('svg', {className:'dgm-game-artwork',viewBox:'0 0 640 400',fill:'none',preserveAspectRatio:'xMidYMid slice','aria-hidden':'true',focusable:'false'},art);
+    }
+
+    return { hasGameArtwork, GameArtwork };
+    })();
+
     // module: packages/client/src/components/cover.js
     __mods["packages/client/src/components/cover.js"] = (function () {
     const __react = require('react');
@@ -11676,6 +11865,8 @@ window.__ModuleLoader__.load({
     const coverTone = __mods["packages/client/src/catalog.js"].coverTone;
     const initialFor = __mods["packages/client/src/catalog.js"].initialFor;
     const GamepadIcon = __mods["packages/client/src/icons.js"].GamepadIcon;
+    const GameArtwork = __mods["packages/client/src/components/game-artwork.js"].GameArtwork;
+    const hasGameArtwork = __mods["packages/client/src/components/game-artwork.js"].hasGameArtwork;
     /**
      * Game artwork with a deterministic, asset-free fallback.
      *
@@ -11701,7 +11892,8 @@ window.__ModuleLoader__.load({
     function GameCover(props) {
       const game = props.game || {};
       const variant = props.variant || 'card';
-      const source = game.cover || game.icon || null;
+      const illustrated = hasGameArtwork(game.id);
+      const source = game.cover || (illustrated ? null : game.icon) || null;
       const [failed, setFailed] = React.useState(false);
       const [loaded, setLoaded] = React.useState(false);
 
@@ -11726,7 +11918,7 @@ window.__ModuleLoader__.load({
         h(
           'span',
           { className: 'dgm-cover-art' },
-          h('span', { className: 'dgm-cover-initial' }, initialFor(game.name || game.id))
+          illustrated ? h(GameArtwork, { id: game.id }) : h('span', { className: 'dgm-cover-initial' }, initialFor(game.name || game.id))
         ),
         showImage
           ? h('img', {
@@ -11745,8 +11937,8 @@ window.__ModuleLoader__.load({
               },
             })
           : null,
-        h('span', { className: 'dgm-cover-grain' }),
-        variant === 'row' ? null : h('span', { className: 'dgm-cover-glyph' }, h(GamepadIcon, { size: variant === 'hero' ? 22 : 16 }))
+        illustrated ? null : h('span', { className: 'dgm-cover-grain' }),
+        variant === 'row' || illustrated ? null : h('span', { className: 'dgm-cover-glyph' }, h(GamepadIcon, { size: variant === 'hero' ? 22 : 16 }))
       );
     }
 
@@ -11914,17 +12106,24 @@ window.__ModuleLoader__.load({
       const t = props.t;
       const value = props.value;
       const buttons = React.useRef([]);
-      const selectedIndex = Math.max(0, CATEGORY_FILTERS.indexOf(value));
+      const categories = Array.isArray(props.games)
+        ? CATEGORY_FILTERS.filter(function available(id) {
+            return id === 'all' || id === value || props.games.some(function matches(game) {
+              return Array.isArray(game.categories) && game.categories.includes(id);
+            });
+          })
+        : CATEGORY_FILTERS;
+      const selectedIndex = Math.max(0, categories.indexOf(value));
 
       function handleKeyDown(event, index) {
         if (!event) return;
         const key = event.key;
         if (key === 'Enter' || key === ' ' || key === 'Spacebar') {
           event.preventDefault();
-          if (props.onChange) props.onChange(CATEGORY_FILTERS[index]);
+          if (props.onChange) props.onChange(categories[index]);
           return;
         }
-        const next = nextChipIndex(index, key, CATEGORY_FILTERS.length);
+        const next = nextChipIndex(index, key, categories.length);
         if (next !== index) {
           event.preventDefault();
           const target = buttons.current[next];
@@ -11935,7 +12134,7 @@ window.__ModuleLoader__.load({
       return h(
         'div',
         { className: 'dgm-chips', role: 'group', 'aria-label': t('market.filter.a11y') },
-        CATEGORY_FILTERS.map(function renderChip(category, index) {
+        categories.map(function renderChip(category, index) {
           const active = category === value;
           const label = category === 'all' ? t('market.filter.all') : t(categoryLabelKey(category));
           return h(
@@ -12051,6 +12250,7 @@ window.__ModuleLoader__.load({
         h(
           'div',
           { className: 'dgm-hero-copy' },
+          h('p', { className: 'dgm-hero-kicker' }, t('market.hero.eyebrow')),
           h(
             'h2',
             { className: 'dgm-hero-title', id: 'dgm-hero-title' },
@@ -12066,6 +12266,7 @@ window.__ModuleLoader__.load({
               game.name || game.id
             )
           ),
+          h('p', { className: 'dgm-hero-body' }, t('market.hero.description')),
           h(
             'button',
             {
@@ -12080,8 +12281,9 @@ window.__ModuleLoader__.load({
               }),
             },
             h(PlayIcon, { size: 13 }),
-            t('market.hero.continue')
-          )
+            t('market.card.continue')
+          ),
+          h('button', { type: 'button', className: 'dgm-hero-details', onClick: function open() { if (props.onOpen) props.onOpen(game.id); } }, t('market.hero.details'))
         )
       );
     }
@@ -12172,6 +12374,7 @@ window.__ModuleLoader__.load({
         ? filterCatalog(games, { query: ui.query, category: ui.category, offline: market.offline === true, locale: locale })
         : sections.all;
       const hasCatalog = games.length > 0;
+      const showCollections = games.length > 8 && ui.category === 'all';
 
       function browseAll() {
         if (props.onBrowseAll) props.onBrowseAll();
@@ -12217,6 +12420,7 @@ window.__ModuleLoader__.load({
       return h(
         'div',
         { className: 'dgm-home' },
+        !sections.hero && !searching ? h('div', { className: 'dgm-page-intro' }, h('h1', { className: 'dgm-page-title', 'data-page-heading': true, tabIndex: -1 }, t('market.intro.title')), h('p', null, t('market.intro.body'))) : null,
         market.offline
           ? h(InlineBanner, {
               text: t('market.offline'),
@@ -12258,7 +12462,7 @@ window.__ModuleLoader__.load({
           : h(
               React.Fragment,
               null,
-              h(Hero, {
+              ui.category === 'all' && sections.hero ? h(Hero, {
                 hero: sections.hero,
                 t: t,
                 locale: locale,
@@ -12266,8 +12470,8 @@ window.__ModuleLoader__.load({
                 onPlay: props.onPlay,
                 onOpen: props.onOpenGame,
                 onBrowse: browseAll,
-              }),
-              sections.quick.length > 0
+              }) : null,
+              showCollections && sections.quick.length > 0
                 ? h(
                     Section,
                     { id: 'dgm-quick-title', title: t('market.section.quick'), meta: null },
@@ -12280,7 +12484,7 @@ window.__ModuleLoader__.load({
                     })
                   )
                 : null,
-              sections.popular.length > 0
+              showCollections && sections.popular.length > 0
                 ? h(
                     Section,
                     { id: 'dgm-popular-title', title: t('market.section.popular'), meta: null },
@@ -12293,7 +12497,7 @@ window.__ModuleLoader__.load({
                     })
                   )
                 : null,
-              sections.newGames.length > 0
+              showCollections && sections.newGames.length > 0
                 ? h(
                     Section,
                     { id: 'dgm-new-title', title: t('market.section.new'), meta: null },
@@ -12315,10 +12519,12 @@ window.__ModuleLoader__.load({
                   h(
                     'div',
                     { className: 'dgm-section-titles' },
-                    h('h2', { className: 'dgm-section-title', id: 'dgm-all-title' }, t('market.section.all'))
+                    h('h2', { className: 'dgm-section-title', id: 'dgm-all-title' }, t('market.section.all')),
+                    h('span', { className: 'dgm-catalog-count' }, t('market.library.count', { count: formatCount(sections.all.length, locale) }))
                   ),
                   h(FilterChips, {
                     value: ui.category,
+                    games: games,
                     onChange: props.onCategory,
                     t: t,
                   })
@@ -12365,6 +12571,7 @@ window.__ModuleLoader__.load({
     const isBuiltin = __mods["packages/client/src/catalog.js"].isBuiltin;
     const progressSummary = __mods["packages/client/src/catalog.js"].progressSummary;
     const sortMyGames = __mods["packages/client/src/catalog.js"].sortMyGames;
+    const formatCount = __mods["packages/client/src/format.js"].formatCount;
     const formatRelativeTime = __mods["packages/client/src/format.js"].formatRelativeTime;
     const formatScore = __mods["packages/client/src/format.js"].formatScore;
     const isMenuOpenKey = __mods["packages/client/src/keyboard.js"].isMenuOpenKey;
@@ -12399,6 +12606,7 @@ window.__ModuleLoader__.load({
       const onClose = props.onClose;
       const menuRef = React.useRef(null);
       const itemsRef = React.useRef([]);
+      const [opensUp, setOpensUp] = React.useState(false);
       const builtin = isBuiltin(game);
       const items = [];
       if (hasUpdate(game) && !builtin) {
@@ -12436,6 +12644,12 @@ window.__ModuleLoader__.load({
             return button && button.disabled !== true && typeof button.focus === 'function';
           });
           if (first) first.focus();
+          if (menuRef.current) {
+            const menu = menuRef.current;
+            const scroller = menu.closest('.dgm-content');
+            const edge = scroller ? scroller.getBoundingClientRect().bottom : window.innerHeight;
+            if (menu.getBoundingClientRect().bottom > edge - 12) setOpensUp(true);
+          }
         },
         []
       );
@@ -12443,6 +12657,7 @@ window.__ModuleLoader__.load({
       React.useEffect(
         function closeOnOutside() {
           function onPointerDown(event) {
+            if (props.triggerRef && props.triggerRef.current && props.triggerRef.current.contains(event.target)) return;
             if (menuRef.current && !menuRef.current.contains(event.target)) onClose();
           }
           document.addEventListener('mousedown', onPointerDown, true);
@@ -12497,6 +12712,7 @@ window.__ModuleLoader__.load({
         'div',
         {
           className: 'dgm-menu',
+          'data-opens-up': opensUp ? 'true' : 'false',
           role: 'menu',
           ref: menuRef,
           'aria-label': t('mygames.menu'),
@@ -12736,6 +12952,7 @@ window.__ModuleLoader__.load({
             ? h(RowMenu, {
                 t: t,
                 game: game,
+                triggerRef: menuButtonRef,
                 onUpdate: props.onUpdate,
                 onUninstall: props.onUninstall,
                 onDeleteData: props.onDeleteData,
@@ -12812,6 +13029,17 @@ window.__ModuleLoader__.load({
           : null,
         h(
           'div',
+          { className: 'dgm-library-head' },
+          h(
+            'div',
+            null,
+            h('h1', { className: 'dgm-page-title', 'data-page-heading': true, tabIndex: -1 }, t('mygames.title')),
+            h('p', null, t('mygames.intro'))
+          ),
+          h('span', { className: 'dgm-library-count' }, t('mygames.count', { count: formatCount(installed.length, locale) }))
+        ),
+        h(
+          'div',
           { className: 'dgm-list', role: 'list', ref: listRef },
           installed.map(function renderRow(game) {
             return h(MyGameRow, {
@@ -12831,27 +13059,15 @@ window.__ModuleLoader__.load({
             });
           })
         ),
-        h(
-          'footer',
-          { className: 'dgm-footer' },
-          market.refreshedAt > 0
-            ? h(
-                'span',
-                { className: 'dgm-footer-text' },
-                t('market.footer.synced', {
-                  relativeTime: formatRelativeTime(new Date(market.refreshedAt).toISOString(), now, locale),
-                })
-              )
-            : null,
-          market.offline
-            ? h(
-                'span',
-                { className: 'dgm-footer-offline' },
+        market.offline
+          ? h(
+              'footer',
+              { className: 'dgm-footer' },
+              h('span', { className: 'dgm-footer-offline' },
                 h('span', { className: 'dgm-dot', 'aria-hidden': 'true' }),
-                t('market.footer.offline')
-              )
-            : null
-        )
+                t('market.footer.offline'))
+            )
+          : null
       );
     }
 
@@ -12967,7 +13183,7 @@ window.__ModuleLoader__.load({
             'aria-disabled': action.disabled === true ? 'true' : undefined,
             onClick: handleClick,
           },
-          action.kind === 'retry-install' ? h(PlayIcon, { size: 13 }) : null,
+          ['play', 'continue', 'resume', 'retry-install'].includes(action.kind) ? h(PlayIcon, { size: 15 }) : null,
           primaryLabel(action, t)
         ),
         busy
@@ -13250,9 +13466,20 @@ window.__ModuleLoader__.load({
                       )
                     : null
                 ),
-                subtitleParts.length > 0 ? h('p', { className: 'dgm-detail-subtitle' }, subtitleParts.join(' · ')) : null
+                subtitleParts.length > 0 ? h('p', { className: 'dgm-detail-subtitle' }, subtitleParts.join(' · ')) : null,
+                h(PrimaryAction, {
+                  action: action,
+                  job: job,
+                  t: t,
+                  onInstall: props.onInstall,
+                  onCancelInstall: props.onCancelInstall,
+                  onUpdate: props.onUpdate,
+                  onPlay: props.onPlay,
+                }),
+                action.secondary ? h(SecondaryAction, { secondary: action.secondary, t: t, onClick: handleSecondary }) : null
               )
             ),
+            h('h2', { className: 'dgm-about-title' }, t('detail.about')),
             h(
               'div',
               { className: `dgm-detail-description${longDescription && !expanded ? ' is-collapsed' : ''}` },
@@ -13270,6 +13497,15 @@ window.__ModuleLoader__.load({
                     'aria-expanded': expanded ? 'true' : 'false',
                   },
                   t(expanded ? 'detail.collapse' : 'detail.expand')
+                )
+              : null,
+            ['snake', '2048', 'jump', 'breakout'].includes(game.id)
+              ? h(
+                  'section',
+                  { className: 'dgm-howto' },
+                  h('h2', { className: 'dgm-about-title' }, t('detail.controls')),
+                  h('p', null, t(['detail', 'controls', game.id].join('.'))),
+                  h('p', { className: 'dgm-howto-save' }, h(CheckIcon, { size: 14 }), t('detail.save.note'))
                 )
               : null,
             screenshots.length > 0
@@ -13323,16 +13559,7 @@ window.__ModuleLoader__.load({
           h(
             'aside',
             { className: 'dgm-detail-rail', 'aria-label': t('market.title') },
-            h(PrimaryAction, {
-              action: action,
-              job: job,
-              t: t,
-              onInstall: props.onInstall,
-              onCancelInstall: props.onCancelInstall,
-              onUpdate: props.onUpdate,
-              onPlay: props.onPlay,
-            }),
-            action.secondary ? h(SecondaryAction, { secondary: action.secondary, t: t, onClick: handleSecondary }) : null,
+            h('h2', { className: 'dgm-rail-title' }, t('detail.info')),
             h(
               'dl',
               { className: 'dgm-detail-meta' },
@@ -13355,8 +13582,9 @@ window.__ModuleLoader__.load({
             }),
             game.installed && game.source !== 'builtin'
               ? h(
-                  'div',
+                  'details',
                   { className: 'dgm-rail-actions' },
+                  h('summary', null, t('detail.manage')),
                   h(
                     'button',
                     {
@@ -14217,7 +14445,7 @@ window.__ModuleLoader__.load({
       const diagnosticRef = React.useRef(false);
       const activePanelId = useActivePanel(props, diagnosticRef);
       const binding = useSessionBinding(props, diagnosticRef);
-      const locale = detectLocale();
+      const locale = detectLocale(props && props.t);
       const t = makeT(props && props.t, locale);
       const rootRef = React.useRef(null);
       const scrollRef = React.useRef(null);

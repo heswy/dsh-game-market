@@ -55,6 +55,9 @@ function makeManager(api, extra) {
         getApi: function getApi() {
           return api;
         },
+        // Browser timers have no unref(). Keep test-owned retry timers alive
+        // until they settle, even when no other Node handles are pending.
+        scheduler: { setTimeout, clearTimeout },
         stageHintMs: 5000,
         retryDelays: [0, 0],
       },

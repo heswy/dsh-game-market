@@ -1,3 +1,4 @@
+import { translate } from './locale.js';
 /** Locale-aware formatting helpers (no host DOM reads). */
 
 /** Browser locale for `Intl`; zh-first fallback keeps V0 copy consistent. */
@@ -31,6 +32,7 @@ export function formatRelativeTime(iso, now, locale) {
   const clock = typeof now === 'number' && Number.isFinite(now) ? now : Date.now();
   const diffSeconds = Math.round((then - clock) / 1000);
   const abs = Math.abs(diffSeconds);
+  if (diffSeconds <= 0 && abs < 60) return translate(locale || preferredLocale(), 'time.justNow');
   let value = diffSeconds;
   let unit = 'second';
   if (abs >= 86400 * 30) {
