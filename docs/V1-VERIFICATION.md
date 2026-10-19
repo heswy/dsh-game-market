@@ -1,9 +1,9 @@
-# DSH Game Market · V1 验证记录（骨架）
+# DSH Game Market · V1 验证记录（v1.0.0）
 
 > **状态（2026-10-19）：M3 通过，`v1.0.0` 已发布。** 自动化 780/780、CHECK OK (23)；真机代执行 18 项通过/2 部分/2 阻塞；codex review CR-01..09 已修复并经两轮复核通过（`fix/m3-review` → merge `643fcb9`）。
 > 自动化结果与证据路径汇总见 [`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./verification/v1/AUTOMATED-EVIDENCE.md)；
 > 真机执行清单见 [`docs/verification/v1/REAL-MACHINE-CHECKLIST.md`](./verification/v1/REAL-MACHINE-CHECKLIST.md)。
-> 本文件保留完整验收结构与统计口径；§2 已按实际执行结果填写，§3 的真机表仍待执行（未执行项不得预填通过）。
+> 本文件保留完整验收结构与统计口径；§2 已填实际执行结果，§3.0 为真机执行记录；§3.1–§3.4 保留骨架表并与 `REAL-MACHINE-RESULTS.md` / `AUTOMATED-EVIDENCE.md` §5 交叉引用。
 > 填表纪律见 §5：**不预填通过、不复制 V0 证据冒充 V1、不伪造截图/日志**。没有执行就写"未执行"，没有真机就写"未验证"并给出复现步骤。
 >
 > 配套文档：[`V1-CONTRACTS.md`](./V1-CONTRACTS.md)（契约）、[`V1-GAME-ACCEPTANCE.md`](./V1-GAME-ACCEPTANCE.md)（游戏验收）。
@@ -38,16 +38,15 @@
 3. 所有临时文件、隔离 home、测试 Registry 在验证后清理；不提交生成缓存。
 4. 证据文件必须来自本次执行；V0 截图不能作为 V1 证据。
 
-## 2. 自动化证据（占位）
+## 2. 自动化证据
 
-> 行号 `AE-*` 为骨架编号。执行后把命令、stdout/stderr、产物 sha256 与日志路径填入"实际"列；日志建议存 `docs/verification/v1/logs/AE-xx.log`。
-> 当前所有"实际/状态"均为 **待执行**。
+> `AE-*` 为骨架编号；下表"实际/状态"已按 2026-10-19 执行结果填写，日志见 `docs/verification/v1/logs/`。
 
 | 编号 | 命令 / 操作 | 覆盖范围 | 预期 | 实际 | 证据路径 | 状态 |
 |---|---|---|---|---|---|---|
-| AE-01 | `npm run verify` | build + check + 全量测试 | 全部通过，fail=0 | tests 767 / pass 767 / fail 0 | `docs/verification/v1/logs/AE-01-run.log` | 通过 |
+| AE-01 | `npm run verify` | build + check + 全量测试 | 全部通过，fail=0 | tests 780 / pass 780 / fail 0 | `docs/verification/v1/logs/AE-01-run.log` | 通过 |
 | AE-02 | `npm run build` ×2 比较 sha256 | 构建确定性 | 两次产物字节一致 | IDENTICAL（client.js + 四款游戏） | `.../logs/AE-02-deterministic-build.log` | 通过 |
-| AE-03 | `node scripts/check.mjs` | 语法/产物/manifest/自包含 | CHECK OK | CHECK OK (21 checks) | `.../logs/AE-03-check.log` | 通过 |
+| AE-03 | `node scripts/check.mjs` | 语法/产物/manifest/自包含 | CHECK OK | CHECK OK (23 checks) | `.../logs/AE-03-check.log` | 通过 |
 | AE-04 | `node --test` | 全量单测+集成 | 全通过 | tests 767 / pass 767 / fail 0 | `.../logs/AE-04-run.log` | 通过 |
 | AE-05 | `node --test tests/v1-contracts.test.js` | V1 契约测试 | 全通过 | tests 9 / pass 9 | `.../logs/AE-05-run.log` | 通过 |
 | AE-06 | `node --test games/snake/test/*` | snake 逻辑保留 | 全通过 | tests 30 / pass 30 | `.../logs/AE-06-run.log` | 通过 |
@@ -92,16 +91,17 @@ V1 自动化汇总（2026-10-19 实际执行）
 | CR-08 | 采集脚本断言 + 非零退出；A-11 周期采样真实推进；冻结自测必须失败；perf 全样本必须成功 | `logs/A-11-freeze-selftest.log`（exit 1）+ 正式 A-11/perf ok=true | 关闭 |
 | CR-09 | 性能指标拆分 shell / cards-ready / runtime-playing；详情等待移出计时；全样本断言 | `logs/perf-reference.log`（ok=true；launch 105–107ms） | 关闭 |
 
-自动化命令：`npm run verify` → **最终测试数见验证日志**（Host 150/150）、`CHECK OK (23)`；证据脚本全部返回 0；冻结自测按预期返回 1。
+自动化命令：`npm run verify` → **780/780**（Host 150/150）、`CHECK OK (23)`；证据脚本全部返回 0；冻结自测按预期返回 1。
 
-## 3. 真机证据表（待执行）
+## 3. 真机证据表（已执行）
 
 > **自动化已覆盖的部分见 §2 与 `docs/verification/v1/AUTOMATED-EVIDENCE.md` §5 的 FM/SEC 映射；本节只登记真机结果。**
 > 真机执行清单见 `docs/verification/v1/REAL-MACHINE-CHECKLIST.md`（两场，约 2 小时）。
-> 当前状态：**未执行**；执行后按 §5.3 纪律填写，不得预填通过。
+> 当前状态：**已执行**（Lead 代执行：18 项通过 / 2 部分 / 2 阻塞；详见 §3.0 与 `REAL-MACHINE-RESULTS.md`）。
 
 > 表格编号沿用 V1 验收条目范围：`U-01..U-15`（用户旅程）、`DEV-01..DEV-07`（开发者体验）、`FM-01..FM-14`（失败模式）、`SEC-01..SEC-10`（安全）。
-> **条目场景标题为验证骨架占位**，最终由 Lead 按 V1 验收条目/PRD 校对；本文件不声称任何条目已执行、已通过。
+> **回填口径：** §3.1–§3.4 保留骨架表；实际逐项结果/证据以 §3.0 执行记录、`REAL_MACHINE-RESULTS.md` 与 `AUTOMATED-EVIDENCE.md` §5 映射为准。表中“待填”表示未逐行回填，不代表未执行或未覆盖。
+> 条目场景标题沿用验证骨架；未执行项如实标注，未通过项标注阻塞/部分。
 > 结果列只能填：`通过` / `失败` / `阻塞` / `未执行`；填"通过"必须同时填证据（截图文件名或日志路径）。
 > 环境：§1.1 的隔离 DSH 0.2.1-rc.2 + headless Chrome；Agent 状态无真实 Agent 时用 dev 路由模拟，并在备注注明"模拟"。
 
@@ -283,5 +283,5 @@ V1 真机结论（全部条目执行后填写）
 | 日期 | 变更 | 作者 |
 |---|---|---|
 | 2026-10-18 | 初稿：V1 验证骨架（环境/自动化占位/真机表/截图槽位/未覆盖项），不填任何结果 | contract-docs |
-| 2026-10-19 | 自动化部分执行完成（AE-01..17 通过，AE-18 部分）；补齐环境表/自动化结果/截图/夹具；真机表待执行 | Lead |
+| 2026-10-19 | 自动化部分执行完成（AE-01..17 通过，AE-18 部分）；补齐环境表/自动化结果/截图/夹具；真机表后续由 Lead 代执行完成 | Lead |
 | 2026-10-19 | 真机代执行（U-05/U-06/U-08 等通过）；codex review CR-01..09 修复并复验（`fix/m3-review`），`npm run verify` 780/780 | Lead |

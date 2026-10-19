@@ -9,7 +9,7 @@
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
 - 当前目标：**V1 `v1.0.0` 已发布（2026-10-19）**。codex 验收复核通过；`fix/m3-review` 已 `--no-ff` 合入 `main`（merge `643fcb9`），全量 `npm run verify` **780/780**、`CHECK OK (23)`；README/PRD/验证文档/项目记忆已同步，tag `v1.0.0` 已推送。**V1 范围完成**；后续为 V1.5（多资源/外部开发者体验）与滚动项。
-- 历史：codex 验收 review CR-01..09 修复完成（分支 `fix/m3-review`，2026-10-19）**：默认 Registry 随包分发、卸载数据备份、真实 `save-remove`、实例生命周期（心跳/按实例释放/凭证 TTL 分离）、提问结果关联、验收日志入库与脚本断言、性能指标语义全部修复；`npm run verify` 780/780、CHECK OK (22)、证据脚本全部 exit 0。等待 codex 复核后决定是否合 main / 打 `v1.0.0`。（2026-10-19 Lead 在用户桌面端用辅助控制执行真机验收：13 项通过、4 部分、3 阻塞、3 未执行；证据 `docs/verification/v1/screenshots/real-*.jpg` 与 `REAL-MACHINE-RESULTS.md`）。M3 已交付：`docs/verification/v1/AUTOMATED-EVIDENCE.md`（AE-01..17 通过、AE-18 部分）、`docs/verification/v1/REAL-MACHINE-CHECKLIST.md`（两场约 2h）、`docs/V1-VERIFICATION.md` §1/§2 已填、`fixtures/`（file+HTTPS Registry、恶意包矩阵）、`logs/`、`results/`、`screenshots/`、`scripts/verification/*`。自动化覆盖：安装/更新/卸载/重装 Continue、HTTPS Registry、entry 安全头、存档配额/CAS/恢复、CLI create/build/validate/pack/publish、幂等/并发、恶意包拒绝矩阵。**剩余**：真机 U-04/05/06、U-08 关 DSH 重开、U-09、U-13/14/15、A-03/05/06/07/11/12/13/14/15/16 观感、FM-01/02/06/07/09/10..14、SEC-01/02/03/07、性能实测（Market 首屏/启动/FPS/CPU/内存）；完成后封 `v1.0.0`。
+- 历史：V1 验收/修复过程（M3 自动化、真机代执行、codex 两轮 review CR-01..09）见 `docs/V1-VERIFICATION.md`、`docs/verification/v1/AUTOMATED-EVIDENCE.md`、`docs/reviews/2026-10-19-codex-acceptance-review.md` 与 `git log`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2，2026-10-18 已按 V1 单文件包统一**；第 8–12 章为开发权威来源）
 - 开始记录：2026-10-18
 
@@ -342,27 +342,8 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 
 ## 6. 当前状态与工作日志
 
-> 规则：Lead 每完成一个阶段追加一条（日期、阶段、commit、结果、下一步）。历史细节以 git log 为准，本节只保留最近 10 条。
+> 历史细节以 `git log`、`docs/V0-VERIFICATION.md`、`docs/V1-VERIFICATION.md` 为准；本节只保留最近 10 条工作日志（每阶段追加：日期、阶段、commit、结果、下一步）。
 
-- 2026-10-18 · **V0 完成**：全量 `npm run verify` 通过（312 tests / 312 pass、严格 check 13 项、构建确定性）；隔离 DSH 0.2.1-rc.2 + headless Chrome 真机验证 V0-01～V0-15 核心链路；证据见 `docs/V0-VERIFICATION.md`。
-- 2026-10-18 · **V0 已发布**：`main` 合并提交 `bcdbbfc`，tag `v0.0.0` 已推送 GitHub；feature worktrees/分支已清理（main + origin/main）。下一步：日常桌面端自测（用户执行 dev:enable 并重启）→ V1 规划。
-- 2026-10-18 · **V0.1 反馈修复**：等待提示移至会话头标题右侧并本地化「游戏/Game」+ 可爱动效；弹层居中/翻转；修复继续游戏后 ready 状态静止棋盘 + 键盘焦点丢失（新增 `resume.js` 策略与 3 个测试）；dev-enable 兼容空数组 `[]` profile patch；全量 315 tests 通过。
-- 2026-10-18 · **V0.1 已发布**：`main` merge `55bc9f8`，tag `v0.0.1`；等待提示位置/动效/弹层对齐与 resume 卡住问题已修复，验证证据更新在 `docs/V0-VERIFICATION.md`。
-- 2026-10-18 · **V0.2 反馈修复**：入口改为会话 tab 行常驻「游戏 / Game」（conversation.view），点击进 Market；删除 chip 组件；恢复游戏只保留平台一次确认并直接开玩；轮询改为绑定 session 即可工作；全量 314 tests 通过。
-- 2026-10-18 · **V0.2 已发布**：`main` merge `3bfea76`，tag `v0.0.2`；验证见 `docs/V0-VERIFICATION.md`。
-- 2026-10-18 · **V0.3 修复**：Host 改订阅真实 `session/event`，修复 Agent 完成后游戏内无提示；真机验证真实 turn/end(error) 到达 Host；单测覆盖完成/取消/审批映射；全量 314 tests 通过。Host 改动需重启 DSH。
-- 2026-10-18 · **V0.3 已发布**：`main` merge `c476266`，tag `v0.0.3` 已推送；验证见 `docs/V0-VERIFICATION.md`。
-- 2026-10-18 · **V0 用户验收通过**：用户确认 V0.2 入口/恢复与 V0.3 完成提醒在真实桌面端正常工作；“v0 基本验收完毕”。V0 范围（V0-01～V0-15，含 V0.2/V0.3 调整）收官。
-- 2026-10-18 · **V1 计划锁定**：四条主线 + foundation；首发 `snake`/`jump`/`2048`/`breakout`；单文件；静态 Registry + 本地/远程包；Market 视觉与功能都做。分支/owner/write scope/验收见 §2.1。下一步：Lead 开 `feat/v1-foundation`。
-- 2026-10-18 · **V1 四项遗留裁决 + PRD v2.2 统一 + M0 开工**：用户确认 ①V1 包格式=单文件（V1.5 多文件）②P1 命名/路径由 Lead 统一并双向维护 PRD+记忆 ③首发只做四款，DSH-native Demo 用户亲自带人、不阻塞 V1 ④SDK 版本与 V0 遗留随迭代。已开分支 `feat/v1-foundation`，正在执行 M0（PRD v2.2、shared 契约/校验器/路由表、契约测试、四游戏验收清单）。下一步：M0 `npm run verify` 绿 → `chore/v1-integration` → 并行 M1a/M1b/M1c。
-- 2026-10-18 · **V1 M0 已合并 main**：`chore/v1-integration` 合并 `b8aa17a` → `main` `git merge --no-ff` 为 `d81f473`；合并前后各跑一次 `npm run verify` 均 **345/345** 通过；`main` 已推送 origin（`28b75de..d81f473`）。未打 tag：`v1.0.0` 留到 V1 验收完成后。**M1 搁置**：用户要求等明确指令后再开 M1a/M1b/M1c，当前不新建工作树。
-- 2026-10-18 · **V1 M1 派发开工（总调度模式）**：按用户指令，Lead 不再直接写业务代码。已建 7 个仓库外 worktree + 7 个 feature 分支（基础 `b84256b`），并派 7 个子智能体各自在 worktree 内独立完成：M1a `feat/v1-install-registry`、M1b `feat/v1-developer`、M2 `feat/v1-market-ux`、snake `feat/game-snake-v1`、jump `feat/game-jump`、2048 `feat/game-2048`、breakout `feat/game-breakout`；M2 强制使用 `frontend-design`+`ui-ux-pro-max`，2048 两者都用，snake/jump/breakout 用 `ui-ux-pro-max`。派发细节见 §2.1.7。下一步：等各分支完成报告 → Lead 逐个验收 → 合并 `chore/v1-integration` → 全量verify → `--no-ff` 合 `main`。
-- 2026-10-18 · **V1 M1 完成并合并 main（总调度模式收官）**：7 个子智能体在各自 worktree 内完成全部 M1 任务，Lead 逐个独立验收（范围/测试/构建/截图）后合入 `chore/v1-integration`；集成期 Lead 完成 shared 错误码表、根构建/检查接入全部游戏、`BUILTIN_GAMES.version`/snake 源清理、文档对齐、全部 dist 重建。集成分支最终 `npm run verify` **752/752 pass、CHECK OK (21)**、构建字节可复现；`--no-ff` 合并为 `main` `44cd7a8`。7 个 feature worktree/分支已清理，`chore/v1-integration` 保留。**M1 范围完成**；真机验收与 `v1.0.0` tag 留 M3。
-- 2026-10-18 · **用户验收发现 Market 白屏 → 已修复（`b933fe4`）**：用户在桌面端验收时打开 Market 白屏。用隔离 DSH 0.2.1-rc.2 宿主 + 复制用户真实 storage（V0 saves/scores/sessions）复现：Market Hero 的“继续游戏”分支调用 `coverTone()` 但 `market-home.js` 未 import（空 Hero 路径的单测覆盖不到），React 抛 `ReferenceError` 卸载整个 main slot → 白屏；同批还发现 `detail.js` 缺 `initialFor`/`resolvePermissions` import。已修复并新增 `packages/client/test/component-imports.test.js` 源码级回归（组件不能直接渲染测试：零依赖测试环境无 react）。修复后 `npm run verify` **754/754**，隔离宿主 + 真实数据 headless 流程复测 Market 首页/详情正常、0 console error；client.js 已重建并推送 main。
-- 2026-10-18 · **Game tab 会话内行为调整（`a6885fd`）**：用户要求“同一 session 首次点游戏去 Market，玩过并返回工作后再点游戏应回到该游戏”。已实现 per-session `sessionGames` 记忆 + `selectGameEntry` 决策 + `entryGameSpace` 纯逻辑（新增 `entry-flow.js` 与 5 个单测）；`npm run verify` **765/765**。待用户在桌面端点验：刷新后新 session 首次进 Market → 玩一局 → 保存并返回工作 → 再点游戏应直接回该游戏。
-- 2026-10-18 · **恢复游戏双重提示修复（`4e70958`）**：用户截图发现“返回工作→再返回游戏”时平台弹「已恢复上一局」、breakout 又弹自己的 Continue/New run。根因：平台 resume-paused 启动会给游戏发 pause → 等确认 → resume（snake/2048/jump 已按此实现），breakout 启动时无条件 `showStartOverlay()`。修复：resume-paused 启动时丢弃自身开始菜单、恢复棋盘并只显示暂停态（平台弹窗为唯一确认），确认后直接开玩；pause 竞态也会替换开始界面。重建 `games/breakout/dist`；`npm run verify` **765/765**；已推送 main。此外 V1-19 会话 tab 行为同日落地（`a6885fd`）。
-- 2026-10-18 · **“游戏正在运行”卡死卸载修复**：根因 Host 把“未结束 Play Session”当运行中，但 Session 为 Continue 长期保留且无结束入口。改为 live Runtime 实例判定 + 新增 `/runtime-release`（Client Runtime 卸载时释放）；Host 测试覆盖 launch→4096→release→成功、以及“未结束 Session 不阻止卸载”；`npm run verify` **766/766**；契约文档同步；需重启 DSH 生效。
-- 2026-10-19 · **双层弹窗兜底修复**：桌面 Electron 里 `pause` 事件疑似未按时到达游戏，导致“平台已恢复上一局”+游戏 Continue/New run 双层。已在 Runtime init 显式下发 `launchMode`，SDK 暴露 `game.runtime.launchMode`，四款游戏在 `resume-paused` 启动时直接进入暂停态；本地 mock-runtime harness（**完全不发 pause**）验证 breakout `overlay=paused`。`npm run verify` 全绿；需刷新页面并重装本地安装的三款游戏。
 - 2026-10-19 · **Game tab 返回直连恢复**：`beginGame` 增加 `autoResume`，RuntimeView 在 paused 时自动 resume 并隐藏平台确认；entry-flow 测试、store 测试更新；`npm run verify` 767/767。仅需刷新页面（client 变更），无需重启 DSH 或重装游戏。
 - 2026-10-19 · **平台暂停双层修复**：用户点平台暂停出现平台弹窗+游戏暂停面板。已统一四款游戏：生命周期 `pause` 只冻结、隐藏自身 overlay，平台暂停菜单为唯一暂停 UI；本地暂停不受影响。E2E（隔离 DSH 真实 Host/Runtime）：breakout/jump/2048 平台暂停后游戏层可见 overlay=0，暂停→继续后 runtime playing；snake 内置同步修复并验证。`npm run verify` 767/767。需刷新页面 + 重装三个本地游戏。
 - 2026-10-19 · **M3 自动化完成并交付真机清单**：`npm run verify` 767/767；确定性构建 byte-identical；CLI create/build/validate/pack/publish 通过；file+HTTPS Registry 安装/更新/卸载/重装 Continue 通过（host E2E）；entry CSP/no-store/sha 头通过；存档配额/CAS/损坏恢复通过；恶意包矩阵返回 GM-5015/4221/4225/4240/4232/4234/4135；UI 9 张截图；`docs/V1-VERIFICATION.md` §1/§2 填充。**真机待执行**：见 `docs/verification/v1/REAL-MACHINE-CHECKLIST.md`；性能/故障注入/SEC 运行时攻击列为剩余。
@@ -370,17 +351,19 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-19 · **AskUserQuestion 提示修复 + U-05/深色主题真机证据**：用户截图确认任务完成提醒与深色主题均正常，已归档 `real-U-05-agent-completed.jpg`/`real-U-13-dark-theme.jpg` 并更新验收记录。针对「AskQuestion 无提示」：Host agent-adapter 增加 `ask_user_question` tool/call → waiting-user(waiting-question) 映射、tool/result 复位；host 测试 141/141 通过；PRD/契约/记忆同步。待重载 Host 后真机复测提问场景。
 - 2026-10-19 · **AskUserQuestion 提示出现 + 回答后不消失修复**：用户真机确认提问提醒已出现（2048/Breakout 游戏内鲸鱼「需要你回答一个问题 / 去处理」），并报告回答后状态未消失。根因：真实 `tool/result` 不带工具名，V1-25 的 name 匹配失效。已改为按快照 `source=question` 收尾；host 141/141；待再重载 Host 复测。
 - 2026-10-19 · **U-06/U-08 真机通过**：用户确认 AskUserQuestion 提醒回答后消失（`bcc3c92` 生效），U-08 关闭 DSH 重开后 Continue/进度正确。后续补跑 A-11 连续 5 分钟与收尾封板。
-- 2026-10-19 · **codex review 收口（fix/m3-review）**：CR-01 默认 Registry 随包（build/check/files + 冷启动安装测试）；CR-02 卸载删除含 `.bak` 且失败可重试；CR-03 新增 `POST /save-remove` 真实删除；CR-04/05 实例心跳/按实例释放/凭证 TTL 分离；CR-06 提问 callId/turn 关联；CR-07 日志入库+脱敏+check；CR-08 采集脚本断言/非零退出；CR-09 性能指标语义拆分。Host 149/149、全量 **780/780**、CHECK OK (22)；证据脚本（host-e2e/stability/reduced-motion/perf）全部通过。分支未合并 main，等待复核。
-- 2026-10-19 · **codex 复核第二轮修复**：按复核意见补修 CR-02/05/06/08/09；Host 150/150、全量 **780/780**、`CHECK OK (23)`；冻结自测 exit 1、正式 A-11（19 样本/8 状态/anyMovement）与 perf（全样本成功）通过；证据刷新；审核文档移入 `docs/reviews/`。等待 codex 三审。
+- 2026-10-19 · **codex review 收口（fix/m3-review）**：CR-01 默认 Registry 随包（build/check/files + 冷启动安装测试）；CR-02 卸载删除含 `.bak` 且失败可重试；CR-03 新增 `POST /save-remove` 真实删除；CR-04/05 实例心跳/按实例释放/凭证 TTL 分离；CR-06 提问 callId/turn 关联；CR-07 日志入库+脱敏+check；CR-08 采集脚本断言/非零退出；CR-09 性能指标语义拆分。Host 149/149、全量 **780/780**、CHECK OK (23)；证据脚本（host-e2e/stability/reduced-motion/perf）全部通过。该分支后经两轮复核合入 main。
+- 2026-10-19 · **codex 复核第二轮修复**：按复核意见补修 CR-02/05/06/08/09；Host 150/150、全量 **780/780**、`CHECK OK (23)`；冻结自测 exit 1、正式 A-11（19 样本/8 状态/anyMovement）与 perf（全样本成功）通过；证据刷新；审核文档移入 `docs/reviews/`；随后 codex 复核通过并发布 `v1.0.0`。
 - 2026-10-19 · **V1.0.0 发布**：codex 复核通过；`fix/m3-review@f1aeb28` `--no-ff` 合入 main（`643fcb9`）；main 上 `npm run verify` 780/780、CHECK OK (23)；package 版本 1.0.0；README/PRD/契约/验证文档/记忆同步；tag `v1.0.0` 推送。
 - （待续）
 
-**当前状态 / 待用户确认**：
+**当前状态（2026-10-19，V1 发布后）**：
 
-- **V1 M1 已完成并合并 `main`**（`44cd7a8`；M1 收官 752/752；`npm run verify` 现 754/754、CHECK OK (21)）。**用户正在做桌面端人工验收**；首个问题（Market 白屏）已定位修复并推送（`b933fe4`，client-only，刷新页面即可生效）。**M3 待办**：隔离 DSH 0.2.1-rc.2 真机验收（U/DEV/FM/SEC 全表 + 启动计时/5 分钟/平台暂停遮挡）、`docs/V1-VERIFICATION.md` 归档、通过后打 `v1.0.0` 并推送；M2 组件此前只做过逻辑/静态渲染测试，**真实 loader 渲染验收仍是 M3 必做项**。
-- 日常桌面端需用户自行 `npm run dev:enable -- --yes` 并重启 DSH；UI 客户端改动刷新页面即可。
-- 想在**日常桌面端**看到 V0：需要用户执行 `npm run dev:enable -- --yes` 后重启 DSH（会自动备份 profile patch；Lead 不会擅自改用户日常 profile）。日常 profile 的隔离验证已完成，无需重复；用户桌面端版本已确认为 0.2.1-rc.2，与验证基线一致。
-- GitHub 推送权限：若 `git push` 失败，需要用户提供可用凭据或代为推送。
+- **V1 `v1.0.0` 已发布**：发布提交 `611c0ed`（tag `v1.0.0` 指向该提交，已推送）；`main` 之后仅追加文档/记忆维护提交；`package.json` 版本 `1.0.0`；最终 `npm run verify` **780/780**、`CHECK OK (23)`。
+- **合并记录**：`fix/m3-review@f1aeb28` 经两轮 codex 复核通过，`--no-ff` 合入 `main`（`643fcb9`），随后发布提交 `611c0ed`。`fix/m3-review` 保留作 review 审计（已合入）；`chore/v1-integration` 早已合入 main，仅历史保留。
+- **验证/证据入口**：`docs/V1-VERIFICATION.md`（§2.2 CR 收口、§3.0 真机）、`docs/verification/v1/AUTOMATED-EVIDENCE.md`（AE/CR 证据）、`REAL-MACHINE-RESULTS.md`（真机代执行）、`docs/reviews/2026-10-19-codex-acceptance-review.md`（审核意见）。
+- **日常桌面端**：若需 dev 行，用户执行 `npm run dev:enable -- --yes` 后重启 DSH；Client 改动刷新页面即可；Host 改动需重启/重载插件行。
+- **滚动项（非 V1 阻塞，见验证文档 §5）**：真实审批环境、桌面参考机性能终值（FPS/CPU/内存）、字号/减少动效真机项、DEV-03 热更新与 DEV-07 外部开发者体验、2048 破纪录反馈、完整 Tab 键盘链路。
+- **下一步**：V1.5（多资源包、外部开发者体验）或优先处理滚动项；任何契约/发布动作先更新本记忆与 PRD，再执行（规则 §1）。
 
 ---
 
