@@ -8,7 +8,8 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**codex 验收 review CR-01..09 修复完成（分支 `fix/m3-review`，2026-10-19）**：默认 Registry 随包分发、卸载数据备份、真实 `save-remove`、实例生命周期（心跳/按实例释放/凭证 TTL 分离）、提问结果关联、验收日志入库与脚本断言、性能指标语义全部修复；`npm run verify` 780/780、CHECK OK (22)、证据脚本全部 exit 0。等待 codex 复核后决定是否合 main / 打 `v1.0.0`。（2026-10-19 Lead 在用户桌面端用辅助控制执行真机验收：13 项通过、4 部分、3 阻塞、3 未执行；证据 `docs/verification/v1/screenshots/real-*.jpg` 与 `REAL-MACHINE-RESULTS.md`）。M3 已交付：`docs/verification/v1/AUTOMATED-EVIDENCE.md`（AE-01..17 通过、AE-18 部分）、`docs/verification/v1/REAL-MACHINE-CHECKLIST.md`（两场约 2h）、`docs/V1-VERIFICATION.md` §1/§2 已填、`fixtures/`（file+HTTPS Registry、恶意包矩阵）、`logs/`、`results/`、`screenshots/`、`scripts/verification/*`。自动化覆盖：安装/更新/卸载/重装 Continue、HTTPS Registry、entry 安全头、存档配额/CAS/恢复、CLI create/build/validate/pack/publish、幂等/并发、恶意包拒绝矩阵。**剩余**：真机 U-04/05/06、U-08 关 DSH 重开、U-09、U-13/14/15、A-03/05/06/07/11/12/13/14/15/16 观感、FM-01/02/06/07/09/10..14、SEC-01/02/03/07、性能实测（Market 首屏/启动/FPS/CPU/内存）；完成后封 `v1.0.0`。
+- 当前目标：**V1 `v1.0.0` 已发布（2026-10-19）**。codex 验收复核通过；`fix/m3-review` 已 `--no-ff` 合入 `main`（merge `643fcb9`），全量 `npm run verify` **780/780**、`CHECK OK (23)`；README/PRD/验证文档/项目记忆已同步，tag `v1.0.0` 已推送。**V1 范围完成**；后续为 V1.5（多资源/外部开发者体验）与滚动项。
+- 历史：codex 验收 review CR-01..09 修复完成（分支 `fix/m3-review`，2026-10-19）**：默认 Registry 随包分发、卸载数据备份、真实 `save-remove`、实例生命周期（心跳/按实例释放/凭证 TTL 分离）、提问结果关联、验收日志入库与脚本断言、性能指标语义全部修复；`npm run verify` 780/780、CHECK OK (22)、证据脚本全部 exit 0。等待 codex 复核后决定是否合 main / 打 `v1.0.0`。（2026-10-19 Lead 在用户桌面端用辅助控制执行真机验收：13 项通过、4 部分、3 阻塞、3 未执行；证据 `docs/verification/v1/screenshots/real-*.jpg` 与 `REAL-MACHINE-RESULTS.md`）。M3 已交付：`docs/verification/v1/AUTOMATED-EVIDENCE.md`（AE-01..17 通过、AE-18 部分）、`docs/verification/v1/REAL-MACHINE-CHECKLIST.md`（两场约 2h）、`docs/V1-VERIFICATION.md` §1/§2 已填、`fixtures/`（file+HTTPS Registry、恶意包矩阵）、`logs/`、`results/`、`screenshots/`、`scripts/verification/*`。自动化覆盖：安装/更新/卸载/重装 Continue、HTTPS Registry、entry 安全头、存档配额/CAS/恢复、CLI create/build/validate/pack/publish、幂等/并发、恶意包拒绝矩阵。**剩余**：真机 U-04/05/06、U-08 关 DSH 重开、U-09、U-13/14/15、A-03/05/06/07/11/12/13/14/15/16 观感、FM-01/02/06/07/09/10..14、SEC-01/02/03/07、性能实测（Market 首屏/启动/FPS/CPU/内存）；完成后封 `v1.0.0`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2，2026-10-18 已按 V1 单文件包统一**；第 8–12 章为开发权威来源）
 - 开始记录：2026-10-18
 
@@ -335,6 +336,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - V1-31：**提问结果关联**：记录 ask_user_question 的 `callId`（tool/result 在 `message.source.callId`）与 turn；只有匹配结果关闭等待，旧 turn/并行结果不清除；`turn/end` 收尾取消/中止。
 - V1-32：**验收可复查/可判定**：`.gitignore` 例外 + sanitize 脚本把证据日志纳入 Git；`assert.mjs` 统一断言并让采集脚本失败非零退出；A-11 断言游戏内部推进；性能指标拆 shell/cards-ready/runtime-playing 并多次采样。
 - V1-33：**codex 复核第二轮收口**：CR-02 `pathExists` 仅 ENOENT 视为缺失 + 删除前 preflight；CR-05 Client 无 instanceId 不调用 release（`shouldReleaseRuntimeInstance`）；CR-06 有 callId 时无名/并行结果不清除、turn/end 只匹配本 turn；CR-08 冻结自测必须 exit 1、perf 全样本断言、A-11 周期采样真实推进；CR-09 详情等待移出计时（launch 实测 105–107ms）。codex 审核文档归档到 `docs/reviews/2026-10-19-codex-acceptance-review.md`（此前误随首轮修复提交，已用 git mv 说明）。
+- V1-34：**V1.0.0 发布**：`fix/m3-review` 两轮复核通过后以 `--no-ff` 合入 `main`（`643fcb9`），`package.json` 版本置 `1.0.0`，tag `v1.0.0` 推送；README 更新为 V1 首发状态；V1 验证文档/证据/真机结论归档。发布后滚动项：真实审批环境、桌面参考机性能终值、字号/减少动效真机项、DEV-03/07、2048 PB 反馈、完整 Tab 键盘链路（均已在验证文档 §5 记录）。
 
 ---
 
@@ -370,6 +372,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-19 · **U-06/U-08 真机通过**：用户确认 AskUserQuestion 提醒回答后消失（`bcc3c92` 生效），U-08 关闭 DSH 重开后 Continue/进度正确。后续补跑 A-11 连续 5 分钟与收尾封板。
 - 2026-10-19 · **codex review 收口（fix/m3-review）**：CR-01 默认 Registry 随包（build/check/files + 冷启动安装测试）；CR-02 卸载删除含 `.bak` 且失败可重试；CR-03 新增 `POST /save-remove` 真实删除；CR-04/05 实例心跳/按实例释放/凭证 TTL 分离；CR-06 提问 callId/turn 关联；CR-07 日志入库+脱敏+check；CR-08 采集脚本断言/非零退出；CR-09 性能指标语义拆分。Host 149/149、全量 **780/780**、CHECK OK (22)；证据脚本（host-e2e/stability/reduced-motion/perf）全部通过。分支未合并 main，等待复核。
 - 2026-10-19 · **codex 复核第二轮修复**：按复核意见补修 CR-02/05/06/08/09；Host 150/150、全量 **780/780**、`CHECK OK (23)`；冻结自测 exit 1、正式 A-11（19 样本/8 状态/anyMovement）与 perf（全样本成功）通过；证据刷新；审核文档移入 `docs/reviews/`。等待 codex 三审。
+- 2026-10-19 · **V1.0.0 发布**：codex 复核通过；`fix/m3-review@f1aeb28` `--no-ff` 合入 main（`643fcb9`）；main 上 `npm run verify` 780/780、CHECK OK (23)；package 版本 1.0.0；README/PRD/契约/验证文档/记忆同步；tag `v1.0.0` 推送。
 - （待续）
 
 **当前状态 / 待用户确认**：

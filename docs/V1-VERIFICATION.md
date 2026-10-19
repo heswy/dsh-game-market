@@ -1,6 +1,6 @@
 # DSH Game Market · V1 验证记录（骨架）
 
-> **状态（2026-10-19）：自动化已执行；真机代执行完成 18 项通过/2 部分/2 阻塞；codex review CR-01..09 已在 `fix/m3-review` 修复并复验，等待复核/发布决定。**
+> **状态（2026-10-19）：M3 通过，`v1.0.0` 已发布。** 自动化 780/780、CHECK OK (23)；真机代执行 18 项通过/2 部分/2 阻塞；codex review CR-01..09 已修复并经两轮复核通过（`fix/m3-review` → merge `643fcb9`）。
 > 自动化结果与证据路径汇总见 [`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./verification/v1/AUTOMATED-EVIDENCE.md)；
 > 真机执行清单见 [`docs/verification/v1/REAL-MACHINE-CHECKLIST.md`](./verification/v1/REAL-MACHINE-CHECKLIST.md)。
 > 本文件保留完整验收结构与统计口径；§2 已按实际执行结果填写，§3 的真机表仍待执行（未执行项不得预填通过）。
@@ -106,6 +106,9 @@ V1 自动化汇总（2026-10-19 实际执行）
 > 环境：§1.1 的隔离 DSH 0.2.1-rc.2 + headless Chrome；Agent 状态无真实 Agent 时用 dev 路由模拟，并在备注注明"模拟"。
 
 ### 3.0 真机执行记录（2026-10-19，Lead 代执行）
+
+> **签收：** codex 于 2026-10-19 复核通过（CR-01、CR-03、CR-04、CR-07 首轮关闭；CR-02/05/06/08/09 第二轮补修后关闭）。
+
 
 > 在用户真实 DSH Desktop 窗口中通过辅助控制执行；详细结论与证据见
 > [`docs/verification/v1/REAL-MACHINE-RESULTS.md`](./verification/v1/REAL-MACHINE-RESULTS.md)。

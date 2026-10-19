@@ -1,5 +1,7 @@
 # M3 真机验收单（交给产品/用户执行）
 
+> **执行状态：已完成（真机代执行，结果见 `REAL-MACHINE-RESULTS.md`）。**
+
 > 对应 PRD §10.3/§10.4/§10.6/§10.7 与 `docs/V1-GAME-ACCEPTANCE.md`。自动化证据见
 > `docs/verification/v1/results/` 与 `docs/V1-VERIFICATION.md` §2；本单只列**必须真机**的条目。
 >

@@ -2,7 +2,15 @@
 
 在 DeepSeek Harness（DSH）里，把 Agent 执行长任务时的等待时间变成一局小游戏：游戏占满主工作区，右下角的小鲸鱼负责维持 Agent 的存在感，任务完成时提醒但不打断。
 
-**V0（核心体验验证版）已完成**，验证游戏是 **贪吃蛇（snake）**；下一步进入 V1（Market/安装/开发者体系，见 PRD §7.2）。
+**V1（首发版，`v1.0.0`）已完成并通过 codex 验收复核**：Game Market / My Games / 详情、静态 Registry 安装与更新、开发者 SDK + CLI + 模板、首发四款游戏（`snake`/`jump`/`2048`/`breakout`），以及默认随包 Registry（全新环境无需配置即可发现并安装 Jump/2048/Breakout）。
+
+V1 验收：`npm run verify` **780/780**、`CHECK OK (23)`；真机与隔离宿主证据见 [`docs/V1-VERIFICATION.md`](./docs/V1-VERIFICATION.md)、[`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./docs/verification/v1/AUTOMATED-EVIDENCE.md)。
+
+<details>
+<summary>V0（核心体验验证版）历史</summary>
+
+V0 已完成并验收，验证游戏是贪吃蛇（snake）。
+
 
 - 权威规格：[`PRD｜DSH Game Market.md`](./PRD｜DSH%20Game%20Market.md)（第 8–12 章为实现权威来源）
 - 项目记忆与协作/分支/验证规则：[`PROJECT_MEMORY.md`](./PROJECT_MEMORY.md)（**唯一项目记忆文件**）
@@ -29,6 +37,19 @@
 - 2026-10-18 V0.2 反馈迭代：入口改为会话 tab 行常驻「游戏 / Game」tab（点击进入 Game Market）；返回游戏只保留平台一次确认并直接开玩（314 tests 通过）。
 - 2026-10-18 V0.3 修复：Host 改为订阅 DSH 真实 `session/event`，修复「Agent 完成任务后游戏内没有任何完成提醒」；真机验证真实 `turn/end(error)` 可到达 Host（314 tests 通过）。**此修复需要重启 DSH 才生效。**
 - 完整清单、截图与未覆盖项见 [`docs/V0-VERIFICATION.md`](./docs/V0-VERIFICATION.md)。
+
+</details>
+
+## V1 能力概览
+
+| 能力 | 状态 |
+|---|---|
+| Game Market / My Games / 详情 / 搜索 / 分类 | ✅ |
+| 静态 Registry 安装/更新/卸载；本地安装；默认随包 Registry | ✅ |
+| 首发四款：`snake`（内置）/`jump`/`2048`/`breakout` | ✅ |
+| 平台暂停/恢复、Continue、Game tab 直连恢复、Agent presence（含 AskUserQuestion 提醒） | ✅ |
+| SDK v1 + Runtime Simulator + `dsh-game` CLI + `create-dsh-game` 模板 | ✅ |
+| 存档契约（配额/CAS/真实删除）、运行实例心跳与按实例释放 | ✅ |
 
 ## 目录结构
 
