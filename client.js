@@ -20,7 +20,7 @@ window.__ModuleLoader__.load({
     const NS = 'dshGameMarket';
 
     const ZH = Object.freeze({
-      'sidebar.label': 'Game Market',
+      'sidebar.label': '游戏市场',
       'panel.title': 'Game Market',
       'panel.backToConversation': '返回会话',
       'panel.tab.market': '市场',
@@ -360,11 +360,11 @@ window.__ModuleLoader__.load({
       'entry.waiting.generic': 'Agent 在等你',
       'entry.waiting.action': '回到会话处理',
       'entry.waiting.later': '稍后处理',
-      'entry.sidebar.running': 'Game Market，Agent 正在工作',
-      'entry.sidebar.waiting': 'Game Market，需要你处理',
-      'entry.sidebar.completed': 'Game Market，有未查看的结果',
-      'entry.sidebar.resume': 'Game Market，有暂停的游戏',
-      'entry.sidebar.error': 'Game Market，Agent 遇到问题',
+      'entry.sidebar.running': '游戏市场，Agent 正在工作',
+      'entry.sidebar.waiting': '游戏市场，需要你处理',
+      'entry.sidebar.completed': '游戏市场，有未查看的结果',
+      'entry.sidebar.resume': '游戏市场，有暂停的游戏',
+      'entry.sidebar.error': '游戏市场，Agent 遇到问题',
 
       'agent.state.running': '正在工作…',
       'agent.state.idle': 'Agent 空闲',
