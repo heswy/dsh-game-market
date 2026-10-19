@@ -1,0 +1,355 @@
+{
+  "generatedAt": "2026-10-19T09:17:55.156Z",
+  "classification": {
+    "staticValidation": "independently verified (local CLI, platform checkout READ ONLY)",
+    "packageHashes": "independently verified (shasum -a 256 -c)",
+    "runtimeBehavior": "locally simulated with dsh-game dev (fake Runtime) + headless Chrome CDP",
+    "realDshHostInstall": "NOT verified — no DSH Host install or real Runtime was used"
+  },
+  "environment": {
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "checkout": "<repo>",
+    "checkoutHeadAtEvidence": "dc646d84d5bd9ac8e5e9c119002a6537ad9ad5ae",
+    "cli": "<repo>/scripts/cli/dsh-game.mjs",
+    "cliVersion": "0.1.0",
+    "skillVersion": "1.0.0",
+    "chrome": "155.0.8059.85 (headless, CDP 9333)",
+    "simulatorPort": 4391
+  },
+  "c21": {
+    "project": "<tmp>/dsh-c21-c22/c21-invalid",
+    "reconstructedBreakProject": "<tmp>/dsh-c21-c22/c21-reconstruct-check",
+    "package": {
+      "path": "<tmp>/dsh-c21-c22/evidence-c21/artifacts/c21-invalid-1.0.0.html",
+      "bytes": 108202,
+      "sha256": "6af1eb530dce0a5b9f4cee8269ddf5c740c3b2e1e3ca6c85814c10948bda7cb9"
+    },
+    "digestSidecar": "6af1eb530dce0a5b9f4cee8269ddf5c740c3b2e1e3ca6c85814c10948bda7cb9  c21-invalid-1.0.0.html",
+    "breakages": [
+      {
+        "label": "01-break-manifest-build",
+        "kind": "invalid manifest field: score.min(900) > score.max(100)",
+        "command": "npm run build (DSH_GAME_CLI exported)",
+        "exitCode": 1,
+        "code": "E_PKG_SCORE_RANGE",
+        "gm": "GM-4243",
+        "path": "score"
+      },
+      {
+        "label": "02-break-external-script-build",
+        "kind": "non-self-contained package: <script src=\"https://cdn.example.com/x.js\"> in index.html",
+        "command": "npm run build (DSH_GAME_CLI exported)",
+        "exitCode": 1,
+        "code": "E_PKG_ENTRY_NOT_SELF_CONTAINED",
+        "gm": "GM-4225",
+        "path": "entry"
+      },
+      {
+        "label": "04-break-duplicate-manifest-validate",
+        "kind": "extra: second inline dsh-game-manifest script appended to a copy of the built package",
+        "command": "node $DSH_GAME_CLI validate <copy>.html",
+        "exitCode": 1,
+        "code": "E_PKG_MANIFEST_DUPLICATE",
+        "gm": "GM-4221",
+        "path": "manifest"
+      },
+      {
+        "label": "05-break-external-script-validate",
+        "kind": "extra: external script injected into a copy of the built package",
+        "command": "node $DSH_GAME_CLI validate <copy>.html",
+        "exitCode": 1,
+        "code": "E_PKG_ENTRY_NOT_SELF_CONTAINED",
+        "gm": "GM-4225",
+        "path": "entry"
+      }
+    ],
+    "repair": {
+      "steps": [
+        "removed the external <script src=\"https://cdn.example.com/x.js\"> from index.html",
+        "restored score.min=0 / score.max=1000000 in manifest.json"
+      ],
+      "finalValidateExitCode": 0,
+      "finalPackExitCode": 0,
+      "sha256CheckExitCode": 0,
+      "deterministicBuilds": 3,
+      "deterministicHashes": [
+        "6af1eb530dce0a5b9f4cee8269ddf5c740c3b2e1e3ca6c85814c10948bda7cb9",
+        "6af1eb530dce0a5b9f4cee8269ddf5c740c3b2e1e3ca6c85814c10948bda7cb9",
+        "6af1eb530dce0a5b9f4cee8269ddf5c740c3b2e1e3ca6c85814c10948bda7cb9"
+      ]
+    },
+    "commands": [
+      {
+        "label": "00-baseline-build",
+        "exitCode": 0,
+        "command": "npm run build "
+      },
+      {
+        "label": "00-baseline-validate",
+        "exitCode": 0,
+        "command": "npm run validate "
+      },
+      {
+        "label": "00-baseline-pack",
+        "exitCode": 0,
+        "command": "npm run pack "
+      },
+      {
+        "label": "01-break-manifest-build",
+        "exitCode": 1,
+        "command": "npm run build "
+      },
+      {
+        "label": "02-break-external-script-build",
+        "exitCode": 1,
+        "command": "npm run build "
+      },
+      {
+        "label": "03-pre-duplicate-build",
+        "exitCode": 0,
+        "command": "npm run build "
+      },
+      {
+        "label": "04-break-duplicate-manifest-validate",
+        "exitCode": 1,
+        "command": "node /Users/orange/Orange\\ Field/Matterhorn/dsh-game-market-worktrees/community-publishing/scripts/cli/dsh-game.mjs validate <tmp>/dsh-c21-c22/evidence-c21/artifacts/c21-invalid-1.0.0.duplicate-manifest.html "
+      },
+      {
+        "label": "05-break-external-script-validate",
+        "exitCode": 1,
+        "command": "node /Users/orange/Orange\\ Field/Matterhorn/dsh-game-market-worktrees/community-publishing/scripts/cli/dsh-game.mjs validate <tmp>/dsh-c21-c22/evidence-c21/artifacts/c21-invalid-1.0.0.external-script.html "
+      },
+      {
+        "label": "06-fixed-build",
+        "exitCode": 0,
+        "command": "npm run build "
+      },
+      {
+        "label": "07-fixed-validate",
+        "exitCode": 0,
+        "command": "npm run validate "
+      },
+      {
+        "label": "08-fixed-pack",
+        "exitCode": 0,
+        "command": "npm run pack "
+      },
+      {
+        "label": "09-determinism-rebuild",
+        "exitCode": 0,
+        "command": "npm run build "
+      },
+      {
+        "label": "10-validate-json",
+        "exitCode": 0,
+        "command": "node /Users/orange/Orange\\ Field/Matterhorn/dsh-game-market-worktrees/community-publishing/scripts/cli/dsh-game.mjs validate dist/index.html --json "
+      },
+      {
+        "label": "11-validate-packed-json",
+        "exitCode": 0,
+        "command": "node /Users/orange/Orange\\ Field/Matterhorn/dsh-game-market-worktrees/community-publishing/scripts/cli/dsh-game.mjs validate dist/c21-invalid-1.0.0.html --json "
+      },
+      {
+        "label": "12-pack-json",
+        "exitCode": 0,
+        "command": "node /Users/orange/Orange\\ Field/Matterhorn/dsh-game-market-worktrees/community-publishing/scripts/cli/dsh-game.mjs pack . --json "
+      },
+      {
+        "label": "13-sha256-check",
+        "exitCode": 0,
+        "command": "shasum -a 256 -c c21-invalid-1.0.0.html.sha256 "
+      },
+      {
+        "label": "14-sha256-manual",
+        "exitCode": 0,
+        "command": "shasum -a 256 c21-invalid-1.0.0.html "
+      },
+      {
+        "label": "16-reconfirm-build-validate-pack",
+        "exitCode": 0,
+        "command": "npm run validate "
+      },
+      {
+        "label": "17-reconfirm-pack",
+        "exitCode": 0,
+        "command": "npm run pack "
+      },
+      {
+        "label": "18a-reconstructed-break-manifest",
+        "exitCode": 1,
+        "command": "npm run build "
+      },
+      {
+        "label": "18b-reconstructed-break-external-script",
+        "exitCode": 1,
+        "command": "npm run build"
+      }
+    ],
+    "logs": [
+      "00-baseline-build.log",
+      "00-baseline-pack.log",
+      "00-baseline-validate.log",
+      "01-break-manifest-build.log",
+      "02-break-external-script-build.log",
+      "03-pre-duplicate-build.log",
+      "04-break-duplicate-manifest-validate.log",
+      "05-break-external-script-validate.log",
+      "06-fixed-build.log",
+      "07-fixed-validate.log",
+      "08-fixed-pack.log",
+      "09-determinism-rebuild.log",
+      "10-validate-json.log",
+      "11-validate-packed-json.log",
+      "12-pack-json.log",
+      "13-sha256-check.log",
+      "14-sha256-manual.log",
+      "15-environment.log",
+      "16-reconfirm-build-validate-pack.log",
+      "17-reconfirm-pack.log",
+      "18a-reconstructed-break-manifest.log",
+      "18b-reconstructed-break-external-script.log"
+    ]
+  },
+  "c22": {
+    "updateProject": "<tmp>/dsh-c21-c22/c22-update",
+    "runtimeDemoProject": "<tmp>/dsh-c21-c22/c22-demo",
+    "package": {
+      "path": "<tmp>/dsh-c21-c22/evidence-c22/artifacts/c21-invalid-1.0.1.html",
+      "bytes": 108589,
+      "sha256": "4d6e30b691feeeb90f1a79d39e7fc637a86e7f70ea7c9ddb20d206ba21c29d49"
+    },
+    "digestSidecar": "4d6e30b691feeeb90f1a79d39e7fc637a86e7f70ea7c9ddb20d206ba21c29d49  c21-invalid-1.0.1.html",
+    "versionBump": "manifest.json 1.0.0 -> 1.0.1; package.json 1.0.0 -> 1.0.1",
+    "changes": [
+      "UI: new .build-badge element showing v1.0.1 (index.html + src/styles.css)",
+      "gameplay: star catch 10 -> 12 points, meteor 25 -> 30 points (src/main.js)",
+      "save schema untouched: storage.js SAVE_VERSION=1, manifest save.schemaVersion=1, same serialized keys",
+      "CHANGELOG.md added in the project (not part of the package)"
+    ],
+    "saveCompatibility": {
+      "simulatorRun": {
+        "classification": "locally simulated (fake Runtime, in-memory save store, same page across update)",
+        "save100": {
+          "score": 20,
+          "lives": 2,
+          "elapsed": 6.547700000001515,
+          "saveVersion": 1
+        },
+        "save101AfterContinue": {
+          "score": 44,
+          "lives": 2,
+          "elapsed": 7.797700000001518,
+          "saveVersion": 1
+        },
+        "allChecksPassed": true,
+        "checks": {
+          "initialVersion100": true,
+          "initialServeHasNoBadge": true,
+          "servedVersion101": true,
+          "servedHasBadge": true,
+          "saveSurvivedReload": true,
+          "servedCodeIs101": true,
+          "continueOffered": true,
+          "continuedViaSpace": true,
+          "scorePreserved": true,
+          "timeAdvanced": true,
+          "livesPreserved": true,
+          "saveVersionStable": true,
+          "saveShapeStable": true,
+          "noExternalRequests": true,
+          "noConsoleErrors": true
+        }
+      },
+      "freshPageReplay": {
+        "classification": "locally simulated (fresh 1.0.1 simulator page, exact 1.0.0 payload re-injected into the fake Runtime store)",
+        "allChecksPassed": true,
+        "checks": {
+          "freshHeaderIs101": true,
+          "freshSaveEmpty": true,
+          "injectedExactly": true,
+          "continueOffered": true,
+          "saveSurvived": true,
+          "codeIs101": true,
+          "continued": true,
+          "scorePreserved": true,
+          "timeAdvanced": true,
+          "livesPreserved": true,
+          "saveVersionStable": true,
+          "saveShapeStable": true,
+          "noExternalRequests": true,
+          "noConsoleErrors": true
+        }
+      },
+      "demoBuildEqualsPackedUpdate": true
+    },
+    "commands": [
+      {
+        "label": "00-update-build",
+        "exitCode": 0,
+        "command": "npm run build "
+      },
+      {
+        "label": "01-update-validate",
+        "exitCode": 0,
+        "command": "npm run validate "
+      },
+      {
+        "label": "02-update-pack",
+        "exitCode": 0,
+        "command": "npm run pack "
+      },
+      {
+        "label": "03-update-validate-packed-json",
+        "exitCode": 0,
+        "command": "node /Users/orange/Orange\\ Field/Matterhorn/dsh-game-market-worktrees/community-publishing/scripts/cli/dsh-game.mjs validate dist/c21-invalid-1.0.1.html --json "
+      },
+      {
+        "label": "04-update-sha256-check",
+        "exitCode": 0,
+        "command": "shasum -a 256 -c c21-invalid-1.0.1.html.sha256 "
+      },
+      {
+        "label": "05-update-sha256-manual",
+        "exitCode": 0,
+        "command": "shasum -a 256 c21-invalid-1.0.1.html "
+      },
+      {
+        "label": "10-demo-update-build",
+        "exitCode": 0,
+        "command": "npm run build "
+      },
+      {
+        "label": "12-reconfirm-build-validate-pack",
+        "exitCode": 0,
+        "command": "npm run validate "
+      },
+      {
+        "label": "13-reconfirm-pack",
+        "exitCode": 0,
+        "command": "npm run pack"
+      }
+    ],
+    "logs": [
+      "00-update-build.log",
+      "01-update-validate.log",
+      "02-update-pack.log",
+      "03-update-validate-packed-json.log",
+      "04-update-sha256-check.log",
+      "05-update-sha256-manual.log",
+      "06-dev-server-1.0.0.log",
+      "08-save-compat-demo.log",
+      "09-save-compat-replay.log",
+      "10-demo-update-build.log",
+      "11-environment.log",
+      "12-reconfirm-build-validate-pack.log",
+      "13-reconfirm-pack.log"
+    ]
+  },
+  "notVerified": [
+    "no real DSH Host install / launch, no real Runtime storage persistence",
+    "no public hosting, release, registry entry, PR or publish action",
+    "no cross-machine save transport; saves were exercised only inside the local simulator page",
+    "no maintainer review or catalog merge"
+  ]
+}
