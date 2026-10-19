@@ -171,7 +171,9 @@ ${digest.fileNameMatches ? '- [x] SHA-256 sidecar file name matches the package.
 - [ ] \`ready\` failure shows a visible error state (no white screen).
 - [ ] Pause / resume / hidden / visible / before-save are handled and autosave restores state (Continue).
 - [ ] Score submission handles \`GM-4006\` (out of range) visibly.
-- [ ] Canvas focus, \`Tab\` leaving the canvas and window resize behave (min 320×240, DPR ≤ 2).
+- [ ] Canvas focus, \`Tab\` leaving the canvas and window resize behave (actual canvas size, DPR ≤ 2).
+- [ ] The background fills the viewport without an outer frame; critical HUD/controls avoid the top 112px band and bottom-right 96×96 button area.
+- [ ] Expanded Agent messages (bottom-right 254×184) cannot hide the only required control.
 - [ ] No network access, external fonts, CDNs or remote images are used.
 - [ ] Text is available in \`zh\` and \`en\`; \`src/i18n.js\` covers all visible strings.
 - [ ] The description and categories are accurate; the cover image is licensed and https.

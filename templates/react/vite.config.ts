@@ -35,6 +35,8 @@ export default defineConfig({
   plugins: [react(), dshGameManifestPlugin(), viteSingleFile()],
   build: {
     target: 'es2020',
+    // A single-file package has no preload links; Vite's polyfill uses fetch.
+    modulePreload: { polyfill: false },
     sourcemap: false,
     cssCodeSplit: false,
     assetsInlineLimit: 20 * 1024 * 1024,

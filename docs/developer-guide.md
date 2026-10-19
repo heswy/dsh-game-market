@@ -161,6 +161,7 @@ React 模板仓库内不参与 `npm run verify`（需要 `npm install`），但 
 | `entry` / `cover` / `screenshots` | **不属于** V1 包 manifest；出现即 `E_PKG_LEGACY_FIELD`（GM-4237） |
 | `icon` | 可选 `data:image/(png\|webp\|jpeg);base64,...`，解码 ≤256 KiB |
 | `permissions` | 仅允许省略或 `{}` |
+| `viewport` | 可选 `{ width, height, fit?: 'contain' }`；**V1.1 起仅作为推荐设计分辨率（不是 SDK viewport 初值）**，平台不再按它做 letterbox/等比缩放（见 §4.4） |
 | 未知字段 | warning `W_PKG_UNKNOWN_FIELD`；实验字段用 `x-` 前缀 |
 
 `cover` / `screenshots` 只存在于 Registry 条目；`publish --cover` 负责它们。
@@ -246,6 +247,40 @@ try {
 ```
 
 `score.submit` 的 `GM-4006`（分数超出 manifest 范围）必须可见处理，不能静默吞掉。
+
+---
+
+### 4.4 Runtime 呈现与安全区（V1.1 规范）
+
+Runtime 是**全出血（edge-to-edge）**的：iframe 铺满整个 Main Panel，平台不绘制黑色
+letterbox、不做 `contain` 等比缩放、不加舞台内边距。游戏必须自己把整个视口画满，
+不能依赖平台给一个固定比例的画框。
+
+**硬性要求：**
+
+1. `html, body, #app` 铺满视口（`width/height: 100%`，推荐 `100dvh`/flex/grid），
+   不写固定像素外层，不出现透明/空白边缘。
+2. 背景由游戏负责：亮/暗主题都要覆盖整个画布；不允许在游戏内部再套一层“舞台边框/
+   黑边/阴影框”（模板已按此更新）。
+3. 响应式：监听窗口 `resize`，并在 ready 后/布局更新时读取只读快照 `game.runtime.viewport`；不要把 960×540 当硬性
+   分辨率，也不要为保持比例在内部留黑边。竖屏/横屏、窄窗都应正常布局。
+4. 平台悬浮控件的安全区固定如下，关键 HUD/按钮不要放进去：
+   - **顶部 112px（整个视口宽度）**：返回 / 暂停、保存状态和 macOS 顶部偏移。
+     平台将控件偏移限制在 0–48px；游戏无需读取父页面 CSS 变量。
+   - **右下 96×96**：小鲸鱼常驻按钮；以 iframe CSS 像素计，从视口边缘量起。
+   - 这些是关键 UI 的避让区域，不是游戏背景的 padding：背景仍需铺满视口。
+     玩法物体可以经过这些区域，但分数、生命、操作按钮应保持可见。
+   - 小鲸鱼展开的消息气泡属于临时覆盖层，可延伸到右下 254×184 区域；
+     96×96 不承诺覆盖展开气泡，游戏不要在这里放唯一可操作入口。
+5. `manifest.viewport.width/height` 只表达推荐设计分辨率；`fit` 仅为兼容字段
+   （唯一取值 `contain`），不驱动平台缩放。`init.viewport` 和 ready 后的
+   `game.runtime.viewport` 是 Runtime 测得的实际容器 CSS 宽高与 DPR；窗口/容器
+   改变时由平台更新快照，尺寸与 manifest 可以不同。`viewport` 不是可订阅的
+   lifecycle 事件，模板用窗口 `resize` 重新测量 canvas。
+
+**反例（不要再这样做）：** 在 `body` 上给固定 `padding: 14px`，再给 canvas 加
+`border + border-radius + box-shadow`，看起来像“平台舞台边框”，在不同窗口比例下
+就会出现大块黑边/白边。Vanilla 与 React 模板均提供全出血示例，HUD 从安全带下方开始。
 
 ---
 

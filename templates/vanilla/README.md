@@ -56,6 +56,22 @@ verifies your autosave path. `Clear save` + `Reload` verifies the first-run flow
 play, wait for an autosave or press `before-save`, then reload to verify
 **Continue**.
 
+## Runtime presentation (V1.1)
+
+The Runtime is now **edge-to-edge**: the game owns the full iframe viewport and the
+platform does not add a letterbox or scale by `manifest.viewport`. This template is
+already full-bleed (`#app` fills the viewport, no outer frame).
+
+Keep these platform overlay safe areas clear:
+
+- **top 112px across the viewport** — back / pause, save status and macOS clearance
+- **bottom-right 96×96** — Agent presence
+
+`manifest.viewport` is only a recommended design size; handle `resize` and
+`game.runtime.viewport` (a read-only actual-size snapshot, not an event) instead of hard-coding a resolution.
+Expanded Agent messages may temporarily cover the bottom-right 254×184; keep unique controls out of that area. See the developer
+guide §4.4 for the full contract.
+
 ## Rename the package / game id
 
 1. Edit `manifest.json`: `id`, `name`, `description`, `author`, `version`.

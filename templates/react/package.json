@@ -6,7 +6,7 @@
   "description": "A Vite + React template for the DSH Game Market.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc --noEmit && vite build",
     "runtime": "node scripts/dev.mjs",
     "validate": "node scripts/validate.mjs",
     "pack": "node scripts/pack.mjs",
@@ -23,6 +23,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.7.2",
     "vite": "^5.4.11",
-    "vite-plugin-singlefile": "^2.0.3"
+    "vite-plugin-singlefile": "^2.0.3",
+    "@types/node": "^20.0.0"
   }
 }

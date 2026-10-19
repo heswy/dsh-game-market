@@ -43,6 +43,15 @@ body {
     'Microsoft YaHei', sans-serif;
 }
 
+/*
+ * Runtime presentation standard (V1.1):
+ * - The platform renders the iframe edge-to-edge; the game must paint the whole
+ *   viewport and must NOT create its own letterbox / outer frame.
+ * - Keep the platform overlay safe areas clear:
+ *     top 112px across the viewport (controls, save status, macOS clearance)
+ *     bottom-right 96 x 96 (Agent presence)
+ *   The hint pill below avoids the bottom-right corner.
+ */
 #app {
   position: relative;
   width: 100%;
@@ -51,8 +60,9 @@ body {
   flex-direction: column;
   align-items: stretch;
   justify-content: stretch;
-  padding: 14px;
-  gap: 8px;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
   background:
     radial-gradient(120% 90% at 50% 0%, rgba(52, 211, 153, 0.08), transparent 60%),
     radial-gradient(90% 70% at 50% 100%, rgba(14, 165, 233, 0.06), transparent 65%),
@@ -61,30 +71,40 @@ body {
 
 #game {
   flex: 1 1 auto;
-  min-width: 320px;
-  min-height: 240px;
+  min-width: 0;
+  min-height: 0;
   width: 100%;
   height: 100%;
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  border: 0;
+  border-radius: 0;
   background: var(--stage);
   outline: none;
   touch-action: none;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
 }
 
 #game:focus-visible {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.28);
+  box-shadow: inset 0 0 0 3px rgba(52, 211, 153, 0.4);
 }
 
 .hint {
+  position: absolute;
+  left: 16px;
+  right: 112px;
+  bottom: 14px;
+  z-index: 2;
   margin: 0;
-  min-height: 18px;
+  padding: 6px 12px;
+  width: fit-content;
+  max-width: calc(100% - 128px);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel);
   color: var(--muted);
   font-size: 12px;
-  text-align: center;
+  white-space: normal;
+  pointer-events: none;
   user-select: none;
+  backdrop-filter: blur(8px);
 }
 
 .sr-only {

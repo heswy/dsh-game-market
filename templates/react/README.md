@@ -20,7 +20,7 @@ src/main.tsx                  React root
 src/App.tsx                   UI chrome, lifecycle wiring, score/session
 src/sdk.ts                    typed SDK access (generated vendor bundle)
 src/game/loop.ts              pause-safe requestAnimationFrame loop
-src/game/render.ts            canvas renderer (DPR cap 2, min 320×240)
+src/game/render.ts            canvas renderer (DPR cap 2, actual canvas size)
 src/game/storage.ts           pure serialize/deserialize (Continue)
 src/game/i18n.ts              zh / en copy
 vendor/dsh-game-sdk.js        offline @dsh-game/sdk v1 ESM bundle (generated)
@@ -63,12 +63,25 @@ Runtime Simulator** is `npm run runtime` (it uses `scripts/dev.mjs` and serves
    time never counts as game time.
 4. `visibilitychange` and window `blur` pause the game.
 5. Canvas receives focus; `Tab` leaves it; `Escape` is never intercepted.
-6. Resize handling, minimum 320×240, DPR capped at 2.
+6. Resize handling at the actual canvas size, DPR capped at 2.
 7. No network or external resources; system fonts only.
 8. `game.score.submit()` on game over, with visible `GM-4006` handling.
 9. All copy in `src/game/i18n.ts` (`zh` / `en`).
 10. `npm run validate` is CI-ready; `npm run runtime` is the simulator.
 11. This README covers rename/capabilities/preview/package/publish.
+
+## Runtime presentation (V1.1)
+
+The canvas and background fill the iframe, without an outer frame. Keep critical
+HUD and controls below the top **112px full-width band** and outside the
+**bottom-right 96×96** permanent Agent button area. The renderer demonstrates the
+HUD offset; the footer avoids the Agent corner. Expanded Agent messages can
+briefly cover the bottom-right **254×184** area; avoid unique controls there.
+These are CSS pixels from iframe edges; no parent CSS access is needed.
+
+`manifest.viewport` is a recommended design size. `game.runtime.viewport` after
+ready is a read-only snapshot of the **measured container size and DPR**, not a
+lifecycle event. The template measures the canvas on window `resize`.
 
 ## Rename / capabilities
 

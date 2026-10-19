@@ -14,7 +14,7 @@ Both templates must keep the 11 required behaviors from PRD §8.2.9:
 3. `pause` stops rAF/timers and saves; `resume` recomputes `dt` without paused time.
 4. `visibilitychange` and `blur` behave like pause.
 5. Canvas focus, `Tab` leaves the canvas, `Escape` is not intercepted.
-6. `resize` handling, minimum 320×240, DPR capped at 2.
+6. `resize` handling at the actual canvas size, DPR capped at 2.
 7. No network or external resources; system fonts only.
 8. `score.submit` on completion with visible `GM-4006` handling.
 9. zh/en copy in a dedicated i18n module.

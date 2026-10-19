@@ -2,7 +2,7 @@
  * Canvas renderer (PRD §8.2.9 items 5–6).
  *
  * - DPR-aware backing store, capped at 2 (item 6);
- * - minimum logical size 320×240;
+ * - logical size follows the actual canvas, including narrow/short panels;
  * - palette read from CSS custom properties so light/dark themes follow DSH;
  * - no external images or fonts.
  */
@@ -70,8 +70,8 @@ export function createRenderer(canvas, options = {}) {
     const rect = typeof canvas.getBoundingClientRect === 'function' ? canvas.getBoundingClientRect() : null;
     const rawWidth = (rect && rect.width) || canvas.clientWidth || options.width || 960;
     const rawHeight = (rect && rect.height) || canvas.clientHeight || options.height || 540;
-    width = Math.max(320, Math.round(rawWidth));
-    height = Math.max(240, Math.round(rawHeight));
+    width = Math.max(1, Math.round(rawWidth));
+    height = Math.max(1, Math.round(rawHeight));
     const ratio = typeof window !== 'undefined' && window.devicePixelRatio ? window.devicePixelRatio : 1;
     dpr = clamp(Number(ratio) || 1, 1, 2);
     canvas.width = Math.round(width * dpr);
@@ -120,10 +120,10 @@ export function createRenderer(canvas, options = {}) {
       context.fillStyle = palette.muted;
       context.font = '500 11px ui-sans-serif, -apple-system, "PingFang SC", sans-serif';
       const labelWidth = context.measureText(label).width;
-      context.fillText(label, x, 22);
+      context.fillText(label, x, 128);
       context.fillStyle = color;
       context.font = '700 18px ui-monospace, SFMono-Regular, Menlo, monospace';
-      context.fillText(value, x, 42);
+      context.fillText(value, x, 148);
       x += Math.max(labelWidth, context.measureText(value).width) + 28;
     }
     context.restore();
