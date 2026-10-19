@@ -254,7 +254,7 @@ manifest 是包内 JSON 对象，字段名大小写敏感。校验实现：`pack
 | `icon` | 否 | data URI：`data:image/(png\|webp\|jpeg);base64,…`；解码后 ≤256 KiB | 格式 `E_PKG_ICON_FORMAT` → `GM-4247`；超限 `E_PKG_ICON_TOO_LARGE` → `GM-4248` |
 | `tags` | 否 | 数组，≤8 项；每项 `^[a-z0-9][a-z0-9-]{0,23}$`；不允许重复 | 范围/重复 `GM-4233` |
 | `preferredTheme` | 否 | 枚举 `system`/`light`/`dark`/`game-defined` | 范围 `GM-4233` |
-| `viewport` | 否 | 对象 `{width, height, fit?}`；`width/height` 整数 1–3840；`fit` 仅 `"contain"` | 类型 `GM-4232`；范围 `GM-4233` |
+| `viewport` | 否 | 对象 `{width, height, fit?}`；`width/height` 整数 1–3840；`fit` 仅 `"contain"`。**语义（V1.1）：推荐设计分辨率与 SDK viewport 初值；Runtime 全出血，不做 contain 缩放/letterbox** | 类型 `GM-4232`；范围 `GM-4233` |
 | `score` | 条件 | 声明 `score` 能力时**必填**；对象见 §3.4 | 缺失 `GM-4231`；范围 `E_PKG_SCORE_RANGE` → `GM-4243` |
 | `save` | 条件 | 声明 `storage` 能力时**必填**；对象见 §3.5 | 缺失 `GM-4231`；非法 `E_PKG_SAVE_SCHEMA` → `GM-4244` |
 | `permissions` | 否 | 只接受**省略**或**空对象 `{}`** | `E_PKG_PERMISSION_UNSUPPORTED` → `GM-4242` |
@@ -321,7 +321,7 @@ interface ManifestAuthor {
 interface ManifestViewport {
   width: number;       // 整数 1–3840，默认 960
   height: number;      // 整数 1–3840，默认 540
-  fit?: 'contain';     // 默认 'contain'（V1 唯一取值）
+  fit?: 'contain';     // 兼容字段，V1 唯一取值；V1.1 起不驱动舞台缩放
 }
 ```
 
@@ -1475,11 +1475,13 @@ interface AgentSnapshot {
 | `categories` | `["arcade"]` | `["arcade","action"]` | `["puzzle"]` | `["arcade"]` |
 | `capabilities` | `["storage","score"]` | 同左 | 同左 | 同左 |
 | `sdkVersion` / `runtimeVersion` | `^1.0.0` / `^1.0.0` | 同左 | 同左 | 同左 |
-| `viewport` | `960×540 contain` | `540×960 contain`（竖屏） | `720×720 contain` | `960×540 contain` |
+| `viewport` | `960×540`（推荐，全出血） | `540×960`（竖屏，全出血） | `720×720`（推荐，全出血） | `960×540`（推荐，全出血） |
 | `preferredTheme` | `game-defined` | `game-defined` | `game-defined` | `game-defined` |
 | `save.schemaVersion` | `1` | `1` | `1` | `1` |
 | `score` | higher-better，0–1,000,000，integer | 同左 | 同左 | 同左 |
 | 分发方式 | Bundle 内置（可另放 Registry 示例） | Registry | Registry | Registry |
+
+> V1.1 起舞台全出血，`viewport` 只作为推荐设计分辨率与 SDK 初值；四款游戏均需自行铺满视口并遵守左上/右下平台安全区（见 `docs/developer-guide.md` §4.4）。
 
 共同契约：
 

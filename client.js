@@ -7437,25 +7437,33 @@ window.__ModuleLoader__.load({
 
     /* ---------- Runtime (kept from V0) ---------- */
 
-    .dgm-runtime { position: relative; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; background: #0b0c0e; }
+    .dgm-runtime {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      /* Full-bleed stage: the game owns the whole main area. No dark letterbox. */
+      background: var(--dgm-bg);
+    }
     .dgm-runtime-stage-wrap {
       flex: 1 1 auto;
       min-height: 0;
-      padding: calc(var(--dsh-frame-top-clearance, 0px) + 8px) 16px 16px;
+      padding: 0;
     }
     .dgm-stage {
       position: relative;
       width: 100%;
       height: 100%;
-      min-height: 240px;
+      min-height: 0;
       overflow: hidden;
-      border-radius: 14px;
-      background: #0b0c0e;
+      border-radius: 0;
+      background: var(--dgm-bg);
       outline: none;
     }
-    .dgm-stage:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 2px; }
+    .dgm-stage:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: -3px; }
     .dgm-stage-canvas { position: absolute; inset: 0; }
-    .dgm-stage-canvas > iframe { display: block; width: 100%; height: 100%; border: 0; background: #0b0c0e; }
+    .dgm-stage-canvas > iframe { display: block; width: 100%; height: 100%; border: 0; background: var(--dgm-bg); }
 
     .dgm-runtime-controls {
       position: absolute;

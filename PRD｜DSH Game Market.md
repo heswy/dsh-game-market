@@ -4,6 +4,8 @@
 >
 > **v2.2 修订（2026-10-18，用户决策锁定）**：包格式从「`.dshgame` zip 归档」改为**单文件自包含 HTML + 内嵌 manifest v1**（`<script type="application/json" id="dsh-game-manifest">`，全文恰好一处，manifest 文本 ≤64 KiB）；V1 不引入 zip/解压/文件列表/压缩炸弹等概念，多文件资源推迟到 V1.5。随之统一：安装目录为 `packages/<id>/<version>/entry.html`；Registry 索引为 `registry/games.json`（`registryVersion: 1`），条目 `package = { url, sha256, size, releasedAt }`；新增 Host `POST /install-local`（raw `text/html`，≤20 MiB，`source: 'local'`，Client 负责二次确认）；包 URL 准入改为 host allowlist（默认 `github.com`/`raw.githubusercontent.com`/`objects.githubusercontent.com`，可配置 `allowedHosts`），删除「只允许 `/releases/download/`」的硬限制；V1 首发锁定四款 `snake`/`jump`/`2048`/`breakout`，DSH-native Demo 从 V1 阻塞范围移除。包内 `entry`、`cover`、`screenshots` 字段退出 manifest：文件本身即入口，封面/截图仅作为 Registry 条目字段。决策记录见 12.1 D-034/D-035/D-036。
 >
+> **V1.1 呈现规范修订（2026-10-19，用户决策锁定）**：Runtime 舞台改为**全出血（edge-to-edge）**，删除黑色舞台背景/letterbox/舞台内边距；`manifest.viewport` 仅作为推荐设计分辨率与 SDK `viewport` 初值，不再驱动平台等比缩放；游戏必须铺满视口并遵守平台悬浮控件安全区。开发包规范见 `docs/developer-guide.md` §4.4，决策记录 D-037。
+>
 > **阅读路径**：
 > - 产品 / 设计：0–7 章 → 9 章（交互规格）→ 12 章（决策与风险）
 > - 工程实现：8 章（工程规格）→ 9 章（界面状态）→ 10 章（验收）→ 11 章（任务）
@@ -2111,7 +2113,7 @@ manifest 是唯一权威元数据，位于 HTML 的 `<script type="application/j
 | `sdkVersion` | string | 是 | — | semver range，形式受限（§8.11.2） |
 | `runtimeVersion` | string | 是 | — | semver range，形式同上 |
 | `preferredTheme` | string | 否 | `"system"` | `system` `light` `dark` `game-defined`（对齐 §6.17） |
-| `viewport` | object | 否 | `{ "width": 960, "height": 540, "fit": "contain" }` | 游戏逻辑分辨率与适配方式；`width`/`height` 为 1–3840 整数，`fit` 仅允许 `contain`；Runtime 据此计算舞台尺寸（见 9.6） |
+| `viewport` | object | 否 | `{ "width": 960, "height": 540, "fit": "contain" }` | 推荐设计分辨率；`width`/`height` 为 1–3840 整数，`fit` 仅允许 `contain`。**V1.1 起 Runtime 全出血铺满，不再据此计算/letterbox 舞台尺寸**（见 9.6.1、开发者指南 §4.4） |
 | `score` | object | 否 | `null` | `capabilities` 含 `score` 时**必填**，否则忽略 |
 | `score.direction` | string | 否 | `"higher-better"` | `higher-better` `lower-better` |
 | `score.min` | number | 是（`score` 在场） | — | 有限数；须满足 `min < max`；`max - min ≤ 1e9` |
@@ -4946,11 +4948,11 @@ Hero：16:9 或 21:9 封面，最高 320px，底部 64px 渐隐遮罩
 #### 9.6.1 布局与游戏画布
 
 - Runtime 占满 Main Panel，左侧 Sidebar 保留；**不注册新面板**，只切换插件内部页面状态，状态放在组件外（F-05）。
-- 顶部按 `--dsh-frame-top-clearance`（macOS 48px，其它 0）留安全带，承载返回与保存状态；左右与底部各 16px 为舞台内边距。
-- 游戏舞台：圆角 14px，`overflow: hidden`，背景 `#0B0C0E`（黑边），居中；按 Manifest 的视口／比例字段（见 8.2，默认 16:9）等比缩放，最大 1440×900；竖屏游戏按高度约束、宽度自适应。**不做裁切、不做拉伸**。
-- 比例小于 0.75 时出现一次“窗口较小…”提示，8s 后消失，不阻断。
+- **全出血舞台（V1.1）**：iframe 直接铺满 Main Panel，无舞台内边距、无圆角黑框、无 letterbox；不再按 Manifest `viewport` 做 `contain` 等比缩放。游戏负责绘制完整视口背景（亮/暗主题都要覆盖）。
+- 顶部按 `--dsh-frame-top-clearance`（macOS 48px，其它 0）只用于**悬浮控件**定位；控件直接叠在游戏画面上，不额外占据黑色安全带。
+- 平台悬浮控件安全区：**左上 112×48** 放返回/暂停，**右下 96×96** 放 Agent Presence；游戏应将关键 HUD 移出这些区域。开发者规范见 `docs/developer-guide.md` §4.4。
 - iframe 填满舞台：`sandbox` 按 8.4 定义，无 `allow-same-origin`；`referrerpolicy="no-referrer"`；不接收平台 header、不注入脚本到游戏内。
-- **待验证 Spike S-23**：主列是否与窗口 chrome 重叠。若实测不重叠，clearance 只用于悬浮控件 `top`，舞台顶部内边距降为 8px。
+- `manifest.viewport` 仅作为推荐设计分辨率与 `init.viewport` 初值；游戏必须响应 `resize` / SDK `viewport`，不硬编码 960×540，也不在内部再留黑边。
 
 #### 9.6.2 悬浮控件与自动隐藏
 
@@ -5034,7 +5036,7 @@ Esc 规则（必须精确，否则会与游戏冲突）：
 #### 9.6.7 返回工作与再次进入
 
 - 返回会话走 `selectPanel(null)`；会话的 Session、草稿、阅读位置由宿主保留，但 DOM 选区与 IME 状态会丢（F-05），因此**不承诺光标位置**。
-- Runtime 组件被卸载，所有页面状态必须在模块级 store：`{ gameId, paused, lastSaveAt, saveVersion, letterboxAspect, teardownReason }`。
+- Runtime 组件被卸载，所有页面状态必须在模块级 store：`{ gameId, paused, lastSaveAt, saveVersion, viewportSize, teardownReason }`。
 - 再次进入一律“重新加载 + 读档”，不做 iframe 复用、不做 BFcache 依赖。读档成功后：首次进入直接开始并显示 1200ms“已恢复上一局”；从等待用户／查看结果返回时停在暂停遮罩“已恢复上一局 / 继续游戏”，用户点击“继续”后才触发 `resume`（D-024），避免突然出声或计时。
 - 期间游戏被更新则按新版本读档（失败按存档损坏处理）；被卸载则提示“游戏已卸载”并回 Market。
 
@@ -5772,6 +5774,7 @@ M4 V1 发布验收（约 1 周）
 | D-034 | V1 包格式 = 单文件自包含 HTML + 内嵌 manifest v1（`<script type="application/json" id="dsh-game-manifest">`，全文恰好一处、文本 ≤64 KiB）；不引入 zip/归档/解压；取代 D-010/D-032 | 单文件最易校验、运行最稳；多文件资源 V1.5 再评估 | 用户决策（2026-10-18） | 已定 |
 | D-035 | 目录/命名统一：`packages/<id>/<version>/entry.html`；Registry 索引 `registry/games.json`（`registryVersion: 1`）；保留当前 + 1 个 previousVersion；Registry 包 URL host allowlist（`github.com`/`raw.githubusercontent.com`/`objects.githubusercontent.com` + 可配置 `allowedHosts`），重定向 ≤5 且不得降级 http | 统一契约、避免实现分歧 | 用户决策（2026-10-18） | 已定 |
 | D-036 | V1 首发只做四款：`snake`（内置）/`jump`/`2048`/`breakout`；DSH-native Demo 由用户亲自带人后续推进，不阻塞 V1 验收/发布 | 收敛范围、保证首发质量 | 用户决策（2026-10-18） | 已定 |
+| D-037 | Runtime 舞台全出血（edge-to-edge），删除黑色舞台背景/letterbox/舞台内边距；`viewport` 仅作推荐设计分辨率与 SDK 初值，不再驱动平台缩放；游戏铺满视口并遵守左上 112×48、右下 96×96 安全区；开发包规范写入开发者指南 §4.4/模板 | 消除黑边、统一第三方接入规范 | 用户决策（2026-10-19） | 已定 |
 
 ### 12.2 待验证项（Spike 清单）
 
