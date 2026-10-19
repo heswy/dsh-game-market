@@ -15,22 +15,22 @@
 | A-08 Continue 恢复 | 通过 | 2048/Jump 进入时平台「已恢复上一局」单层，游戏层无二次确认；`real-A-08-resume-confirm.jpg` |
 | V1-22 会话 Game tab 直连恢复 | 通过 | 返回工作后点「游戏」tab：直接进入 2048 继续，**无确认弹窗**；`real-V1-22-tab-resume.jpg` |
 | V1-23 暂停 UI 归属 | 通过 | 四款平台暂停均只有平台弹窗（含上面四张） |
-| U-08（面板级） | 通过 | 离开游戏（保存并返回工作）→ 再进入，Continue 正常；**应用级关闭重开见阻塞项** |
+| U-08（应用级） | 通过 | 离开游戏 → **关闭 DSH 重新打开** → 回到同一会话，Continue 与进度正确（用户确认）；面板级恢复此前已通过 |
 | U-09 完成一局（部分） | 通过（Snake） | Snake 撞墙 Game Over：得分 10 记录、最高 220 不变（正确）；`real-U-09-snake-gameover.jpg` |
 | U-11 卸载确认 | 通过（对话框） | 「卸载《Jump》？存档和最高分会保留，重新安装后可继续」+ 同时删除存档勾选；未实际卸载以保留验收环境；`real-U-11-uninstall-confirm.jpg` |
 | U-04 游戏内 Agent presence | 通过（真实 Agent） | 本会话 Agent 正在运行时进入 Jump 游玩，鲸鱼浮层显示「正在执行命令… / 返回工作」；`real-U-04-agent-presence.jpg` |
 | A-13 窄窗 | 通过 | 窗口约 760px 宽：hero 重排、卡片自适应、无横向滚动；`real-A-13-narrow-760.jpg` |
 | U-05 Agent 完成提醒 | 通过（用户截图） | 2048 游玩中右下角出现「任务完成啦 / 查看结果」，不打断游戏；`real-U-05-agent-completed.jpg`（用户提供） |
 | U-13 深色主题 | 通过（用户截图） | DSH 深色主题下 2048/Market 对比度正常；`real-U-13-dark-theme.jpg`（用户提供） |
-| U-06 提问提醒（AskUserQuestion） | 通过（用户截图，出现） | Breakout 游玩中鲸鱼显示「需要你回答一个问题 / 去处理」，底部状态同步；`real-U-06-question-presence.jpg`（用户提供）。**回答后提醒不消失的收尾 bug 已修复（`bcc3c92`），待重载 Host 复测** |
+| U-06 提问提醒（AskUserQuestion） | 通过（用户确认） | Breakout 游玩中鲸鱼显示「需要你回答一个问题 / 去处理」；回答后提醒消失（用户重启 Host 后复测通过，修复 `bcc3c92`）；`real-U-06-question-presence.jpg` |
 
 ## 2. 阻塞 / 部分 / 未执行（需后续或用户本人）
 
 | 项 | 状态 | 原因 |
 |---|---|---|
 
-| U-06 审批返回 | 阻塞（提问路径已修复） | 审批弹窗被禁用，无法触发真实审批；**提问（AskUserQuestion）已实现 waiting-user 提示（Host `tool/call` 映射，2026-10-19 修复，待重载 Host 后复测）**；dev 模拟方式见 `AUTOMATED-EVIDENCE.md` |
-| U-08 关闭 DSH 重开 | 阻塞 | 退出应用会终止承载验收的 Agent 会话；隔离宿主已验证 storage 持久化与 Continue（`AE-10-15-host.json`）；建议用户后续手动做一次关闭重开 |
+| U-06 审批返回（真实审批） | 阻塞（提问路径已通过） | 审批弹窗被禁用，无法触发真实审批；AskUserQuestion 提问提醒与收尾已真机通过 |
+
 
 | U-13 放大字号 | 未执行 | 系统级字号会影响用户其他应用，未代改 |
 | U-14 纯键盘全流程 | 部分 | 游戏内键盘可玩已覆盖；Market→安装→焦点完整 Tab 流程未做 |

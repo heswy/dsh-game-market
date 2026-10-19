@@ -328,6 +328,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - V1-24：**M3 自动化证据归档与真机分工**：自动化可覆盖的验收（构建/测试/CLI/Registry/安装生命周期/安全头/存档/拒绝矩阵/幂等）已执行并归档于 `docs/verification/v1/`；真机只保留交互/真实 Agent/性能/故障注入。证据纪律：不预填通过、模拟标注、未执行写「未执行」。
 - V1-25：**AskUserQuestion 提示**：`AskUserQuestion` 在 Session 日志里是普通 `tool/call`（工具名 `ask_user_question`），未回答期间没有 `tool/result`；Host 在 `tool/call` 时置 `waiting-user`（`agent.state.waiting.question`，source=question），`tool/result` 后回 running。仅匹配工具名，不读问题/参数内容；不依赖 `userQuestions` 投影（比 PRD 原 Spike S-14 方案更稳）。Host 单测覆盖；需重载 Host（插件行 off/on 或重启 DSH）后真机复测。
 - V1-26：**提问等待态收尾**：真实 DSH 的 `tool/result` payload 不带工具名（仅 tool message），V1-25 按工具名匹配会卡在 waiting-user；改为「`waiting-user` 且 `source=question` 时，收到 `tool/result` 即回 running」，审批等待仍由 `approval/decided` 关闭。Host 单测更新（结果事件不带 name）；用户实测提问提示已出现，此修复解决“回答后提示不消失”。
+- V1-27：**M3 真机收口**：U-06 提问提醒（出现+回答后消失）与 U-08 应用级关闭重开已由用户真机确认通过；剩余仅真实审批（环境禁用）、字号/减少动效、性能采样与 DEV-03/07 非阻塞项。
 
 ---
 
@@ -360,6 +361,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-19 · **M3 真机代执行（桌面辅助控制）**：在用户真实 DSH Desktop 窗口内执行安装 Jump/Breakout、四款启动、平台暂停单层（4 款截图）、Continue 确认、Game tab 直连恢复（V1-22）、游戏内真实 Agent presence、Snake Game Over、卸载确认框、760px 窄窗；共 13 项通过、4 部分、3 阻塞（U-05 需回合结束观察/U-06 审批禁用/U-13 深色未生效）、3 未执行；应用全屏与系统深色已恢复，未卸载任何游戏。证据见 `docs/verification/v1/REAL-MACHINE-RESULTS.md` 与 `real-*.jpg`。
 - 2026-10-19 · **AskUserQuestion 提示修复 + U-05/深色主题真机证据**：用户截图确认任务完成提醒与深色主题均正常，已归档 `real-U-05-agent-completed.jpg`/`real-U-13-dark-theme.jpg` 并更新验收记录。针对「AskQuestion 无提示」：Host agent-adapter 增加 `ask_user_question` tool/call → waiting-user(waiting-question) 映射、tool/result 复位；host 测试 141/141 通过；PRD/契约/记忆同步。待重载 Host 后真机复测提问场景。
 - 2026-10-19 · **AskUserQuestion 提示出现 + 回答后不消失修复**：用户真机确认提问提醒已出现（2048/Breakout 游戏内鲸鱼「需要你回答一个问题 / 去处理」），并报告回答后状态未消失。根因：真实 `tool/result` 不带工具名，V1-25 的 name 匹配失效。已改为按快照 `source=question` 收尾；host 141/141；待再重载 Host 复测。
+- 2026-10-19 · **U-06/U-08 真机通过**：用户确认 AskUserQuestion 提醒回答后消失（`bcc3c92` 生效），U-08 关闭 DSH 重开后 Continue/进度正确。后续补跑 A-11 连续 5 分钟与收尾封板。
 - （待续）
 
 **当前状态 / 待用户确认**：
