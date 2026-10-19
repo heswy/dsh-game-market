@@ -1569,14 +1569,14 @@ function onRuntimePause() {
     return;
   }
   if (mode === 'paused') {
-    showRuntimePauseOverlay();
+    hideOverlay();
     render();
     return;
   }
   mode = 'paused';
   saveState();
+  hideOverlay();
   render();
-  showRuntimePauseOverlay();
   a11y(text.a11yPaused);
 }
 
@@ -1822,7 +1822,7 @@ async function boot() {
         mode = 'ready';
         bestAtRunStart = best;
         if (runtimePaused) {
-          showRuntimePauseOverlay();
+          hideOverlay();
           render();
         } else {
           showContinueOverlay();
@@ -1834,7 +1834,7 @@ async function boot() {
       mode = 'ready';
       bestAtRunStart = best;
       if (runtimePaused) {
-        showRuntimePauseOverlay();
+        hideOverlay();
         render();
       } else {
         showStartOverlay();

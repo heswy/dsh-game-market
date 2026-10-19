@@ -911,7 +911,7 @@ function onRuntimePause() {
     if (wasPlaying) wasMovingBeforePause = moving;
     mode = 'paused';
     if (wasPlaying) saveState();
-    showPausedOverlay();
+    hideOverlay();
     render();
   }
 }
@@ -1032,13 +1032,13 @@ async function boot() {
         showGameOverOverlay();
       } else {
         mode = 'ready';
-        if (runtimePaused) showPausedOverlay();
+        if (runtimePaused) hideOverlay();
         else showContinueOverlay();
       }
     } else {
       state = createGame({ seed: makeSeed() });
       mode = 'ready';
-      if (runtimePaused) showPausedOverlay();
+      if (runtimePaused) hideOverlay();
       else showStartOverlay();
     }
     updateScores();

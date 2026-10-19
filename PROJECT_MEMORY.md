@@ -324,6 +324,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - V1-20：**“游戏运行中” = 活跃 Runtime 实例**（`/launch` 后未 release），不是未结束的 Play Session。Host `isRunning` 不再用 `sessions.findRunning`；新增 `POST /runtime-release {gameId}`，Client 在 Runtime 卸载/离开时调用。未结束 Session 保留（Continue + 卸载重装继承），但不再阻止更新/卸载。原因：用户本地安装 breakout 后想卸载重装，被历史未结束 Session 判为“运行中”卡死，且 UI 无结束入口（2026-10-18）。
 - V1-21：**`launchMode` 随 init 显式下发**（SDK `game.runtime.launchMode`）：平台 `resume-paused` 启动时，游戏据此隐藏自己的“继续/开始”界面并保持暂停，平台弹窗为唯一确认；不再只依赖 `pause` 生命周期事件的到达时序（Electron 桌面端曾出现时序差异导致双层）。Runtime/SDK 契约扩展向后兼容（旧 SDK 忽略新字段）。
 - V1-22：**会话 Game tab 返回 = 直接恢复，不再弹平台确认**（`autoResume: true`）：用户点击 Game tab 本身就是确认，Runtime 进入 paused 后立即 resume；Market 详情「继续游戏」/Agent 恢复等其他路径仍保留 D-024 一次确认。原因：用户验收时把平台确认弹窗视为剩余“双层提示”（2026-10-19）。
+- V1-23：**暂停 UI 归属统一**：平台发起的 `pause` 只冻结/保存游戏，**不渲染游戏自己的暂停面板**（否则与平台「已暂停」弹窗双层）；本地暂停（游戏内按 P/Esc）仍画自己的暂停面板。四款游戏已统一：breakout/jump/2048/snake 的平台暂停路径均 `hideOverlay()`；已用真实平台 E2E 验证（四款平台暂停时游戏层 0 个可见 overlay，恢复后游戏继续）。
 
 ---
 
@@ -351,6 +352,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-18 · **“游戏正在运行”卡死卸载修复**：根因 Host 把“未结束 Play Session”当运行中，但 Session 为 Continue 长期保留且无结束入口。改为 live Runtime 实例判定 + 新增 `/runtime-release`（Client Runtime 卸载时释放）；Host 测试覆盖 launch→4096→release→成功、以及“未结束 Session 不阻止卸载”；`npm run verify` **766/766**；契约文档同步；需重启 DSH 生效。
 - 2026-10-19 · **双层弹窗兜底修复**：桌面 Electron 里 `pause` 事件疑似未按时到达游戏，导致“平台已恢复上一局”+游戏 Continue/New run 双层。已在 Runtime init 显式下发 `launchMode`，SDK 暴露 `game.runtime.launchMode`，四款游戏在 `resume-paused` 启动时直接进入暂停态；本地 mock-runtime harness（**完全不发 pause**）验证 breakout `overlay=paused`。`npm run verify` 全绿；需刷新页面并重装本地安装的三款游戏。
 - 2026-10-19 · **Game tab 返回直连恢复**：`beginGame` 增加 `autoResume`，RuntimeView 在 paused 时自动 resume 并隐藏平台确认；entry-flow 测试、store 测试更新；`npm run verify` 767/767。仅需刷新页面（client 变更），无需重启 DSH 或重装游戏。
+- 2026-10-19 · **平台暂停双层修复**：用户点平台暂停出现平台弹窗+游戏暂停面板。已统一四款游戏：生命周期 `pause` 只冻结、隐藏自身 overlay，平台暂停菜单为唯一暂停 UI；本地暂停不受影响。E2E（隔离 DSH 真实 Host/Runtime）：breakout/jump/2048 平台暂停后游戏层可见 overlay=0，暂停→继续后 runtime playing；snake 内置同步修复并验证。`npm run verify` 767/767。需刷新页面 + 重装三个本地游戏。
 - （待续）
 
 **当前状态 / 待用户确认**：

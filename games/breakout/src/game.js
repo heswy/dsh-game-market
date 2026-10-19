@@ -746,14 +746,10 @@ function onRuntimePause() {
   runtimePaused = true;
   stopLoop();
   if (state.status === 'playing') setPaused(state, true);
-  if (!overlay.kind || overlay.kind === 'paused') {
-    showPausedOverlay();
-  } else if (overlay.kind === 'boot' || overlay.kind === 'start') {
-    // Platform launched us in `resume-paused` mode (D-024): its modal is the
-    // single confirmation, so drop our own boot/Continue menu and show the
-    // paused state instead of a second prompt.
+  // The platform pause modal is the only pause surface (D-024): freeze and
+  // drop any game-level boot/start/pause dialog so there is never a second one.
+  if (overlay.kind === 'boot' || overlay.kind === 'start' || overlay.kind === 'paused') {
     hideOverlay(false);
-    showPausedOverlay();
   }
   if (state.status !== 'over' && state.status !== 'won') saveState('pause');
   renderOnce();
@@ -968,7 +964,6 @@ function boot() {
       stopLoop();
       if (state.status === 'playing') setPaused(state, true);
       hideOverlay(false);
-      showPausedOverlay();
     } else {
       showStartOverlay();
     }

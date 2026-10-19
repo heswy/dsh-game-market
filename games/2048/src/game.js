@@ -783,7 +783,7 @@ function onRuntimePause() {
   pausedFromMode = mode;
   mode = 'paused';
   saveNow();
-  showPlatformPauseOverlay();
+  renderer.hideOverlay();
   refreshHud();
   updateStatus();
 }
@@ -1040,7 +1040,7 @@ async function boot() {
     if (runtimePaused && mode !== 'over' && mode !== 'error') {
       pausedFromMode = mode;
       mode = 'paused';
-      showPlatformPauseOverlay();
+      renderer.hideOverlay();
       refreshHud();
       updateStatus();
     } else if (resumeRequested && !runtimePaused && mode === 'ready' && restoredSave) {
