@@ -68,25 +68,39 @@ export function apply(ctx) {
   );
 
   let boundTranslate = null;
-  function sidebarLabel() {
+  function hostTranslate(key) {
     try {
       if (boundTranslate === null && ctx.locale && typeof ctx.locale.bind === 'function') {
         boundTranslate = ctx.locale.bind(NS);
       }
       if (typeof boundTranslate === 'function') {
-        const value = boundTranslate('sidebar.label');
-        if (typeof value === 'string' && value.length > 0 && value !== 'sidebar.label') return value;
+        const value = boundTranslate(key);
+        if (typeof value === 'string' && value.length > 0 && value !== key) return value;
       }
     } catch (error) {
-      reportDiagnostic('sidebar-label-failed', error);
+      reportDiagnostic('host-translate-failed:' + key, error);
     }
-    return translate('zh', 'sidebar.label');
+    return null;
   }
 
-  // The host renders the resolved label value as the tab's children; returning
-  // a component gives the tab a live, session-level status badge.
+  function sidebarLabel() {
+    const value = hostTranslate('sidebar.label');
+    return typeof value === 'string' && value.length > 0 ? value : translate('zh', 'sidebar.label');
+  }
+
+  // The host resolves a label thunk on the active locale and re-runs it when the
+  // locale changes; resolve the visible strings through the host dictionary so a
+  // zh host never shows the en fallback ("Game"/"Done").
   function gameTabLabel() {
-    return h(GameTabLabel, null);
+    return h(GameTabLabel, {
+      labels: {
+        game: hostTranslate('entry.tab.game'),
+        waiting: hostTranslate('entry.tab.badge.waiting'),
+        completed: hostTranslate('entry.tab.badge.completed'),
+        error: hostTranslate('entry.tab.badge.error'),
+        resume: hostTranslate('entry.tab.badge.resume'),
+      },
+    });
   }
 
   function injectSlot(slotName, callback) {
