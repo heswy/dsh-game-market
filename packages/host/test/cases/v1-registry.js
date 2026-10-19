@@ -18,6 +18,28 @@ import {
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 
+/**
+ * Wait until the layered registry reports the expected active source.
+ *
+ * `registry.ready()` intentionally settles after a bounded startup window
+ * (~250ms) so a hanging remote never blocks list/health: the bundled seed is
+ * usable meanwhile and the background official refresh lands later. Asserting
+ * `activeSource` straight after `ready()` therefore races the remote, and fails
+ * under CPU load even though the official source is reachable.
+ *
+ * Polling keeps the original assertion meaningful — a genuinely broken official
+ * source still fails, just after the timeout — while removing the load-sensitive
+ * flake.
+ */
+async function settledRegistry(host, expected, timeoutMs = 5000) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const snapshot = await host.host.registry.snapshot();
+    if (snapshot.activeSource === expected || Date.now() >= deadline) return snapshot;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+}
+
 function fileRegistryConfig(fixture) {
   return { registry: { url: fixture.indexPath, allowLocalFile: true } };
 }
@@ -61,7 +83,7 @@ test('layered default uses the official snapshot exclusively when it is reachabl
   };
   const host = await createHostHarness(t, { useDefaultRegistry: true, config: { registry: { allowedHosts: ['cdn.example.com'] } }, http: { fetch: fetchImpl } });
   await host.host.registry.ready();
-  const registry = await host.host.registry.snapshot();
+  const registry = await settledRegistry(host, 'official');
   assert.equal(registry.activeSource, 'official');
   assert.equal(registry.fallback, false);
   assert.equal(registry.official.state, 'fresh');
@@ -82,7 +104,7 @@ test('a valid empty official index is authoritative and does not fall back to se
     http: { fetch: async (url) => (url === DEFAULT_OFFICIAL_REGISTRY_URL ? new Response(JSON.stringify(emptyIndex), { status: 200 }) : new Response('not found', { status: 404 })) },
   });
   await host.host.registry.ready();
-  const registry = await host.host.registry.snapshot();
+  const registry = await settledRegistry(host, 'official');
   assert.equal(registry.activeSource, 'official');
   assert.equal(registry.fallback, false);
   assert.equal(registry.official.state, 'fresh');
@@ -173,7 +195,7 @@ test('layered default installs from the official HTTPS package when the snapshot
   await host.host.registry.ready();
   const installed = await host.data(ROUTES.INSTALL, { body: { gameId: 'jump', operationId: 'layered-official-install' } });
   assert.equal(installed.version, '1.0.0');
-  assert.equal((await host.host.registry.snapshot()).activeSource, 'official');
+  assert.equal((await settledRegistry(host, 'official')).activeSource, 'official');
   const launch = await host.data(ROUTES.LAUNCH, { body: { gameId: 'jump' } });
   const entry = await host.request(launch.entryUrl);
   assert.equal(entry.status, 200);

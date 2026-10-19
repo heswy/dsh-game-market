@@ -26,6 +26,19 @@ export const ORIGIN = 'http://127.0.0.1:19387';
 
 export { ROUTES, AGENT_EVENTS, AGENT_SESSION_EVENTS };
 
+/**
+ * Remove a harness temp directory, tolerating a concurrent writer.
+ *
+ * The host keeps background work alive past a test body (preview downloads,
+ * delayed flushes), and a plain `fs.rm(recursive)` then races it into
+ * `ENOTEMPTY`. `maxRetries`/`retryDelay` are Node's remedy for exactly this
+ * (EBUSY/ENOTEMPTY/EPERM during teardown); without it the suite fails on
+ * cleanup under CPU load even when every assertion passed.
+ */
+function rmTree(directory) {
+  return fs.rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 25 });
+}
+
 export function createFakeContext({ knownEvents = [...AGENT_EVENTS, 'session/event'], failingEvents = [], withConnection = true } = {}) {
   const routes = new Map();
   const listeners = new Map();
@@ -226,7 +239,7 @@ export async function createHarness(
 
   t.after(async () => {
     await fake.dispose();
-    await fs.rm(directory, { recursive: true, force: true });
+    await rmTree(directory);
   });
 
   return {
@@ -296,7 +309,7 @@ export async function createHostHarness(
       // Cleanup is best effort.
     }
     await fake.dispose();
-    await fs.rm(directory, { recursive: true, force: true });
+    await rmTree(directory);
   });
 
   return {
@@ -313,7 +326,7 @@ export async function createHostHarness(
 /** Copy the fixture games tree to a temp root and optionally patch snake/game.json. */
 export async function makeGameRoot(t, { base = FIXTURE_ROOT, overrides = null, omitEntry = false } = {}) {
   const directory = await fs.mkdtemp(path.join(tmpdir(), 'dsh-gm-games-'));
-  t.after(() => fs.rm(directory, { recursive: true, force: true }));
+  t.after(() => rmTree(directory));
   await fs.cp(base, directory, { recursive: true });
   const manifestPath = path.join(directory, 'snake', 'game.json');
   if (overrides) {
