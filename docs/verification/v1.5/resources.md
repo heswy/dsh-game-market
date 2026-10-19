@@ -185,23 +185,29 @@ Referrer-Policy: no-referrer
 > 探针 `scripts/verification/v1.5/assets/probe-selfnav.mjs`（exit 0，4/4 as-expected）。
 > 每个用例都先发一个**同源 boot beacon**（`connect-src` 允许），用来证明「没有外泄」不是「游戏根本没跑起来」。
 
-| 用例 | 嵌入文档的 `frame-src` | 游戏实际运行 | 外部 origin 是否收到请求 | 浏览器日志 |
-|---|---|---|---|---|
-| C1 host page **无 CSP**（现状） | 无 | 是 | **收到（gap 复现）** | — |
-| C2 host page `frame-src <resOrigin>` | 有 | 是 | 未收到 | `Framing 'http://127.0.0.1:58301/' violates the following Content Security Policy directive: "frame-src http://127.0.0.1:58302". The request has been blocked.` |
-| C3 **平台自服务的同源 wrapper**（wrapper 自己的 CSP 含 `frame-src <resOrigin>`） | 有（wrapper） | 是 | 未收到 | 无（静默阻断） |
-| C4 游戏文档**自身 CSP**（负对照） | 无 | 是 | **收到** | — |
+| 用例 | 顶层页面 CSP | 嵌入文档的 `frame-src` | 游戏实际运行 | 实际导航目标 | 外部 origin 是否收到请求 | 浏览器日志 |
+|---|---|---|---|---|---|---|
+| C1 host page **无 CSP**（现状） | 无 | 无 | 是 | `http://127.0.0.1:58301` | **收到（gap 复现）** | — |
+| C2 host page `frame-src <resOrigin>` | 有 | 有（host 页） | 是 | 同上 | 未收到 | `Framing 'http://127.0.0.1:58301/' violates the following Content Security Policy directive: "frame-src http://127.0.0.1:58302". The request has been blocked.` |
+| C3 **平台自服务同源 wrapper**（wrapper CSP 含 `frame-src <resOrigin>`） | **无** | 有（wrapper） | 是 | 同上 | 未收到 | 无（静默阻断） |
+| **C3c C3 的对照**：同 wrapper **去掉 CSP**（顶层同样无 CSP） | **无** | 无 | 是 | 同上 | **收到** | — |
+| C4 游戏文档**自身 CSP**（负对照） | 有（游戏自身） | 无 | 是 | 同上 | **收到** | — |
+
+**用例的可证伪性（针对评审 CR-P1-2 的修正）**：每个用例都先从游戏内发出一个**同源 beacon**，把「即将导航到的目标」上报给资源服务，因此报告里能同时看到 `gameRan`、`attemptedTarget`、`leaked` 三个字段。判定要求 **游戏运行 + 目标确实是外部 sink origin + 泄漏与否符合预期** 三者同时成立；`aimedAtSink` 与 `topLevelCsp` 都落盘可查。
+
+> **修正记录（2026-10-19，评审第二轮）**：本文件早先版本里的 C3 **是假通过** —— wrapper 内嵌游戏时没有转发 `?to=`，游戏执行的是 `location.replace(null)`（同源相对路径），**根本没有尝试外部导航**；且 C3 的顶层页面当时也带了 CSP，无法把结果归因给 wrapper。
+> 现已修正：① wrapper 把目标转发给子 iframe；② C3/C3c 的顶层页面**一律不发 CSP**（报告用 `topLevelCsp: null` 佐证）；③ 新增 **C3c 对照**（同 wrapper、去掉其 CSP）——它必须泄漏，否则 C3 的「被阻断」就仍可能是探针假象；④ 新增 `attemptedTarget`/`aimedAtSink` 断言。
 
 **结论（供契约与 M1 使用）**
 
 1. **子文档自身的 CSP 拦不住它自己的导航**（C4 负对照证实）：`connect-src` / `frame-src 'none'` 只约束子资源，不约束文档导航。
-2. **阻断必须来自嵌入文档的 `frame-src`**（CSP3 对 nested browsing context 的导航生效），由 Chrome 的违规日志直接佐证（C2）。
-3. **首选缓解（本轮已验证、无需 DSH 改动）**：资源 origin 提供一个**平台自服务的同源 wrapper 文档**，其 CSP 设 `frame-src <resourceOrigin>; child-src <resourceOrigin>`，由它内嵌游戏 iframe（C3 实测阻断）。这样导航边界不依赖 host 页面策略。
+2. **阻断来自嵌入文档的 `frame-src`**（CSP3 对 nested browsing context 的导航生效），由 Chrome 的违规日志直接佐证（C2）。
+3. **首选缓解（本轮已验证、无需 DSH 改动）**：资源 origin 提供一个**平台自服务的同源 wrapper 文档**，其 CSP 设 `frame-src <resourceOrigin>; child-src <resourceOrigin>`，由它内嵌游戏 iframe。C3 阻断、**C3c（仅去掉该 CSP）泄漏**，两者其余条件完全相同 → 阻断可**归因给 wrapper 自身策略**，不依赖 host 页面（C3 顶层无 CSP）。
 4. **替代缓解**：host 页面自身设 `frame-src <resourceOrigin>`（C2 实测阻断）。**产品实现 MUST NOT 假设 host 页面有该策略** —— 现状没有（C1）。
 5. **纵深防御（不能替代阻断）**：请求可能已经发出，检测无法挽回。受信 Runtime 仍应把「非预期导航 / Bridge 心跳中断」当失败处理：暂停并销毁实例、显示错误、不再授予能力。
 6. **修正一处表述**：CSP **按 origin 匹配**，不是按「绝对 vs 相对」。指向同一资源 origin 的绝对 URL 会被放行；`connect-src <resourceOrigin>` 是运行时权威边界，而 validator 对绝对 URL 的静态拒绝是**创作期可移植性规则，不是安全证明**。
 
-**M1 必须补的回归**：正例 —— wrapper 内导航到资源 origin 内页面成功；反例 —— 导航到外部 origin 被阻断且**不产生网络请求**（用与 C2/C3 相同的 sink 记录法判定）。
+**M1 必须补的回归**：正例 —— wrapper 内导航到资源 origin 内页面成功；反例 —— 导航到外部 origin 被阻断且**不产生网络请求**（用与 C2/C3/C3c 相同的 sink 记录法判定，并保留「目标确实是外部 origin」的断言）。
 **仍未验证**：wrapper 方案只在 Chromium 155 实测；跨引擎、以及接入真实 DSH 页面后的行为未验证（见 §6）。
 
 ## 6. 未验证项（明确不写成通过）

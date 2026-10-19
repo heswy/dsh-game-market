@@ -75,17 +75,18 @@ function resourceServer() {
       // Same-origin, allowed by `connect-src <resOrigin>` in every case. Used as
       // a positive control: it proves the game document actually loaded AND ran
       // its script, so "no sink hit" means the navigation was blocked rather
-      // than the game never starting.
-      beacons.push({ at: Date.now(), url: req.url });
+      // than the game never starting. `to` records the target the game is about
+      // to navigate to, so a case cannot pass by navigating nowhere.
+      beacons.push({ at: Date.now(), url: req.url, to: url.searchParams.get('to') });
       res.writeHead(204, { 'access-control-allow-origin': '*' });
       res.end();
       return;
     }
     if (url.pathname === '/res/game.js') {
       const body = `window.__GAME_BOOTED__ = true;
-fetch('/res/beacon', { method: 'POST' }).catch(function () {});
+var to = new URLSearchParams(window.location.search).get('to');
+fetch('/res/beacon?to=' + encodeURIComponent(String(to)), { method: 'POST' }).catch(function () {});
 setTimeout(function () {
-  var to = new URLSearchParams(window.location.search).get('to');
   try { window.location.replace(to); } catch (e) { window.__NAV_ERROR__ = String(e); }
 }, 400);`;
       res.writeHead(200, { 'content-type': MIME['.js'], 'x-content-type-options': 'nosniff', 'cache-control': 'no-store' });
@@ -98,15 +99,21 @@ setTimeout(function () {
       res.end(body);
       return;
     }
-    if (url.pathname === '/res/wrapper.html') {
+    if (url.pathname === '/res/wrapper.html' || url.pathname === '/res/wrapper-nocsp.html') {
+      // The wrapper forwards the navigation target to its child. Without this
+      // the game would call `location.replace(null)` and "blocking" would be an
+      // artefact of a navigation that never targeted anything external.
+      const target = url.searchParams.get('to') ?? `http://127.0.0.1:${PORTS.sink}`;
       const body = `<!doctype html><meta charset="utf-8"><title>wrapper</title>
-<iframe id="g" sandbox="allow-scripts" referrerpolicy="no-referrer" src="/res/game.html"></iframe>`;
-      // The wrapper is served by the resource origin, so this CSP is ours to set.
-      res.writeHead(200, {
-        'content-type': MIME['.html'],
-        'content-security-policy': `default-src 'none'; frame-src ${resOrigin}; child-src ${resOrigin}; script-src 'none'; style-src 'none'; base-uri 'none'; form-action 'none'`,
-        'cache-control': 'no-store',
-      });
+<iframe id="g" sandbox="allow-scripts" referrerpolicy="no-referrer" src="/res/game.html?to=${encodeURIComponent(target)}"></iframe>`;
+      const headers = { 'content-type': MIME['.html'], 'cache-control': 'no-store' };
+      if (url.pathname === '/res/wrapper.html') {
+        // The wrapper is served by the resource origin, so this CSP is ours to
+        // set — and it is the only framing policy in the C3 case, because the
+        // top-level page there deliberately sends none.
+        headers['content-security-policy'] = `default-src 'none'; frame-src ${resOrigin}; child-src ${resOrigin}; script-src 'none'; style-src 'none'; base-uri 'none'; form-action 'none'`;
+      }
+      res.writeHead(200, headers);
       res.end(body);
       return;
     }
@@ -126,18 +133,22 @@ function parentServer() {
   return http.createServer((req, res) => {
     const url = new URL(req.url, `http://127.0.0.1:${PORTS.parent}`);
     const target = url.searchParams.get('to') ?? `http://127.0.0.1:${PORTS.sink}`;
-    const src = url.pathname === '/wrapper' ? `${resOrigin}/res/wrapper.html` : `${resOrigin}/res/game.html?to=${encodeURIComponent(target)}`;
+    const wrapper = url.pathname === '/wrapper' || url.pathname === '/wrapper-nocsp';
+    const src = wrapper
+      ? `${resOrigin}${url.pathname === '/wrapper' ? '/res/wrapper.html' : '/res/wrapper-nocsp.html'}?to=${encodeURIComponent(target)}`
+      : `${resOrigin}/res/game.html?to=${encodeURIComponent(target)}`;
     const body = `<!doctype html><meta charset="utf-8"><title>parent</title>
 <iframe id="f" sandbox="allow-scripts" referrerpolicy="no-referrer" src="${src}"></iframe>`;
     const headers = { 'content-type': MIME['.html'], 'cache-control': 'no-store' };
     if (url.pathname === '/with-frame-src') {
-      headers['content-security-policy'] = `default-src 'self'; frame-src ${resOrigin}; child-src ${resOrigin}`;
-    } else if (url.pathname === '/wrapper') {
-      // The parent of the wrapper must be able to frame the wrapper's origin,
-      // but says nothing about where the wrapper's child may navigate.
+      // Mitigation A: the embedding page itself restricts frame navigations.
       headers['content-security-policy'] = `default-src 'self'; frame-src ${resOrigin}; child-src ${resOrigin}`;
     }
-    // `/plain` deliberately sends no CSP: no restriction on frame navigations.
+    // `/plain`, `/wrapper` and `/wrapper-nocsp` deliberately send NO CSP. The
+    // wrapper cases must therefore be decided by the WRAPPER's own policy alone,
+    // otherwise a pass could not be attributed to the wrapper. C3 (wrapper with
+    // CSP) and C3c (wrapper without CSP) are otherwise identical, which is what
+    // makes the pair a real control.
     res.writeHead(200, headers);
     res.end(body);
     return;
@@ -202,16 +213,24 @@ async function main() {
   const cases = [
     // The reported gap: a host page with no framing policy lets the game
     // navigate itself to an arbitrary origin.
+    // The reported gap: a host page with no framing policy lets the game
+    // navigate itself to an arbitrary origin.
     { id: 'C1-parent-no-csp', url: `http://127.0.0.1:${PORTS.parent}/plain`, expectLeak: true, note: 'host page sends no CSP (current situation)' },
     // Mitigation A: the host page restricts frame-src to the resource origin.
     { id: 'C2-parent-frame-src', url: `http://127.0.0.1:${PORTS.parent}/with-frame-src`, expectLeak: false, note: 'host page restricts frame-src to the resource origin' },
-    // Mitigation B: a same-origin wrapper we serve carries the restriction, so
-    // it does not depend on the host page's policy.
-    { id: 'C3-wrapper-frame-src', url: `http://127.0.0.1:${PORTS.parent}/wrapper`, expectLeak: false, note: 'platform-served wrapper restricts frame-src to the resource origin' },
+    // Mitigation B: a same-origin wrapper we serve carries the restriction.
+    // The top-level page here sends NO CSP, so the outcome is attributable to
+    // the wrapper alone.
+    { id: 'C3-wrapper-frame-src', url: `http://127.0.0.1:${PORTS.parent}/wrapper`, expectLeak: false, note: 'platform-served wrapper restricts frame-src; top-level page sends no CSP' },
+    // C3's control: identical path and target, wrapper CSP removed. This case
+    // MUST leak — otherwise C3's "blocked" would be an artefact of the harness
+    // (for example a game that never navigated anywhere).
+    { id: 'C3c-wrapper-no-csp', url: `http://127.0.0.1:${PORTS.parent}/wrapper-nocsp`, expectLeak: true, note: 'same wrapper without its CSP (control for C3)' },
     // Negative control: the game document's OWN CSP cannot stop its own
     // navigation, so this case must leak.
     { id: 'C4-game-own-csp-only', url: `http://127.0.0.1:${PORTS.resource}/res/game.html?to=http%3A%2F%2F127.0.0.1%3A${PORTS.sink}`, expectLeak: true, note: 'game document CSP only (negative control)' },
   ];
+  const sinkOrigin = `http://127.0.0.1:${PORTS.sink}`;
 
   const results = [];
   let cdp = null;
@@ -221,10 +240,21 @@ async function main() {
       const before = sinkHits.length;
       const beaconsBefore = beacons.length;
       const logsBefore = consoleErrors.length;
+      // Record the top-level page's own CSP, so the report shows which policy
+      // was actually in play. The wrapper cases MUST show none here: otherwise a
+      // pass could not be attributed to the wrapper.
+      const topLevelCsp = await fetch(item.url)
+        .then((r) => r.headers.get('content-security-policy'))
+        .catch(() => null);
       await cdp.send('Page.navigate', { url: item.url });
       await sleep(2200);
       const hits = sinkHits.slice(before);
       const booted = beacons.length > beaconsBefore;
+      // The target the game actually tried to reach, as reported by its own
+      // pre-navigation beacon. `null`/`"null"` means it never aimed anywhere
+      // external, which is exactly the defect this assertion exists to catch.
+      const attemptedTarget = beacons.slice(beaconsBefore).map((b) => b.to).find((to) => to !== null) ?? null;
+      const aimedAtSink = typeof attemptedTarget === 'string' && attemptedTarget.startsWith(sinkOrigin);
       const logs = consoleErrors.slice(logsBefore)
         .map((entry) => entry.text || entry.url || '')
         .filter(Boolean)
@@ -233,12 +263,15 @@ async function main() {
         id: item.id,
         note: item.note,
         navigatedTo: item.url,
+        topLevelCsp,
         gameRan: booted,
+        attemptedTarget,
+        aimedAtSink,
         expectedLeak: item.expectLeak,
         leaked: hits.length > 0,
         hits: hits.map((h) => ({ method: h.method, url: h.url, host: h.host, referer: h.referer })),
         browserLog: logs,
-        verdict: booted && (hits.length > 0) === item.expectLeak ? 'as-expected' : 'UNEXPECTED',
+        verdict: booted && aimedAtSink && (hits.length > 0) === item.expectLeak ? 'as-expected' : 'UNEXPECTED',
       });
       // Reset the page so the next case starts from a blank document.
       await cdp.send('Page.navigate', { url: 'about:blank' });
@@ -251,25 +284,36 @@ async function main() {
   }
 
   const unexpected = results.filter((r) => r.verdict !== 'as-expected');
+  const byId = (id) => results.find((r) => r.id === id);
   const report = {
     id: 'CR-P1-selfnav',
-    title: 'sandboxed iframe self-navigation boundary (host frame-src vs game own CSP)',
+    title: 'sandboxed iframe self-navigation boundary (host frame-src vs game own CSP vs platform wrapper)',
     generatedAt: new Date().toISOString(),
     ports: PORTS,
     sandboxAttribute: 'allow-scripts',
     gameScriptDelivery: 'external /res/game.js (no inline script, per asset-zip-v2 rule)',
+    controls: {
+      bootBeacon: 'every case beacons the target it is about to navigate to; a case only counts when the game ran AND aimed at the sink origin',
+      wrapperPair: 'C3 (wrapper with CSP) and C3c (same wrapper, no CSP) differ only in the wrapper policy, and both are framed by a top-level page that sends no CSP',
+    },
     cases: results,
     unexpected,
     conclusion: {
-      gapReproduced: results.some((r) => r.id === 'C1-parent-no-csp' && r.leaked),
-      hostFrameSrcBlocks: results.some((r) => r.id === 'C2-parent-frame-src' && !r.leaked),
-      sameOriginWrapperBlocks: results.some((r) => r.id === 'C3-wrapper-frame-src' && !r.leaked),
-      gameOwnCspInsufficient: results.some((r) => r.id === 'C4-game-own-csp-only' && r.leaked),
+      gapReproduced: Boolean(byId('C1-parent-no-csp')?.leaked),
+      hostFrameSrcBlocks: Boolean(byId('C2-parent-frame-src') && !byId('C2-parent-frame-src').leaked),
+      sameOriginWrapperBlocks: Boolean(byId('C3-wrapper-frame-src') && !byId('C3-wrapper-frame-src').leaked),
+      wrapperControlLeaksWithoutItsCsp: Boolean(byId('C3c-wrapper-no-csp')?.leaked),
+      gameOwnCspInsufficient: Boolean(byId('C4-game-own-csp-only')?.leaked),
+      allCasesAimedAtSink: results.every((r) => r.aimedAtSink),
+      wrapperCasesHaveNoTopLevelCsp: ['C3-wrapper-frame-src', 'C3c-wrapper-no-csp']
+        .every((id) => byId(id) !== undefined && byId(id).topLevelCsp === null),
     },
     passed: unexpected.length === 0,
   };
   fs.writeFileSync(path.join(OUT, 'cr-p1-selfnav.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
-  for (const r of results) console.log(`${r.verdict === "as-expected" ? "PASS" : "FAIL"}  ${r.id.padEnd(24)} ran=${String(r.gameRan).padEnd(5)} leaked=${String(r.leaked).padEnd(5)} expected=${r.expectedLeak}`);
+  for (const r of results) {
+    console.log(`${r.verdict === 'as-expected' ? 'PASS' : 'FAIL'}  ${r.id.padEnd(24)} ran=${String(r.gameRan).padEnd(5)} aimed=${String(r.aimedAtSink).padEnd(5)} leaked=${String(r.leaked).padEnd(5)} expected=${r.expectedLeak}`);
+  }
   console.log('conclusion:', JSON.stringify(report.conclusion));
   if (!report.passed) process.exitCode = 1;
 }

@@ -68,7 +68,7 @@ Lead 实测反例：`apply()` 时读得 `hmr=false`（`Service.init` 未完成�
 | `html-v1` CSP | 沿用现状（含 `'unsafe-inline'`） | 不回归 |
 | `asset-zip-v2` CSP | 显式资源 origin，**不含 `'unsafe-inline'`**；v2 validator 拒绝内联 `<script>`/`<style>`/`on*=`/`javascript:` | Lead 裁决 3（从严；放宽是加法，收紧会破坏已发布作者包） |
 | entry 凭证 | 首导航携带一次性 launch；reload/重试一律用资源凭证 URL | S-A1 实测：重放 launch URL = 410，去掉 launch = 200 |
-| **导航边界** | **平台自服务的同源 wrapper** 用 `frame-src <resourceOrigin>` 阻断游戏自导航到包外 origin | CR-P1 实测：host 页无 CSP 时外泄；wrapper 方案在 Chromium 155 阻断，**不依赖 host 页面策略** |
+| **导航边界** | **平台自服务的同源 wrapper** 用 `frame-src <resourceOrigin>` 阻断游戏自导航到包外 origin | CR-P1 实测：host 页无 CSP 时外泄；wrapper 方案在 Chromium 155 阻断，且**同一 wrapper 去掉该 CSP 即外泄**（C3/C3c 对照）→ 可归因给 wrapper 自身策略，不依赖 host 页面 |
 | **包外网络** | 子资源由 `connect-src <resourceOrigin>` 阻断（CSP **按 origin 匹配**，不是按「绝对 vs 相对」）；**子文档自导航**由上面的 wrapper `frame-src` 阻断 | CR-P1：子文档自身 CSP 拦不住它自己的导航（负对照实测外泄） |
 | ZIP 条目上限 | **总条目（含 `dsh-package.json`）≤512 → `files[]` ≤511** | Lead 裁决（统一口径，禁止「512+1」歧义） |
 | 更新终态 | `updated` 仅在 **Host 与 Client 双端**版本匹配 target 且健康检查通过后进入；`applied` 是中间态，核验前不得报成功 | 契约 §9.5.1 状态机（复核修正轮统一） |
