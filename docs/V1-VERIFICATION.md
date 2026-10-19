@@ -1,6 +1,6 @@
 # DSH Game Market · V1 验证记录（v1.0.0）
 
-> **状态（2026-10-19）：M3 通过，`v1.0.0` 已发布。** 自动化 780/780、CHECK OK (23)；真机代执行 18 项通过/2 部分/2 阻塞；codex review CR-01..09 已修复并经两轮复核通过（`fix/m3-review` → merge `643fcb9`）。
+> **状态（2026-10-19）：M3 通过，`v1.0.0` 已发布；`main` 已合入 V1.1 UI/呈现改进（PR #1 `b4c640b`、PR #2 `58fb5ce`，follow-up `395ed75`），尚未打 V1.1 tag。** 当前 `main` 自动化 **787/787**、CHECK OK (23)；真机代执行 18 项通过/2 部分/2 阻塞；codex review CR-01..09 已修复并经两轮复核通过（`fix/m3-review` → merge `643fcb9`）。
 > 自动化结果与证据路径汇总见 [`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./verification/v1/AUTOMATED-EVIDENCE.md)；
 > 真机执行清单见 [`docs/verification/v1/REAL-MACHINE-CHECKLIST.md`](./verification/v1/REAL-MACHINE-CHECKLIST.md)。
 > 本文件保留完整验收结构与统计口径；§2 已填实际执行结果，§3.0 为真机执行记录；§3.1–§3.4 保留骨架表并与 `REAL-MACHINE-RESULTS.md` / `AUTOMATED-EVIDENCE.md` §5 交叉引用。
