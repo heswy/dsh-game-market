@@ -47,8 +47,8 @@
 
 ## 3. 外部待配置（M4，无法由本会话完成）
 
-1. 创建/指定内容仓库 `owner/name`（建议 `heswy/dsh-game-registry`，**尚未建立**）；
-2. 设置 main 分支保护/必需 CI、维护者 `gh` 权限、不可变 Release 策略；
+1. ~~创建/指定内容仓库~~ → **已完成**：`heswy/dsh-game-registry`（public，bootstrap `18b6580`，CI `validate` run 39233399862 成功，见 [`external-content-repo.md`](./external-content-repo.md)）；
+2. main 分支保护/必需 CI、不可变 Release 已配置；CODEOWNERS 与真实维护者身份待填；
 3. 发布真实公网 `registry/games.json`、正式包与封面，并验证默认 URL；
 4. 验证 GitHub Release 实际重定向域名在 Host allowlist（不在则精确 host + 拒绝测试）；
 5. 真实完成一次非首发投稿（Skill 指导）、1.0.0 发布、1.0.1 更新、撤下目录
