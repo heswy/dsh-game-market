@@ -1,6 +1,6 @@
 {
   "registryVersion": 1,
-  "generatedAt": "2026-10-19T01:36:56.416Z",
+  "generatedAt": "2026-10-19T01:38:22.350Z",
   "games": [
     {
       "id": "jump",
@@ -30,13 +30,13 @@
         "url": "packages/jump-1.0.0.html",
         "sha256": "92b26f477df4dce0110e928b947947e107d889646dee3bb1a7d2ea12a2782293",
         "size": 210783,
-        "releasedAt": "2026-10-19T01:36:56.416Z"
+        "releasedAt": "2026-10-19T01:38:22.350Z"
       },
       "cover": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/docs/verification/v0/market.png",
       "license": "MIT",
       "quickPlay": true,
-      "publishedAt": "2026-10-19T01:36:56.416Z",
-      "updatedAt": "2026-10-19T01:36:56.416Z"
+      "publishedAt": "2026-10-19T01:38:22.350Z",
+      "updatedAt": "2026-10-19T01:38:22.350Z"
     },
     {
       "id": "2048",
@@ -66,13 +66,13 @@
         "url": "packages/2048-1.0.0.html",
         "sha256": "7e65cb5e4c8065a1f7d525893cd6733468f9c08d10615bd3462331764acb162a",
         "size": 188282,
-        "releasedAt": "2026-10-19T01:36:56.416Z"
+        "releasedAt": "2026-10-19T01:38:22.350Z"
       },
       "cover": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/docs/verification/v0/market.png",
       "license": "MIT",
       "quickPlay": false,
-      "publishedAt": "2026-10-19T01:36:56.416Z",
-      "updatedAt": "2026-10-19T01:36:56.416Z"
+      "publishedAt": "2026-10-19T01:38:22.350Z",
+      "updatedAt": "2026-10-19T01:38:22.350Z"
     },
     {
       "id": "breakout",
@@ -103,13 +103,13 @@
         "url": "packages/breakout-1.0.0.html",
         "sha256": "32d4f224bed8c2ac9ef4c90d9d3fc51477995e694ae06352129a2c126bad7e37",
         "size": 166375,
-        "releasedAt": "2026-10-19T01:36:56.416Z"
+        "releasedAt": "2026-10-19T01:38:22.350Z"
       },
       "cover": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/docs/verification/v0/market.png",
       "license": "MIT",
       "quickPlay": false,
-      "publishedAt": "2026-10-19T01:36:56.416Z",
-      "updatedAt": "2026-10-19T01:36:56.416Z"
+      "publishedAt": "2026-10-19T01:38:22.350Z",
+      "updatedAt": "2026-10-19T01:38:22.350Z"
     },
     {
       "id": "my-game",
@@ -134,13 +134,13 @@
         "url": "packages/my-game-1.0.0.html",
         "sha256": "cdeb9c0bb9dd607f653be2b31ad6adac96d05dc8c381a75432a1c286c52506fb",
         "size": 106931,
-        "releasedAt": "2026-10-19T01:36:56.416Z"
+        "releasedAt": "2026-10-19T01:38:22.350Z"
       },
       "cover": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/docs/verification/v0/market.png",
       "license": "MIT",
       "quickPlay": false,
-      "publishedAt": "2026-10-19T01:36:56.416Z",
-      "updatedAt": "2026-10-19T01:36:56.416Z"
+      "publishedAt": "2026-10-19T01:38:22.350Z",
+      "updatedAt": "2026-10-19T01:38:22.350Z"
     }
   ]
 }

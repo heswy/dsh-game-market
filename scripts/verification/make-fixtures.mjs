@@ -92,17 +92,19 @@ const httpsEntries = [
 ];
 fs.writeFileSync(path.join(FIX, 'registry-file.json'), JSON.stringify(index(fileEntries), null, 2));
 fs.writeFileSync(path.join(FIX, 'registry-file-update.json'), JSON.stringify(index([
-  entry({ id: 'jump', version: '1.0.1', url: 'packages/jump-1.0.1.html', sha256: jump101Sha, size: jump101.length, manifest: { ...packages.jump.manifest, version: '1.0.1' }, quickPlay: true }),
+  entry({ id: 'jump', version: '1.0.1', url: 'packages/jump-1.0.1.html', sha256: jump101Sha, size: Buffer.byteLength(jump101, 'utf8'), manifest: { ...packages.jump.manifest, version: '1.0.1' }, quickPlay: true }),
   ...fileEntries.filter((item) => item.id !== 'jump'),
 ]), null, 2));
 fs.writeFileSync(path.join(FIX, 'registry-https.json'), JSON.stringify(index(httpsEntries), null, 2));
 fs.writeFileSync(path.join(FIX, 'registry-badsha.json'), JSON.stringify(index([
   { ...fileEntries[0], package: { ...fileEntries[0].package, sha256: '0'.repeat(64) } },
 ]), null, 2));
+// Non-HTML content with a valid <id>-<version>.html filename (registry url rule).
 const badHtml = Buffer.from('<html><body>not a game package</body></html>');
-fs.writeFileSync(path.join(FIX, 'packages/not-a-package-1.0.0.html'), badHtml);
+fs.mkdirSync(path.join(FIX, 'badhtml'), { recursive: true });
+fs.writeFileSync(path.join(FIX, 'badhtml/jump-1.0.0.html'), badHtml);
 fs.writeFileSync(path.join(FIX, 'registry-badhtml.json'), JSON.stringify(index([
-  { ...fileEntries[0], package: { ...fileEntries[0].package, url: 'packages/not-a-package-1.0.0.html', sha256: sha(badHtml), size: badHtml.length } },
+  { ...fileEntries[0], package: { ...fileEntries[0].package, url: 'badhtml/jump-1.0.0.html', sha256: sha(badHtml), size: badHtml.length } },
 ]), null, 2));
 
 // Malicious local-install packages (install-local route).

@@ -1,0 +1,24 @@
+{
+  "startedAt": "2026-10-19T01:48:07.622Z",
+  "shots": [
+    "U-01-market-first-run",
+    "U-02-market-with-games",
+    "U-02-search-jump",
+    "U-03-detail-jump",
+    "U-08-resume-confirm",
+    "U-13-runtime-breakout",
+    "A-05-pause-overlay",
+    "U-13-narrow-720",
+    "U-13-dark-theme"
+  ],
+  "checks": {
+    "freshMarket": "Game Market\n市场\n我的游戏\n更新于 1秒钟前\n\n继续游戏\n\n挑一个游戏，等 Agent 的时候玩\n\n安装后就能在这里直接继续上一局。\n\n浏览游戏\n\n04\n\n全部游戏\n全部\n街机\n益智\n卡牌\n放置\n动作\n策略\n问答\n沙盒\nS\n已安装\nSnake\n内置\n\nDSH · 街机\n\n更新于 1秒钟前",
+    "detailOpened": false,
+    "pauseModalOnly": "已暂停 游戏内声音由游戏控制。 退出到市场 保存并返回工作 继续",
+    "runtimeErrors": []
+  },
+  "perf": {
+    "marketFirstPaintMs": 1
+  },
+  "finishedAt": "2026-10-19T01:48:51.172Z"
+}

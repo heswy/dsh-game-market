@@ -1,6 +1,6 @@
 {
   "registryVersion": 1,
-  "generatedAt": "2026-10-19T01:36:56.416Z",
+  "generatedAt": "2026-10-19T01:38:22.350Z",
   "games": [
     {
       "id": "jump",
@@ -27,16 +27,16 @@
       "runtimeVersion": "^1.0.0",
       "preferredTheme": "game-defined",
       "package": {
-        "url": "packages/not-a-package-1.0.0.html",
+        "url": "badhtml/jump-1.0.0.html",
         "sha256": "2cc30b9f699fb362f4589942eef057c0ac8242f5462bbfb28affc7911738389c",
         "size": 44,
-        "releasedAt": "2026-10-19T01:36:56.416Z"
+        "releasedAt": "2026-10-19T01:38:22.350Z"
       },
       "cover": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/docs/verification/v0/market.png",
       "license": "MIT",
       "quickPlay": true,
-      "publishedAt": "2026-10-19T01:36:56.416Z",
-      "updatedAt": "2026-10-19T01:36:56.416Z"
+      "publishedAt": "2026-10-19T01:38:22.350Z",
+      "updatedAt": "2026-10-19T01:38:22.350Z"
     }
   ]
 }

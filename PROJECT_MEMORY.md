@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**V1 M1 已完成并合并 `main`**（merge `44cd7a8`，`npm run verify` 754/754；用户桌面端验收进行中，白屏 hotfix `b933fe4` 已推送）；四条主线全部落地：静态 Registry + 安装/卸载/更新、SDK v1 + CLI/模板/Simulator、Market/My Games/详情/安装 UX（用 `frontend-design`+`ui-ux-pro-max`）、首发四款 `snake`/`jump`/`2048`/`breakout`。**下一步 M3**：隔离 DSH 0.2.1-rc.2 真机验收 + `docs/V1-VERIFICATION.md` 归档 → 通过后打 `v1.0.0`。V0 已验收；PRD v2.2 与 M0 契约冻结。
+- 当前目标：**V1 M3 自动化部分已完成，真机部分待用户执行**。M3 已交付：`docs/verification/v1/AUTOMATED-EVIDENCE.md`（AE-01..17 通过、AE-18 部分）、`docs/verification/v1/REAL-MACHINE-CHECKLIST.md`（两场约 2h）、`docs/V1-VERIFICATION.md` §1/§2 已填、`fixtures/`（file+HTTPS Registry、恶意包矩阵）、`logs/`、`results/`、`screenshots/`、`scripts/verification/*`。自动化覆盖：安装/更新/卸载/重装 Continue、HTTPS Registry、entry 安全头、存档配额/CAS/恢复、CLI create/build/validate/pack/publish、幂等/并发、恶意包拒绝矩阵。**剩余**：真机 U-04/05/06、U-08 关 DSH 重开、U-09、U-13/14/15、A-03/05/06/07/11/12/13/14/15/16 观感、FM-01/02/06/07/09/10..14、SEC-01/02/03/07、性能实测（Market 首屏/启动/FPS/CPU/内存）；完成后封 `v1.0.0`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2，2026-10-18 已按 V1 单文件包统一**；第 8–12 章为开发权威来源）
 - 开始记录：2026-10-18
 
@@ -192,7 +192,7 @@ V0 必须包含（对应 PRD §7.1 / §11.2）：
 - **集成现状（2026-10-18 23:0x）**：已合入 snake/breakout/2048/developer/market-ux/install-registry（`acdcd4c`/`f361374`/`93b3da6`/`cf022a1`/`e454027`/`6a031ab`/`b83abea`）；`npm run verify` **722/722 pass、CHECK OK (16)**，工作树干净。仅剩 jump 未完成/未合并。
 - **集成收尾已执行（2026-10-18，jump 前）**：① shared `errors.js`：补 `GM-4228`/`GM-4230`–`GM-4248`/`GM-4035` 常量与默认文案、`E_COMPAT_*` 映射、`httpStatusFor` 修正（`995a1b3`）；② 根 `package.json` 加 `bin`（`dsh-game`/`create-dsh-game`）与 `files`（sdk/cli/templates），`scripts/build.mjs` 遍历 `games/*/build.mjs`，`scripts/check.mjs` 改为逐游戏 `validatePackageHtml` 校验（`38741b8`）；③ `BUILTIN_GAMES.version`→`1.0.0`、删除 snake 源 `entry`、重建 snake/2048/breakout dist 与 client.js（`7eed11d`）；④ 文档对齐（预览策略/重定向/dev 游戏/lifecycle event/runtimeVersion null/viewport/2048-1e9+撤销持久化/breakout-1e7，`56620d7`）。集成分支 `npm run verify` **722/722 pass、CHECK OK (20 checks)**，构建字节可复现、工作树干净。
 - **jump 验收 + M1 收尾**：分支 `b5871ad`（10 files，仅 `games/jump/**`；375/375；dist 198,887 B→合并后用最终 SDK 重建为 210,614 B，sha256 `3bb24f6…81d1`，两次构建一致）已合入 `f480aca`；根构建/检查已自动纳入（CHECK 21 项）。jump viewport 裁决为 **540×960 竖屏**，文档 A-12/§3.1 已同步（`ec9bac3`）。**M1 全量验收**：`chore/v1-integration` 最终 `npm run verify` **752/752 pass、CHECK OK (21)**、构建可复现、工作树干净；`--no-ff` 合并入 `main` 为 `44cd7a8`（合并前后各验一次 752/752）。7 个 feature worktree/分支已清理（§2.1.7），`chore/v1-integration` 分支保留。
-- **M1 遗留（M3 再做）**：真机隔离 DSH 0.2.1-rc.2 验收（U-01..U-15、DEV-01..07、FM/SEC、启动计时/真实 5 分钟/平台暂停遮挡）尚未执行，`docs/V1-VERIFICATION.md` 仍为空骨架；`v1.0.0` tag 待 M3 通过后再打。M2 UI 未在真实 DSH loader 下渲染过（静态 mock + bundle 测试替代）。
+- **M3 自动化（2026-10-19 完成）**：隔离 `app.asar` + `dsh web` + headless Chrome 155 执行；AE-01..17 通过（767/767、构建确定性、契约 9/9、snake 30/30、四款 87/87、SDK/Runtime 124/124）、AE-18 部分；新增 `scripts/verification/{make-fixtures,host-e2e,ui-evidence}.mjs`；host E2E 覆盖 file/HTTPS Registry 安装、1.0.0→1.0.1 更新、卸载保留数据+重装 Continue、entry 安全头、存档配额/CAS/损坏恢复、恶意包拒绝矩阵、幂等/并发；UI 证据 9 张截图（含平台暂停单层弹窗）。**真机剩余项见 REAL-MACHINE-CHECKLIST.md**；U-03 详情截图因选择器失败未取得（需重跑或真机补）。
 - **（其他子智能体的越界/契约缺口报告在此追加）**
 
 **V1 不做 / 推迟 V1.5**：多文件游戏资源（图片/音效/zip）、服务端 Registry/账号/付费/云排行榜、游戏内多人、Windows 完整视觉验收（可做冒烟）、正式鲸鱼素材。
@@ -325,6 +325,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - V1-21：**`launchMode` 随 init 显式下发**（SDK `game.runtime.launchMode`）：平台 `resume-paused` 启动时，游戏据此隐藏自己的“继续/开始”界面并保持暂停，平台弹窗为唯一确认；不再只依赖 `pause` 生命周期事件的到达时序（Electron 桌面端曾出现时序差异导致双层）。Runtime/SDK 契约扩展向后兼容（旧 SDK 忽略新字段）。
 - V1-22：**会话 Game tab 返回 = 直接恢复，不再弹平台确认**（`autoResume: true`）：用户点击 Game tab 本身就是确认，Runtime 进入 paused 后立即 resume；Market 详情「继续游戏」/Agent 恢复等其他路径仍保留 D-024 一次确认。原因：用户验收时把平台确认弹窗视为剩余“双层提示”（2026-10-19）。
 - V1-23：**暂停 UI 归属统一**：平台发起的 `pause` 只冻结/保存游戏，**不渲染游戏自己的暂停面板**（否则与平台「已暂停」弹窗双层）；本地暂停（游戏内按 P/Esc）仍画自己的暂停面板。四款游戏已统一：breakout/jump/2048/snake 的平台暂停路径均 `hideOverlay()`；已用真实平台 E2E 验证（四款平台暂停时游戏层 0 个可见 overlay，恢复后游戏继续）。
+- V1-24：**M3 自动化证据归档与真机分工**：自动化可覆盖的验收（构建/测试/CLI/Registry/安装生命周期/安全头/存档/拒绝矩阵/幂等）已执行并归档于 `docs/verification/v1/`；真机只保留交互/真实 Agent/性能/故障注入。证据纪律：不预填通过、模拟标注、未执行写「未执行」。
 
 ---
 
@@ -353,6 +354,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-19 · **双层弹窗兜底修复**：桌面 Electron 里 `pause` 事件疑似未按时到达游戏，导致“平台已恢复上一局”+游戏 Continue/New run 双层。已在 Runtime init 显式下发 `launchMode`，SDK 暴露 `game.runtime.launchMode`，四款游戏在 `resume-paused` 启动时直接进入暂停态；本地 mock-runtime harness（**完全不发 pause**）验证 breakout `overlay=paused`。`npm run verify` 全绿；需刷新页面并重装本地安装的三款游戏。
 - 2026-10-19 · **Game tab 返回直连恢复**：`beginGame` 增加 `autoResume`，RuntimeView 在 paused 时自动 resume 并隐藏平台确认；entry-flow 测试、store 测试更新；`npm run verify` 767/767。仅需刷新页面（client 变更），无需重启 DSH 或重装游戏。
 - 2026-10-19 · **平台暂停双层修复**：用户点平台暂停出现平台弹窗+游戏暂停面板。已统一四款游戏：生命周期 `pause` 只冻结、隐藏自身 overlay，平台暂停菜单为唯一暂停 UI；本地暂停不受影响。E2E（隔离 DSH 真实 Host/Runtime）：breakout/jump/2048 平台暂停后游戏层可见 overlay=0，暂停→继续后 runtime playing；snake 内置同步修复并验证。`npm run verify` 767/767。需刷新页面 + 重装三个本地游戏。
+- 2026-10-19 · **M3 自动化完成并交付真机清单**：`npm run verify` 767/767；确定性构建 byte-identical；CLI create/build/validate/pack/publish 通过；file+HTTPS Registry 安装/更新/卸载/重装 Continue 通过（host E2E）；entry CSP/no-store/sha 头通过；存档配额/CAS/损坏恢复通过；恶意包矩阵返回 GM-5015/4221/4225/4240/4232/4234/4135；UI 9 张截图；`docs/V1-VERIFICATION.md` §1/§2 填充。**真机待执行**：见 `docs/verification/v1/REAL-MACHINE-CHECKLIST.md`；性能/故障注入/SEC 运行时攻击列为剩余。
 - （待续）
 
 **当前状态 / 待用户确认**：

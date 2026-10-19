@@ -1,0 +1,215 @@
+{
+  "startedAt": "2026-10-19T01:39:14.561Z",
+  "commit": "",
+  "scenarios": {
+    "fileRegistry": {
+      "home": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-SN5QpF",
+      "refreshMs": 9,
+      "cache": {
+        "state": "fresh",
+        "sourceUrl": "/Users/orange/Orange Field/Matterhorn/dsh-game-market/docs/verification/v1/fixtures/registry-file.json",
+        "fetchedAt": "2026-10-19T01:39:14.567Z",
+        "truncated": false,
+        "count": 4,
+        "lastError": null
+      },
+      "install": {
+        "2048": {
+          "ms": 17,
+          "version": "1.0.0",
+          "sha": "7e65cb5e4c8065a1f7d525893cd6733468f9c08d10615bd3462331764acb162a"
+        },
+        "jump": {
+          "ms": 23,
+          "version": "1.0.0",
+          "sha": "92b26f477df4dce0110e928b947947e107d889646dee3bb1a7d2ea12a2782293"
+        },
+        "breakout": {
+          "ms": 18,
+          "version": "1.0.0",
+          "sha": "32d4f224bed8c2ac9ef4c90d9d3fc51477995e694ae06352129a2c126bad7e37"
+        }
+      },
+      "layout": {
+        "2048": {
+          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-SN5QpF/storages/dsh-game-market/packages/2048/1.0.0/entry.html",
+          "exists": true,
+          "sha": "7e65cb5e4c8065a1f7d525893cd6733468f9c08d10615bd3462331764acb162a"
+        },
+        "jump": {
+          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-SN5QpF/storages/dsh-game-market/packages/jump/1.0.0/entry.html",
+          "exists": true,
+          "sha": "92b26f477df4dce0110e928b947947e107d889646dee3bb1a7d2ea12a2782293"
+        },
+        "breakout": {
+          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-SN5QpF/storages/dsh-game-market/packages/breakout/1.0.0/entry.html",
+          "exists": true,
+          "sha": "32d4f224bed8c2ac9ef4c90d9d3fc51477995e694ae06352129a2c126bad7e37"
+        }
+      }
+    },
+    "entryHeaders": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "no-referrer",
+        "content-security-policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self' http://127.0.0.1:* http://localhost:*",
+        "x-entry-sha256": "92b26f477df4dce0110e928b947947e107d889646dee3bb1a7d2ea12a2782293",
+        "content-length": "210783"
+      },
+      "bytes": 210783,
+      "manifest": true,
+      "launchMode": "start"
+    },
+    "uninstallReinstall": {
+      "canContinueBefore": true,
+      "uninstall": {
+        "gameId": "jump",
+        "removed": true,
+        "dataDeleted": false,
+        "ignored": false
+      },
+      "gameGone": true,
+      "saveKept": true,
+      "reinstalledVersion": "1.0.0",
+      "canContinueAfter": true,
+      "saveStillReadable": {
+        "score": 7,
+        "note": "m3"
+      }
+    },
+    "update": {
+      "beforeVersion": "1.0.0",
+      "updateResult": "1.0.1",
+      "afterVersion": "1.0.1",
+      "updateMs": 18,
+      "changed": true
+    },
+    "httpsRegistry": {
+      "refreshMs": 1929,
+      "refreshOk": true,
+      "installMs": 1260,
+      "version": "1.0.0"
+    },
+    "badSha": {
+      "error": {
+        "code": "GM-5015",
+        "message": "Package SHA-256 does not match the registry",
+        "retryable": true
+      }
+    },
+    "badHtml": {
+      "error": {
+        "code": "GM-4221",
+        "message": "missing inline manifest script (id=\"dsh-game-manifest\")",
+        "retryable": false
+      },
+      "expected": "GM-4222"
+    },
+    "maliciousInstallLocal": {
+      "missing-manifest": {
+        "error": {
+          "code": "GM-4221",
+          "message": "missing inline manifest script (id=\"dsh-game-manifest\")",
+          "retryable": false
+        }
+      },
+      "two-manifests": {
+        "error": {
+          "code": "GM-4221",
+          "message": "package contains more than one inline manifest script",
+          "retryable": false
+        }
+      },
+      "external-resource": {
+        "error": {
+          "code": "GM-4225",
+          "message": "package is not self-contained: external script resource (https://evil.example.com/x.js)",
+          "retryable": false
+        }
+      },
+      "bad-capability": {
+        "error": {
+          "code": "GM-4240",
+          "message": "capability is known but unsupported in V1: network",
+          "retryable": false
+        }
+      },
+      "legacy-fields": {
+        "error": {
+          "code": "GM-4232",
+          "message": "manifestVersion must be the integer 1",
+          "retryable": false
+        }
+      },
+      "path-traversal-id": {
+        "error": {
+          "code": "GM-4234",
+          "message": "id must match ^[a-z0-9][a-z0-9-]{1,46}[a-z0-9]$",
+          "retryable": false
+        }
+      }
+    },
+    "oversized": {
+      "error": {
+        "code": "GM-4135",
+        "message": "Game package exceeds the size limit",
+        "retryable": false
+      }
+    },
+    "saves": {
+      "normal": {
+        "gameId": "snake",
+        "keys": 1,
+        "bytes": 23,
+        "revision": 1,
+        "updatedAt": "2026-10-19T01:39:18.004Z"
+      },
+      "tooLarge": {
+        "error": {
+          "code": "GM-4131",
+          "message": "A single save value exceeds 256 KiB",
+          "retryable": false
+        }
+      },
+      "tooManyKeys": {
+        "error": {
+          "code": "GM-4132",
+          "message": "Save exceeds 32 keys",
+          "retryable": false
+        }
+      },
+      "casConflict": {
+        "error": {
+          "code": "GM-4092",
+          "message": "Storage revision conflict",
+          "retryable": false
+        }
+      },
+      "corruptRecovery": {
+        "revision": 32,
+        "keys": 32
+      }
+    },
+    "idempotency": {
+      "replaySameOperation": {
+        "first": true,
+        "second": true
+      },
+      "concurrent": [
+        {
+          "ok": true,
+          "changed": true
+        },
+        {
+          "ok": true,
+          "changed": false
+        }
+      ]
+    }
+  },
+  "finishedAt": "2026-10-19T01:39:18.699Z",
+  "lines": 18
+}
