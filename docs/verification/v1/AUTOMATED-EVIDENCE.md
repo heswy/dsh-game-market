@@ -9,10 +9,10 @@
 
 | 编号 | 命令 / 操作 | 实际结果 | 证据 |
 |---|---|---|---|
-| AE-01 | `npm run verify` | build + check + tests 全绿：tests **767** / pass **767** / fail **0** | `logs/AE-01-run.log` |
+| AE-01 | `npm run verify` | build + check + tests 全绿：tests **787** / pass **787** / fail **0** | `logs/AE-01-run.log` |
 | AE-02 | `npm run build` 连续两次比较 sha256 | 两次产物 **完全一致**（client.js + 四款游戏 dist） | `logs/AE-02-deterministic-build.log` |
 | AE-03 | `node scripts/check.mjs` | `CHECK OK (23 checks)`（2026-10-19 复验） | `logs/AE-03-check.log` |
-| AE-04 | `node --test`（全量） | tests 767 / pass 767 / fail 0 | `logs/AE-04-run.log` |
+| AE-04 | `node --test`（全量） | tests 787 / pass 787 / fail 0 | `logs/AE-04-run.log` |
 | AE-05 | `node --test tests/v1-contracts.test.js` | tests 9 / pass 9 / fail 0 | `logs/AE-05-run.log` |
 | AE-06 | `node --test games/snake/test/*.test.js` | tests 30 / pass 30 / fail 0 | `logs/AE-06-run.log` |
 | AE-07 | `node --test games/{jump,2048,breakout}/test/*.test.js` | tests 87 / pass 87 / fail 0 | `logs/AE-07-run.log` |

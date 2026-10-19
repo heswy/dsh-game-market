@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**V1.0.0 已发布，V1.1 UI/呈现改进已合入 `main`（2026-10-19）**。PR #1（Market/详情/Game tab 视觉交互）→ `b4c640b`，PR #2（Runtime 全出血 + 开发包呈现规范）→ `58fb5ce`，用户 follow-up `395ed75`（顶部 112px 安全带、实测 viewport 语义、React 模板对齐）；`main` 最新 `58fb5ce`，全量 `npm run verify` **787/787**、`CHECK OK (23)`。`v1.0.0` tag 仍指向 `611c0ed`；**尚未打 V1.1 tag**。下一步：决定 `v1.1.0` 发布或进入 V1.5；发布前先更新记忆/PRD。
+- 当前目标：**V1.1.0 已发布（2026-10-19）**。`main` 发布提交（tag `v1.1.0` 指向的提交）已推送；`package.json` **1.1.0**；全量 `npm run verify` **787/787**、`CHECK OK (23)`。V1.1 合入 PR #1（Market/详情/Game tab 视觉交互）、PR #2（Runtime 全出血 + 开发包呈现/安全区规范）、PR #3（宿主 locale 文案：Game tab/侧边栏）。`v1.0.0` tag 保留在 `611c0ed` 作为 V1 首发记录。**当前范围完成**；下一步为 V1.5（多资源/外部开发者体验）与滚动项。
 - 历史：V1 验收/修复过程（M3 自动化、真机代执行、codex 两轮 review CR-01..09）见 `docs/V1-VERIFICATION.md`、`docs/verification/v1/AUTOMATED-EVIDENCE.md`、`docs/reviews/2026-10-19-codex-acceptance-review.md` 与 `git log`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2 + 2026-10-19 V1.1 呈现修订**；第 8–12 章为开发权威来源；全出血/安全区见 §9.6.1、D-037）
 - 开始记录：2026-10-18
@@ -339,6 +339,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - V1-34：**V1.0.0 发布**：`fix/m3-review` 两轮复核通过后以 `--no-ff` 合入 `main`（`643fcb9`），`package.json` 版本置 `1.0.0`，tag `v1.0.0` 推送；README 更新为 V1 首发状态；V1 验证文档/证据/真机结论归档。发布后滚动项：真实审批环境、桌面参考机性能终值、字号/减少动效真机项、DEV-03/07、2048 PB 反馈、完整 Tab 键盘链路（均已在验证文档 §5 记录）。
 - V1-35：**PR #2 全出血呈现契约复核**：平台常驻控件避让区统一为顶部全宽 112px（控件 clearance 限制 0–48px）和右下 96×96；鲸鱼展开消息可临时覆盖右下 254×184。manifest viewport 仅为推荐设计尺寸，SDK init/ready viewport 为实际容器 CSS 尺寸与 DPR。Vanilla/React 模板同步全出血、HUD 避让与实际尺寸绘制；React 构建先类型检查，禁用带 fetch 的 Vite preload polyfill。
 - V1-36：**V1.1 UI/呈现改进合入**：PR #1（Market header/hero/详情、侧边栏去状态、会话 Game tab 状态 pill；用户补充 gallery 视觉 `8ab8004`）合入 `b4c640b`；PR #2（Runtime 全出血、删除黑边/舞台内边距、`viewport` 降为推荐尺寸、安全区规范、Vanilla/React 模板、开发者指南 §4.4）合入 `58fb5ce`；用户 follow-up `395ed75` 把顶部安全区收敛为全宽 112px（控件 clearance 0–48px）、澄清 SDK viewport 为实测容器尺寸、React 模板类型检查/去 fetch polyfill。验证 787/787。`v1.0.0` tag 不动；发 `v1.1.0` 前先定版本与验证记录。
+- V1-37：**V1.1.0 发布**：PR #3（locale）合入 `192aa6a` 后，`package.json` 升 `1.1.0`，README/验证文档/开发者指南/证据索引更新；以发布提交打 tag `v1.1.0` 并推送。发布内容：UI 收口、Runtime 全出血、开发包呈现/安全区规范、宿主 locale 文案。`v1.0.0` tag 不动。
 
 ---
 
@@ -346,7 +347,6 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 
 > 历史细节以 `git log`、`docs/V0-VERIFICATION.md`、`docs/V1-VERIFICATION.md` 为准；本节只保留最近 10 条工作日志（每阶段追加：日期、阶段、commit、结果、下一步）。
 
-- 2026-10-19 · **M3 自动化完成并交付真机清单**：`npm run verify` 767/767；确定性构建 byte-identical；CLI create/build/validate/pack/publish 通过；file+HTTPS Registry 安装/更新/卸载/重装 Continue 通过（host E2E）；entry CSP/no-store/sha 头通过；存档配额/CAS/损坏恢复通过；恶意包矩阵返回 GM-5015/4221/4225/4240/4232/4234/4135；UI 9 张截图；`docs/V1-VERIFICATION.md` §1/§2 填充。**真机待执行**：见 `docs/verification/v1/REAL-MACHINE-CHECKLIST.md`；性能/故障注入/SEC 运行时攻击列为剩余。
 - 2026-10-19 · **M3 真机代执行（桌面辅助控制）**：在用户真实 DSH Desktop 窗口内执行安装 Jump/Breakout、四款启动、平台暂停单层（4 款截图）、Continue 确认、Game tab 直连恢复（V1-22）、游戏内真实 Agent presence、Snake Game Over、卸载确认框、760px 窄窗；共 13 项通过、4 部分、3 阻塞（U-05 需回合结束观察/U-06 审批禁用/U-13 深色未生效）、3 未执行；应用全屏与系统深色已恢复，未卸载任何游戏。证据见 `docs/verification/v1/REAL-MACHINE-RESULTS.md` 与 `real-*.jpg`。
 - 2026-10-19 · **AskUserQuestion 提示修复 + U-05/深色主题真机证据**：用户截图确认任务完成提醒与深色主题均正常，已归档 `real-U-05-agent-completed.jpg`/`real-U-13-dark-theme.jpg` 并更新验收记录。针对「AskQuestion 无提示」：Host agent-adapter 增加 `ask_user_question` tool/call → waiting-user(waiting-question) 映射、tool/result 复位；host 测试 141/141 通过；PRD/契约/记忆同步。待重载 Host 后真机复测提问场景。
 - 2026-10-19 · **AskUserQuestion 提示出现 + 回答后不消失修复**：用户真机确认提问提醒已出现（2048/Breakout 游戏内鲸鱼「需要你回答一个问题 / 去处理」），并报告回答后状态未消失。根因：真实 `tool/result` 不带工具名，V1-25 的 name 匹配失效。已改为按快照 `source=question` 收尾；host 141/141；待再重载 Host 复测。
@@ -356,19 +356,17 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-19 · **V1.0.0 发布**：codex 复核通过；`fix/m3-review@f1aeb28` `--no-ff` 合入 main（`643fcb9`）；main 上 `npm run verify` 780/780、CHECK OK (23)；package 版本 1.0.0；README/PRD/契约/验证文档/记忆同步；tag `v1.0.0` 推送。
 - 2026-10-19 · **UI/UX 收口合入（PR #1）**：Market header 只留市场/我的游戏、移除更新提示、上传按钮强化；Hero 去 kicker/meta、分区去序号；详情改紧凑缩略图；侧边 Game Market 去状态点；会话 Game tab 集成状态 pill（等你/完成/出错/已暂停）。用户随后补 gallery 视觉 `8ab8004`；PR 合入 `b4c640b`，verify 782/782。
 - 2026-10-19 · **全出血 Runtime + 开发包呈现规范（PR #2）**：删除舞台黑边/内边距/圆角黑框，Runtime 全出血；`viewport` 降级为推荐设计尺寸；开发者指南 §4.4 定义铺满/主题/响应式/安全区；Vanilla + React 模板改为全出血示例。用户 follow-up `395ed75` 统一顶部全宽 112px 安全带、SDK viewport 实测语义、React 模板类型检查；PR 合入 `58fb5ce`，main verify 787/787、CHECK OK (23)。
-- （待续）
+- 2026-10-19 · **V1.1.0 发布**：PR #3（Game tab/sidebar 宿主 locale）合入 `192aa6a`；`package.json` 1.1.0；README/验证文档/记忆更新；发布提交（即 tag `v1.1.0` 指向的提交）推送；全量 787/787、CHECK OK (23)。
+- （待续）**当前状态（2026-10-19，V1.1.0 已发布）**：
 
-**当前状态（2026-10-19，V1.1 改进已合入）**：
-
-- **`v1.0.0` tag 未移动**：仍指向 `611c0ed`；`main` 已前进到 `58fb5ce`（包含 PR #1/#2 与 follow-up），**尚未打 V1.1 tag**；`package.json` 仍为 `1.0.0`。
-- **PR #1（UI/UX 收口）**：`feat/ui-polish` → merge `b4c640b`；Market header/hero/详情/Game tab 状态 pill，侧边 Game Market 去状态；用户补充 gallery 视觉 `8ab8004`。
-- **PR #2（Runtime 全出血 + 开发包规范）**：`feat/fullbleed-runtime` → merge `58fb5ce`；随后 `395ed75` 对齐顶部全宽 112px 安全带、SDK viewport 实测语义、Vanilla/React 模板、React 类型检查。
-- **验证**：`main` 上 `npm run verify` **787/787**、`CHECK OK (23)`；隔离宿主全出血截图在 `docs/verification/fullbleed-runtime/`。
-- **合并记录**：`fix/m3-review@f1aeb28` → `643fcb9`；`chore/v1-integration`/`fix/m3-review` 均已合入 main，仅历史保留；当前活跃分支以 main 为准。
-- **验证/证据入口**：`docs/V1-VERIFICATION.md`、`docs/verification/v1/AUTOMATED-EVIDENCE.md`、`REAL-MACHINE-RESULTS.md`、`docs/reviews/2026-10-19-codex-acceptance-review.md`、`docs/developer-guide.md` §4.4（第三方接入规范）。
+- **发布**：`v1.1.0` tag 指向发布提交（已推送）；`main` 与 tag 同步；`package.json` **1.1.0**；上一版 `v1.0.0` 保留在 `611c0ed`。
+- **合并记录**：PR #1 `b4c640b`、PR #2 `58fb5ce`（follow-up `395ed75`）、PR #3 `192aa6a`。
+- **验证**：`npm run verify` **787/787**、`CHECK OK (23)`；V1.1 截图/证据：`docs/verification/fullbleed-runtime/`、`docs/verification/ui-polish/`、`docs/verification/ui-refinement/`。
+- **规范入口**：`docs/developer-guide.md` §4.4（全出血、安全区、viewport 推荐尺寸）；PRD v2.2 + V1.1 修订（D-037）；`docs/V1-CONTRACTS.md` / A-12 已同步。
+- **分支**：`main` 为发布线；PR 分支均已合入，可清理。
 - **日常桌面端**：需要 dev 行时用户执行 `npm run dev:enable -- --yes` 后重启 DSH；Client 改动刷新页面即可；Host 改动需重启/重载插件行。
-- **滚动项（非 V1.1 阻塞）**：真实审批环境、桌面参考机性能终值（FPS/CPU/内存）、字号/减少动效真机项、DEV-03 热更新与 DEV-07 外部开发者体验、2048 破纪录反馈、完整 Tab 键盘链路；旧固定比例/内部留黑第三方包需按 V1.1 迁移。
-- **下一步**：先决定是否发 `v1.1.0`（建议：补一次 V1.1 验证/截图记录后发）；否则进入 V1.5。任何契约/发布动作先更新本记忆与 PRD，再执行（规则 §1）。
+- **滚动项（非 V1.1 阻塞）**：真实审批环境、桌面参考机性能终值（FPS/CPU/内存）、字号/减少动效真机项、DEV-03 热更新与 DEV-07 外部开发者体验、2048 破纪录反馈、完整 Tab 键盘链路；旧固定比例/内部留黑第三方包按 V1.1 迁移。
+- **下一步**：V1.5（多资源包、外部开发者体验）或优先处理滚动项；任何契约/发布动作先更新本记忆与 PRD，再执行（规则 §1）。
 
 ---
 

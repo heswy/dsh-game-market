@@ -2,8 +2,8 @@ PASS  package.json
 PASS  package.json bundle manifest
 PASS  cordis.patch.yml
 PASS  cordis.patch.yml inserts dsh-game-market
-PASS  183 JavaScript files parse
-PASS  client.js bundle (606066 bytes)
+PASS  187 JavaScript files parse
+PASS  client.js bundle (624453 bytes)
 PASS  games/2048/dist/index.html (188313 bytes, V1 single-file package)
 PASS  games/breakout/dist/index.html (166406 bytes, V1 single-file package)
 PASS  games/jump/dist/index.html (210814 bytes, V1 single-file package)

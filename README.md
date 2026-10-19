@@ -2,9 +2,16 @@
 
 在 DeepSeek Harness（DSH）里，把 Agent 执行长任务时的等待时间变成一局小游戏：游戏占满主工作区，右下角的小鲸鱼负责维持 Agent 的存在感，任务完成时提醒但不打断。
 
-**V1（首发版，`v1.0.0`）已完成并通过 codex 验收复核**：Game Market / My Games / 详情、静态 Registry 安装与更新、开发者 SDK + CLI + 模板、首发四款游戏（`snake`/`jump`/`2048`/`breakout`），以及默认随包 Registry（全新环境无需配置即可发现并安装 Jump/2048/Breakout）。
+**当前发布：`v1.1.0`**。V1 首发能力（Game Market / My Games / 详情、静态 Registry、开发者 SDK/CLI/模板、首发四款游戏、默认随包 Registry）已通过 codex 验收；V1.1 进一步完成 Market 视觉交互收口、Runtime **全出血**舞台（移除黑边）、会话 Game tab 状态与中文宿主 locale 对齐，并补充第三方接入的呈现/安全区规范。
 
-V1 验收：`npm run verify` **780/780**、`CHECK OK (23)`；真机与隔离宿主证据见 [`docs/V1-VERIFICATION.md`](./docs/V1-VERIFICATION.md)、[`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./docs/verification/v1/AUTOMATED-EVIDENCE.md)。
+V1.1 验收：`npm run verify` **787/787**、`CHECK OK (23)`；真机与隔离宿主证据见 [`docs/V1-VERIFICATION.md`](./docs/V1-VERIFICATION.md)、[`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./docs/verification/v1/AUTOMATED-EVIDENCE.md)、[`docs/verification/fullbleed-runtime/`](./docs/verification/fullbleed-runtime/)。
+
+### V1.1 主要变化
+
+- Market header/首页/详情/卡片视觉与交互优化；会话 Game tab 显示状态 pill（等你/完成/出错/已暂停），侧边栏不再带状态；
+- Runtime 全出血：无黑边/舞台内边距/letterbox，游戏负责铺满视口；平台悬浮控件使用固定安全区；
+- 开发者指南新增 §4.4「Runtime 呈现与安全区」，Vanilla/React 模板改为全出血参考实现；
+- Game tab / Sidebar 文案跟随宿主 locale（中文宿主显示「游戏 / 游戏市场」）。
 
 <details>
 <summary>V0（核心体验验证版）历史</summary>

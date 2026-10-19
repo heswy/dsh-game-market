@@ -1,6 +1,6 @@
-# DSH Game Market · V1 验证记录（v1.0.0）
+# DSH Game Market · V1 验证记录（v1.1.0）
 
-> **状态（2026-10-19）：M3 通过，`v1.0.0` 已发布；`main` 已合入 V1.1 UI/呈现改进（PR #1 `b4c640b`、PR #2 `58fb5ce`，follow-up `395ed75`），尚未打 V1.1 tag。** 当前 `main` 自动化 **787/787**、CHECK OK (23)；真机代执行 18 项通过/2 部分/2 阻塞；codex review CR-01..09 已修复并经两轮复核通过（`fix/m3-review` → merge `643fcb9`）。
+> **状态（2026-10-19）：V1.1.0 已发布。** V1 首发验收与 codex review CR-01..09 已通过（`v1.0.0`）；V1.1 合入 PR #1（UI 收口）、PR #2（Runtime 全出血 + 开发包呈现规范）、PR #3（宿主 locale 文案），当前自动化 **787/787**、`CHECK OK (23)`。真机代执行 18 项通过/2 部分/2 阻塞。
 > 自动化结果与证据路径汇总见 [`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./verification/v1/AUTOMATED-EVIDENCE.md)；
 > 真机执行清单见 [`docs/verification/v1/REAL-MACHINE-CHECKLIST.md`](./verification/v1/REAL-MACHINE-CHECKLIST.md)。
 > 本文件保留完整验收结构与统计口径；§2 已填实际执行结果，§3.0 为真机执行记录；§3.1–§3.4 保留骨架表并与 `REAL-MACHINE-RESULTS.md` / `AUTOMATED-EVIDENCE.md` §5 交叉引用。
@@ -44,10 +44,10 @@
 
 | 编号 | 命令 / 操作 | 覆盖范围 | 预期 | 实际 | 证据路径 | 状态 |
 |---|---|---|---|---|---|---|
-| AE-01 | `npm run verify` | build + check + 全量测试 | 全部通过，fail=0 | tests 780 / pass 780 / fail 0 | `docs/verification/v1/logs/AE-01-run.log` | 通过 |
+| AE-01 | `npm run verify` | build + check + 全量测试 | 全部通过，fail=0 | tests 787 / pass 787 / fail 0 | `docs/verification/v1/logs/AE-01-run.log` | 通过 |
 | AE-02 | `npm run build` ×2 比较 sha256 | 构建确定性 | 两次产物字节一致 | IDENTICAL（client.js + 四款游戏） | `.../logs/AE-02-deterministic-build.log` | 通过 |
 | AE-03 | `node scripts/check.mjs` | 语法/产物/manifest/自包含 | CHECK OK | CHECK OK (23 checks) | `.../logs/AE-03-check.log` | 通过 |
-| AE-04 | `node --test` | 全量单测+集成 | 全通过 | tests 767 / pass 767 / fail 0 | `.../logs/AE-04-run.log` | 通过 |
+| AE-04 | `node --test` | 全量单测+集成 | 全通过 | tests 787 / pass 787 / fail 0 | `.../logs/AE-04-run.log` | 通过 |
 | AE-05 | `node --test tests/v1-contracts.test.js` | V1 契约测试 | 全通过 | tests 9 / pass 9 | `.../logs/AE-05-run.log` | 通过 |
 | AE-06 | `node --test games/snake/test/*` | snake 逻辑保留 | 全通过 | tests 30 / pass 30 | `.../logs/AE-06-run.log` | 通过 |
 | AE-07 | `node --test games/{jump,2048,breakout}/test/*` | 四款游戏逻辑 | 全通过 | tests 87 / pass 87 | `.../logs/AE-07-run.log` | 通过 |
@@ -92,6 +92,16 @@ V1 自动化汇总（2026-10-19 实际执行）
 | CR-09 | 性能指标拆分 shell / cards-ready / runtime-playing；详情等待移出计时；全样本断言 | `logs/perf-reference.log`（ok=true；launch 105–107ms） | 关闭 |
 
 自动化命令：`npm run verify` → **780/780**（Host 150/150）、`CHECK OK (23)`；证据脚本全部返回 0；冻结自测按预期返回 1。
+
+### 2.3 V1.1 增量验证（2026-10-19）
+
+| 项 | 结果 | 证据 |
+|---|---|---|
+| PR #1 UI/UX 收口 | 已合入 `b4c640b`（+ `8ab8004` gallery）；Market header/hero/详情/Game tab 状态、侧边无状态 | `docs/verification/ui-polish/`、`docs/verification/ui-refinement/` |
+| PR #2 Runtime 全出血 | 已合入 `58fb5ce`；舞台 padding 0 / radius 0 / 无黑边；`viewport` 仅推荐尺寸 | `docs/verification/fullbleed-runtime/2048-fullbleed.png` |
+| 开发包呈现规范 | `docs/developer-guide.md` §4.4；Vanilla/React 模板全出血；顶部全宽 112px 安全区（控件 clearance 0–48px）、右下 96×96 | 指南/模板；`scripts/cli/test/presentation.test.js` |
+| PR #3 locale | Game tab 与 sidebar 走宿主 locale；中文宿主显示「游戏 / 游戏市场」 | `packages/client/test/bundle.test.js`、`locale.test.js` |
+| 全量回归 | `npm run verify` 787/787、CHECK OK (23) | `logs/AE-01-run.log`（v1.1 运行记录可重新生成） |
 
 ## 3. 真机证据表（已执行）
 
@@ -285,3 +295,4 @@ V1 真机结论（全部条目执行后填写）
 | 2026-10-18 | 初稿：V1 验证骨架（环境/自动化占位/真机表/截图槽位/未覆盖项），不填任何结果 | contract-docs |
 | 2026-10-19 | 自动化部分执行完成（AE-01..17 通过，AE-18 部分）；补齐环境表/自动化结果/截图/夹具；真机表后续由 Lead 代执行完成 | Lead |
 | 2026-10-19 | 真机代执行（U-05/U-06/U-08 等通过）；codex review CR-01..09 修复并复验（`fix/m3-review`），`npm run verify` 780/780 | Lead |
+| 2026-10-19 | V1.1 收尾并发布 v1.1.0：UI 收口 + Runtime 全出血 + 开发包呈现/安全区规范 + 宿主 locale；`npm run verify` 787/787、CHECK OK (23) | Lead |

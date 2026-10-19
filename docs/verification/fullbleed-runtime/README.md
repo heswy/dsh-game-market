@@ -5,7 +5,7 @@ parties. Root cause: the Runtime stage reserved `8px + top clearance` / `16px`
 padding around a dark `#0B0C0E` stage, and the developer guide/template never
 defined whether games should fill the viewport or leave platform safe areas.
 
-Changes on this branch:
+Included in `v1.1.0` (PR #2):
 
 - Runtime stage is edge-to-edge: no dark stage background, no padding, no
   rounded letterbox frame; the iframe fills the main panel.
