@@ -1,0 +1,94 @@
+# DEV-01..04/06 CLI end-to-end
+# 2026-10-19T01:36:11Z commit=d0b1db7 node=v24.14.0
+## DEV-01 create vanilla (alias init)
+Created my-game (vanilla) at /private<tmp>/my-game
+  .gitignore
+  README.md
+  dsh-game.config.json
+  index.html
+  manifest.json
+  package.json
+  scripts/build.mjs
+  scripts/cli.mjs
+  scripts/dev.mjs
+  scripts/pack.mjs
+  scripts/publish.mjs
+  scripts/validate.mjs
+  sdk/VERSION
+  sdk/index.d.ts
+  src/i18n.js
+  src/main.js
+  src/render.js
+  src/storage.js
+  src/styles.css
+
+Next steps:
+  cd /private<tmp>/my-game
+  npm run build
+  npm run validate
+  npm run dev
+  npm run pack
+  npm run publish -- --url https://github.com/<you>/<repo>/releases/download/v1.0.0/my-game-1.0.0.html --cover https://example.com/cover.png
+exit=0
+files:
+<tmp>/my-game/.gitignore
+<tmp>/my-game/README.md
+<tmp>/my-game/dsh-game.config.json
+<tmp>/my-game/index.html
+<tmp>/my-game/manifest.json
+<tmp>/my-game/package.json
+<tmp>/my-game/scripts/build.mjs
+<tmp>/my-game/scripts/cli.mjs
+<tmp>/my-game/scripts/dev.mjs
+<tmp>/my-game/scripts/pack.mjs
+<tmp>/my-game/scripts/publish.mjs
+<tmp>/my-game/scripts/validate.mjs
+<tmp>/my-game/sdk/VERSION
+<tmp>/my-game/sdk/index.d.ts
+<tmp>/my-game/src/i18n.js
+<tmp>/my-game/src/main.js
+<tmp>/my-game/src/render.js
+<tmp>/my-game/src/storage.js
+<tmp>/my-game/src/styles.css
+
+## DEV-02 local runtime simulator
+bash: line 9: timeout: command not found
+simulator http=000
+
+## DEV-04 build
+built /private<tmp>/my-game/dist/index.html (106931 bytes)
+  sha256: cdeb9c0bb9dd607f653be2b31ad6adac96d05dc8c381a75432a1c286c52506fb
+  manifest: my-game@1.0.0
+exit=0
+
+## DEV-04 validate source package
+OK  /private<tmp>/my-game/dist/index.html (106931 bytes)
+    manifest: my-game@1.0.0 (My Game)
+exit=0
+
+## DEV-04 pack
+packed /private<tmp>/my-game/dist/my-game-1.0.0.html (106931 bytes)
+  sha256: cdeb9c0bb9dd607f653be2b31ad6adac96d05dc8c381a75432a1c286c52506fb
+  digest: /private<tmp>/my-game/dist/my-game-1.0.0.html.sha256
+exit=0
+total 440
+-rw-r--r--@ 1 orange  wheel  106931 Oct 19 09:36 index.html
+-rw-r--r--@ 1 orange  wheel  106931 Oct 19 09:36 my-game-1.0.0.html
+-rw-r--r--@ 1 orange  wheel      85 Oct 19 09:36 my-game-1.0.0.html.sha256
+
+## DEV-04 validate packed file
+OK  /private<tmp>/my-game/dist/my-game-1.0.0.html (106931 bytes)
+    manifest: my-game@1.0.0 (My Game)
+exit=0
+
+## DEV-06 invalid package fixtures
+error: Path does not exist: <tmp>/missing.html
+  hint: Pass dist/index.html or the game project directory.
+missing exit=2
+error: Path does not exist: <tmp>/README.md
+  hint: Pass dist/index.html or the game project directory.
+not-html exit=2
+FAIL  <tmp>/no-manifest.html (31 bytes)
+  1. E_PKG_MANIFEST_MISSING (GM-4221) manifest: missing inline manifest script (id="dsh-game-manifest")
+     hint: Add <script type="application/json" id="dsh-game-manifest">…</script> or run `dsh-game build` from a manifest.json project.
+no-manifest exit=1

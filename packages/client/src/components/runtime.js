@@ -406,25 +406,47 @@ export function RuntimeView(props) {
     [autoResuming, runtime.state, busy]
   );
 
+  // Keep the live instance from expiring while the game stays open. A crash or
+  // closed window simply stops renewing, so the Host TTL still reclaims it.
+  React.useEffect(
+    function renewRuntimeInstance() {
+      const info = runtime.launchInfo;
+      if (!info || typeof info.instanceId !== 'string' || info.instanceId.length === 0) return;
+      const api = getApiClient();
+      if (!api || typeof api.renewRuntime !== 'function') return;
+      const timer = setInterval(function renew() {
+        Promise.resolve(api.renewRuntime({ gameId: runtime.gameId, instanceId: info.instanceId })).catch(
+          function ignore() {}
+        );
+      }, TIMING.runtimeRenewMs);
+      return function stopRenew() {
+        clearInterval(timer);
+      };
+    },
+    [runtime.launchInfo, runtime.gameId]
+  );
+
   const isResumeMode = runtime.mode === 'resume-paused' && !resumeConfirmed && !autoResuming;
   const saveStatus = runtime.saveStatus;
   const showSavePill = saveStatus !== 'idle' || runtime.lastSaveAt > 0;
 
-  function releaseHostInstance(gameId) {
+  function releaseHostInstance(gameId, instanceId) {
     if (typeof gameId !== 'string' || gameId.length === 0) return;
     const api = getApiClient();
     if (!api || typeof api.releaseRuntime !== 'function') return;
-    Promise.resolve(api.releaseRuntime({ gameId })).catch(function ignore() {});
+    Promise.resolve(api.releaseRuntime({ gameId, instanceId })).catch(function ignore() {});
   }
 
   function destroyCurrent() {
-    const gameId = store.getState().runtime.gameId;
+    const view = store.getState();
+    const gameId = view.runtime.gameId;
+    const instanceId = view.runtime.launchInfo ? view.runtime.launchInfo.instanceId : null;
     const controller = controllerRef.current;
     controllerRef.current = null;
     destroyRuntime(controller);
-    // Leaving the Runtime unlocks update/uninstall while keeping the Play
-    // Session (and therefore Continue) intact.
-    releaseHostInstance(gameId);
+    // Release only this runtime instance; other windows keep their protection.
+    // The Play Session (and therefore Continue) stays intact.
+    releaseHostInstance(gameId, instanceId);
   }
 
   function completeLeave(target, reason, saveStale) {

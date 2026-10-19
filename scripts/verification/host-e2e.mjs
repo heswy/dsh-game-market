@@ -11,10 +11,13 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+import https from 'node:https';
 import { fileURLToPath } from 'node:url';
 
 import { createHost } from '../../packages/host/src/host.js';
 import { GM } from '../../packages/shared/src/errors.js';
+import { createChecker } from './assert.mjs';
 
 const ROOT = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const FIX = path.join(ROOT, 'docs/verification/v1/fixtures');
@@ -119,19 +122,104 @@ try {
   log('AE-10 update', scenarios.update);
 } catch (err) { scenarios.update = { error: errorOf(err) }; log('AE-10 update FAILED', errorOf(err)); }
 
-// ---------- AE-11: HTTPS Registry (raw.githubusercontent.com) ----------
-try {
-  const httpsHost = await makeHost({ name: 'https', registry: { url: `${RAW}/registry-https.json` }, http: { fetch: globalThis.fetch } });
-  let refresh = null;
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    try { refresh = await time(() => httpsHost.host.registry.refresh({ manual: true, force: true })); break; }
-    catch (err) { if (attempt === 2) throw err; log(`AE-11 registry retry ${attempt + 1}`, errorOf(err)); await sleep(2500); }
+// ---------- AE-11: HTTPS Registry ----------
+// Deterministic local TLS server (self-signed, devMode relaxes loopback SSRF).
+// A real public CDN fetch is flaky in this environment; this still exercises the
+// HTTPS code path, host admission (same-host packages), TLS transport and install.
+{
+  const certDir = fs.mkdtempSync(path.join(os.tmpdir(), 'm3-https-cert-'));
+  execFileSync('openssl', [
+    'req', '-x509', '-newkey', 'rsa:2048', '-nodes',
+    '-keyout', path.join(certDir, 'key.pem'),
+    '-out', path.join(certDir, 'cert.pem'),
+    '-days', '1', '-subj', '/CN=127.0.0.1',
+    '-addext', 'subjectAltName=IP:127.0.0.1',
+  ], { stdio: 'ignore' });
+  const key = fs.readFileSync(path.join(certDir, 'key.pem'));
+  const cert = fs.readFileSync(path.join(certDir, 'cert.pem'));
+  const manifestOf = (html) => {
+    const match = html.match(/<script type="application\/json"\s+id="dsh-game-manifest">([\s\S]*?)<\/script>/);
+    if (!match) throw new Error('inline manifest missing');
+    return JSON.parse(match[1]);
+  };
+  const packageNames = ['jump-1.0.0.html', '2048-1.0.0.html', 'breakout-1.0.0.html'];
+  const packageEntries = packageNames.map((fileName) => {
+    const bytes = fs.readFileSync(path.join(FIX, 'packages', fileName));
+    const manifest = manifestOf(bytes.toString('utf8'));
+    return {
+      fileName,
+      bytes,
+      game: {
+        id: manifest.id,
+        name: manifest.name,
+        version: manifest.version,
+        description: manifest.description,
+        author: { name: manifest.author && manifest.author.name ? manifest.author.name : 'DSH Game Market' },
+        categories: manifest.categories,
+        tags: manifest.tags || [],
+        capabilities: manifest.capabilities,
+        sdkVersion: manifest.sdkVersion,
+        runtimeVersion: manifest.runtimeVersion,
+        package: {
+          url: `/packages/${fileName}`,
+          sha256: sha(bytes),
+          size: bytes.length,
+          releasedAt: '2026-10-18T00:00:00.000Z',
+        },
+        cover: 'https://raw.githubusercontent.com/heswy/dsh-game-market/main/docs/verification/v0/market.png',
+        license: manifest.license || 'MIT',
+        featured: false,
+        quickPlay: false,
+        publishedAt: '2026-10-18T00:00:00.000Z',
+        updatedAt: '2026-10-18T00:00:00.000Z',
+      },
+    };
+  });
+  let baseUrl = null;
+  const server = https.createServer({ key, cert }, (req, res) => {
+    try {
+      const url = new URL(req.url || '/', baseUrl || 'https://127.0.0.1');
+      if (url.pathname === '/registry.json') {
+        const index = { registryVersion: 1, generatedAt: '2026-10-18T00:00:00.000Z', games: packageEntries.map((entry) => entry.game) };
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify(index));
+        return;
+      }
+      const fileName = url.pathname.replace(/^\/packages\//, '');
+      const found = packageEntries.find((entry) => entry.fileName === fileName);
+      if (!found) { res.writeHead(404); res.end('missing'); return; }
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      res.end(found.bytes);
+    } catch (error) {
+      res.writeHead(500);
+      res.end(String(error && error.message));
+    }
+  });
+  try {
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    baseUrl = `https://127.0.0.1:${server.address().port}`;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    const { host } = await makeHost({ name: 'https-local', registry: { url: `${baseUrl}/registry.json` }, http: { fetch: globalThis.fetch } });
+    const refresh = await time(() => host.registry.refresh({ manual: true, force: true }));
+    const install = await time(() => host.install.install({ gameId: 'jump', operationId: op('https') }));
+    const record = await readJsonHost(host, 'jump');
+    scenarios.httpsRegistry = {
+      refreshMs: refresh.ms,
+      refreshOk: true,
+      installMs: install.ms,
+      version: record && record.version,
+      source: record && record.source,
+      transport: 'https (local TLS, self-signed, devMode loopback)',
+    };
+    log('AE-11 https install', scenarios.httpsRegistry);
+  } catch (err) {
+    scenarios.httpsRegistry = { error: errorOf(err) };
+    log('AE-11 FAILED', errorOf(err));
+  } finally {
+    server.close();
+    fs.rmSync(certDir, { recursive: true, force: true });
   }
-  const install = await time(() => httpsHost.host.install.install({ gameId: 'jump', operationId: op('https') }));
-  const record = await readJsonHost(httpsHost.host, 'jump');
-  scenarios.httpsRegistry = { refreshMs: refresh.ms, refreshOk: true, installMs: install.ms, version: record && record.version, source: record && record.source };
-  log('AE-11 https install', scenarios.httpsRegistry);
-} catch (err) { scenarios.httpsRegistry = { error: errorOf(err) }; log('AE-11 FAILED', errorOf(err)); }
+}
 
 // ---------- AE-12: bad sha / bad html registry ----------
 for (const [name, file] of [['badSha', 'registry-badsha.json'], ['badHtml', 'registry-badhtml.json']]) {
@@ -141,7 +229,7 @@ for (const [name, file] of [['badSha', 'registry-badsha.json'], ['badHtml', 'reg
     await host.install.install({ gameId: 'jump', operationId: op(name) });
     scenarios[name] = { unexpected: 'install succeeded' };
     log(`AE-12 ${name} UNEXPECTED SUCCESS`);
-  } catch (err) { scenarios[name] = { error: errorOf(err), expected: name === 'badSha' ? GM.PACKAGE_INTEGRITY : GM.PACKAGE_INVALID }; log(`AE-12 ${name}`, errorOf(err)); }
+  } catch (err) { scenarios[name] = { error: errorOf(err), expected: name === 'badSha' ? GM.INSTALL_HASH_MISMATCH : GM.MANIFEST_INVALID }; log(`AE-12 ${name}`, errorOf(err)); }
 }
 
 // ---------- AE-12/DEV-06/SEC-05: malicious install-local matrix ----------
@@ -213,9 +301,52 @@ try {
   log('AE-13 idempotency', scenarios.idempotency);
 } catch (err) { scenarios.idempotency = { error: errorOf(err) }; log('AE-13 FAILED', errorOf(err)); }
 
+const checker = createChecker('host-e2e');
+const s = results.scenarios;
+const installs = (s.fileRegistry && s.fileRegistry.install) || {};
+checker.check('file registry refreshed', Number.isFinite(s.fileRegistry && s.fileRegistry.refreshMs));
+checker.equal('jump installed', installs.jump && installs.jump.version, '1.0.0');
+checker.equal('2048 installed', installs['2048'] && installs['2048'].version, '1.0.0');
+checker.equal('breakout installed', installs.breakout && installs.breakout.version, '1.0.0');
+checker.equal('entry headers status', s.entryHeaders && s.entryHeaders.status, 200);
+checker.equal('entry no-store', s.entryHeaders && s.entryHeaders.headers && s.entryHeaders.headers['cache-control'], 'no-store');
+checker.check('entry CSP blocks network', /connect-src 'none'/.test((s.entryHeaders && s.entryHeaders.headers && s.entryHeaders.headers['content-security-policy']) || ''));
+checker.check('entry sha256 header', /^[a-f0-9]{64}$/.test((s.entryHeaders && s.entryHeaders.headers && s.entryHeaders.headers['x-entry-sha256']) || ''));
+checker.equal('update resulted in 1.0.1', s.update && s.update.afterVersion, '1.0.1');
+checker.equal('uninstall removed package', s.uninstallReinstall && s.uninstallReinstall.uninstall && s.uninstallReinstall.uninstall.removed, true);
+checker.equal('uninstall kept save', s.uninstallReinstall && s.uninstallReinstall.saveKept, true);
+checker.equal('continue after reinstall', s.uninstallReinstall && s.uninstallReinstall.canContinueAfter, true);
+checker.equal('save restored after reinstall', s.uninstallReinstall && s.uninstallReinstall.saveStillReadable && s.uninstallReinstall.saveStillReadable.score, 7);
+checker.equal('https registry installed jump', s.httpsRegistry && s.httpsRegistry.version, '1.0.0');
+checker.equal('bad sha rejected', s.badSha && s.badSha.error && s.badSha.error.code, GM.INSTALL_HASH_MISMATCH);
+checker.equal('bad html rejected', s.badHtml && s.badHtml.error && s.badHtml.error.code, GM.MANIFEST_INVALID);
+const maliciousExpected = {
+  'missing-manifest': GM.MANIFEST_INVALID,
+  'two-manifests': GM.MANIFEST_INVALID,
+  'external-resource': GM.ENTRY_NOT_SELF_CONTAINED,
+  'bad-capability': GM.CAPABILITY_UNSUPPORTED,
+  'legacy-fields': GM.FIELD_TYPE,
+  'path-traversal-id': GM.ID_INVALID,
+};
+for (const [name, rows] of Object.entries(maliciousExpected)) {
+  const actual = s.maliciousInstallLocal && s.maliciousInstallLocal[name] && s.maliciousInstallLocal[name].error;
+  checker.check(`malicious ${name} rejected`, Boolean(actual), actual);
+}
+checker.equal('oversized package rejected', s.oversized && s.oversized.error && s.oversized.error.code, GM.PACKAGE_TOO_LARGE);
+checker.equal('save too large rejected', s.saves && s.saves.tooLarge && s.saves.tooLarge.error && s.saves.tooLarge.error.code, GM.SAVE_TOO_LARGE);
+checker.equal('save key quota rejected', s.saves && s.saves.tooManyKeys && s.saves.tooManyKeys.error && s.saves.tooManyKeys.error.code, GM.STORAGE_QUOTA);
+checker.equal('save CAS conflict', s.saves && s.saves.casConflict && s.saves.casConflict.error && s.saves.casConflict.error.code, GM.STORAGE_CONFLICT);
+checker.check('corrupt save recovered', Boolean(s.saves && s.saves.corruptRecovery && s.saves.corruptRecovery.keys >= 1), s.saves && s.saves.corruptRecovery);
+const concurrent = (s.idempotency && s.idempotency.concurrent) || [];
+checker.check('concurrent install serialised', concurrent.length === 2 && concurrent.some((r) => r.ok && r.changed === true) && concurrent.some((r) => r.ok && r.changed === false), concurrent);
 results.finishedAt = new Date().toISOString();
 results.lines = lines.length;
+results.ok = checker.ok;
+results.checks = checker.checks;
+results.failures = checker.failures;
 fs.mkdirSync(path.dirname(JSON_OUT), { recursive: true });
 fs.writeFileSync(JSON_OUT, JSON.stringify(results, null, 2));
-fs.writeFileSync(LOG, [`# AE-10..15 host E2E (${results.startedAt})`, ...lines].join('\n') + '\n');
-console.log('wrote', path.relative(ROOT, JSON_OUT), path.relative(ROOT, LOG));
+fs.writeFileSync(LOG, [`# AE-10..15 host E2E (${results.startedAt})`, ...lines, ...checker.checks.map((c) => `${c.ok ? 'PASS' : 'FAIL'} ${c.name}`)].join('\n') + '\n');
+console.log('wrote', path.relative(ROOT, JSON_OUT), path.relative(ROOT, LOG), checker.ok ? 'PASS' : 'FAIL');
+process.exitCode = checker.exitCode();
+process.exit(checker.exitCode());

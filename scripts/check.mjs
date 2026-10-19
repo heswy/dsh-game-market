@@ -10,6 +10,7 @@
  *   --allow-missing: feature branches may run this before all modules exist.
  */
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -179,6 +180,91 @@ function collectJs(dir, out) {
     else if (entry.isFile() && (entry.name.endsWith('.js') || entry.name.endsWith('.mjs'))) out.push(abs);
   }
 }
+
+// Default bundled Registry (CR-01): the index and every package must match,
+// and the npm `files` whitelist must ship them.
+(function checkBundledRegistry() {
+  const registryPath = path.join(root, 'registry', 'games.json');
+  const packagesDir = path.join(root, 'registry', 'packages');
+  if (!fs.existsSync(registryPath)) {
+    fail('missing bundled default registry: registry/games.json');
+    return;
+  }
+  let index;
+  try {
+    index = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+  } catch (error) {
+    fail(`registry/games.json is invalid JSON: ${error.message}`);
+    return;
+  }
+  if (index.registryVersion !== 1) fail('registry/games.json registryVersion must be 1');
+  if (!Array.isArray(index.games) || index.games.length !== 3) {
+    fail('registry/games.json must contain the three installable first-party games');
+    return;
+  }
+  if (Number.isNaN(Date.parse(index.generatedAt))) fail('registry/games.json generatedAt must be ISO');
+  const seen = new Set();
+  for (const game of index.games) {
+    if (!game || typeof game.id !== 'string' || seen.has(game.id)) {
+      fail('registry/games.json has a duplicate or invalid game id');
+      continue;
+    }
+    seen.add(game.id);
+    const fileName = `${game.id}-${game.version}.html`;
+    const packagePath = path.join(packagesDir, fileName);
+    if (!fs.existsSync(packagePath)) {
+      fail(`bundled registry package missing: registry/packages/${fileName}`);
+      continue;
+    }
+    const bytes = fs.readFileSync(packagePath);
+    if (game.package?.size !== bytes.length) fail(`registry package size mismatch: ${fileName}`);
+    const actualSha = createHash('sha256').update(bytes).digest('hex');
+    if (game.package?.sha256 !== actualSha) fail(`registry package sha256 mismatch: ${fileName}`);
+    if (typeof game.cover !== 'string' || !/^https:\/\//.test(game.cover)) {
+      fail(`registry package cover must be https: ${game.id}`);
+    }
+    const validation = validatePackageHtml(bytes.toString('utf8'), { packageBytes: LIMITS.packageBytes });
+    if (!validation.ok || !validation.manifest) fail(`bundled registry package is invalid: ${fileName}`);
+    else if (validation.manifest.id !== game.id || validation.manifest.version !== game.version) {
+      fail(`bundled registry manifest mismatch: ${fileName}`);
+    }
+    if (!/^packages\/[a-z0-9-]+-\d+\.\d+\.\d+\.html$/.test(game.package?.url || '')) {
+      fail(`bundled registry package url is unsupported: ${game.id}`);
+    }
+  }
+  let pkg;
+  try {
+    pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  } catch (_error) {
+    pkg = null;
+  }
+  const files = Array.isArray(pkg?.files) ? pkg.files : [];
+  if (!files.some((entry) => entry === 'registry/**' || entry === 'registry')) {
+    fail('package.json files must include "registry/**" so the default registry ships');
+  }
+  ok('bundled default registry');
+})();
+
+// CR-07: verification evidence referenced by the report must exist in Git and
+// must not be swallowed by the global `*.log` ignore rule.
+(function checkVerificationLogs() {
+  const evidenceDoc = path.join(root, 'docs/verification/v1/AUTOMATED-EVIDENCE.md');
+  if (fs.existsSync(evidenceDoc)) {
+    const text = fs.readFileSync(evidenceDoc, 'utf8');
+    const refs = [...text.matchAll(/`((?:docs\/)?verification\/v1\/logs\/[^`]+?\.log)`/g)].map((match) => match[1]);
+    for (const ref of refs) {
+      const abs = path.join(root, 'docs', ref.replace(/^docs\//, ''));
+      if (!fs.existsSync(abs)) fail(`verification log referenced but missing: ${ref}`);
+    }
+  }
+  const ignored = spawnSync('git', ['check-ignore', '-q', 'docs/verification/v1/logs/AE-01-run.log'], { cwd: root });
+  if (ignored.status === 0) fail('verification logs are ignored by Git (CR-07)');
+  const tracked = spawnSync('git', ['ls-files', 'docs/verification/v1/logs'], { cwd: root, encoding: 'utf8' });
+  if (tracked.status === 0 && tracked.stdout.trim().length === 0) {
+    fail('verification logs are not tracked by Git (CR-07)');
+  }
+  ok('verification logs tracked');
+})();
 
 // Report
 for (const message of checks) console.log(message);

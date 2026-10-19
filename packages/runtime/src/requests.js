@@ -191,15 +191,12 @@ export function createRequestService(options = {}) {
     const gameId = requireGameId();
     const key = params.key;
     assertStorageKey(key);
+    if (typeof api.removeSave !== 'function') {
+      throw errorOf(GM.HOST_UNAVAILABLE, 'Host API does not support save removal');
+    }
     let result;
     try {
-      if (typeof api.removeSave === 'function') {
-        result = await api.removeSave({ gameId, key });
-      } else {
-        // V0 Host API only exposes POST /save; `data: null` means "remove this key".
-        // (Interface gap reported to Lead; see runtime README/report.)
-        result = await api.setSave({ gameId, key, data: null });
-      }
+      result = await api.removeSave({ gameId, key });
     } catch (error) {
       onSaveOutcome({ ok: false, error: normalizeApiError(error) });
       throw error;

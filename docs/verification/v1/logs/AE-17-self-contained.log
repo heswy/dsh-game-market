@@ -1,0 +1,5 @@
+games/snake/dist/index.html validate=ok manifest=snake@1.0.0 external_hits=0
+games/jump/dist/index.html validate=ok manifest=jump@1.0.0 external_hits=0
+games/2048/dist/index.html validate=ok manifest=2048@1.0.0 external_hits=0
+games/breakout/dist/index.html validate=ok manifest=breakout@1.0.0 external_hits=0
+SELF-CONTAINED OK

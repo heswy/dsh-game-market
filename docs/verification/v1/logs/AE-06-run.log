@@ -1,0 +1,40 @@
+# AE-06 :: node --test games/snake/test/*.test.js
+# 2026-10-19T01:35:52Z commit=d0b1db7 node=v24.14.0
+✔ createGame builds a valid board and food never overlaps the snake (0.903375ms)
+✔ advance moves the head one cell and keeps the length without food (0.996583ms)
+✔ advance is a no-op before the game starts or after it is over (0.526584ms)
+✔ setDirection turns the snake and starts a ready game (0.156667ms)
+✔ startGame flips a ready board even when the first key equals the heading (0.097709ms)
+✔ setDirection rejects a 180-degree reversal (0.068208ms)
+✔ setDirection buffers at most two turns in order (0.103625ms)
+✔ eating grows the snake, scores and respawns food off the body (0.119792ms)
+✔ hitting a wall ends the game with overReason wall (0.107916ms)
+✔ hitting the body ends the game with overReason self (0.143792ms)
+✔ moving into the cell the tail vacates is legal (0.164417ms)
+✔ tickMsFor speeds up with the score and has a floor (0.106958ms)
+✔ serialize/deserialize round-trips a mid-run board as ready (0.364625ms)
+✔ a game-over save stays over after deserialize (0.084792ms)
+✔ deserialize rejects malformed or unsafe saves (0.125333ms)
+✔ deserialize regenerates food that overlaps the snake (0.111167ms)
+✔ deserialize accepts a JSON string payload (0.086792ms)
+✔ the same seed produces the same food placement (0.443833ms)
+✔ restartGame resets score, body and status (0.087833ms)
+✔ normalizeDirection understands keys, letters and vectors (0.038375ms)
+✔ isOpposite detects 180-degree pairs only (0.026875ms)
+✔ setFood validates bounds and body overlap (0.048209ms)
+✔ filling the board ends the game as won (0.095167ms)
+✔ dist/index.html is a valid single-file V1 package (3.483208ms)
+✔ the manifest is embedded exactly once and stays under the 64 KiB cap (0.467834ms)
+✔ embedded manifest is strict manifest v1 (no entry/cover/screenshots) (0.4215ms)
+✔ embedded manifest matches the build-time source (legacy entry stripped) (0.374959ms)
+✔ the package declares no external resources or network APIs (1.268792ms)
+✔ resume starts playing, including an unstarted board (0.62825ms)
+✔ finished or broken games ignore resume (0.055791ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 80.419292

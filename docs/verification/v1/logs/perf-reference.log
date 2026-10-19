@@ -1,0 +1,132 @@
+{
+  "startedAt": "2026-10-19T03:16:03.500Z",
+  "environment": "isolated dsh web + headless Chrome 155, warm cache, 1440x900",
+  "metrics": {
+    "marketShellMs": {
+      "samples": [
+        75,
+        69,
+        72
+      ],
+      "median": 72
+    },
+    "marketCardsReadyMs": {
+      "samples": [
+        76,
+        70,
+        72
+      ],
+      "median": 72
+    },
+    "launchToRuntimePlayingMs": {
+      "2048": {
+        "samples": [
+          1334,
+          1315
+        ],
+        "median": 1334
+      },
+      "Breakout": {
+        "samples": [
+          1336,
+          1330
+        ],
+        "median": 1336
+      },
+      "Jump": {
+        "samples": [
+          1324,
+          1326
+        ],
+        "median": 1326
+      },
+      "Snake": {
+        "samples": [
+          1326,
+          1329
+        ],
+        "median": 1329
+      }
+    }
+  },
+  "scriptVersion": 2,
+  "ok": true,
+  "checks": [
+    {
+      "name": "market click sample 1",
+      "ok": true
+    },
+    {
+      "name": "market shell sample 1",
+      "ok": true,
+      "details": 75
+    },
+    {
+      "name": "market cards-ready sample 1",
+      "ok": true,
+      "details": 76
+    },
+    {
+      "name": "market click sample 2",
+      "ok": true
+    },
+    {
+      "name": "market shell sample 2",
+      "ok": true,
+      "details": 69
+    },
+    {
+      "name": "market cards-ready sample 2",
+      "ok": true,
+      "details": 70
+    },
+    {
+      "name": "market click sample 3",
+      "ok": true
+    },
+    {
+      "name": "market shell sample 3",
+      "ok": true,
+      "details": 72
+    },
+    {
+      "name": "market cards-ready sample 3",
+      "ok": true,
+      "details": 72
+    },
+    {
+      "name": "Breakout runtime-playing sample reached",
+      "ok": true,
+      "details": [
+        1336,
+        1330
+      ]
+    },
+    {
+      "name": "Jump runtime-playing sample reached",
+      "ok": true,
+      "details": [
+        1324,
+        1326
+      ]
+    },
+    {
+      "name": "2048 runtime-playing sample reached",
+      "ok": true,
+      "details": [
+        1334,
+        1315
+      ]
+    },
+    {
+      "name": "Snake runtime-playing sample reached",
+      "ok": true,
+      "details": [
+        1326,
+        1329
+      ]
+    }
+  ],
+  "failures": [],
+  "finishedAt": "2026-10-19T03:16:03.503Z"
+}

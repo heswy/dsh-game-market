@@ -95,6 +95,11 @@ export function createRouteTable({ services, devMode = false }) {
       },
     },
     {
+      path: ROUTES.SAVE_REMOVE,
+      methods: ['POST'],
+      handler: async ({ body }) => saves.remove(requireObjectBody(body)),
+    },
+    {
       path: ROUTES.SESSION,
       methods: ['POST'],
       handler: async ({ body }) => {
@@ -166,7 +171,23 @@ export function createRouteTable({ services, devMode = false }) {
         const request = requireObjectBody(body);
         const gameId = typeof request.gameId === 'string' ? request.gameId : null;
         if (gameId === null) throw hostError(GM.INVALID_PARAM, 'gameId is required');
+        if (typeof request.instanceId === 'string') {
+          return { gameId, instanceId: request.instanceId, released: entry.releaseInstance(request.instanceId, gameId) };
+        }
         return { gameId, released: entry.releaseGame(gameId) };
+      },
+    },
+    {
+      path: ROUTES.RUNTIME_RENEW,
+      methods: ['POST'],
+      handler: async ({ body }) => {
+        const request = requireObjectBody(body);
+        if (typeof request.instanceId !== 'string' || request.instanceId.length === 0) {
+          throw hostError(GM.INVALID_PARAM, 'instanceId is required');
+        }
+        const renewed = entry.renewInstance(request.instanceId);
+        if (!renewed) throw hostError(GM.INVALID_PARAM, 'Unknown or expired game instance');
+        return renewed;
       },
     },
     {

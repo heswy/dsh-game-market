@@ -128,6 +128,56 @@ export function register() {
     const expired = await host.requestJson(info.entryUrl);
     assert.equal(expired.response.status, 400);
     assertError(expired.payload, GM.INVALID_PARAM);
+    // No heartbeat -> the runtime instance is also reclaimed by the same TTL.
+    assert.equal(host.host.services.entry.hasActiveInstance('jump'), false);
+  });
+
+  test('runtime-renew extends a live instance; runtime-release is per-instance', async (t) => {
+    const { host } = await setupInstalled(t, { http: { timing: { entryBindingTtlMs: 200 } } });
+    const first = await launch(host);
+    const second = await launch(host);
+    const entry = (info) => host.host.services.entry;
+
+    await new Promise((resolve) => setTimeout(resolve, 130));
+    const renewed = await host.data(ROUTES.RUNTIME_RENEW, {
+      body: { gameId: 'jump', instanceId: first.instanceId },
+    });
+    assert.equal(renewed.gameId, 'jump');
+    assert.equal(renewed.instanceId, first.instanceId);
+    const renewedSecond = await host.data(ROUTES.RUNTIME_RENEW, {
+      body: { gameId: 'jump', instanceId: second.instanceId },
+    });
+    assert.equal(renewedSecond.instanceId, second.instanceId);
+    await new Promise((resolve) => setTimeout(resolve, 130));
+    // Original 200ms TTL would have expired; the renewal kept the first alive.
+    assert.equal(entry(first).hasActiveInstance('jump'), true);
+    // Entry credential expired on its own TTL even though the instances live.
+    const staleEntry = await host.requestJson(first.entryUrl);
+    assert.equal(staleEntry.response.status, 400);
+    assertError(staleEntry.payload, GM.INVALID_PARAM);
+
+    const releaseOne = await host.data(ROUTES.RUNTIME_RELEASE, {
+      body: { gameId: 'jump', instanceId: first.instanceId },
+    });
+    assert.equal(releaseOne.released, 1);
+    // The second window keeps its protection.
+    assert.equal(entry(first).hasActiveInstance('jump'), true);
+    const wrongInstance = await host.data(ROUTES.RUNTIME_RELEASE, {
+      body: { gameId: 'other-game', instanceId: second.instanceId },
+    });
+    assert.equal(wrongInstance.released, 0);
+    assert.equal(entry(first).hasActiveInstance('jump'), true);
+    const releaseLast = await host.data(ROUTES.RUNTIME_RELEASE, {
+      body: { gameId: 'jump', instanceId: second.instanceId },
+    });
+    assert.equal(releaseLast.released, 1);
+    assert.equal(entry(first).hasActiveInstance('jump'), false);
+
+    const unknown = await host.requestJson(ROUTES.RUNTIME_RENEW, {
+      body: { gameId: 'jump', instanceId: 'f'.repeat(32) },
+    });
+    assert.equal(unknown.response.status, 400);
+    assertError(unknown.payload, GM.INVALID_PARAM);
   });
 
   test('CSP frame-ancestors uses config, appends loopback and never falls back to *', async (t) => {

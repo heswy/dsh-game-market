@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**V1 M3 自动化 + 真机代执行部分完成**（2026-10-19 Lead 在用户桌面端用辅助控制执行真机验收：13 项通过、4 部分、3 阻塞、3 未执行；证据 `docs/verification/v1/screenshots/real-*.jpg` 与 `REAL-MACHINE-RESULTS.md`）。M3 已交付：`docs/verification/v1/AUTOMATED-EVIDENCE.md`（AE-01..17 通过、AE-18 部分）、`docs/verification/v1/REAL-MACHINE-CHECKLIST.md`（两场约 2h）、`docs/V1-VERIFICATION.md` §1/§2 已填、`fixtures/`（file+HTTPS Registry、恶意包矩阵）、`logs/`、`results/`、`screenshots/`、`scripts/verification/*`。自动化覆盖：安装/更新/卸载/重装 Continue、HTTPS Registry、entry 安全头、存档配额/CAS/恢复、CLI create/build/validate/pack/publish、幂等/并发、恶意包拒绝矩阵。**剩余**：真机 U-04/05/06、U-08 关 DSH 重开、U-09、U-13/14/15、A-03/05/06/07/11/12/13/14/15/16 观感、FM-01/02/06/07/09/10..14、SEC-01/02/03/07、性能实测（Market 首屏/启动/FPS/CPU/内存）；完成后封 `v1.0.0`。
+- 当前目标：**codex 验收 review CR-01..09 修复完成（分支 `fix/m3-review`，2026-10-19）**：默认 Registry 随包分发、卸载数据备份、真实 `save-remove`、实例生命周期（心跳/按实例释放/凭证 TTL 分离）、提问结果关联、验收日志入库与脚本断言、性能指标语义全部修复；`npm run verify` 777/777、CHECK OK (22)、证据脚本全部 exit 0。等待 codex 复核后决定是否合 main / 打 `v1.0.0`。（2026-10-19 Lead 在用户桌面端用辅助控制执行真机验收：13 项通过、4 部分、3 阻塞、3 未执行；证据 `docs/verification/v1/screenshots/real-*.jpg` 与 `REAL-MACHINE-RESULTS.md`）。M3 已交付：`docs/verification/v1/AUTOMATED-EVIDENCE.md`（AE-01..17 通过、AE-18 部分）、`docs/verification/v1/REAL-MACHINE-CHECKLIST.md`（两场约 2h）、`docs/V1-VERIFICATION.md` §1/§2 已填、`fixtures/`（file+HTTPS Registry、恶意包矩阵）、`logs/`、`results/`、`screenshots/`、`scripts/verification/*`。自动化覆盖：安装/更新/卸载/重装 Continue、HTTPS Registry、entry 安全头、存档配额/CAS/恢复、CLI create/build/validate/pack/publish、幂等/并发、恶意包拒绝矩阵。**剩余**：真机 U-04/05/06、U-08 关 DSH 重开、U-09、U-13/14/15、A-03/05/06/07/11/12/13/14/15/16 观感、FM-01/02/06/07/09/10..14、SEC-01/02/03/07、性能实测（Market 首屏/启动/FPS/CPU/内存）；完成后封 `v1.0.0`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2，2026-10-18 已按 V1 单文件包统一**；第 8–12 章为开发权威来源）
 - 开始记录：2026-10-18
 
@@ -329,6 +329,11 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - V1-25：**AskUserQuestion 提示**：`AskUserQuestion` 在 Session 日志里是普通 `tool/call`（工具名 `ask_user_question`），未回答期间没有 `tool/result`；Host 在 `tool/call` 时置 `waiting-user`（`agent.state.waiting.question`，source=question），`tool/result` 后回 running。仅匹配工具名，不读问题/参数内容；不依赖 `userQuestions` 投影（比 PRD 原 Spike S-14 方案更稳）。Host 单测覆盖；需重载 Host（插件行 off/on 或重启 DSH）后真机复测。
 - V1-26：**提问等待态收尾**：真实 DSH 的 `tool/result` payload 不带工具名（仅 tool message），V1-25 按工具名匹配会卡在 waiting-user；改为「`waiting-user` 且 `source=question` 时，收到 `tool/result` 即回 running」，审批等待仍由 `approval/decided` 关闭。Host 单测更新（结果事件不带 name）；用户实测提问提示已出现，此修复解决“回答后提示不消失”。
 - V1-27：**M3 真机收口**：U-06 提问提醒（出现+回答后消失）与 U-08 应用级关闭重开已由用户真机确认通过；剩余仅真实审批（环境禁用）、字号/减少动效、性能采样与 DEV-03/07 非阻塞项。
+- V1-28：**CR-01 默认分发放内置**：`registry/games.json` + `registry/packages/<id>-<version>.html` 由 `scripts/build-registry.mjs` 从 `games/*/dist` 确定性生成，`build.mjs` 接入、`check.mjs` 校验、`package.json.files` 含 `registry/**`；全新存储可直接发现/安装 Jump/2048/Breakout。
+- V1-29：**存档真实删除**：新增 `POST /save-remove`（shared route/api-client/Host/runtime）；`storage.remove` 不再写 `data:null`；删空存档视为无存档（404/无 Continue）；`data:null` 保留为普通值。
+- V1-30：**运行实例生命周期**：entry 凭证 TTL 与实例寿命分离；Client 每 60s `/runtime-renew` 心跳；`/runtime-release` 按 `instanceId` 只释放单个实例；崩溃/断网停止心跳后 TTL 回收。
+- V1-31：**提问结果关联**：记录 ask_user_question 的 `callId`（tool/result 在 `message.source.callId`）与 turn；只有匹配结果关闭等待，旧 turn/并行结果不清除；`turn/end` 收尾取消/中止。
+- V1-32：**验收可复查/可判定**：`.gitignore` 例外 + sanitize 脚本把证据日志纳入 Git；`assert.mjs` 统一断言并让采集脚本失败非零退出；A-11 断言游戏内部推进；性能指标拆 shell/cards-ready/runtime-playing 并多次采样。
 
 ---
 
@@ -362,6 +367,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-19 · **AskUserQuestion 提示修复 + U-05/深色主题真机证据**：用户截图确认任务完成提醒与深色主题均正常，已归档 `real-U-05-agent-completed.jpg`/`real-U-13-dark-theme.jpg` 并更新验收记录。针对「AskQuestion 无提示」：Host agent-adapter 增加 `ask_user_question` tool/call → waiting-user(waiting-question) 映射、tool/result 复位；host 测试 141/141 通过；PRD/契约/记忆同步。待重载 Host 后真机复测提问场景。
 - 2026-10-19 · **AskUserQuestion 提示出现 + 回答后不消失修复**：用户真机确认提问提醒已出现（2048/Breakout 游戏内鲸鱼「需要你回答一个问题 / 去处理」），并报告回答后状态未消失。根因：真实 `tool/result` 不带工具名，V1-25 的 name 匹配失效。已改为按快照 `source=question` 收尾；host 141/141；待再重载 Host 复测。
 - 2026-10-19 · **U-06/U-08 真机通过**：用户确认 AskUserQuestion 提醒回答后消失（`bcc3c92` 生效），U-08 关闭 DSH 重开后 Continue/进度正确。后续补跑 A-11 连续 5 分钟与收尾封板。
+- 2026-10-19 · **codex review 收口（fix/m3-review）**：CR-01 默认 Registry 随包（build/check/files + 冷启动安装测试）；CR-02 卸载删除含 `.bak` 且失败可重试；CR-03 新增 `POST /save-remove` 真实删除；CR-04/05 实例心跳/按实例释放/凭证 TTL 分离；CR-06 提问 callId/turn 关联；CR-07 日志入库+脱敏+check；CR-08 采集脚本断言/非零退出；CR-09 性能指标语义拆分。Host 149/149、全量 **777/777**、CHECK OK (22)；证据脚本（host-e2e/stability/reduced-motion/perf）全部通过。分支未合并 main，等待复核。
 - （待续）
 
 **当前状态 / 待用户确认**：

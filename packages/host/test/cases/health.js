@@ -130,6 +130,7 @@ export function register() {
       ROUTES.UNINSTALL,
       ROUTES.REGISTRY_REFRESH,
       ROUTES.SAVE,
+      ROUTES.SAVE_REMOVE,
       ROUTES.SESSION,
       ROUTES.SCORES,
       ROUTES.SCORE,
@@ -138,6 +139,7 @@ export function register() {
       ROUTES.AGENT_ACK,
       ROUTES.LAUNCH,
       ROUTES.RUNTIME_RELEASE,
+      ROUTES.RUNTIME_RENEW,
       ROUTES.ENTRY,
       ROUTES.PREVIEW,
     ];

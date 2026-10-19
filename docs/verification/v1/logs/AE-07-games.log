@@ -1,0 +1,11 @@
+# AE-07 games/{jump,2048,breakout}/test
+✔ deserialize never mutates the input save (1.483875ms)
+✔ a fresh game save restores to the starting platform (0.107459ms)
+ℹ tests 87
+ℹ suites 0
+ℹ pass 87
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 167.679791

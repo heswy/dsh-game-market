@@ -149,6 +149,27 @@ export function toolLabelKey(payload) {
 }
 
 /**
+ * Tool-result payloads carry the call association at `message.source.callId`
+ * (invariant: every result maps to a prior call); `tool/call` carries
+ * `callId` directly. Both shapes are accepted defensively.
+ */
+function extractToolCallId(payload) {
+  if (!isPlainObject(payload)) return null;
+  const candidates = [
+    payload.callId,
+    payload.toolCallId,
+    payload.message && payload.message.source && payload.message.source.callId,
+    payload.message && payload.message.toolCallId,
+    payload.result && payload.result.callId,
+    payload.source && payload.source.callId,
+  ];
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.length > 0 && candidate.length <= 200) return candidate;
+  }
+  return null;
+}
+
+/**
  * `AskUserQuestion` is a plain tool call in the session log: the question stays
  * open until the user answers, but there is no dedicated session event. Treat
  * the call as the waiting signal and its result as answered/aborted.
@@ -188,6 +209,8 @@ function validateLabelKey(value) {
  */
 export function createAgentAdapter({ hostEpoch, now, logger = null, maxSessions = 256 }) {
   const snapshots = new Map();
+  // sessionId -> { callId, turnId } for the open AskUserQuestion call.
+  const questionWaits = new Map();
 
   function idleSnapshot(sessionId) {
     const stamp = now().toISOString();
@@ -335,6 +358,7 @@ export function createAgentAdapter({ hostEpoch, now, logger = null, maxSessions 
           });
         }
         case 'agent/disposed': {
+          questionWaits.delete(sessionId);
           return apply(sessionId, {
             state: 'idle',
             labelKey: AGENT_LABEL_KEYS.idle,
@@ -385,7 +409,9 @@ export function createAgentAdapter({ hostEpoch, now, logger = null, maxSessions 
             turnId: turnId,
           });
         case 'turn/end': {
-          if (
+          if (snapshot.state === 'waiting-user' && snapshot.source === 'question') {
+            questionWaits.delete(sessionId);
+          } else if (
             snapshot.state === 'waiting-user' ||
             snapshot.state === 'completed' ||
             snapshot.state === 'error'
@@ -411,6 +437,10 @@ export function createAgentAdapter({ hostEpoch, now, logger = null, maxSessions 
         }
         case 'tool/call': {
           if (isQuestionTool(data)) {
+            if (snapshot.state === 'waiting-user' && snapshot.source === 'approval') {
+              return cloneSnapshot(snapshot);
+            }
+            questionWaits.set(sessionId, { callId: extractToolCallId(data), turnId });
             return apply(sessionId, {
               state: 'waiting-user',
               labelKey: AGENT_LABEL_KEYS['waiting-question'],
@@ -429,12 +459,24 @@ export function createAgentAdapter({ hostEpoch, now, logger = null, maxSessions 
           });
         }
         case 'tool/result': {
-          // A finished question tool closes the waiting state. Real DSH
-          // `tool/result` payloads do not carry the tool name (only the tool
-          // message), so match on the snapshot's waiting source instead of the
-          // event name; approval waits are closed by `approval/decided`.
-          const answeredQuestion = snapshot.state === 'waiting-user' && snapshot.source === 'question';
-          if (!answeredQuestion && (snapshot.state === 'waiting-user' || snapshot.state === 'completed' || snapshot.state === 'error')) {
+          // Only the result of the pending AskUserQuestion call closes the
+          // question wait; unrelated/parallel/older tool results must not.
+          const pendingQuestion = snapshot.state === 'waiting-user' && snapshot.source === 'question'
+            ? questionWaits.get(sessionId)
+            : null;
+          let answeredQuestion = false;
+          if (snapshot.state === 'waiting-user' && snapshot.source === 'question') {
+            const resultCallId = extractToolCallId(data);
+            if (pendingQuestion && pendingQuestion.callId && resultCallId) {
+              answeredQuestion = pendingQuestion.callId === resultCallId;
+            } else if (pendingQuestion && pendingQuestion.turnId) {
+              answeredQuestion = turnId === null || turnId === pendingQuestion.turnId;
+            } else {
+              answeredQuestion = true;
+            }
+            if (!answeredQuestion) return cloneSnapshot(snapshot);
+            questionWaits.delete(sessionId);
+          } else if (snapshot.state === 'waiting-user' || snapshot.state === 'completed' || snapshot.state === 'error') {
             return cloneSnapshot(snapshot);
           }
           return apply(sessionId, {

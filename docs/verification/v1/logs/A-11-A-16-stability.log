@@ -1,0 +1,154 @@
+{
+  "environment": "isolated dsh web + headless Chrome 155",
+  "durationSec": 301,
+  "steps": 150,
+  "finalState": {
+    "state": "playing",
+    "overlay": ""
+  },
+  "debugStart": {
+    "status": "ready",
+    "level": 1,
+    "lives": 1,
+    "score": 140,
+    "best": 170,
+    "paddleX": 480,
+    "ball": {
+      "x": 480,
+      "y": 487.5,
+      "launched": false
+    },
+    "remaining": 34,
+    "loopRunning": true,
+    "runtimePaused": false,
+    "localPaused": false,
+    "overlay": "start",
+    "sessionActive": true,
+    "restoredSave": true,
+    "saveStatus": "idle"
+  },
+  "debugEnd": {
+    "status": "playing",
+    "level": 1,
+    "lives": 1,
+    "score": 140,
+    "best": 170,
+    "paddleX": 480,
+    "ball": {
+      "x": 480,
+      "y": 487.5,
+      "launched": true
+    },
+    "remaining": 34,
+    "loopRunning": true,
+    "runtimePaused": false,
+    "localPaused": false,
+    "overlay": null,
+    "sessionActive": true,
+    "restoredSave": true,
+    "saveStatus": "saved"
+  },
+  "progressed": true,
+  "errors": [],
+  "ticks": [
+    {
+      "atSec": 2,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 62,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 122,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 182,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "atSec": 242,
+      "state": {
+        "state": "playing",
+        "overlay": ""
+      }
+    }
+  ],
+  "a11": true,
+  "ok": true,
+  "checks": [
+    {
+      "name": "breakout started",
+      "ok": true
+    },
+    {
+      "name": "breakout reached playing (not paused)",
+      "ok": true,
+      "details": {
+        "runtimePaused": false
+      }
+    },
+    {
+      "name": "duration >= 300s",
+      "ok": true
+    },
+    {
+      "name": "runtime stayed playing",
+      "ok": true,
+      "details": {
+        "state": "playing",
+        "overlay": ""
+      }
+    },
+    {
+      "name": "no tick observed a non-playing shell",
+      "ok": true
+    },
+    {
+      "name": "game progressed internally",
+      "ok": true,
+      "details": {
+        "start": {
+          "ball": {
+            "x": 480,
+            "y": 487.5,
+            "launched": false
+          },
+          "paddleX": 480,
+          "score": 140,
+          "remaining": 34
+        },
+        "end": {
+          "ball": {
+            "x": 480,
+            "y": 487.5,
+            "launched": true
+          },
+          "paddleX": 480,
+          "score": 140,
+          "remaining": 34
+        }
+      }
+    },
+    {
+      "name": "zero page/runtime exceptions",
+      "ok": true,
+      "details": []
+    }
+  ],
+  "failures": [],
+  "finishedAt": "2026-10-19T03:21:50.154Z"
+}

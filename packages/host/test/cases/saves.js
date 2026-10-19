@@ -275,4 +275,65 @@ export function register() {
     assert.equal(badGameId.response.status, 400);
     assertErrorEnvelope(badGameId.payload, GM.BAD_GAME_ID);
   });
+
+  test('POST /save-remove deletes a key and releases its quota', async (t) => {
+    const host = await createHarness(t);
+    const first = await host.data(ROUTES.SAVE, {
+      body: { gameId: 'snake', key: 'a', data: { score: 1 } },
+    });
+    assert.equal(first.revision, 1);
+    const removed = await host.data(ROUTES.SAVE_REMOVE, {
+      body: { gameId: 'snake', key: 'a' },
+    });
+    assert.equal(removed.removed, true);
+    assert.equal(removed.revision, 2);
+    const gone = await host.requestJson(ROUTES.SAVE, { query: { gameId: 'snake' } });
+    assert.equal(gone.response.status, 404);
+    assertErrorEnvelope(gone.payload, GM.SAVE_NOT_FOUND);
+
+    for (let i = 0; i < 32; i += 1) {
+      await host.data(ROUTES.SAVE, { body: { gameId: 'snake', key: `key${i + 1}`, data: i } });
+    }
+    const overflow = await host.requestJson(ROUTES.SAVE, {
+      body: { gameId: 'snake', key: 'overflow', data: 1 },
+    });
+    assert.equal(overflow.response.status, 413);
+    assertErrorEnvelope(overflow.payload, GM.STORAGE_QUOTA);
+    await host.data(ROUTES.SAVE_REMOVE, { body: { gameId: 'snake', key: 'key1' } });
+    const refilled = await host.data(ROUTES.SAVE, {
+      body: { gameId: 'snake', key: 'overflow', data: 1 },
+    });
+    assert.equal(refilled.keys, 32);
+  });
+
+  test('JSON null is a normal saved value and differs from key removal', async (t) => {
+    const host = await createHarness(t);
+    await host.data(ROUTES.SAVE, { body: { gameId: 'snake', key: 'nullable', data: null } });
+    const loaded = await host.data(ROUTES.SAVE, { query: { gameId: 'snake', include: 'data' } });
+    assert.equal(loaded.keys, 1);
+    assert.equal(Object.prototype.hasOwnProperty.call(loaded.values, 'nullable'), true);
+    assert.equal(loaded.values.nullable, null);
+    const removed = await host.data(ROUTES.SAVE_REMOVE, { body: { gameId: 'snake', key: 'nullable' } });
+    assert.equal(removed.removed, true);
+    const gone = await host.requestJson(ROUTES.SAVE, { query: { gameId: 'snake' } });
+    assert.equal(gone.response.status, 404);
+    assertErrorEnvelope(gone.payload, GM.SAVE_NOT_FOUND);
+  });
+
+  test('POST /save-remove is idempotent for missing keys/saves and honours CAS', async (t) => {
+    const host = await createHarness(t);
+    const empty = await host.data(ROUTES.SAVE_REMOVE, { body: { gameId: 'snake', key: 'a' } });
+    assert.equal(empty.removed, false);
+    assert.equal(empty.revision, 0);
+
+    const saved = await host.data(ROUTES.SAVE, { body: { gameId: 'snake', key: 'a', data: 1 } });
+    const again = await host.data(ROUTES.SAVE_REMOVE, { body: { gameId: 'snake', key: 'missing' } });
+    assert.equal(again.removed, false);
+    assert.equal(again.revision, saved.revision);
+    const conflict = await host.requestJson(ROUTES.SAVE_REMOVE, {
+      body: { gameId: 'snake', key: 'a', expectedRevision: saved.revision + 5 },
+    });
+    assert.equal(conflict.response.status, 409);
+    assertErrorEnvelope(conflict.payload, GM.STORAGE_CONFLICT);
+  });
 }

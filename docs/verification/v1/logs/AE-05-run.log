@@ -1,0 +1,19 @@
+# AE-05 :: node --test tests/v1-contracts.test.js
+# 2026-10-19T01:35:52Z commit=d0b1db7 node=v24.14.0
+✔ V1 versions are frozen at SDK/Runtime 1.0.0 with protocol 1 (0.6635ms)
+✔ V1 route table is complete, unique and prefixed (0.10875ms)
+✔ package limits match the single-file contract (0.048209ms)
+✔ internal E_* codes translate to public GM-* codes (0.118583ms)
+✔ GM codes map to the PRD HTTP status (0.076833ms)
+✔ V0 games stay compatible through the legacy window (V1-07) (0.537125ms)
+✔ the contract validators run end to end on a package sample (1.156125ms)
+✔ M0 contract docs exist and match the frozen surface (1.527792ms)
+✔ TBD-10 launch binding TTL is frozen in constants (0.055958ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83.972542

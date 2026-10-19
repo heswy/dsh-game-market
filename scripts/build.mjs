@@ -32,4 +32,8 @@ for (const entry of fs.readdirSync(gamesDir, { withFileTypes: true })) {
   run(`games/${entry.name}/build.mjs`, scriptPath);
 }
 
+// Bundled default Registry (CR-01): static index + package files for the
+// three installable first-party games, derived deterministically from dist.
+run('build-registry.mjs', path.join(root, 'scripts', 'build-registry.mjs'));
+
 console.log('\n[build] all artifacts built');

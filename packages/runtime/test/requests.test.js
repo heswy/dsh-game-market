@@ -90,12 +90,25 @@ test('storage.load returns the stored value and revision', async () => {
   assert.equal(missing, null);
 });
 
-test('storage.remove falls back to setSave({data:null}) for the V0 Host API', async () => {
+test('storage.remove uses api.removeSave and the key is really gone', async () => {
   const { service, api } = makeService();
+  await service.handle(METHODS.STORAGE_SAVE, { key: 'current', data: { score: 1 } });
   const result = await service.handle(METHODS.STORAGE_REMOVE, { key: 'current' });
   assert.equal(result.removed, true);
-  const call = api.calls.find((entry) => entry[0] === 'setSave');
-  assert.equal(call[1].data, null);
+  assert.equal(api.calls.some((entry) => entry[0] === 'removeSave'), true);
+  assert.equal(api.calls.some((entry) => entry[0] === 'setSave' && entry[1].key !== 'current'), false);
+  const loaded = await service.handle(METHODS.STORAGE_LOAD, { key: 'current' });
+  assert.equal(loaded, null);
+});
+
+test('storage.remove fails fast when the Host lacks removeSave', async () => {
+  const api = createFakeApi();
+  delete api.removeSave;
+  const { service } = makeService({ api });
+  await assert.rejects(
+    service.handle(METHODS.STORAGE_REMOVE, { key: 'current' }),
+    (error) => error.code === GM.HOST_UNAVAILABLE
+  );
 });
 
 test('capabilities are enforced before touching the Host API', async () => {

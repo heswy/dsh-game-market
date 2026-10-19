@@ -1,0 +1,25 @@
+PASS  package.json
+PASS  package.json bundle manifest
+PASS  cordis.patch.yml
+PASS  cordis.patch.yml inserts dsh-game-market
+PASS  183 JavaScript files parse
+PASS  client.js bundle (606066 bytes)
+PASS  games/2048/dist/index.html (188313 bytes, V1 single-file package)
+PASS  games/breakout/dist/index.html (166406 bytes, V1 single-file package)
+PASS  games/jump/dist/index.html (210814 bytes, V1 single-file package)
+PASS  games/snake/dist/index.html (139932 bytes, V1 single-file package)
+PASS  packages/host/src/plugin.js
+PASS  packages/client/src/main.js
+PASS  packages/runtime/src/index.js
+PASS  packages/sdk/src/sdk.js
+PASS  packages/sdk/src/index.d.ts
+PASS  scripts/cli/dsh-game.mjs
+PASS  scripts/cli/create-dsh-game.mjs
+PASS  templates/vanilla/manifest.json
+PASS  packages/shared/src/manifest.js
+PASS  packages/shared/src/registry.js
+PASS  packages/shared/src/installation.js
+PASS  bundled default registry
+PASS  verification logs tracked
+
+CHECK OK (23 checks)

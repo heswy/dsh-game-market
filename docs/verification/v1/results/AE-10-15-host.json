@@ -1,48 +1,48 @@
 {
-  "startedAt": "2026-10-19T01:39:14.561Z",
+  "startedAt": "2026-10-19T03:06:00.341Z",
   "commit": "",
   "scenarios": {
     "fileRegistry": {
-      "home": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-SN5QpF",
-      "refreshMs": 9,
+      "home": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-JzU3VB",
+      "refreshMs": 10,
       "cache": {
         "state": "fresh",
         "sourceUrl": "/Users/orange/Orange Field/Matterhorn/dsh-game-market/docs/verification/v1/fixtures/registry-file.json",
-        "fetchedAt": "2026-10-19T01:39:14.567Z",
+        "fetchedAt": "2026-10-19T03:06:00.348Z",
         "truncated": false,
         "count": 4,
         "lastError": null
       },
       "install": {
         "2048": {
-          "ms": 17,
+          "ms": 19,
           "version": "1.0.0",
           "sha": "7e65cb5e4c8065a1f7d525893cd6733468f9c08d10615bd3462331764acb162a"
         },
         "jump": {
-          "ms": 23,
+          "ms": 21,
           "version": "1.0.0",
           "sha": "92b26f477df4dce0110e928b947947e107d889646dee3bb1a7d2ea12a2782293"
         },
         "breakout": {
-          "ms": 18,
+          "ms": 20,
           "version": "1.0.0",
           "sha": "32d4f224bed8c2ac9ef4c90d9d3fc51477995e694ae06352129a2c126bad7e37"
         }
       },
       "layout": {
         "2048": {
-          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-SN5QpF/storages/dsh-game-market/packages/2048/1.0.0/entry.html",
+          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-JzU3VB/storages/dsh-game-market/packages/2048/1.0.0/entry.html",
           "exists": true,
           "sha": "7e65cb5e4c8065a1f7d525893cd6733468f9c08d10615bd3462331764acb162a"
         },
         "jump": {
-          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-SN5QpF/storages/dsh-game-market/packages/jump/1.0.0/entry.html",
+          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-JzU3VB/storages/dsh-game-market/packages/jump/1.0.0/entry.html",
           "exists": true,
           "sha": "92b26f477df4dce0110e928b947947e107d889646dee3bb1a7d2ea12a2782293"
         },
         "breakout": {
-          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-SN5QpF/storages/dsh-game-market/packages/breakout/1.0.0/entry.html",
+          "path": "/var/folders/c1/t9jvhw_s7dvd45pt_1krh3rm0000gn/T/m3-file-JzU3VB/storages/dsh-game-market/packages/breakout/1.0.0/entry.html",
           "exists": true,
           "sha": "32d4f224bed8c2ac9ef4c90d9d3fc51477995e694ae06352129a2c126bad7e37"
         }
@@ -84,21 +84,23 @@
       "beforeVersion": "1.0.0",
       "updateResult": "1.0.1",
       "afterVersion": "1.0.1",
-      "updateMs": 18,
+      "updateMs": 15,
       "changed": true
     },
     "httpsRegistry": {
-      "refreshMs": 1929,
+      "refreshMs": 5046,
       "refreshOk": true,
-      "installMs": 1260,
-      "version": "1.0.0"
+      "installMs": 41,
+      "version": "1.0.0",
+      "transport": "https (local TLS, self-signed, devMode loopback)"
     },
     "badSha": {
       "error": {
         "code": "GM-5015",
         "message": "Package SHA-256 does not match the registry",
         "retryable": true
-      }
+      },
+      "expected": "GM-5015"
     },
     "badHtml": {
       "error": {
@@ -106,7 +108,7 @@
         "message": "missing inline manifest script (id=\"dsh-game-manifest\")",
         "retryable": false
       },
-      "expected": "GM-4222"
+      "expected": "GM-4221"
     },
     "maliciousInstallLocal": {
       "missing-manifest": {
@@ -165,7 +167,7 @@
         "keys": 1,
         "bytes": 23,
         "revision": 1,
-        "updatedAt": "2026-10-19T01:39:18.004Z"
+        "updatedAt": "2026-10-19T03:06:06.102Z"
       },
       "tooLarge": {
         "error": {
@@ -210,6 +212,234 @@
       ]
     }
   },
-  "finishedAt": "2026-10-19T01:39:18.699Z",
-  "lines": 18
+  "finishedAt": "2026-10-19T03:06:06.807Z",
+  "lines": 18,
+  "ok": true,
+  "checks": [
+    {
+      "name": "file registry refreshed",
+      "ok": true
+    },
+    {
+      "name": "jump installed",
+      "ok": true,
+      "details": {
+        "actual": "1.0.0",
+        "expected": "1.0.0"
+      }
+    },
+    {
+      "name": "2048 installed",
+      "ok": true,
+      "details": {
+        "actual": "1.0.0",
+        "expected": "1.0.0"
+      }
+    },
+    {
+      "name": "breakout installed",
+      "ok": true,
+      "details": {
+        "actual": "1.0.0",
+        "expected": "1.0.0"
+      }
+    },
+    {
+      "name": "entry headers status",
+      "ok": true,
+      "details": {
+        "actual": 200,
+        "expected": 200
+      }
+    },
+    {
+      "name": "entry no-store",
+      "ok": true,
+      "details": {
+        "actual": "no-store",
+        "expected": "no-store"
+      }
+    },
+    {
+      "name": "entry CSP blocks network",
+      "ok": true
+    },
+    {
+      "name": "entry sha256 header",
+      "ok": true
+    },
+    {
+      "name": "update resulted in 1.0.1",
+      "ok": true,
+      "details": {
+        "actual": "1.0.1",
+        "expected": "1.0.1"
+      }
+    },
+    {
+      "name": "uninstall removed package",
+      "ok": true,
+      "details": {
+        "actual": true,
+        "expected": true
+      }
+    },
+    {
+      "name": "uninstall kept save",
+      "ok": true,
+      "details": {
+        "actual": true,
+        "expected": true
+      }
+    },
+    {
+      "name": "continue after reinstall",
+      "ok": true,
+      "details": {
+        "actual": true,
+        "expected": true
+      }
+    },
+    {
+      "name": "save restored after reinstall",
+      "ok": true,
+      "details": {
+        "actual": 7,
+        "expected": 7
+      }
+    },
+    {
+      "name": "https registry installed jump",
+      "ok": true,
+      "details": {
+        "actual": "1.0.0",
+        "expected": "1.0.0"
+      }
+    },
+    {
+      "name": "bad sha rejected",
+      "ok": true,
+      "details": {
+        "actual": "GM-5015",
+        "expected": "GM-5015"
+      }
+    },
+    {
+      "name": "bad html rejected",
+      "ok": true,
+      "details": {
+        "actual": "GM-4221",
+        "expected": "GM-4221"
+      }
+    },
+    {
+      "name": "malicious missing-manifest rejected",
+      "ok": true,
+      "details": {
+        "code": "GM-4221",
+        "message": "missing inline manifest script (id=\"dsh-game-manifest\")",
+        "retryable": false
+      }
+    },
+    {
+      "name": "malicious two-manifests rejected",
+      "ok": true,
+      "details": {
+        "code": "GM-4221",
+        "message": "package contains more than one inline manifest script",
+        "retryable": false
+      }
+    },
+    {
+      "name": "malicious external-resource rejected",
+      "ok": true,
+      "details": {
+        "code": "GM-4225",
+        "message": "package is not self-contained: external script resource (https://evil.example.com/x.js)",
+        "retryable": false
+      }
+    },
+    {
+      "name": "malicious bad-capability rejected",
+      "ok": true,
+      "details": {
+        "code": "GM-4240",
+        "message": "capability is known but unsupported in V1: network",
+        "retryable": false
+      }
+    },
+    {
+      "name": "malicious legacy-fields rejected",
+      "ok": true,
+      "details": {
+        "code": "GM-4232",
+        "message": "manifestVersion must be the integer 1",
+        "retryable": false
+      }
+    },
+    {
+      "name": "malicious path-traversal-id rejected",
+      "ok": true,
+      "details": {
+        "code": "GM-4234",
+        "message": "id must match ^[a-z0-9][a-z0-9-]{1,46}[a-z0-9]$",
+        "retryable": false
+      }
+    },
+    {
+      "name": "oversized package rejected",
+      "ok": true,
+      "details": {
+        "actual": "GM-4135",
+        "expected": "GM-4135"
+      }
+    },
+    {
+      "name": "save too large rejected",
+      "ok": true,
+      "details": {
+        "actual": "GM-4131",
+        "expected": "GM-4131"
+      }
+    },
+    {
+      "name": "save key quota rejected",
+      "ok": true,
+      "details": {
+        "actual": "GM-4132",
+        "expected": "GM-4132"
+      }
+    },
+    {
+      "name": "save CAS conflict",
+      "ok": true,
+      "details": {
+        "actual": "GM-4092",
+        "expected": "GM-4092"
+      }
+    },
+    {
+      "name": "corrupt save recovered",
+      "ok": true,
+      "details": {
+        "revision": 32,
+        "keys": 32
+      }
+    },
+    {
+      "name": "concurrent install serialised",
+      "ok": true,
+      "details": [
+        {
+          "ok": true,
+          "changed": true
+        },
+        {
+          "ok": true,
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "failures": []
 }

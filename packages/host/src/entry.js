@@ -354,6 +354,7 @@ export function createEntryService({
     const nonce = createNonce();
     const params = new URLSearchParams({ gameId, version: resolved.version, instance: instanceId, nonce });
     const preview = await previewLinks(gameId, resolved.version, resolved.source);
+    const createdAtMs = now().getTime();
     rememberInstance(instanceId, {
       gameId,
       version: resolved.version,
@@ -365,7 +366,10 @@ export function createEntryService({
       capabilities: Array.isArray(manifest.capabilities) ? manifest.capabilities.slice() : [],
       viewport: normaliseViewport(manifest.viewport),
       createdAt: now().toISOString(),
-      expiresAt: now().getTime() + bindingTtlMs,
+      // Entry credential TTL is fixed; runtime lifetime is renewed by the
+      // Client heartbeat so a long session does not lose update protection.
+      entryExpiresAt: createdAtMs + bindingTtlMs,
+      expiresAt: createdAtMs + bindingTtlMs,
     });
     return {
       instanceId,
@@ -426,8 +430,12 @@ export function createEntryService({
     const resolved = await resolveForServe(gameId, version);
 
     const binding = instanceBindings.get(instance);
-    if (!binding || binding.expiresAt <= now().getTime()) {
-      if (binding) instanceBindings.delete(instance);
+    if (!binding) {
+      throw hostError(GM.INVALID_PARAM, 'Unknown or expired game instance', { retryable: false });
+    }
+    // The one-shot entry credential expires on its own TTL; an active instance
+    // (renewed by heartbeat) must not keep an expired credential usable.
+    if (binding.entryExpiresAt <= now().getTime()) {
       throw hostError(GM.INVALID_PARAM, 'Unknown or expired game instance', { retryable: false });
     }
     if (binding.gameId !== gameId || binding.version !== version || binding.nonce !== nonce) {
@@ -573,7 +581,34 @@ export function createEntryService({
     }
   }
 
-  /** Client left the Runtime: drop this game's live launch bindings. */
+  /** Extend one live instance while its Runtime is still open. */
+  function renewInstance(instanceId) {
+    const binding = instanceBindings.get(instanceId);
+    if (!binding) return null;
+    const stamp = now().getTime();
+    if (binding.expiresAt <= stamp) {
+      instanceBindings.delete(instanceId);
+      return null;
+    }
+    binding.expiresAt = stamp + bindingTtlMs;
+    return {
+      instanceId,
+      gameId: binding.gameId,
+      version: binding.version,
+      expiresAt: binding.expiresAt,
+    };
+  }
+
+  /** Release one instance (multi-window safe); a wrong gameId releases nothing. */
+  function releaseInstance(instanceId, gameId) {
+    const binding = instanceBindings.get(instanceId);
+    if (!binding) return 0;
+    if (typeof gameId === 'string' && binding.gameId !== gameId) return 0;
+    instanceBindings.delete(instanceId);
+    return 1;
+  }
+
+  /** Legacy: drop every live launch binding for a game. */
   function releaseGame(gameId) {
     let released = 0;
     for (const [instanceId, binding] of instanceBindings) {
@@ -592,6 +627,8 @@ export function createEntryService({
     hasActiveInstance,
     invalidateGame,
     releaseGame,
+    renewInstance,
+    releaseInstance,
     instanceBindings,
     bindingTtlMs,
     isBuiltin,

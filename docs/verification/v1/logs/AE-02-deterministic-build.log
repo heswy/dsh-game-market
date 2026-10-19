@@ -1,0 +1,16 @@
+# AE-02 deterministic build (2x)
+# 2026-10-19T01:34:59Z
+## run1
+76b3cf4700e7246c0c41857786894f0ff6e35f9762d3432fc8bd486ac76240df  client.js
+7e65cb5e4c8065a1f7d525893cd6733468f9c08d10615bd3462331764acb162a  games/2048/dist/index.html
+32d4f224bed8c2ac9ef4c90d9d3fc51477995e694ae06352129a2c126bad7e37  games/breakout/dist/index.html
+92b26f477df4dce0110e928b947947e107d889646dee3bb1a7d2ea12a2782293  games/jump/dist/index.html
+d6b923870e70c5a9f9ec3101dffb757fb00afff80329b7ca228b52f541fec789  games/snake/dist/index.html
+## run2
+76b3cf4700e7246c0c41857786894f0ff6e35f9762d3432fc8bd486ac76240df  client.js
+7e65cb5e4c8065a1f7d525893cd6733468f9c08d10615bd3462331764acb162a  games/2048/dist/index.html
+32d4f224bed8c2ac9ef4c90d9d3fc51477995e694ae06352129a2c126bad7e37  games/breakout/dist/index.html
+92b26f477df4dce0110e928b947947e107d889646dee3bb1a7d2ea12a2782293  games/jump/dist/index.html
+d6b923870e70c5a9f9ec3101dffb757fb00afff80329b7ca228b52f541fec789  games/snake/dist/index.html
+## diff
+IDENTICAL
