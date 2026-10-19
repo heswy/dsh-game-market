@@ -24,7 +24,14 @@ export function enterGameSpace(options) {
   const entry = selectGameEntry(store.getState(), opts.sessionId);
   if (typeof opts.openMarket === 'function') opts.openMarket();
   if (entry.kind === 'resume' && typeof opts.startGame === 'function') {
-    opts.startGame({ gameId: entry.gameId, mode: 'resume-paused', sessionId: opts.sessionId });
+    opts.startGame({
+      gameId: entry.gameId,
+      mode: 'resume-paused',
+      sessionId: opts.sessionId,
+      // The user just clicked the Game tab: that click is the confirmation, so
+      // resume without showing the platform resume dialog.
+      autoResume: true,
+    });
   }
   return entry;
 }

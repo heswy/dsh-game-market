@@ -15,6 +15,7 @@ function initialRuntime() {
   return {
     gameId: null,
     mode: 'start',
+    autoResume: false,
     state: 'idle',
     saveStatus: 'idle',
     error: null,
@@ -583,6 +584,7 @@ export function reduce(state, action) {
           ...initialRuntime(),
           gameId: action.gameId,
           mode: action.mode,
+          autoResume: action.autoResume === true,
           bindingSessionId: sessionId,
           state: 'launching',
           attempt: 0,
@@ -827,8 +829,8 @@ export function healthReady(health) {
   return { type: 'health-ready', health: health };
 }
 
-export function runtimeStarted(gameId, mode, sessionId) {
-  return { type: 'runtime-start', gameId: gameId, mode: mode, sessionId: sessionId };
+export function runtimeStarted(gameId, mode, sessionId, autoResume) {
+  return { type: 'runtime-start', gameId: gameId, mode: mode, sessionId: sessionId, autoResume: autoResume === true };
 }
 
 export function runtimeLaunchInfo(launchInfo) {

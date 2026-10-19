@@ -244,7 +244,7 @@ export function beginGame(target, options) {
       : state && typeof state.bindingSessionId === 'string'
         ? state.bindingSessionId
         : null;
-  target.dispatch(runtimeStarted(opts.gameId, mode, sessionId));
+  target.dispatch(runtimeStarted(opts.gameId, mode, sessionId, opts.autoResume === true));
   return true;
 }
 

@@ -49,7 +49,7 @@ test('after playing and returning to work, the Game tab resumes the game', funct
 
   const entry = run(SESSION);
   assert.deepEqual(entry, { kind: 'resume', gameId: 'snake' });
-  assert.deepEqual(calls.starts, [{ gameId: 'snake', mode: 'resume-paused', sessionId: SESSION }]);
+  assert.deepEqual(calls.starts, [{ gameId: 'snake', mode: 'resume-paused', sessionId: SESSION, autoResume: true }]);
   assert.equal(calls.markets, 1, 'the panel is still selected so the runtime can mount');
   assert.equal(store.getState().page, 'runtime');
   assert.equal(store.getState().runtime.gameId, 'snake');

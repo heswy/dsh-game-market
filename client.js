@@ -1262,6 +1262,7 @@ window.__ModuleLoader__.load({
       return {
         gameId: null,
         mode: 'start',
+        autoResume: false,
         state: 'idle',
         saveStatus: 'idle',
         error: null,
@@ -1830,6 +1831,7 @@ window.__ModuleLoader__.load({
               ...initialRuntime(),
               gameId: action.gameId,
               mode: action.mode,
+              autoResume: action.autoResume === true,
               bindingSessionId: sessionId,
               state: 'launching',
               attempt: 0,
@@ -2074,8 +2076,8 @@ window.__ModuleLoader__.load({
       return { type: 'health-ready', health: health };
     }
 
-    function runtimeStarted(gameId, mode, sessionId) {
-      return { type: 'runtime-start', gameId: gameId, mode: mode, sessionId: sessionId };
+    function runtimeStarted(gameId, mode, sessionId, autoResume) {
+      return { type: 'runtime-start', gameId: gameId, mode: mode, sessionId: sessionId, autoResume: autoResume === true };
     }
 
     function runtimeLaunchInfo(launchInfo) {
@@ -5330,7 +5332,7 @@ window.__ModuleLoader__.load({
           : state && typeof state.bindingSessionId === 'string'
             ? state.bindingSessionId
             : null;
-      target.dispatch(runtimeStarted(opts.gameId, mode, sessionId));
+      target.dispatch(runtimeStarted(opts.gameId, mode, sessionId, opts.autoResume === true));
       return true;
     }
 
@@ -10774,7 +10776,7 @@ window.__ModuleLoader__.load({
       const attempt = runtime.attempt;
       const mode = runtime.mode;
       const loading = isRuntimeLoadingState(runtime.state) || runtime.state === 'launching';
-      const showPauseOverlay = runtime.state === 'paused' && !runtime.error;
+      const showPauseOverlay = runtime.state === 'paused' && !runtime.error && !autoResuming;
 
       React.useEffect(
         function bootRuntime() {
@@ -10965,7 +10967,21 @@ window.__ModuleLoader__.load({
         [agent]
       );
 
-      const isResumeMode = runtime.mode === 'resume-paused' && !resumeConfirmed;
+      React.useEffect(
+        function autoResumeFromTab() {
+          if (!autoResuming) return;
+          if (runtime.state !== 'paused') return;
+          if (busy || leavingRef.current) return;
+          setResumeConfirmed(true);
+          resumeGame();
+        },
+        [autoResuming, runtime.state, busy]
+      );
+
+      // Game-tab return: the click is the confirmation. Skip the platform resume
+      // dialog and start playing right away (D-024 dialog stays for other paths).
+      const autoResuming = runtime.autoResume === true && runtime.mode === 'resume-paused' && !resumeConfirmed;
+      const isResumeMode = runtime.mode === 'resume-paused' && !resumeConfirmed && !autoResuming;
       const saveStatus = runtime.saveStatus;
       const showSavePill = saveStatus !== 'idle' || runtime.lastSaveAt > 0;
 
@@ -14930,7 +14946,14 @@ window.__ModuleLoader__.load({
       const entry = selectGameEntry(store.getState(), opts.sessionId);
       if (typeof opts.openMarket === 'function') opts.openMarket();
       if (entry.kind === 'resume' && typeof opts.startGame === 'function') {
-        opts.startGame({ gameId: entry.gameId, mode: 'resume-paused', sessionId: opts.sessionId });
+        opts.startGame({
+          gameId: entry.gameId,
+          mode: 'resume-paused',
+          sessionId: opts.sessionId,
+          // The user just clicked the Game tab: that click is the confirmation, so
+          // resume without showing the platform resume dialog.
+          autoResume: true,
+        });
       }
       return entry;
     }

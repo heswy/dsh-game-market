@@ -1067,7 +1067,14 @@ interface LaunchInfo {
 - 语义：`/launch` 产生的实例在 release 前视为“运行中”，阻止更新/卸载；未结束的 Play Session 只是 Continue 依据，**不再**阻止更新/卸载。
 - 幂等：重复 release 返回 `released: 0`；Host 重启后实例表为空。
 
-### 7.3.2 `launchMode` 随 init 显式下发（M1 hotfix）
+### 7.3.2 Game tab 返回直连恢复（V1-22）
+
+- 路径：同一 Session 内已玩过游戏、返回工作后再次点击「游戏」tab。
+- 点击 tab 本身就是确认，因此 `beginGame()` 带 `autoResume: true`；Runtime 进入 `paused` 后**立即发送 resume**，不渲染平台「已恢复上一局」弹窗。
+- 其他恢复路径（Market 详情「继续游戏」、Agent 等待/完成后的恢复）仍按 D-024 显示一次平台确认。
+- 契约扩展：`launchMode` 随 init 显式下发（§7.3.2 旧条目顺延为 §7.3.3）。
+
+### 7.3.3 `launchMode` 随 init 显式下发（M1 hotfix）
 
 - Runtime 在 `init` 事件中额外发送 `launchMode`（等于 `/launch` 的 `mode`）；SDK 暴露为 `game.runtime.launchMode`。
 - 原因：平台 `resume-paused` 启动会额外发 `pause` 生命周期事件，但桌面端（Electron）存在事件时序差异；游戏不能只靠 `pause` 判断是否隐藏自己的“继续/开始”界面。
