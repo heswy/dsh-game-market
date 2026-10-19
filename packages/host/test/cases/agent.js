@@ -177,7 +177,8 @@ export function register() {
     assert.equal(asked.source, 'question');
     assert.equal(asked.turnId, 'turn-3');
 
-    sessionEvent(host, sessionId, 'tool/result', { turn: 3, step: 2, name: 'ask_user_question' });
+    // Real DSH tool/result payloads carry no tool name: closing must not rely on it.
+    sessionEvent(host, sessionId, 'tool/result', { turn: 3, step: 2, message: { role: 'tool', content: [] } });
     const answered = await agentState(host, sessionId);
     assert.equal(answered.state, 'running');
     assert.equal(answered.labelKey, AGENT_LABEL_KEYS.running);

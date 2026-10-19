@@ -429,7 +429,11 @@ export function createAgentAdapter({ hostEpoch, now, logger = null, maxSessions 
           });
         }
         case 'tool/result': {
-          const answeredQuestion = snapshot.state === 'waiting-user' && isQuestionTool(data);
+          // A finished question tool closes the waiting state. Real DSH
+          // `tool/result` payloads do not carry the tool name (only the tool
+          // message), so match on the snapshot's waiting source instead of the
+          // event name; approval waits are closed by `approval/decided`.
+          const answeredQuestion = snapshot.state === 'waiting-user' && snapshot.source === 'question';
           if (!answeredQuestion && (snapshot.state === 'waiting-user' || snapshot.state === 'completed' || snapshot.state === 'error')) {
             return cloneSnapshot(snapshot);
           }
