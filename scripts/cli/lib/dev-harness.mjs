@@ -602,6 +602,16 @@ export function renderHarness(config) {
         setStatus("waiting for hello", "");
         iframe.src = "/game?instance=" + state.instanceId + "&nonce=" + state.nonce;
         appendLog("·", "iframe loading", iframe.src);
+        // Refresh header metadata from the server so an in-place update is
+        // visible without restarting the simulator.
+        fetch("/health", { cache: "no-store" }).then(function (response) { return response.json(); }).then(function (health) {
+          if (health && health.ok && health.game) {
+            CONFIG.game.id = health.game.id;
+            CONFIG.game.version = health.game.version;
+            if (typeof health.game.name === "string") CONFIG.game.name = health.game.name;
+            render();
+          }
+        }).catch(function () { /* keep the initial metadata */ });
         render();
       }
 

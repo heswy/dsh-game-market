@@ -14,7 +14,7 @@
 | 构建确定性 | `npm run build` ×2 + sha256 列表比较 | 4 游戏 + client + 随包 registry 全部一致 | `logs/build-determinism.log` |
 | 内容仓库初始化/校验 CLI | `init-content-repo.mjs` → `validate-catalog.mjs` | 初始化成功、空目录合法 | `logs/init-content-repo.log`、`logs/validate-content-repo.log`、`artifacts/content-repo-init/` |
 | 可移植生成工程 | Vanilla + React `create → build → validate → pack → validate(packed)` | 均通过；生成 config 不含机器相关 CLI 路径，使用 `DSH_GAME_CLI` | `logs/portable-templates.log`、`logs/react-template.log` |
-| Skill 分发归档 | `node scripts/registry/pack-skill.mjs --out …` | 5,435 bytes，sha256 `5069aed5…`，manifest 文件哈希齐全 | `artifacts/dsh-game-developer-1.0.0.tar.gz`、`artifacts/manifest.json`、`logs/skill-pack.log` |
+| Skill 分发归档 | `node scripts/registry/pack-skill.mjs --out …` | 5,948 bytes，sha256 `a9cef3de…`，manifest 文件哈希齐全 | `artifacts/dsh-game-developer-1.0.0.tar.gz`、`artifacts/manifest.json`、`logs/skill-pack.log` |
 
 测试日志中的 `tests` 计数是 Node test runner 的真实输出；没有把模拟写成公网成功。
 

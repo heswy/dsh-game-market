@@ -78,16 +78,21 @@ See `references/presentation.md` for the detailed checklist and light/dark rules
 
 ### 5. Validate before showing the user
 
-Run from the generated project:
+Run from the generated project. The generated project does **not** persist the
+CLI path, so export `DSH_GAME_CLI` in every shell (wrappers exit 2 with a clear
+message when it is missing):
 
 ```bash
+export DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs
 npm run build
 npm run validate
 npm run pack
+npm run validate   # run again: validates the packed <id>-<version>.html too
 ```
 
-Read the **exit code and full output**; never assume success. Then verify in the
-local Runtime Simulator (`npm run dev`):
+Build/validate stops at the first failing stage: fix one defect, then re-run to
+surface the next one. Read the **exit code and full output**; never assume
+success. Then verify in the local Runtime Simulator (`npm run dev`):
 
 - actual gameplay progresses (not only the outer Runtime says `playing`);
 - pause/resume, `before-save`, save/Continue and restart;

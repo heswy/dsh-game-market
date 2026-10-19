@@ -49,7 +49,7 @@ Evidence: `artifacts/skill-eval/c21-c22/c22/logs/`, `save-1.0.0.json`,
 1.0.1 `.html`/`.sha256`.
 
 Machine summary: `artifacts/skill-eval/c21-c22/evidence-summary.json`;
-C-21 report: `.../C-21-REPORT.md`. The evaluator recorded the platform HEAD as
+C-21 report: `.../C-21-REPORT.md`; C-22 report: `.../C-22-REPORT.md`. The evaluator recorded the platform HEAD as
 `dc646d8` and did not modify the checkout.
 
 ## Honest limits
