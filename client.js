@@ -10776,6 +10776,9 @@ window.__ModuleLoader__.load({
       const attempt = runtime.attempt;
       const mode = runtime.mode;
       const loading = isRuntimeLoadingState(runtime.state) || runtime.state === 'launching';
+      // Game-tab return: the click is the confirmation. Skip the platform resume
+      // dialog and start playing right away (D-024 dialog stays for other paths).
+      const autoResuming = runtime.autoResume === true && runtime.mode === 'resume-paused' && !resumeConfirmed;
       const showPauseOverlay = runtime.state === 'paused' && !runtime.error && !autoResuming;
 
       React.useEffect(
@@ -10978,9 +10981,6 @@ window.__ModuleLoader__.load({
         [autoResuming, runtime.state, busy]
       );
 
-      // Game-tab return: the click is the confirmation. Skip the platform resume
-      // dialog and start playing right away (D-024 dialog stays for other paths).
-      const autoResuming = runtime.autoResume === true && runtime.mode === 'resume-paused' && !resumeConfirmed;
       const isResumeMode = runtime.mode === 'resume-paused' && !resumeConfirmed && !autoResuming;
       const saveStatus = runtime.saveStatus;
       const showSavePill = saveStatus !== 'idle' || runtime.lastSaveAt > 0;
