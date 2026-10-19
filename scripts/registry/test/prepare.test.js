@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
 import { preparePublish } from '../lib/prepare.mjs';
+import { createGit } from '../lib/git.mjs';
 import { buildRegistry } from '../lib/catalog.mjs';
 import { makeEmptyContentRepo, makeFakeGit, makeFakeGithub, makeHttpMock, prepareFixtures, PNG_1X1 } from './helpers.mjs';
 
@@ -319,6 +321,56 @@ test('resuming a branch that is not based on the latest base is rejected', async
   await assert.rejects(
     () => preparePublish({ submissionPath: ctx.submissionPath, reviewPath: ctx.reviewPath, registryDir: ctx.content, execute: true, repo: 'example/registry', git, github, http: ctx.http }),
     (error) => error.code === 'E_PUBLISH_STALE_BASE'
+  );
+});
+
+test('a failed commit rolls back files, index and branch so the tool can be retried', async (t) => {
+  const ctx = await context();
+  t.after(() => ctx.cleanup());
+  const run = (args) => execFileSync('git', args, { cwd: ctx.content, encoding: 'utf8' }).trim();
+  run(['init', '-q']);
+  run(['config', 'user.email', 'maintainer@example.com']);
+  run(['config', 'user.name', 'Maintainer']);
+  run(['add', '-A']);
+  run(['commit', '-q', '-m', 'init content repo']);
+  run(['branch', '-M', 'main']);
+  const origin = path.join(ctx.base, 'origin.git');
+  await fs.mkdir(origin, { recursive: true });
+  execFileSync('git', ['init', '-q', '--bare', origin], { encoding: 'utf8' });
+  run(['remote', 'add', 'origin', origin]);
+  run(['push', '-q', '-u', 'origin', 'main']);
+  const hooks = path.join(ctx.base, 'hooks');
+  await fs.mkdir(hooks, { recursive: true });
+  await fs.writeFile(path.join(hooks, 'pre-commit'), '#!/bin/sh\nexit 1\n', { mode: 0o755 });
+  run(['config', 'core.hooksPath', hooks]);
+
+  const git = createGit({ cwd: ctx.content });
+  const github = makeFakeGithub();
+  await assert.rejects(
+    () => preparePublish({ submissionPath: ctx.submissionPath, reviewPath: ctx.reviewPath, registryDir: ctx.content, execute: true, repo: 'example/registry', git, github, http: ctx.http }),
+    (error) => error.code === 'E_PUBLISH_GIT'
+  );
+  assert.equal(run(['status', '--porcelain']), '', 'worktree/index must be clean after rollback');
+  assert.equal(run(['branch', '--format=%(refname:short)']), 'main', 'temporary catalog branch must be removed');
+  assert.equal(run(['stash', 'list']), '', 'rollback must not stash user work');
+
+  await fs.rm(path.join(hooks, 'pre-commit'));
+  const retry = await preparePublish({ submissionPath: ctx.submissionPath, reviewPath: ctx.reviewPath, registryDir: ctx.content, execute: true, repo: 'example/registry', git, github, http: ctx.http });
+  assert.equal(retry.mode, 'execute');
+  assert.equal(github.prs.length, 1);
+  assert.equal(run(['branch', '--format=%(refname:short)']).split('\n').includes('main'), true);
+});
+
+test('a failed rollback is reported explicitly, never silently swallowed', async (t) => {
+  const ctx = await context();
+  t.after(() => ctx.cleanup());
+  const git = makeFakeGit({ failCommit: true, failReset: true });
+  const github = makeFakeGithub();
+  await assert.rejects(
+    () => preparePublish({ submissionPath: ctx.submissionPath, reviewPath: ctx.reviewPath, registryDir: ctx.content, execute: true, repo: 'example/registry', git, github, http: ctx.http }),
+    (error) => error.code === 'E_PUBLISH_ROLLBACK_FAILED' &&
+      error.details && error.details.original === 'E_PUBLISH_GIT' &&
+      String(error.details.rollback).includes('index lock')
   );
 });
 

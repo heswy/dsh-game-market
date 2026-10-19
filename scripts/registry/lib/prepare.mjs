@@ -448,6 +448,35 @@ export async function preparePublish(options) {
 
   let snapshots = null;
   let committed = false;
+  let branchCreated = false;
+  let branchSwitched = false;
+  let previousBranch = currentBranch;
+  const trackedPaths = [files.catalog, ...(ownerText ? [files.owner] : []), files.review, files.registry];
+  async function rollbackLocal(branch) {
+    const problems = [];
+    try {
+      if (snapshots) await restoreFiles(snapshots);
+    } catch (error) {
+      problems.push(`files: ${error.message}`);
+    }
+    try {
+      if (typeof git.resetPaths === 'function') git.resetPaths(trackedPaths);
+      else if (typeof git.run === 'function') git.run(['reset', '-q', '--', ...trackedPaths]);
+    } catch (error) {
+      problems.push(`index: ${error.message}`);
+    }
+    try {
+      if ((branchCreated || branchSwitched) && typeof git.checkout === 'function') {
+        git.checkout(previousBranch);
+        if (branchCreated && typeof git.deleteBranch === 'function') git.deleteBranch(branch);
+      }
+    } catch (error) {
+      problems.push(`branch: ${error.message}`);
+    }
+    if (problems.length > 0) {
+      throw cleanError('E_PUBLISH_ROLLBACK_FAILED', `local rollback failed: ${problems.join('; ')}`);
+    }
+  }
   try {
     await stageCandidate({ registryDir, files, review, catalogText, ownerText, transactionDir, historyBaseDir });
     const draft = await uploadRelease({ github, plan, assets, http: options.http || {}, transactionDir });
@@ -460,9 +489,14 @@ export async function preparePublish(options) {
     assert(regenerated.ok, 'E_PUBLISH_REGISTRY_INVALID', 'generated registry is invalid', regenerated.errors);
 
     const branch = intendedBranch;
-    if (typeof git.branchExists === 'function' && git.branchExists(branch)) git.checkout(branch);
-    else git.createBranch(branch);
-    git.add([files.catalog, ...(ownerText ? [files.owner] : []), files.review, files.registry]);
+    if (typeof git.branchExists === 'function' && git.branchExists(branch)) {
+      git.checkout(branch);
+      if (branch !== previousBranch) branchSwitched = true;
+    } else {
+      git.createBranch(branch);
+      branchCreated = true;
+    }
+    git.add(trackedPaths);
     try {
       git.commit(`feat(catalog): publish ${id} ${version}`);
     } catch (error) {
@@ -505,10 +539,20 @@ export async function preparePublish(options) {
       files: [files.catalog, ...(ownerText ? [files.owner] : []), files.review, files.registry],
     };
   } catch (error) {
-    // Before a commit exists, restore the worktree so a failed transaction
-    // cannot leave partial catalog files behind. After commit the branch is a
+    // Before a commit exists, restore files *and* the git index/branch so the
+    // transaction can be retried directly. After commit the branch is a
     // resumable transaction and is intentionally kept.
-    if (!committed && snapshots) await restoreFiles(snapshots).catch(() => undefined);
+    if (!committed && snapshots) {
+      try {
+        await rollbackLocal(intendedBranch);
+      } catch (rollbackError) {
+        throw cleanError('E_PUBLISH_ROLLBACK_FAILED', `publish failed (${error.code || 'E_PUBLISH'}) and rollback failed: ${rollbackError.message}`, {
+          original: error.code || 'E_PUBLISH',
+          originalMessage: error.message,
+          rollback: rollbackError.message,
+        });
+      }
+    }
     throw error;
   } finally {
     if (materializedBase && typeof git.removeWorktree === 'function') git.removeWorktree(materializedBase);

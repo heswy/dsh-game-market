@@ -236,32 +236,42 @@ export async function validateAgainstBase(candidateRoot, baseRoot) {
   const candidateEntries = new Map(candidate.entries.map((entry) => [entry.gameId, entry]));
   const removed = [];
 
-  for (const [id, previous] of baseEntries) {
-    const next = candidateEntries.get(id);
-
-    // Audit records survive withdrawal and can never be rewritten/replaced.
-    const baseOwner = await readJson(path.join(baseRoot, 'owners', `${id}.json`)).catch(() => null);
-    const nextOwner = await readJson(path.join(candidateRoot, 'owners', `${id}.json`)).catch(() => null);
-    if (!nextOwner) {
-      errors.push({ code: 'E_CATALOG_OWNER_IMMUTABLE', field: `owners/${id}.json`, message: 'owner audit record is missing' });
-    } else if (baseOwner && JSON.stringify(baseOwner.owner) !== JSON.stringify(nextOwner.owner)) {
-      errors.push({ code: 'E_CATALOG_OWNER_IMMUTABLE', field: `owners/${id}.json`, message: 'owner identity is immutable' });
+  /** Every owner/review audit record in the trusted base is immutable, even
+   * after the game has been withdrawn from `catalog/`. */
+  const baseOwnerIds = new Set();
+  for (const file of await listJsonFiles(path.join(baseRoot, REGISTRY_DIRS.owners))) {
+    const id = file.slice(0, -'.json'.length);
+    baseOwnerIds.add(id);
+    const baseOwner = await readJson(path.join(baseRoot, REGISTRY_DIRS.owners, file)).catch(() => null);
+    const candidateOwner = await readJson(path.join(candidateRoot, REGISTRY_DIRS.owners, file)).catch(() => null);
+    if (!candidateOwner) {
+      errors.push({ code: 'E_CATALOG_OWNER_IMMUTABLE', field: `owners/${file}`, message: 'owner audit record is missing' });
+    } else if (baseOwner && JSON.stringify(baseOwner.owner) !== JSON.stringify(candidateOwner.owner)) {
+      errors.push({ code: 'E_CATALOG_OWNER_IMMUTABLE', field: `owners/${file}`, message: 'owner identity is immutable, including after withdrawal' });
     }
+  }
 
-    let reviewFiles = [];
-    try { reviewFiles = (await fs.readdir(path.join(baseRoot, 'reviews', id))).filter((name) => name.endsWith('.json')); } catch (_error) { reviewFiles = []; }
-    for (const file of reviewFiles) {
-      const before = await readJson(path.join(baseRoot, 'reviews', id, file));
+  const maxReviewedVersion = new Map();
+  const baseReviewRoot = path.join(baseRoot, REGISTRY_DIRS.reviews);
+  for (const id of await listDirectories(baseReviewRoot)) {
+    for (const file of await listJsonFiles(path.join(baseReviewRoot, id))) {
+      const version = file.slice(0, -'.json'.length);
+      const previous = compareVersions(version, maxReviewedVersion.get(id) || '0.0.0') > 0 ? version : maxReviewedVersion.get(id);
+      maxReviewedVersion.set(id, previous);
+      const before = await readJson(path.join(baseReviewRoot, id, file));
       let after = null;
-      try { after = await readJson(path.join(candidateRoot, 'reviews', id, file)); } catch (_error) { after = null; }
+      try { after = await readJson(path.join(candidateRoot, REGISTRY_DIRS.reviews, id, file)); } catch (_error) { after = null; }
       if (!after || JSON.stringify(before) !== JSON.stringify(after)) {
-        errors.push({ code: 'E_CATALOG_REVIEW_IMMUTABLE', field: `reviews/${id}/${file}`, message: 'historical review record was removed or modified' });
+        errors.push({ code: 'E_CATALOG_REVIEW_IMMUTABLE', field: `reviews/${id}/${file}`, message: 'historical review record was removed or modified, including after withdrawal' });
       }
     }
+  }
 
+  for (const [id, previous] of baseEntries) {
+    const next = candidateEntries.get(id);
     if (!next) {
-      // Withdrawal is the documented way to remove a game from the index
-      // (owner/review audit records stay in place).
+      // Withdrawal is the documented way to remove a game from the index; its
+      // owner/review audit records are protected above.
       removed.push(id);
       continue;
     }
@@ -279,7 +289,41 @@ export async function validateAgainstBase(candidateRoot, baseRoot) {
     }
   }
 
+  // Re-listing an id after withdrawal must keep the same owner and must not
+  // reuse a previously reviewed version.
+  for (const [id, next] of candidateEntries) {
+    if (baseEntries.has(id) || !baseOwnerIds.has(id)) continue;
+    const baseOwner = await readJson(path.join(baseRoot, REGISTRY_DIRS.owners, `${id}.json`)).catch(() => null);
+    if (baseOwner && (next.author.login !== baseOwner.owner.login || next.author.githubUserId !== baseOwner.owner.githubUserId)) {
+      errors.push({ code: 'E_CATALOG_OWNER_IMMUTABLE', field: `catalog/${id}.json`, message: 're-listed game must keep the withdrawn owner identity' });
+    }
+    const previousVersion = maxReviewedVersion.get(id);
+    if (previousVersion && compareVersions(next.game.version, previousVersion) <= 0) {
+      errors.push({ code: 'E_CATALOG_VERSION_ROLLBACK', field: `catalog/${id}.json`, message: `re-listed version ${next.game.version} must be newer than the withdrawn ${previousVersion}` });
+    }
+  }
+
   return { ok: errors.length === 0, errors, removed, baseCount: base.entries.length, candidateCount: candidate.entries.length };
+}
+
+async function listDirectories(directory) {
+  try {
+    const names = await fs.readdir(directory, { withFileTypes: true });
+    return names.filter((name) => name.isDirectory()).map((name) => name.name).sort();
+  } catch (error) {
+    if (error && error.code === 'ENOENT') return [];
+    throw error;
+  }
+}
+
+async function listJsonFiles(directory) {
+  try {
+    const names = await fs.readdir(directory);
+    return names.filter((name) => name.endsWith('.json') && !name.startsWith('.')).sort();
+  } catch (error) {
+    if (error && error.code === 'ENOENT') return [];
+    throw error;
+  }
 }
 
 function maxUpdatedAt(entries) {

@@ -62,6 +62,12 @@ export function createGit({ cwd, runner } = {}) {
     removeWorktree(target) {
       return call(['worktree', 'remove', '--force', target], { allowFailure: true }).stdout;
     },
+    resetPaths(paths) {
+      return call(['reset', '-q', '--', ...paths], { allowFailure: true }).status;
+    },
+    deleteBranch(branch) {
+      return call(['branch', '-D', branch], { allowFailure: true }).status;
+    },
     checkout(branch) {
       return call(['checkout', branch]);
     },

@@ -186,3 +186,46 @@ test('history validation allows documented withdrawal while keeping audit record
   assert.deepEqual(result.removed, ['orbit-catch']);
   assert.equal(await fs.stat(path.join(candidate, 'owners', 'orbit-catch.json')).then(() => true), true);
 });
+
+test('withdrawn games keep owner/review history and cannot reuse old versions', async (t) => {
+  const root = await makeContentRepo();
+  const withdrawn = await copyRepo(root);
+  t.after(() => Promise.all([root, withdrawn].map((dir) => fs.rm(dir, { recursive: true, force: true }))));
+  await fs.rm(path.join(withdrawn, 'catalog', 'orbit-catch.json'));
+  assert.equal((await buildRegistry(withdrawn, { write: true })).ok, true);
+
+  const deleteOwner = await copyRepo(withdrawn);
+  const deleteReview = await copyRepo(withdrawn);
+  const reuseVersion = await copyRepo(withdrawn);
+  const relisted = await copyRepo(withdrawn);
+  t.after(() => Promise.all([deleteOwner, deleteReview, reuseVersion, relisted].map((dir) => fs.rm(dir, { recursive: true, force: true }))));
+
+  await fs.rm(path.join(deleteOwner, 'owners', 'orbit-catch.json'));
+  const ownerResult = await validateAgainstBase(deleteOwner, withdrawn);
+  assert.equal(ownerResult.ok, false);
+  assert.ok(ownerResult.errors.some((error) => error.code === 'E_CATALOG_OWNER_IMMUTABLE'), JSON.stringify(ownerResult.errors));
+
+  await fs.rm(path.join(deleteReview, 'reviews', 'orbit-catch', '1.0.0.json'));
+  const reviewResult = await validateAgainstBase(deleteReview, withdrawn);
+  assert.equal(reviewResult.ok, false);
+  assert.ok(reviewResult.errors.some((error) => error.code === 'E_CATALOG_REVIEW_IMMUTABLE'), JSON.stringify(reviewResult.errors));
+
+  const entry = JSON.parse(await fs.readFile(path.join(root, 'catalog', 'orbit-catch.json'), 'utf8'));
+  await fs.writeFile(path.join(reuseVersion, 'catalog', 'orbit-catch.json'), JSON.stringify(entry, null, 2) + '\n');
+  const reuseResult = await validateAgainstBase(reuseVersion, withdrawn);
+  assert.equal(reuseResult.ok, false);
+  assert.ok(reuseResult.errors.some((error) => error.code === 'E_CATALOG_VERSION_ROLLBACK'), JSON.stringify(reuseResult.errors));
+
+  const bumped = JSON.parse(JSON.stringify(entry));
+  bumped.game.version = '1.0.1';
+  bumped.release.tag = 'orbit-catch-v1.0.1';
+  bumped.release.packageUrl = bumped.release.packageUrl.replace('orbit-catch-1.0.0.html', 'orbit-catch-1.0.1.html').replace('orbit-catch-v1.0.0', 'orbit-catch-v1.0.1');
+  bumped.release.cover.url = bumped.release.cover.url.replace('orbit-catch-v1.0.0', 'orbit-catch-v1.0.1');
+  bumped.release.screenshots = bumped.release.screenshots.map((shot) => ({ ...shot, url: shot.url.replace('orbit-catch-v1.0.0', 'orbit-catch-v1.0.1') }));
+  await fs.writeFile(path.join(relisted, 'catalog', 'orbit-catch.json'), JSON.stringify(bumped, null, 2) + '\n');
+  const bumpedReview = JSON.parse(await fs.readFile(path.join(relisted, 'reviews', 'orbit-catch', '1.0.0.json'), 'utf8'));
+  bumpedReview.version = '1.0.1';
+  await fs.writeFile(path.join(relisted, 'reviews', 'orbit-catch', '1.0.1.json'), JSON.stringify(bumpedReview, null, 2) + '\n');
+  const relistResult = await validateAgainstBase(relisted, withdrawn);
+  assert.equal(relistResult.ok, true, JSON.stringify(relistResult.errors));
+});

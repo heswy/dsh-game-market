@@ -201,7 +201,7 @@ export function makeHttpMock(urls) {
   };
 }
 
-export function makeFakeGit({ repo = 'https://github.com/example/registry.git', clean = true, branch = 'main', ancestor = true } = {}) {
+export function makeFakeGit({ repo = 'https://github.com/example/registry.git', clean = true, branch = 'main', ancestor = true, failCommit = false, failReset = false } = {}) {
   const calls = [];
   let current = branch;
   const branches = new Set([branch]);
@@ -219,8 +219,10 @@ export function makeFakeGit({ repo = 'https://github.com/example/registry.git', 
     checkout(name) { calls.push(['checkout', name]); current = name; },
     createBranch(name) { calls.push(['createBranch', name]); branches.add(name); current = name; },
     add(paths) { calls.push(['add', paths]); },
-    commit(message) { calls.push(['commit', message]); },
+    commit(message) { calls.push(['commit', message]); if (failCommit) throw Object.assign(new Error('simulated commit hook rejection'), { code: 'E_PUBLISH_GIT' }); },
     push(name) { calls.push(['push', name]); },
+    resetPaths(paths) { calls.push(['resetPaths', paths]); if (failReset) throw new Error('simulated index lock'); return 0; },
+    deleteBranch(name) { calls.push(['deleteBranch', name]); return 0; },
   };
 }
 
