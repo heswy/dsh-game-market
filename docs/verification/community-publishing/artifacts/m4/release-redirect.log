@@ -1,0 +1,9 @@
+# GitHub Release asset redirect (real)
+
+url: https://github.com/heswy/dsh-game-registry/releases/download/ember-drift-v1.0.1/ember-drift-1.0.1.html
+
+final_host=release-assets.githubusercontent.com
+final_url=https://release-assets.githubusercontent.com/github-production-release-asset/1425411602/72518e4f-960b-49aa-994e-e8722041074c
+http_code=200
+size=156897
+b0ce0ef686a86bb9c1d642660ac80c77a94618001f76a7c0a216e22e8ae977dc  <tmp>/m4-release-asset.html

@@ -8,9 +8,9 @@
 
 | 项 | 命令 | 结果 | 日志/产物 |
 |---|---|---|---|
-| 全量回归 | `npm run verify` | **835/835**，`CHECK OK (37)` | `logs/full-verify.log` |
-| 社区组件/工具/Skill 单元与集成测试 | `node --test scripts/registry/test/*.test.js` | **28/28** | `logs/registry-tests.log` |
-| Host 全量测试 | `node --test packages/host/test/index.js` | **155/155** | `logs/host-tests.log` |
+| 全量回归 | `npm run verify` | **840/840**，`CHECK OK (38)` | `logs/full-verify.log` |
+| 社区组件/工具/Skill 单元与集成测试 | `node --test scripts/registry/test/*.test.js` | **31/31** | `logs/registry-tests.log` |
+| Host 全量测试 | `node --test packages/host/test/index.js` | **156/156** | `logs/host-tests.log` |
 | 构建确定性 | `npm run build` ×2 + sha256 列表比较 | 4 游戏 + client + 随包 registry 全部一致 | `logs/build-determinism.log` |
 | 内容仓库初始化/校验 CLI | `init-content-repo.mjs` → `validate-catalog.mjs` | 初始化成功、空目录合法 | `logs/init-content-repo.log`、`logs/validate-content-repo.log`、`artifacts/content-repo-init/` |
 | 可移植生成工程 | Vanilla + React `create → build → validate → pack → validate(packed)` | 均通过；生成 config 不含机器相关 CLI 路径，使用 `DSH_GAME_CLI` | `logs/portable-templates.log`、`logs/react-template.log` |
@@ -47,10 +47,10 @@
 
 ## 3. 外部待配置（M4，无法由本会话完成）
 
-1. 创建/指定内容仓库 `owner/name`（建议 `heswy/dsh-game-registry`，**尚未建立**）；
-2. 设置 main 分支保护/必需 CI、维护者 `gh` 权限、不可变 Release 策略；
-3. 发布真实公网 `registry/games.json`、正式包与封面，并验证默认 URL；
-4. 验证 GitHub Release 实际重定向域名在 Host allowlist（不在则精确 host + 拒绝测试）；
+1. ~~创建/指定内容仓库~~ → **已完成**：`heswy/dsh-game-registry`（public，bootstrap `18b6580`，toolchain pin `2b45b2e`，CI 全部成功，见 [`external-content-repo.md`](./external-content-repo.md)）；
+2. main 分支保护/必需 CI、tag 保护、不可变 Release 已配置；CODEOWNERS 已设为 `@heswy`；
+3. 受控真实流程已完成：真实投稿→1.0.0→1.0.1→撤下（内容仓库 PR #3/#4/#5 全部绿色合并，最终空索引、审计保留）；真实 Host 安装/启动已验证；`release-assets.githubusercontent.com` 已加入 Host allowlist（见 `m4-public-loop.md`）；
+4. ~~GitHub Release 重定向域名验证~~ → 已完成：实际落到 `release-assets.githubusercontent.com`，已加入 allowlist + 回归测试；
 5. 真实完成一次非首发投稿（Skill 指导）、1.0.0 发布、1.0.1 更新、撤下目录
    的完整公网闭环；
 6. 真实 Skill 安装/调用方式按目标 AI 宿主验证。

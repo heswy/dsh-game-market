@@ -36,6 +36,8 @@ export const DEFAULT_ALLOWED_HOSTS = Object.freeze([
   'github.com',
   'raw.githubusercontent.com',
   'objects.githubusercontent.com',
+  // GitHub Release assets redirect here (verified in the M4 public loop).
+  'release-assets.githubusercontent.com',
 ]);
 
 export const SHA256_RE = /^[a-f0-9]{64}$/;

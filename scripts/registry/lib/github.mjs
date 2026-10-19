@@ -55,13 +55,27 @@ export function createGithub({ repo, runner } = {}) {
      * asset can never be silently accepted.
      */
     inspectDraftAsset(tag, name) {
-      const release = call(['api', `repos/${repo}/releases/tags/${encodeURIComponent(tag)}`], { allowFailure: true });
-      if (release.status !== 0) return null;
-      let parsed;
-      try { parsed = JSON.parse(release.stdout); } catch (_error) { return null; }
-      const asset = (parsed.assets || []).find((item) => item && item.name === name);
-      if (!asset) return null;
-      return { id: asset.id, name: asset.name, size: asset.size, digest: asset.digest || null, state: asset.state, url: asset.url };
+      // Draft releases are not returned by /releases/tags/<tag> (404); list the
+      // authenticated releases and match by tag. The REST asset id (numeric) is
+      // required for the binary download endpoint — GraphQL node ids from
+      // `gh release view --json assets` cannot be used there.
+      const perPage = 100;
+      for (let page = 1; page <= 20; page += 1) {
+        const list = call(['api', `repos/${repo}/releases?per_page=${perPage}&page=${page}`], { allowFailure: true });
+        if (list.status !== 0) return null;
+        let parsed;
+        try { parsed = JSON.parse(list.stdout); } catch (_error) { return null; }
+        if (!Array.isArray(parsed)) return null;
+        const release = parsed.find((item) => item && item.tag_name === tag);
+        if (release) {
+          const asset = (release.assets || []).find((item) => item && item.name === name);
+          return asset
+            ? { id: asset.id, name: asset.name, size: asset.size, digest: asset.digest || null, state: asset.state, url: asset.url }
+            : null;
+        }
+        if (parsed.length < perPage) break;
+      }
+      return null;
     },
     downloadAsset(asset) {
       if (!asset || asset.id === undefined) throw ghError('E_PUBLISH_GH', 'draft asset has no id');

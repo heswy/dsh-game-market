@@ -207,7 +207,8 @@ async function inspectDraftAssets({ github, plan, assets, requireAll = false }) 
     let actual = null;
     if (typeof github.downloadAsset === 'function') {
       const inspector = typeof github.inspectDraftAsset === 'function' ? github.inspectDraftAsset(plan.tag, expected.name) : null;
-      actual = await github.downloadAsset(inspector || { id: listed.id, name: expected.name });
+      if (!inspector) throw cleanError('E_PUBLISH_DRAFT_UNVERIFIABLE', `resumed draft asset ${expected.name} could not be resolved through the authenticated API`);
+      actual = await github.downloadAsset(inspector);
     } else if (typeof github.verifyDraftAsset === 'function') {
       await github.verifyDraftAsset(plan.tag, expected);
       reused.push(expected.name);

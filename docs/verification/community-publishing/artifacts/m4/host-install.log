@@ -1,0 +1,5 @@
+source https://raw.githubusercontent.com/heswy/dsh-game-registry/3211605260ef1b8acfc966b0b13615946f1db593/registry/games.json
+registry {"state":"fresh","count":1}
+games snake@0.1.0,ember-drift@1.0.0
+installed {"version":"1.0.0","sha256":"cb2c5a6f769111d8d1ac7c22cbbe360b79ea95416edb340b992964f4a18ab283","source":"registry"}
+launch {"status":200,"expectedSha":"cb2c5a6f769111d8d1ac7c22cbbe360b79ea95416edb340b992964f4a18ab283","actualSha":"cb2c5a6f769111d8d1ac7c22cbbe360b79ea95416edb340b992964f4a18ab283"}

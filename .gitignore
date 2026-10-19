@@ -7,6 +7,8 @@ node_modules/
 !docs/verification/v1/logs/*.log
 !docs/verification/community-publishing/logs/
 !docs/verification/community-publishing/logs/*.log
+!docs/verification/community-publishing/artifacts/m4/
+!docs/verification/community-publishing/artifacts/m4/*.log
 .prd-draft/
 worktrees/
 coverage/

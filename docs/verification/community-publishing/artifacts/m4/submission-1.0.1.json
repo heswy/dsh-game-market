@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "submissionType": "update",
+  "game": {
+    "id": "ember-drift",
+    "name": "Ember Drift",
+    "version": "1.0.1",
+    "description": "A two-minute hand-painted space dodge. Weave through the emberfall, gather fallen stars, and keep the little skiff alight.",
+    "categories": [
+      "arcade",
+      "action"
+    ],
+    "tags": [
+      "space",
+      "dodge",
+      "hand-painted",
+      "short-session"
+    ],
+    "capabilities": [
+      "storage",
+      "score"
+    ],
+    "sdkVersion": "^1.0.0",
+    "runtimeVersion": "^1.0.0",
+    "license": "MIT"
+  },
+  "author": {
+    "login": "heswy",
+    "githubUserId": 174761563,
+    "sourceRepo": "https://github.com/heswy/dsh-game-test-author",
+    "sourceCommit": "50bf4bf79ce598049099795b6efd7e30d36daccc",
+    "buildInstructions": "export DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs; npm run build && npm run validate && npm run pack. Node >= 20; no npm dependencies."
+  },
+  "package": {
+    "url": "https://github.com/heswy/dsh-game-test-author/releases/download/ember-drift-v1.0.1/ember-drift-1.0.1.html",
+    "sha256": "b0ce0ef686a86bb9c1d642660ac80c77a94618001f76a7c0a216e22e8ae977dc",
+    "size": 156897,
+    "sha256Url": "https://github.com/heswy/dsh-game-test-author/releases/download/ember-drift-v1.0.1/ember-drift-1.0.1.html.sha256"
+  },
+  "media": {
+    "cover": {
+      "url": "https://github.com/heswy/dsh-game-test-author/releases/download/ember-drift-v1.0.1/cover.png",
+      "sha256": "0e7530362d9e2d6e3a0ca7f390f852d8d874b1e7af646b2d9e64ec5cb89bfbbe",
+      "size": 817894,
+      "type": "png"
+    },
+    "screenshots": [
+      {
+        "url": "https://github.com/heswy/dsh-game-test-author/releases/download/ember-drift-v1.0.1/screenshot-1-ready.png",
+        "sha256": "357452d390e03102123323c4b15bcaa76f37a96e42f998a75b96771de3cc9591",
+        "size": 719827,
+        "type": "png"
+      },
+      {
+        "url": "https://github.com/heswy/dsh-game-test-author/releases/download/ember-drift-v1.0.1/screenshot-2-action-light.png",
+        "sha256": "6efab26d299b18ea0bc674c1b43b5bc5b7342180ddd6a274fecceb169d6f468f",
+        "size": 787954,
+        "type": "png"
+      },
+      {
+        "url": "https://github.com/heswy/dsh-game-test-author/releases/download/ember-drift-v1.0.1/screenshot-3-paused.png",
+        "sha256": "5ab63564d2d39d3dbc67374f1a02abc38511e5b48ccfbabcf58ed9d17fcf226e",
+        "size": 735584,
+        "type": "png"
+      },
+      {
+        "url": "https://github.com/heswy/dsh-game-test-author/releases/download/ember-drift-v1.0.1/screenshot-4-continue.png",
+        "sha256": "4ccd0aa1a092d4b463fdfa9add797d5cd199be5b7281febe971fc2c767c916b4",
+        "size": 733639,
+        "type": "png"
+      }
+    ]
+  },
+  "licensing": {
+    "codeLicense": "MIT",
+    "assetLicense": "Procedurally generated in code; MIT",
+    "archivePermission": true,
+    "notes": "Controlled M4 test submission. No third-party assets; MIT LICENSE in source repo."
+  },
+  "selfTest": {
+    "ready": true,
+    "pauseResume": true,
+    "beforeSave": true,
+    "continuePlay": true,
+    "keyboard": true,
+    "narrowWindow": true,
+    "theme": true,
+    "fullBleed": true,
+    "safeArea": true,
+    "noNetwork": true
+  },
+  "update": {
+    "changelog": "Star pickups are now worth 15 points (was 12). Save schema unchanged.",
+    "saveCompatibility": "compatible"
+  }
+}
