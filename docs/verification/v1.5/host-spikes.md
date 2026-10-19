@@ -71,6 +71,39 @@ node scripts/verification/v1.5/brand/zip-reader-eval.mjs              # exit 0�
 - 每个探针用统一断言器：**任一 required 失败即 `exit 1`**；S-A1 与 S-B1 保留了「故意失败」样本运行以证明非零退出（`raw/resources/probe-stdout-failed-sample.log`、`raw/brand/b1-selftest-exit.txt`）。
 - 网络：GitHub 需代理 `http://127.0.0.1:7897`（pnpm 经 `HTTPS_PROXY` 等注入，**未修改用户 git/npm 配置**）；npm registry 可直连。
 
+### 3.1 如何机器核对每份 summary 的判定
+
+各 summary 的判定字段位置不同，复核时按下表读取即可（Lead 已逐个核对，全部 `required` 0 失败）：
+
+| 探针 | summary | 判定字段 |
+|---|---|---|
+| S-U1 | `raw/plugin-update/s-u1-nohmr/summary.json` | `passed:true`、`requiredChecks:30`、`requiredPassed:30`、`failedRequired:[]` |
+| S-U2 | `raw/plugin-update/s-u2-hmr/summary.json` | `passed:true`、`requiredChecks:58`、`requiredPassed:58`、`failedRequired:[]` |
+| S-U2b | `raw/plugin-update/s-u2b-devmigration/summary.json` | `passed:true`、`requiredChecks:9`、`requiredPassed:9`、`failedRequired:[]` |
+| S-Q1 | `raw/questions/q1-open-in-game-panel.json` | `passed:true`、`checks[].required` 24 项全 `ok` |
+| S-Q2 | `raw/questions/q2-lifecycle.json` | `passed:true`、`checks[].required` 44 项全 `ok` |
+| S-Q2b | `raw/questions/q2b-attach-wait.json` | `passed:true`、`checks[].required` 9 项全 `ok` |
+| S-A1 | `raw/resources/summary.json` | 判定在**嵌套的 `report`** 下：`report.passed:true`、`report.checks` 94 项中 `required` 82 项全 `ok`、`report.failed:[]` |
+| S-B1 | `raw/brand/b1-report.json` | `passed:true`、`checks[].required` 23 项全 `ok` |
+
+一行核对命令（在 `docs/verification/v1.5/` 下执行）：
+
+```bash
+node -e '
+const fs=require("fs");
+const pick=(f,p)=>p(JSON.parse(fs.readFileSync(f,"utf8")));
+const rows=[["S-U1","raw/plugin-update/s-u1-nohmr/summary.json",s=>s.failedRequired],
+ ["S-U2","raw/plugin-update/s-u2-hmr/summary.json",s=>s.failedRequired],
+ ["S-U2b","raw/plugin-update/s-u2b-devmigration/summary.json",s=>s.failedRequired],
+ ["S-Q1","raw/questions/q1-open-in-game-panel.json",s=>s.checks.filter(c=>c.required&&!c.ok)],
+ ["S-Q2","raw/questions/q2-lifecycle.json",s=>s.checks.filter(c=>c.required&&!c.ok)],
+ ["S-Q2b","raw/questions/q2b-attach-wait.json",s=>s.checks.filter(c=>c.required&&!c.ok)],
+ ["S-A1","raw/resources/summary.json",s=>s.report.checks.filter(c=>c.required&&!c.ok)],
+ ["S-B1","raw/brand/b1-report.json",s=>s.checks.filter(c=>c.required&&!c.ok)]];
+for(const [id,f,g] of rows){const bad=pick(f,g);console.log(id, bad.length===0?"OK":"FAIL "+JSON.stringify(bad));}
+'
+```
+
 ## 4. M0 冻结产出
 
 | 产出 | 位置 | 状态 |
