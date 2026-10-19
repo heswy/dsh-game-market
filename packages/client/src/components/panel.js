@@ -7,8 +7,7 @@ import { isBuiltin, screenshotsFor } from '../catalog.js';
 import { acknowledgeCompleted, beginGame, cancelInstall, closeDetail, installLocalGame, launchModeFor, loadCatalog, loadDetail, openDetail, pushToast, refreshRegistryAction, startInstall, uninstallGame, } from '../actions.js';
 import { getApiClient, getMarketApi } from '../api.js';
 import { makeT, detectLocale } from '../locale.js';
-import { formatRelativeTime } from '../format.js';
-import { BackIcon, FolderOpenIcon, MoreIcon } from '../icons.js';
+import { BackIcon, MoreIcon, UploadIcon } from '../icons.js';
 import { StyleTag } from '../styles.js';
 import { backToConversation, openGameMarket } from '../navigation.js';
 import { useActivePanel, useClock, useSessionBinding, useStoreState } from '../hooks.js';
@@ -53,7 +52,7 @@ export function GameMarketPanel(props) {
   const diagnosticRef = React.useRef(false);
   const activePanelId = useActivePanel(props, diagnosticRef);
   const binding = useSessionBinding(props, diagnosticRef);
-  const locale = detectLocale();
+  const locale = detectLocale(props && props.t);
   const t = makeT(props && props.t, locale);
   const rootRef = React.useRef(null);
   const scrollRef = React.useRef(null);
@@ -552,7 +551,7 @@ export function GameMarketPanel(props) {
           'h1',
           {
             key: 'title',
-            className: 'dgm-title',
+            className: 'dgm-sr-only',
             tabIndex: -1,
             'data-page-heading': true,
           },
@@ -620,15 +619,6 @@ export function GameMarketPanel(props) {
               })
             )
           : null,
-        state.market.refreshedAt > 0
-          ? h(
-              'span',
-              { key: 'sync', className: 'dgm-header-sync' },
-              t('panel.synced', {
-                relativeTime: formatRelativeTime(new Date(state.market.refreshedAt).toISOString(), now, locale),
-              })
-            )
-          : null,
         state.market.offline
           ? h('span', {
               key: 'offline',
@@ -644,12 +634,13 @@ export function GameMarketPanel(props) {
               {
                 key: 'local',
                 type: 'button',
-                className: 'dgm-icon-btn dgm-local-install',
+                className: 'dgm-btn dgm-upload dgm-local-install',
                 onClick: handlePickFile,
-                'aria-label': t('market.localInstall'),
-                title: t('market.localInstall'),
+                'aria-label': t('market.upload'),
+                title: t('market.localInstall.body'),
               },
-              h(FolderOpenIcon, { size: 15 })
+              h(UploadIcon, { size: 14 }),
+              h('span', { className: 'dgm-upload-label' }, t('market.upload'))
             )
           : null,
       ];

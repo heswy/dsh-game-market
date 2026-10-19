@@ -213,6 +213,33 @@ function agentAcknowledged(state, agent) {
 }
 
 /**
+ * Conversation Game-tab badge (CR: sidebar no longer carries state).
+ * Only states worth surfacing are returned; a quiet running game stays plain.
+ * @param {object} state module store state
+ * @param {number} [now]
+ * @param {{sessionId?:string|null, resumeWindowMs?:number, staleMs?:number}} [options]
+ * @returns {'waiting'|'error'|'completed'|'resume'|null}
+ */
+export function deriveTabStatus(state, now, options) {
+  const clock = finiteNumber(now) ? now : Date.now();
+  const opts = options && typeof options === 'object' ? options : {};
+  const sessionId = Object.prototype.hasOwnProperty.call(opts, 'sessionId')
+    ? opts.sessionId
+    : state.bindingSessionId;
+  const agent = state && state.agent ? state.agent : null;
+  const fresh = isAgentFresh(state && state.agentFetchedAt, clock, opts.staleMs);
+  const matches = agentMatchesSession(agent, sessionId);
+  const trusted = fresh && matches;
+
+  if (trusted && agent.state === 'waiting-user') return 'waiting';
+  if (trusted && agent.state === 'error') return 'error';
+  if (trusted && agent.state === 'completed' && !agentAcknowledged(state, agent)) return 'completed';
+  const paused = activePausedGame(state && state.pausedGame, clock, opts.resumeWindowMs);
+  if (paused && pausedBelongsToSession(paused, sessionId)) return 'resume';
+  return null;
+}
+
+/**
  * Sidebar dot: waiting > error > completed-unread > running > resume > hidden.
  * `dshStatus` is the optional `useSessionStatus` value for the current Session;
  * it supplements the Host snapshot while the latter is still arriving.

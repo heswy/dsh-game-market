@@ -115,6 +115,16 @@ export function TrashIcon(props) {
   );
 }
 
+export function UploadIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h(
+    'svg',
+    svgProps(size, '0 0 16 16'),
+    h('path', { d: 'M8 10.6V3.2M5.3 5.9 8 3.2l2.7 2.7' }),
+    h('path', { d: 'M3.4 12.5h9.2' })
+  );
+}
+
 export function DownloadIcon(props) {
   const size = props && typeof props.size === 'number' ? props.size : 14;
   return h(

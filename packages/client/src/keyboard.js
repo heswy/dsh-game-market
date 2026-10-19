@@ -129,7 +129,7 @@ export function resolveEscapeAction(scope) {
 export function isMenuOpenKey(event) {
   if (!event) return false;
   if (event.key === 'F10' && event.shiftKey) return true;
-  return event.key === 'ArrowRight' && !event.metaKey && !event.ctrlKey && !event.altKey;
+  return (event.key === 'ArrowRight' || event.key === 'ArrowDown') && !event.metaKey && !event.ctrlKey && !event.altKey;
 }
 
 /** Enter/Space activation helper for role="link"/"button" nodes. */

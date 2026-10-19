@@ -7,6 +7,7 @@
  *   - `ctx.locale.register(ns, { zh, en })` inside `ctx.effect`
  *   - `ctx.layout.selectPanel(id | null)` for panel navigation
  */
+import React from 'react';
 import { NS, ZH, EN, translate } from './locale.js';
 import { store } from './store.js';
 import { MAIN_PANEL_KEY, SIDEBAR_ORDER } from './constants.js';
@@ -17,8 +18,11 @@ import { createAgentPoller } from './agent-polling.js';
 import { GameMarketPanel } from './components/panel.js';
 import { GameEntryView } from './components/game-entry-view.js';
 import { GameMarketSidebarIcon } from './components/sidebar-icon.js';
+import { GameTabLabel } from './components/game-tab-label.js';
 
 export const inject = ['slots', 'layout', 'locale'];
+
+const h = React.createElement;
 
 function noopDisposer() {
   return function noop() {};
@@ -79,19 +83,10 @@ export function apply(ctx) {
     return translate('zh', 'sidebar.label');
   }
 
+  // The host renders the resolved label value as the tab's children; returning
+  // a component gives the tab a live, session-level status badge.
   function gameTabLabel() {
-    try {
-      if (boundTranslate === null && ctx.locale && typeof ctx.locale.bind === 'function') {
-        boundTranslate = ctx.locale.bind(NS);
-      }
-      if (typeof boundTranslate === 'function') {
-        const value = boundTranslate('entry.tab.game');
-        if (typeof value === 'string' && value.length > 0 && value !== 'entry.tab.game') return value;
-      }
-    } catch (error) {
-      reportDiagnostic('game-tab-label-failed', error);
-    }
-    return translate('zh', 'entry.tab.game');
+    return h(GameTabLabel, null);
   }
 
   function injectSlot(slotName, callback) {

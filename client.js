@@ -43,6 +43,7 @@ window.__ModuleLoader__.load({
       'market.tab.mygames': '我的游戏',
       'market.backToChat': '返回会话',
       'market.localInstall': '安装本地游戏',
+      'market.upload': '上传游戏',
       'market.localInstall.title': '从本地安装游戏？',
       'market.localInstall.body': '选择一个自包含的 .html 游戏包。本地文件不经过商店校验，请只安装你信任的来源。',
       'market.localInstall.warning': '本地安装不会校验文件来源。',
@@ -135,7 +136,7 @@ window.__ModuleLoader__.load({
       'mygames.progress.generic': '继续上次进度',
       'mygames.progress.none': '还没有进度',
       'mygames.best': '最高 {score}',
-      'mygames.lastPlayed': '{relativeTime}玩过',
+      'mygames.lastPlayed': '上次游玩 · {relativeTime}',
       'mygames.neverPlayed': '还没玩过',
       'mygames.update.available': '可更新至 {version}',
       'mygames.update.incompatible': '更新需要更新的 Runtime',
@@ -335,6 +336,10 @@ window.__ModuleLoader__.load({
 
       'entry.chip.game': '游戏',
       'entry.tab.game': '游戏',
+      'entry.tab.badge.waiting': '等你',
+      'entry.tab.badge.completed': '完成',
+      'entry.tab.badge.error': '出错',
+      'entry.tab.badge.resume': '已暂停',
       'entry.tab.opening': '正在打开游戏…',
       'entry.chip.running.resume': 'Agent 正在工作 · 继续上一局',
       'entry.chip.running.choose': 'Agent 正在工作 · 来一局？',
@@ -438,6 +443,25 @@ window.__ModuleLoader__.load({
       'runtime.diagnostic.copied': '已复制',
       'runtime.toast.resumed': '已恢复上一局',
       'runtime.toast.saveGap': '上次未能保存，已从更早的存档恢复',
+      'time.justNow': '刚刚',
+      'market.library.count': '{count} 款游戏',
+      'market.hero.eyebrow': '接着上次玩',
+      'market.hero.description': '进度已保存，随时回来继续。',
+      'market.hero.details': '查看详情',
+      'market.intro.title': '游戏时间',
+      'market.intro.body': '挑一款喜欢的，轻松玩一局。',
+      'mygames.intro': '你的游戏，都在这里。',
+      'mygames.count': '已收藏 {count} 款',
+      'detail.about': '关于这款游戏',
+      'detail.controls': '怎么玩',
+      'detail.controls.keyboard': '方向键 / WASD',
+      'detail.controls.snake': '控制方向，收集食物，避开自己。',
+      'detail.controls.2048': '滑动合并相同数字，每局可撤销一次。',
+      'detail.controls.breakout': '鼠标或方向键移动挡板，空格发球。',
+      'detail.controls.jump': '左右移动落在平台上，向更高处跳跃。',
+      'detail.save.note': '进度自动保存，下次接着玩。',
+      'detail.manage': '管理游戏',
+      'detail.info': '游戏信息',
     });
 
     const EN = Object.freeze({
@@ -464,6 +488,7 @@ window.__ModuleLoader__.load({
       'market.tab.mygames': 'My Games',
       'market.backToChat': 'Back to conversation',
       'market.localInstall': 'Install local game',
+      'market.upload': 'Upload game',
       'market.localInstall.title': 'Install a game from this device?',
       'market.localInstall.body': 'Choose a self-contained .html game package. Local files are not verified by the store, so only install sources you trust.',
       'market.localInstall.warning': 'Local installs do not verify where the file came from.',
@@ -556,7 +581,7 @@ window.__ModuleLoader__.load({
       'mygames.progress.generic': 'Continue where you left off',
       'mygames.progress.none': 'No progress yet',
       'mygames.best': 'Best {score}',
-      'mygames.lastPlayed': 'Played {relativeTime}',
+      'mygames.lastPlayed': 'Last played · {relativeTime}',
       'mygames.neverPlayed': 'Not played yet',
       'mygames.update.available': 'Update to {version}',
       'mygames.update.incompatible': 'Update needs a newer Runtime',
@@ -756,6 +781,10 @@ window.__ModuleLoader__.load({
 
       'entry.chip.game': 'Game',
       'entry.tab.game': 'Game',
+      'entry.tab.badge.waiting': 'Action',
+      'entry.tab.badge.completed': 'Done',
+      'entry.tab.badge.error': 'Issue',
+      'entry.tab.badge.resume': 'Paused',
       'entry.tab.opening': 'Opening games…',
       'entry.chip.running.resume': 'Agent working · Resume last game',
       'entry.chip.running.choose': 'Agent working · Play a round?',
@@ -864,6 +893,25 @@ window.__ModuleLoader__.load({
       'a11y.live.completed': 'Agent finished the task.',
       'a11y.live.error': 'The agent ran into a problem.',
       'a11y.live.returned': 'Back in the conversation.',
+      'time.justNow': 'just now',
+      'market.library.count': '{count} games',
+      'market.hero.eyebrow': 'Pick up where you left off',
+      'market.hero.description': 'Your progress is saved. Come back whenever you like.',
+      'market.hero.details': 'View details',
+      'market.intro.title': 'Time to play',
+      'market.intro.body': 'Find a favorite. Make a little time for play.',
+      'mygames.intro': 'All your games, in one place.',
+      'mygames.count': '{count} games in your library',
+      'detail.about': 'About this game',
+      'detail.controls': 'How to play',
+      'detail.controls.keyboard': 'Arrow keys / WASD',
+      'detail.controls.snake': 'Change direction, collect food, and avoid your tail.',
+      'detail.controls.2048': 'Slide to merge matching numbers. Undo once per game.',
+      'detail.controls.breakout': 'Move with your mouse or arrow keys. Press Space to launch.',
+      'detail.controls.jump': 'Move left and right to land on platforms and climb higher.',
+      'detail.save.note': 'Progress saves automatically. Pick up next time.',
+      'detail.manage': 'Manage game',
+      'detail.info': 'Game information',
     });
 
     const LOCALES = Object.freeze({
@@ -881,7 +929,16 @@ window.__ModuleLoader__.load({
     }
 
     /** Browser language, falling back to the zh-first V0 default. */
-    function detectLocale() {
+    function detectLocale(seat) {
+      // The host language can differ from navigator.language (e.g. a Chinese UI
+      // in an English browser). Use the same language for copy, dates and categories.
+      if (typeof seat === 'function') {
+        try {
+          const label = seat('market.tab.market');
+          if (label === ZH['market.tab.market']) return 'zh';
+          if (label === EN['market.tab.market']) return 'en';
+        } catch (_error) { /* dictionary may not be registered yet */ }
+      }
       try {
         const nav = globalThis.navigator;
         if (nav && typeof nav.language === 'string' && nav.language.length > 0) return normalizeLocale(nav.language);
@@ -3743,6 +3800,33 @@ window.__ModuleLoader__.load({
     }
 
     /**
+     * Conversation Game-tab badge (CR: sidebar no longer carries state).
+     * Only states worth surfacing are returned; a quiet running game stays plain.
+     * @param {object} state module store state
+     * @param {number} [now]
+     * @param {{sessionId?:string|null, resumeWindowMs?:number, staleMs?:number}} [options]
+     * @returns {'waiting'|'error'|'completed'|'resume'|null}
+     */
+    function deriveTabStatus(state, now, options) {
+      const clock = finiteNumber(now) ? now : Date.now();
+      const opts = options && typeof options === 'object' ? options : {};
+      const sessionId = Object.prototype.hasOwnProperty.call(opts, 'sessionId')
+        ? opts.sessionId
+        : state.bindingSessionId;
+      const agent = state && state.agent ? state.agent : null;
+      const fresh = isAgentFresh(state && state.agentFetchedAt, clock, opts.staleMs);
+      const matches = agentMatchesSession(agent, sessionId);
+      const trusted = fresh && matches;
+
+      if (trusted && agent.state === 'waiting-user') return 'waiting';
+      if (trusted && agent.state === 'error') return 'error';
+      if (trusted && agent.state === 'completed' && !agentAcknowledged(state, agent)) return 'completed';
+      const paused = activePausedGame(state && state.pausedGame, clock, opts.resumeWindowMs);
+      if (paused && pausedBelongsToSession(paused, sessionId)) return 'resume';
+      return null;
+    }
+
+    /**
      * Sidebar dot: waiting > error > completed-unread > running > resume > hidden.
      * `dshStatus` is the optional `useSessionStatus` value for the current Session;
      * it supplements the Host snapshot while the latter is still arriving.
@@ -3801,11 +3885,12 @@ window.__ModuleLoader__.load({
       }
     }
 
-    return { RESUME_WINDOW_MS, CHIP_STATUS, SIDEBAR_STATUS, isAgentFresh, agentMatchesSession, deriveTurnKey, activePausedGame, pausedBelongsToSession, findResumableGame, waitingKind, deriveChipState, deriveSidebarStatus, sidebarLabelKey };
+    return { RESUME_WINDOW_MS, CHIP_STATUS, SIDEBAR_STATUS, isAgentFresh, agentMatchesSession, deriveTurnKey, activePausedGame, pausedBelongsToSession, findResumableGame, waitingKind, deriveChipState, deriveTabStatus, deriveSidebarStatus, sidebarLabelKey };
     })();
 
     // module: packages/client/src/format.js
     __mods["packages/client/src/format.js"] = (function () {
+    const translate = __mods["packages/client/src/locale.js"].translate;
     /** Locale-aware formatting helpers (no host DOM reads). */
 
     /** Browser locale for `Intl`; zh-first fallback keeps V0 copy consistent. */
@@ -3839,6 +3924,7 @@ window.__ModuleLoader__.load({
       const clock = typeof now === 'number' && Number.isFinite(now) ? now : Date.now();
       const diffSeconds = Math.round((then - clock) / 1000);
       const abs = Math.abs(diffSeconds);
+      if (diffSeconds <= 0 && abs < 60) return translate(locale || preferredLocale(), 'time.justNow');
       let value = diffSeconds;
       let unit = 'second';
       if (abs >= 86400 * 30) {
@@ -5721,6 +5807,16 @@ window.__ModuleLoader__.load({
       );
     }
 
+    function UploadIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 14;
+      return h(
+        'svg',
+        svgProps(size, '0 0 16 16'),
+        h('path', { d: 'M8 10.6V3.2M5.3 5.9 8 3.2l2.7 2.7' }),
+        h('path', { d: 'M3.4 12.5h9.2' })
+      );
+    }
+
     function DownloadIcon(props) {
       const size = props && typeof props.size === 'number' ? props.size : 14;
       return h(
@@ -5851,7 +5947,7 @@ window.__ModuleLoader__.load({
       );
     }
 
-    return { GamepadIcon, BackIcon, PlayIcon, PauseIcon, SaveIcon, GameMarketIcon, SearchIcon, CloseIcon, CheckIcon, MoreIcon, TrashIcon, DownloadIcon, RefreshIcon, ChevronRightIcon, ChevronLeftIcon, ClockIcon, TrophyIcon, FolderOpenIcon, ShieldIcon, WhaleIcon };
+    return { GamepadIcon, BackIcon, PlayIcon, PauseIcon, SaveIcon, GameMarketIcon, SearchIcon, CloseIcon, CheckIcon, MoreIcon, TrashIcon, UploadIcon, DownloadIcon, RefreshIcon, ChevronRightIcon, ChevronLeftIcon, ClockIcon, TrophyIcon, FolderOpenIcon, ShieldIcon, WhaleIcon };
     })();
 
     // module: packages/client/src/styles.js
@@ -5868,7 +5964,7 @@ window.__ModuleLoader__.load({
       --dgm-bg: var(--dsw-alias-bg-base, #ffffff);
       --dgm-fg: var(--dsw-alias-label-primary, #1f2328);
       --dgm-fg-secondary: var(--dsw-alias-label-secondary, #5c6470);
-      --dgm-fg-tertiary: var(--dsw-alias-label-tertiary, #7a828e);
+      --dgm-fg-tertiary: var(--dsw-alias-label-tertiary, #6b7380);
       --dgm-border: var(--dsw-alias-border-l1, rgba(31, 35, 40, 0.12));
       --dgm-border-strong: var(--dsw-alias-border-l2, rgba(31, 35, 40, 0.2));
       --dgm-surface: var(--dsw-alias-bg-layer-1, #f6f7f9);
@@ -5912,9 +6008,7 @@ window.__ModuleLoader__.load({
       height: 100%;
       min-height: 0;
       overflow: hidden;
-      background:
-        radial-gradient(120% 52% at 50% -12%, color-mix(in srgb, var(--dgm-brand) 6%, transparent), transparent 62%),
-        var(--dgm-bg);
+      background: var(--dgm-bg);
       color: var(--dgm-fg);
       font-family: var(--dgm-font);
       font-size: 13px;
@@ -5963,7 +6057,7 @@ window.__ModuleLoader__.load({
       align-items: center;
       gap: 12px;
       flex: none;
-      min-height: calc(var(--dsh-frame-top-clearance, 0px) + 52px);
+      min-height: calc(var(--dsh-frame-top-clearance, 0px) + 54px);
       padding: var(--dsh-frame-top-clearance, 0px) 20px 0;
       border-bottom: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
       background: color-mix(in srgb, var(--dgm-bg) 92%, transparent);
@@ -6006,9 +6100,9 @@ window.__ModuleLoader__.load({
     .dgm-tabs {
       display: inline-flex;
       align-items: stretch;
-      gap: 18px;
-      height: 52px;
-      margin-left: 6px;
+      gap: 24px;
+      height: 54px;
+      margin-left: 4px;
     }
 
     .dgm-tab {
@@ -6019,23 +6113,23 @@ window.__ModuleLoader__.load({
       background: transparent;
       color: var(--dgm-fg-tertiary);
       font: inherit;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.01em;
       cursor: pointer;
       transition: color 140ms ease-out;
     }
     .dgm-tab:hover { color: var(--dgm-fg); }
-    .dgm-tab[data-active='true'] { color: var(--dgm-fg); }
+    .dgm-tab[data-active='true'] { color: var(--dgm-brand); }
     .dgm-tab[data-active='true']::after {
       content: "";
       position: absolute;
       left: 0;
       right: 0;
       bottom: -1px;
-      height: 2px;
-      border-radius: 2px;
-      background: var(--dgm-fg);
+      height: 2.5px;
+      border-radius: 999px;
+      background: var(--dgm-brand);
     }
     .dgm-tab:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 1px; }
 
@@ -6097,12 +6191,24 @@ window.__ModuleLoader__.load({
 
     .dgm-search-toggle { display: none; }
 
-    .dgm-header-sync {
-      color: var(--dgm-fg-tertiary);
-      font-size: 11px;
-      white-space: nowrap;
-      font-variant-numeric: tabular-nums;
+    .dgm-upload {
+      height: 32px;
+      padding: 0 12px;
+      gap: 6px;
+      flex: none;
+      border-color: color-mix(in srgb, var(--dgm-brand) 30%, transparent);
+      background: color-mix(in srgb, var(--dgm-brand) 9%, transparent);
+      color: color-mix(in srgb, var(--dgm-brand) 88%, var(--dgm-fg));
+      font-size: 12px;
+      font-weight: 600;
     }
+    .dgm-upload:hover {
+      background: color-mix(in srgb, var(--dgm-brand) 15%, transparent);
+      border-color: color-mix(in srgb, var(--dgm-brand) 44%, transparent);
+      color: var(--dgm-brand);
+    }
+    .dgm-upload svg { flex: none; }
+    .dgm-upload-label { white-space: nowrap; }
 
     .dgm-header-dot {
       width: 6px;
@@ -6194,9 +6300,9 @@ window.__ModuleLoader__.load({
 
     .dgm-page {
       width: 100%;
-      max-width: 1120px;
+      max-width: 1180px;
       margin: 0 auto;
-      padding: 24px 20px 48px;
+      padding: 32px 40px 56px;
     }
 
     /* ---------- Market home ---------- */
@@ -6206,25 +6312,21 @@ window.__ModuleLoader__.load({
     .dgm-hero {
       position: relative;
       display: grid;
-      grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
       align-items: center;
-      gap: 28px;
-      min-height: 248px;
-      padding: 20px;
-      border-radius: var(--dgm-radius-xl);
-      background:
-        radial-gradient(120% 120% at 0% 0%, hsl(var(--dgm-tone-h, 220) var(--dgm-tone-s, 50%) 50% / 0.12), transparent 58%),
-        color-mix(in srgb, var(--dgm-surface) 70%, transparent);
-      overflow: hidden;
+      gap: clamp(24px, 4cqw, 56px);
+      padding: 0 0 32px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--dgm-border);
     }
 
     .dgm-hero-art {
       position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
-      border-radius: var(--dgm-radius-lg);
+      border-radius: 18px;
       overflow: hidden;
-      box-shadow: var(--dgm-shadow-soft);
+      box-shadow: none;
     }
     .dgm-hero-art-fade {
       position: absolute;
@@ -6237,7 +6339,7 @@ window.__ModuleLoader__.load({
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 10px;
+      gap: 8px;
       min-width: 0;
       padding-right: 20px;
     }
@@ -6254,11 +6356,10 @@ window.__ModuleLoader__.load({
 
     .dgm-hero-title {
       margin: 0;
-      max-width: 18ch;
-      font-size: clamp(26px, 3.4cqw, 40px);
-      font-weight: 600;
-      line-height: 1.04;
-      letter-spacing: -0.025em;
+      font-size: clamp(30px, 4cqw, 48px);
+      font-weight: 650;
+      letter-spacing: -0.045em;
+      line-height: 1.08;
       text-wrap: balance;
     }
 
@@ -6290,9 +6391,9 @@ window.__ModuleLoader__.load({
     }
 
     .dgm-hero-cta {
-      min-width: 132px;
-      height: 40px;
-      margin-top: 4px;
+      min-width: 128px;
+      height: 38px;
+      margin-top: 6px;
       font-size: 13px;
     }
 
@@ -6327,7 +6428,7 @@ window.__ModuleLoader__.load({
       box-shadow: var(--dgm-shadow-soft);
     }
 
-    .dgm-section { margin-top: 44px; }
+    .dgm-section { margin-top: 38px; }
     .dgm-section:first-child { margin-top: 0; }
 
     .dgm-section-head {
@@ -6335,7 +6436,7 @@ window.__ModuleLoader__.load({
       align-items: flex-end;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       flex-wrap: wrap;
     }
     .dgm-section-titles { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
@@ -6348,9 +6449,9 @@ window.__ModuleLoader__.load({
     }
     .dgm-section-title {
       margin: 0;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
-      letter-spacing: -0.012em;
+      letter-spacing: -0.01em;
     }
     .dgm-section-meta { color: var(--dgm-fg-tertiary); font-size: 11px; }
 
@@ -6359,7 +6460,7 @@ window.__ModuleLoader__.load({
     .dgm-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 20px;
+      gap: 18px;
     }
 
     /* ---------- Game card ---------- */
@@ -6377,7 +6478,7 @@ window.__ModuleLoader__.load({
 
     .dgm-card-cover {
       position: relative;
-      aspect-ratio: 3 / 2;
+      aspect-ratio: 16 / 9;
       border-radius: var(--dgm-radius-lg);
       overflow: hidden;
       border: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
@@ -6794,7 +6895,7 @@ window.__ModuleLoader__.load({
 
     .dgm-skeleton-card { display: flex; flex-direction: column; gap: 9px; }
     .dgm-skeleton-cover {
-      aspect-ratio: 3 / 2;
+      aspect-ratio: 16 / 9;
       border-radius: var(--dgm-radius-lg);
       background: var(--dgm-surface);
       animation: dgm-shimmer 1400ms ease-in-out infinite;
@@ -6811,8 +6912,9 @@ window.__ModuleLoader__.load({
       display: flex;
       align-items: center;
       gap: 14px;
-      min-height: 72px;
-      padding: 12px;
+      min-height: 104px;
+      padding: 16px 12px;
+      border-bottom: 1px solid var(--dgm-border);
     }
     .dgm-skeleton-thumb { width: 64px; height: 48px; flex: none; border-radius: 10px; background: var(--dgm-surface); animation: dgm-shimmer 1400ms ease-in-out infinite; }
     .dgm-skeleton-col { display: flex; flex-direction: column; gap: 8px; flex: 1 1 auto; }
@@ -6832,16 +6934,17 @@ window.__ModuleLoader__.load({
 
     /* ---------- My Games ---------- */
 
-    .dgm-mygames { max-width: 940px; margin: 0 auto; }
+    .dgm-mygames { max-width: 920px; margin: 0 auto; }
     .dgm-list { display: flex; flex-direction: column; gap: 2px; }
     .dgm-row {
       position: relative;
       display: grid;
-      grid-template-columns: 64px minmax(0, 1fr) auto;
+      grid-template-columns: 96px minmax(0, 1fr) auto;
       align-items: center;
       gap: 14px;
-      min-height: 72px;
-      padding: 12px;
+      min-height: 104px;
+      padding: 16px 12px;
+      border-bottom: 1px solid var(--dgm-border);
       border-radius: var(--dgm-radius-md);
       background: transparent;
       transition: background-color 140ms ease-out;
@@ -6849,8 +6952,8 @@ window.__ModuleLoader__.load({
     .dgm-row:hover, .dgm-row:focus-within { background: var(--dgm-hover); }
     .dgm-row-cover {
       position: relative;
-      width: 64px;
-      height: 48px;
+      width: 96px;
+      height: 64px;
       padding: 0;
       overflow: hidden;
       border: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
@@ -6911,10 +7014,10 @@ window.__ModuleLoader__.load({
     .dgm-row-meta > span { min-width: 0; }
     .dgm-row-best { color: var(--dgm-fg-tertiary); }
     .dgm-row-controls { display: flex; align-items: center; gap: 8px; flex: none; }
-    .dgm-row-play { height: 32px; min-width: 76px; }
+    .dgm-row-play { height: 40px; min-width: 92px; }
     .dgm-row-update-btn { flex: none; }
     .dgm-row-update-failed { color: var(--dgm-danger); font-size: 11px; font-weight: 600; }
-    .dgm-row-menu-btn { width: 28px; height: 28px; }
+    .dgm-row-menu-btn { width: 40px; height: 40px; }
     .dgm-row-progress { display: flex; flex-direction: column; gap: 5px; max-width: 340px; }
     .dgm-row-progress-text { color: var(--dgm-fg-secondary); font-size: 11px; font-variant-numeric: tabular-nums; }
 
@@ -7024,32 +7127,32 @@ window.__ModuleLoader__.load({
     /* ---------- Detail ---------- */
 
     .dgm-detail { display: flex; flex-direction: column; }
+    .dgm-detail-head {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 28px;
+    }
+    .dgm-detail-head-copy { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
     .dgm-detail-hero {
       position: relative;
-      width: 100%;
-      height: clamp(200px, 30cqw, 320px);
-      border-radius: var(--dgm-radius-xl);
+      width: 46%;
+      aspect-ratio: 16 / 10;
+      flex: none;
+      border-radius: 14px;
       overflow: hidden;
-      box-shadow: var(--dgm-shadow-soft);
-    }
-    .dgm-detail-hero-fade {
-      position: absolute;
-      inset: auto 0 0 0;
-      height: 96px;
-      background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--dgm-bg) 72%, transparent));
-      pointer-events: none;
     }
     .dgm-detail-cols {
       position: relative;
       z-index: 1;
       display: grid;
-      grid-template-columns: minmax(0, 680px) 320px;
+      grid-template-columns: minmax(0, 1fr) 280px;
       justify-content: space-between;
-      gap: 48px;
-      padding: 0 4px;
-      margin-top: 18px;
+      gap: 40px;
+      padding: 0;
+      margin-top: 0;
     }
-    .dgm-detail-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding-top: 8px; }
+    .dgm-detail-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding-top: 4px; }
     .dgm-detail-title-line { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
     .dgm-detail-title {
       margin: 0;
@@ -7146,10 +7249,10 @@ window.__ModuleLoader__.load({
       display: flex;
       flex-direction: column;
       gap: 18px;
-      padding: 20px;
-      border: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent);
+      padding: 24px;
+      border: 1px solid var(--dgm-border);
       border-radius: 16px;
-      background: color-mix(in srgb, var(--dgm-surface) 58%, transparent);
+      background: var(--dgm-bg);
     }
     .dgm-primary { display: flex; flex-direction: column; gap: 8px; }
     .dgm-primary-btn { width: 100%; height: 40px; font-size: 14px; }
@@ -7628,6 +7731,70 @@ window.__ModuleLoader__.load({
       to { transform: translateY(0); }
     }
 
+    /* ---------- Gallery composition and interaction ---------- */
+    .dgm-game-artwork { display: block; width: 100%; height: 100%; }
+    .dgm-cover-art:has(.dgm-game-artwork) { background: none; }
+    .dgm-cover-art { transition: transform 240ms var(--dgm-ease-out); }
+    .dgm-card:hover .dgm-cover-art { transform: scale(1.035); }
+    .dgm-hero-art .dgm-cover-art { transition: transform 320ms var(--dgm-ease-out); }
+    .dgm-hero:focus-within .dgm-cover-art { transform: scale(1.025); }
+    .dgm-hero-art-fade { display: none; }
+    .dgm-hero-kicker { color: var(--dgm-fg-secondary); margin: 0 0 4px; font: inherit; font-size: 12px; letter-spacing: 0; text-transform: none; }
+    .dgm-hero-body { font-size: 14px; line-height: 1.65; margin: 4px 0 12px; color: var(--dgm-fg-secondary); }
+    .dgm-hero-cta { height: 42px; padding: 0 22px; font-size: 14px; margin: 0; }
+    .dgm-hero-details { appearance: none; display: inline-flex; align-items: center; height: 36px; border: 0; background: transparent; color: var(--dgm-fg-secondary); padding: 0; font-size: 12px; cursor: pointer; }
+    .dgm-hero-details:hover { color: var(--dgm-brand); text-decoration: underline; text-underline-offset: 4px; }
+    .dgm-page-intro { margin: 0 0 12px; }
+    .dgm-page-title { margin: 0; font-size: 30px; font-weight: 650; letter-spacing: -0.035em; line-height: 1.25; }
+    .dgm-page-intro p, .dgm-library-head p { color: var(--dgm-fg-secondary); font-size: 13px; margin: 8px 0 0; }
+    .dgm-section { margin-top: 28px; }
+    .dgm-section-head { gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+    .dgm-section-titles { display: flex; flex-direction: row; align-items: baseline; gap: 12px; }
+    .dgm-catalog-count { color: var(--dgm-fg-tertiary); font-size: 12px; white-space: nowrap; }
+    .dgm-section-title { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+    .dgm-grid { gap: 24px; }
+    .dgm-card-cover { box-shadow: none; border-radius: 12px; }
+    .dgm-card-title { font-size: 15px; line-height: 1.5; }
+    .dgm-card { gap: 0; }
+    .dgm-card-text { padding: 12px 0 0; gap: 3px; }
+    .dgm-card-meta { font-size: 12px; color: var(--dgm-fg-secondary); }
+    .dgm-card-installed { width: 24px; height: 24px; border-radius: 50%; backdrop-filter: blur(8px); }
+    .dgm-card-play { width: 40px; height: 40px; }
+    .dgm-chips { gap: 4px; flex-wrap: wrap; }
+    .dgm-chip { min-height: 34px; padding: 6px 12px; border-radius: 8px; }
+    .dgm-chip[data-active='true'] { color: var(--dgm-brand); }
+    .dgm-chip-mark { display: none; }
+    .dgm-library-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding: 4px 12px 24px; border-bottom: 1px solid var(--dgm-border); }
+    .dgm-library-count { color: var(--dgm-fg-secondary); font-size: 12px; white-space: nowrap; }
+    .dgm-row { border-radius: 0; gap: 20px; }
+    .dgm-row-title-btn { font-size: 15px; }
+    .dgm-row-meta { gap: 0; line-height: 1.8; }
+    .dgm-row-best { color: var(--dgm-fg-secondary); }
+    .dgm-row-controls { position: relative; }
+    .dgm-about-title { font-size: 14px; font-weight: 600; margin: 18px 0 0; }
+    .dgm-detail-subtitle { font-size: 13px; line-height: 1.6; }
+    .dgm-detail-description { font-size: 14px; color: var(--dgm-fg-secondary); }
+    .dgm-detail-taxonomy { margin: 12px 0; }
+    .dgm-howto { display: flex; flex-direction: column; gap: 10px; }
+    .dgm-howto p { margin: 0; font-size: 13px; color: var(--dgm-fg-secondary); line-height: 1.7; }
+    .dgm-howto-save { display: flex; align-items: center; gap: 7px; }
+    .dgm-detail-rail { gap: 18px; border: 0; border-left: 1px solid var(--dgm-border); border-radius: 0; padding-top: 4px; background: transparent; }
+    .dgm-primary-btn { height: 44px; gap: 8px; }
+    .dgm-detail-head-copy .dgm-primary { margin-top: 12px; align-self: flex-start; min-width: 160px; }
+    .dgm-detail-head-copy .dgm-secondary-btn { text-align: left; padding-left: 0; }
+    .dgm-detail-meta { font-size: 12px; gap: 12px; }
+    .dgm-rail-title { font-family: var(--dgm-font); font-size: 12px; letter-spacing: 0; text-transform: none; color: var(--dgm-fg-secondary); }
+    .dgm-rail-body { font-size: 12px; line-height: 1.7; }
+    .dgm-rail-note { color: var(--dgm-fg-secondary); line-height: 1.7; }
+    .dgm-rail-actions { display: block; padding-top: 14px; border-top: 1px solid var(--dgm-border); }
+    .dgm-rail-actions summary { cursor: pointer; font-size: 12px; color: var(--dgm-fg-secondary); padding: 6px 0; }
+    .dgm-rail-actions[open] .dgm-btn { display: flex; margin-top: 6px; }
+    .dgm-menu[data-opens-up='true'] { top: auto; bottom: calc(100% + 6px); transform-origin: bottom right; }
+    .dgm-menu { animation: dgm-menu-enter 160ms var(--dgm-ease-out); transform-origin: top right; }
+    @keyframes dgm-menu-enter { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: none; } }
+    .dgm-home, .dgm-mygames, .dgm-detail { animation: dgm-fade 180ms var(--dgm-ease-out); }
+    @media (hover: none) { .dgm-card-play { width: 44px; height: 44px; opacity: 1; transform: none; } }
+
     /* ---------- Responsive (container width, PRD 9.3.2) ---------- */
 
     @container (max-width: 1079px) {
@@ -7636,19 +7803,18 @@ window.__ModuleLoader__.load({
     }
 
     @container (max-width: 899px) {
-      .dgm-detail-cols { grid-template-columns: minmax(0, 1fr); gap: 20px; margin-top: -18px; }
-      .dgm-detail-rail { position: static; order: -1; backdrop-filter: none; background: transparent; border: 0; border-bottom: 1px solid color-mix(in srgb, var(--dgm-fg) 8%, transparent); border-radius: 0; padding: 0 0 18px; }
+      .dgm-detail-cols { grid-template-columns: minmax(0, 1fr); gap: 24px; margin-top: 0; }
+      .dgm-detail-rail { position: static; order: 0; border-radius: 12px; padding: 20px; }
       .dgm-detail-main { padding-top: 0; }
       .dgm-primary-btn { max-width: 480px; }
       .dgm-rail-block { padding-top: 0; border-top: 0; }
-      .dgm-detail-rail .dgm-detail-meta,
-      .dgm-detail-rail .dgm-leaderboard,
-      .dgm-detail-rail .dgm-rail-actions { display: none; }
+      .dgm-detail-rail .dgm-detail-meta { display: grid; }
     }
 
     @container (max-width: 839px) {
       .dgm-header { padding-left: 12px; padding-right: 12px; gap: 8px; }
-      .dgm-header-sync { display: none; }
+      .dgm-upload-label { display: none; }
+      .dgm-upload { width: 32px; padding: 0; justify-content: center; }
       .dgm-search { display: none; }
       .dgm-search-toggle { display: inline-flex; }
       .dgm-root[data-search-open='true'] .dgm-search {
@@ -7665,15 +7831,16 @@ window.__ModuleLoader__.load({
         box-shadow: var(--dgm-shadow-soft);
       }
       .dgm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-      .dgm-hero { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px; }
+      .dgm-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; padding: 0 0 24px; }
       .dgm-hero-art { aspect-ratio: 16 / 9; }
       .dgm-hero-copy { padding-right: 0; }
       .dgm-hero-intro-art { display: none; }
       .dgm-hero-intro { grid-template-columns: minmax(0, 1fr); }
       .dgm-section { margin-top: 34px; }
       .dgm-section-head { align-items: flex-start; }
-      .dgm-page { padding: 18px 16px 40px; }
-      .dgm-detail-hero { height: clamp(180px, 34cqw, 260px); }
+      .dgm-page { padding: 20px 16px 40px; }
+      .dgm-detail-head { align-items: center; gap: 24px; }
+      .dgm-detail-hero { width: 46%; }
       .dgm-preview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .dgm-toasts { right: 12px; bottom: 12px; }
       .dgm-lightbox { padding: 52px 12px; }
@@ -7688,15 +7855,31 @@ window.__ModuleLoader__.load({
       .dgm-page { padding: 14px 12px 32px; }
       .dgm-grid { grid-template-columns: minmax(0, 1fr); }
       .dgm-card-cover { aspect-ratio: 16 / 9; }
-      .dgm-hero { border-radius: 16px; }
+      .dgm-hero { grid-template-columns: 1fr; gap: 20px; }
+      .dgm-hero-copy { gap: 6px; }
+      .dgm-hero-art { aspect-ratio: 16 / 9; }
+      .dgm-hero-title { font-size: 30px; }
+      .dgm-library-head { padding: 8px 0 20px; align-items: flex-start; flex-direction: column; gap: 8px; }
+      .dgm-page-title { font-size: 26px; }
+      .dgm-row { grid-template-columns: 64px minmax(0, 1fr); padding: 16px 0; gap: 12px; }
+      .dgm-row-cover { width: 64px; height: 48px; }
+      .dgm-row-controls { grid-column: 2; justify-content: flex-start; }
+      .dgm-row-meta .dgm-sep { margin: 0 5px; }
+      .dgm-row-meta { font-size: 12px; }
+      .dgm-row-play { height: 44px; }
+      .dgm-row-menu-btn { width: 44px; height: 44px; }
+      .dgm-section-head { flex-direction: column; gap: 12px; }
+      .dgm-detail-head { flex-direction: column; align-items: stretch; gap: 20px; }
+      .dgm-detail-hero { width: 100%; aspect-ratio: 16 / 9; }
+      .dgm-detail-head-copy .dgm-primary { align-self: stretch; }
+      .dgm-detail-rail { padding: 20px 0; border-left: 0; border-top: 1px solid var(--dgm-border); }
+      .dgm-detail-rail .dgm-primary { position: sticky; bottom: 0; }
+
       .dgm-hero-title { font-size: 26px; }
       .dgm-section { margin-top: 28px; }
       .dgm-section-title { font-size: 16px; }
-      .dgm-row { grid-template-columns: 56px minmax(0, 1fr) auto; gap: 10px; min-height: 80px; padding: 10px 8px; }
-      .dgm-row-cover { width: 56px; height: 42px; }
       .dgm-row-update { display: none; }
       .dgm-row-update-btn { display: none; }
-      .dgm-row-meta { font-size: 11px; }
       .dgm-detail-title { font-size: 26px; }
       .dgm-preview-grid { grid-template-columns: minmax(0, 1fr); }
       .dgm-detail-cols { padding: 0; }
@@ -7705,8 +7888,7 @@ window.__ModuleLoader__.load({
       .dgm-dialog { padding: 16px; }
       .dgm-runtime-controls { left: 12px; right: 12px; }
       .dgm-presence { right: 16px; bottom: 16px; }
-      .dgm-detail-meta,
-      .dgm-detail-rail .dgm-permissions { display: none; }
+
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -7717,6 +7899,7 @@ window.__ModuleLoader__.load({
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
       }
+      .dgm-cover-art { transform: none !important; }
       .dgm-whale-btn[data-state='running'] .dgm-whale,
       .dgm-whale-btn[data-state='waiting-user'] .dgm-whale-halo { animation: none !important; }
       .dgm-whale-btn[data-state='waiting-user'] .dgm-whale-halo { opacity: 1; }
@@ -8101,7 +8284,7 @@ window.__ModuleLoader__.load({
     function isMenuOpenKey(event) {
       if (!event) return false;
       if (event.key === 'F10' && event.shiftKey) return true;
-      return event.key === 'ArrowRight' && !event.metaKey && !event.ctrlKey && !event.altKey;
+      return (event.key === 'ArrowRight' || event.key === 'ArrowDown') && !event.metaKey && !event.ctrlKey && !event.altKey;
     }
 
     /** Enter/Space activation helper for role="link"/"button" nodes. */
@@ -11607,6 +11790,74 @@ window.__ModuleLoader__.load({
     return { SkeletonCards, SkeletonRows, SkeletonDetail, LoadingBlock, ErrorBlock, EmptyBlock, InlineBanner, SectionHeader };
     })();
 
+    // module: packages/client/src/components/game-artwork.js
+    __mods["packages/client/src/components/game-artwork.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    /** First-party cover illustrations. Inline vectors stay sharp and work offline. */
+    const h = React.createElement;
+    const IDS = ['2048', 'snake', 'breakout', 'jump'];
+    function hasGameArtwork(id) { return IDS.includes(id); }
+
+    function GameArtwork(props) {
+      const id = props.id;
+      const rect = (x, y, width, height, fill, rx = 12, more = {}) => h('rect', { x, y, width, height, fill, rx, ...more });
+      const circle = (cx, cy, r, fill, more = {}) => h('circle', { cx, cy, r, fill, ...more });
+      const path = (d, stroke, width, more = {}) => h('path', { d, fill: 'none', stroke, strokeWidth: width, strokeLinecap: 'round', strokeLinejoin: 'round', ...more });
+      let art;
+      if (id === '2048') {
+        art = h('g', null,
+          rect(0, 0, 640, 400, '#e9e1d4', 0),
+          circle(530, 20, 240, '#f1eade'), circle(60, 410, 180, '#d7ccba'),
+          h('g', { transform: 'translate(178 62) rotate(-10 142 142)' },
+            rect(-10, 6, 300, 280, '#c8baa6', 30),
+            rect(0, 0, 280, 280, '#b9a88f', 26),
+            ...[[16, 16, '2', '#f6f0e5', '#79684f'], [148, 16, '8', '#f3c578', '#815328'], [16, 148, '16', '#eda05d', '#fff7ed'], [148, 148, '32', '#db7450', '#fff7ed']].map(([x,y,n,bg,fg]) => h('g', { key:n }, rect(x,y,116,116,bg,17), h('text', { x:x+58,y:y+77, fill:fg, textAnchor:'middle', fontFamily:'Georgia, serif', fontSize:63,fontWeight:700 },n)))
+          ),
+          path('M 506 268 h 50 m -25 -25 v 50', '#ae9b7d', 3),
+          circle(112, 102, 5, '#b5a68e'), circle(542, 130, 3, '#b5a68e')
+        );
+      } else if (id === 'snake') {
+        art = h('g', null,
+          rect(0,0,640,400,'#163d35',0),circle(570,30,235,'#1d4b40'),circle(35,420,210,'#10342d'),
+          ...Array.from({length:9},(_,i)=>path(`M ${88+i*58} 46 v 310`,'#2c5548',1,{key:'v'+i})),
+          ...Array.from({length:6},(_,i)=>path(`M 70 ${55+i*58} h 510`,'#2c5548',1,{key:'h'+i})),
+          path('M 174 283 H 232 Q 262 283 262 253 V 161 Q 262 128 295 128 H 373 Q 404 128 404 160 V 214 Q 404 244 434 244 H 464','#0c2b25',46,{transform:'translate(0 10)'}),
+          path('M 174 283 H 232 Q 262 283 262 253 V 161 Q 262 128 295 128 H 373 Q 404 128 404 160 V 214 Q 404 244 434 244 H 464','#c4df8c',40),
+          circle(458,235,3.5,'#19372b'),circle(458,253,3.5,'#19372b'),
+          circle(172,126,17,'#eeac74'),path('M 172 107 q 2 -17 15 -17','#d7e3ae',5),
+          circle(172,283,7,'#9fbd72')
+        );
+      } else if (id === 'breakout') {
+        art = h('g', null,
+          rect(0,0,640,400,'#192b50',0),circle(585,45,210,'#233961'),
+          ...Array.from({length:4},(_,r)=>Array.from({length:6},(_,c)=>rect(115+c*70,67+r*39,60,28,['#ee9a83','#f3bb80','#e9d6a8','#8ebdb5'][r],6,{key:r+'-'+c,opacity:r===3&&c===3?0.15:1}))),
+          path('M 352 188 L 280 290 L 376 356','#90aacb',2,{strokeDasharray:'6 10',opacity:0.7}),
+          circle(309,249,15,'#14233f'),circle(309,243,13,'#fff6de'),
+          rect(240,335,150,17,'#8ebdb5',8),rect(251,335,128,5,'#c7e2d9',3),
+          circle(71,262,3,'#5b7296'),circle(556,291,4,'#5b7296')
+        );
+      } else if (id === 'jump') {
+        art = h('g', null,
+          rect(0,0,640,400,'#282d49',0),circle(518,-10,230,'#343b5e'),circle(86,398,180,'#21283f'),
+          ...[[100,70,3],[174,170,2],[466,90,3],[550,245,2],[375,38,2]].map(([x,y,r],i)=>circle(x,y,r,'#939ab6',{key:i})),
+          rect(90,326,120,16,'#90b8a1',8),rect(407,218,122,16,'#90b8a1',8),rect(235,110,98,13,'#729686',6),
+          path('M 221 312 Q 278 310 297 256','#efc788',3,{strokeDasharray:'6 9'}),
+          h('g', {transform:'translate(265 147) rotate(10 48 48)'},
+            path('M 46 4 v -19','#b8d6c4',5),circle(46,-21,8,'#f3d18b'),
+            rect(0,3,96,94,'#b8d6c4',26),rect(13,20,70,48,'#202e3d',17),
+            circle(34,43,7,'#e9f8dc'),circle(63,43,7,'#e9f8dc'),
+            path('M 24 99 l -10 13 M 71 99 l 11 13','#f0cd8a',10),
+            rect(33,78,30,7,'#729686',3)
+          )
+        );
+      } else return null;
+      return h('svg', {className:'dgm-game-artwork',viewBox:'0 0 640 400',fill:'none',preserveAspectRatio:'xMidYMid slice','aria-hidden':'true',focusable:'false'},art);
+    }
+
+    return { hasGameArtwork, GameArtwork };
+    })();
+
     // module: packages/client/src/components/cover.js
     __mods["packages/client/src/components/cover.js"] = (function () {
     const __react = require('react');
@@ -11614,6 +11865,8 @@ window.__ModuleLoader__.load({
     const coverTone = __mods["packages/client/src/catalog.js"].coverTone;
     const initialFor = __mods["packages/client/src/catalog.js"].initialFor;
     const GamepadIcon = __mods["packages/client/src/icons.js"].GamepadIcon;
+    const GameArtwork = __mods["packages/client/src/components/game-artwork.js"].GameArtwork;
+    const hasGameArtwork = __mods["packages/client/src/components/game-artwork.js"].hasGameArtwork;
     /**
      * Game artwork with a deterministic, asset-free fallback.
      *
@@ -11639,7 +11892,8 @@ window.__ModuleLoader__.load({
     function GameCover(props) {
       const game = props.game || {};
       const variant = props.variant || 'card';
-      const source = game.cover || game.icon || null;
+      const illustrated = hasGameArtwork(game.id);
+      const source = game.cover || (illustrated ? null : game.icon) || null;
       const [failed, setFailed] = React.useState(false);
       const [loaded, setLoaded] = React.useState(false);
 
@@ -11664,7 +11918,7 @@ window.__ModuleLoader__.load({
         h(
           'span',
           { className: 'dgm-cover-art' },
-          h('span', { className: 'dgm-cover-initial' }, initialFor(game.name || game.id))
+          illustrated ? h(GameArtwork, { id: game.id }) : h('span', { className: 'dgm-cover-initial' }, initialFor(game.name || game.id))
         ),
         showImage
           ? h('img', {
@@ -11683,8 +11937,8 @@ window.__ModuleLoader__.load({
               },
             })
           : null,
-        h('span', { className: 'dgm-cover-grain' }),
-        variant === 'row' ? null : h('span', { className: 'dgm-cover-glyph' }, h(GamepadIcon, { size: variant === 'hero' ? 22 : 16 }))
+        illustrated ? null : h('span', { className: 'dgm-cover-grain' }),
+        variant === 'row' || illustrated ? null : h('span', { className: 'dgm-cover-glyph' }, h(GamepadIcon, { size: variant === 'hero' ? 22 : 16 }))
       );
     }
 
@@ -11852,17 +12106,24 @@ window.__ModuleLoader__.load({
       const t = props.t;
       const value = props.value;
       const buttons = React.useRef([]);
-      const selectedIndex = Math.max(0, CATEGORY_FILTERS.indexOf(value));
+      const categories = Array.isArray(props.games)
+        ? CATEGORY_FILTERS.filter(function available(id) {
+            return id === 'all' || id === value || props.games.some(function matches(game) {
+              return Array.isArray(game.categories) && game.categories.includes(id);
+            });
+          })
+        : CATEGORY_FILTERS;
+      const selectedIndex = Math.max(0, categories.indexOf(value));
 
       function handleKeyDown(event, index) {
         if (!event) return;
         const key = event.key;
         if (key === 'Enter' || key === ' ' || key === 'Spacebar') {
           event.preventDefault();
-          if (props.onChange) props.onChange(CATEGORY_FILTERS[index]);
+          if (props.onChange) props.onChange(categories[index]);
           return;
         }
-        const next = nextChipIndex(index, key, CATEGORY_FILTERS.length);
+        const next = nextChipIndex(index, key, categories.length);
         if (next !== index) {
           event.preventDefault();
           const target = buttons.current[next];
@@ -11873,7 +12134,7 @@ window.__ModuleLoader__.load({
       return h(
         'div',
         { className: 'dgm-chips', role: 'group', 'aria-label': t('market.filter.a11y') },
-        CATEGORY_FILTERS.map(function renderChip(category, index) {
+        categories.map(function renderChip(category, index) {
           const active = category === value;
           const label = category === 'all' ? t('market.filter.all') : t(categoryLabelKey(category));
           return h(
@@ -11921,7 +12182,6 @@ window.__ModuleLoader__.load({
     const nextGridIndex = __mods["packages/client/src/keyboard.js"].nextGridIndex;
     const formatCount = __mods["packages/client/src/format.js"].formatCount;
     const formatRelativeTime = __mods["packages/client/src/format.js"].formatRelativeTime;
-    const formatScore = __mods["packages/client/src/format.js"].formatScore;
     const PlayIcon = __mods["packages/client/src/icons.js"].PlayIcon;
     const EmptyBlock = __mods["packages/client/src/components/state-views.js"].EmptyBlock;
     const ErrorBlock = __mods["packages/client/src/components/state-views.js"].ErrorBlock;
@@ -11939,11 +12199,6 @@ window.__ModuleLoader__.load({
 
     const h = React.createElement;
 
-    function heroLastPlayed(game, t, locale, now) {
-      const relative = game.lastPlayedAt ? formatRelativeTime(game.lastPlayedAt, now, locale) : '';
-      return relative ? t('market.hero.lastPlayed', { relativeTime: relative }) : '';
-    }
-
     function Hero(props) {
       const game = props.hero;
       const t = props.t;
@@ -11956,7 +12211,6 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { className: 'dgm-hero-intro-copy' },
-            h('p', { className: 'dgm-hero-kicker' }, t('market.section.continue')),
             h('h2', { className: 'dgm-hero-title', id: 'dgm-hero-title' }, t('market.hero.empty.title')),
             h('p', { className: 'dgm-hero-body' }, t('market.hero.empty.body')),
             h(
@@ -11979,8 +12233,6 @@ window.__ModuleLoader__.load({
           )
         );
       }
-      const meta = heroLastPlayed(game, t, locale, now);
-      const best = typeof game.bestScore === 'number' ? t('market.hero.best', { score: formatScore(game.bestScore, locale) }) : '';
       const tone = coverTone(game);
       return h(
         'section',
@@ -11998,7 +12250,7 @@ window.__ModuleLoader__.load({
         h(
           'div',
           { className: 'dgm-hero-copy' },
-          h('p', { className: 'dgm-hero-kicker' }, t('market.section.continue')),
+          h('p', { className: 'dgm-hero-kicker' }, t('market.hero.eyebrow')),
           h(
             'h2',
             { className: 'dgm-hero-title', id: 'dgm-hero-title' },
@@ -12014,16 +12266,7 @@ window.__ModuleLoader__.load({
               game.name || game.id
             )
           ),
-          h(
-            'p',
-            { className: 'dgm-hero-meta' },
-            meta,
-            meta && best ? h('span', { className: 'dgm-hero-sep', 'aria-hidden': 'true' }, '·') : null,
-            best
-          ),
-          game.canContinue
-            ? h('p', { className: 'dgm-hero-status' }, t('market.hero.paused'))
-            : null,
+          h('p', { className: 'dgm-hero-body' }, t('market.hero.description')),
           h(
             'button',
             {
@@ -12038,8 +12281,9 @@ window.__ModuleLoader__.load({
               }),
             },
             h(PlayIcon, { size: 13 }),
-            t('market.hero.continue')
-          )
+            t('market.card.continue')
+          ),
+          h('button', { type: 'button', className: 'dgm-hero-details', onClick: function open() { if (props.onOpen) props.onOpen(game.id); } }, t('market.hero.details'))
         )
       );
     }
@@ -12097,7 +12341,6 @@ window.__ModuleLoader__.load({
         { className: 'dgm-section', 'aria-labelledby': props.id },
         h(SectionHeader, {
           id: props.id,
-          kicker: h('span', { 'aria-hidden': 'true' }, props.index),
           title: props.title,
           meta: props.meta,
         }),
@@ -12131,6 +12374,7 @@ window.__ModuleLoader__.load({
         ? filterCatalog(games, { query: ui.query, category: ui.category, offline: market.offline === true, locale: locale })
         : sections.all;
       const hasCatalog = games.length > 0;
+      const showCollections = games.length > 8 && ui.category === 'all';
 
       function browseAll() {
         if (props.onBrowseAll) props.onBrowseAll();
@@ -12176,6 +12420,7 @@ window.__ModuleLoader__.load({
       return h(
         'div',
         { className: 'dgm-home' },
+        !sections.hero && !searching ? h('div', { className: 'dgm-page-intro' }, h('h1', { className: 'dgm-page-title', 'data-page-heading': true, tabIndex: -1 }, t('market.intro.title')), h('p', null, t('market.intro.body'))) : null,
         market.offline
           ? h(InlineBanner, {
               text: t('market.offline'),
@@ -12217,7 +12462,7 @@ window.__ModuleLoader__.load({
           : h(
               React.Fragment,
               null,
-              h(Hero, {
+              ui.category === 'all' && sections.hero ? h(Hero, {
                 hero: sections.hero,
                 t: t,
                 locale: locale,
@@ -12225,11 +12470,11 @@ window.__ModuleLoader__.load({
                 onPlay: props.onPlay,
                 onOpen: props.onOpenGame,
                 onBrowse: browseAll,
-              }),
-              sections.quick.length > 0
+              }) : null,
+              showCollections && sections.quick.length > 0
                 ? h(
                     Section,
-                    { index: '01', id: 'dgm-quick-title', title: t('market.section.quick'), meta: null },
+                    { id: 'dgm-quick-title', title: t('market.section.quick'), meta: null },
                     h(GameGrid, {
                       games: sections.quick,
                       t: t,
@@ -12239,10 +12484,10 @@ window.__ModuleLoader__.load({
                     })
                   )
                 : null,
-              sections.popular.length > 0
+              showCollections && sections.popular.length > 0
                 ? h(
                     Section,
-                    { index: '02', id: 'dgm-popular-title', title: t('market.section.popular'), meta: null },
+                    { id: 'dgm-popular-title', title: t('market.section.popular'), meta: null },
                     h(GameGrid, {
                       games: sections.popular,
                       t: t,
@@ -12252,10 +12497,10 @@ window.__ModuleLoader__.load({
                     })
                   )
                 : null,
-              sections.newGames.length > 0
+              showCollections && sections.newGames.length > 0
                 ? h(
                     Section,
-                    { index: '03', id: 'dgm-new-title', title: t('market.section.new'), meta: null },
+                    { id: 'dgm-new-title', title: t('market.section.new'), meta: null },
                     h(GameGrid, {
                       games: sections.newGames,
                       t: t,
@@ -12274,11 +12519,12 @@ window.__ModuleLoader__.load({
                   h(
                     'div',
                     { className: 'dgm-section-titles' },
-                    h('p', { className: 'dgm-section-kicker', 'aria-hidden': 'true' }, '04'),
-                    h('h2', { className: 'dgm-section-title', id: 'dgm-all-title' }, t('market.section.all'))
+                    h('h2', { className: 'dgm-section-title', id: 'dgm-all-title' }, t('market.section.all')),
+                    h('span', { className: 'dgm-catalog-count' }, t('market.library.count', { count: formatCount(sections.all.length, locale) }))
                   ),
                   h(FilterChips, {
                     value: ui.category,
+                    games: games,
                     onChange: props.onCategory,
                     t: t,
                   })
@@ -12300,27 +12546,6 @@ window.__ModuleLoader__.load({
                     })
               )
             ),
-        h(
-          'footer',
-          { className: 'dgm-footer' },
-          market.refreshedAt > 0
-            ? h(
-                'span',
-                { className: 'dgm-footer-text' },
-                t('market.footer.synced', {
-                  relativeTime: formatRelativeTime(new Date(market.refreshedAt).toISOString(), now, locale),
-                })
-              )
-            : null,
-          market.offline
-            ? h(
-                'span',
-                { className: 'dgm-footer-offline' },
-                h('span', { className: 'dgm-dot', 'aria-hidden': 'true' }),
-                t('market.footer.offline')
-              )
-            : null
-        )
       );
     }
 
@@ -12346,6 +12571,7 @@ window.__ModuleLoader__.load({
     const isBuiltin = __mods["packages/client/src/catalog.js"].isBuiltin;
     const progressSummary = __mods["packages/client/src/catalog.js"].progressSummary;
     const sortMyGames = __mods["packages/client/src/catalog.js"].sortMyGames;
+    const formatCount = __mods["packages/client/src/format.js"].formatCount;
     const formatRelativeTime = __mods["packages/client/src/format.js"].formatRelativeTime;
     const formatScore = __mods["packages/client/src/format.js"].formatScore;
     const isMenuOpenKey = __mods["packages/client/src/keyboard.js"].isMenuOpenKey;
@@ -12380,6 +12606,7 @@ window.__ModuleLoader__.load({
       const onClose = props.onClose;
       const menuRef = React.useRef(null);
       const itemsRef = React.useRef([]);
+      const [opensUp, setOpensUp] = React.useState(false);
       const builtin = isBuiltin(game);
       const items = [];
       if (hasUpdate(game) && !builtin) {
@@ -12417,6 +12644,12 @@ window.__ModuleLoader__.load({
             return button && button.disabled !== true && typeof button.focus === 'function';
           });
           if (first) first.focus();
+          if (menuRef.current) {
+            const menu = menuRef.current;
+            const scroller = menu.closest('.dgm-content');
+            const edge = scroller ? scroller.getBoundingClientRect().bottom : window.innerHeight;
+            if (menu.getBoundingClientRect().bottom > edge - 12) setOpensUp(true);
+          }
         },
         []
       );
@@ -12424,6 +12657,7 @@ window.__ModuleLoader__.load({
       React.useEffect(
         function closeOnOutside() {
           function onPointerDown(event) {
+            if (props.triggerRef && props.triggerRef.current && props.triggerRef.current.contains(event.target)) return;
             if (menuRef.current && !menuRef.current.contains(event.target)) onClose();
           }
           document.addEventListener('mousedown', onPointerDown, true);
@@ -12478,6 +12712,7 @@ window.__ModuleLoader__.load({
         'div',
         {
           className: 'dgm-menu',
+          'data-opens-up': opensUp ? 'true' : 'false',
           role: 'menu',
           ref: menuRef,
           'aria-label': t('mygames.menu'),
@@ -12717,6 +12952,7 @@ window.__ModuleLoader__.load({
             ? h(RowMenu, {
                 t: t,
                 game: game,
+                triggerRef: menuButtonRef,
                 onUpdate: props.onUpdate,
                 onUninstall: props.onUninstall,
                 onDeleteData: props.onDeleteData,
@@ -12793,6 +13029,17 @@ window.__ModuleLoader__.load({
           : null,
         h(
           'div',
+          { className: 'dgm-library-head' },
+          h(
+            'div',
+            null,
+            h('h1', { className: 'dgm-page-title', 'data-page-heading': true, tabIndex: -1 }, t('mygames.title')),
+            h('p', null, t('mygames.intro'))
+          ),
+          h('span', { className: 'dgm-library-count' }, t('mygames.count', { count: formatCount(installed.length, locale) }))
+        ),
+        h(
+          'div',
           { className: 'dgm-list', role: 'list', ref: listRef },
           installed.map(function renderRow(game) {
             return h(MyGameRow, {
@@ -12812,27 +13059,15 @@ window.__ModuleLoader__.load({
             });
           })
         ),
-        h(
-          'footer',
-          { className: 'dgm-footer' },
-          market.refreshedAt > 0
-            ? h(
-                'span',
-                { className: 'dgm-footer-text' },
-                t('market.footer.synced', {
-                  relativeTime: formatRelativeTime(new Date(market.refreshedAt).toISOString(), now, locale),
-                })
-              )
-            : null,
-          market.offline
-            ? h(
-                'span',
-                { className: 'dgm-footer-offline' },
+        market.offline
+          ? h(
+              'footer',
+              { className: 'dgm-footer' },
+              h('span', { className: 'dgm-footer-offline' },
                 h('span', { className: 'dgm-dot', 'aria-hidden': 'true' }),
-                t('market.footer.offline')
-              )
-            : null
-        )
+                t('market.footer.offline'))
+            )
+          : null
       );
     }
 
@@ -12948,7 +13183,7 @@ window.__ModuleLoader__.load({
             'aria-disabled': action.disabled === true ? 'true' : undefined,
             onClick: handleClick,
           },
-          action.kind === 'retry-install' ? h(PlayIcon, { size: 13 }) : null,
+          ['play', 'continue', 'resume', 'retry-install'].includes(action.kind) ? h(PlayIcon, { size: 15 }) : null,
           primaryLabel(action, t)
         ),
         busy
@@ -13115,12 +13350,7 @@ window.__ModuleLoader__.load({
 
     function DetailHero(props) {
       const game = props.game;
-      return h(
-        'div',
-        { className: 'dgm-detail-hero' },
-        h(GameCover, { game: game, variant: 'detail' }),
-        h('span', { className: 'dgm-detail-hero-fade', 'aria-hidden': 'true' })
-      );
+      return h('div', { className: 'dgm-detail-hero' }, h(GameCover, { game: game, variant: 'detail' }));
     }
 
     /** Detail page body. */
@@ -13207,7 +13437,6 @@ window.__ModuleLoader__.load({
       return h(
         'div',
         { className: 'dgm-detail' },
-        h(DetailHero, { game: game }),
         h(
           'div',
           { className: 'dgm-detail-cols' },
@@ -13216,21 +13445,41 @@ window.__ModuleLoader__.load({
             { className: 'dgm-detail-main' },
             h(
               'div',
-              { className: 'dgm-detail-title-line' },
-              h('h1', { className: 'dgm-detail-title', tabIndex: -1, 'data-page-heading': true }, game.name || game.id),
-              game.updateAvailable && game.updateVersion
-                ? h('span', { className: 'dgm-pill dgm-pill-update' }, t('detail.update.available', { version: game.updateVersion }))
-                : null,
-              game.installed
-                ? h(
-                    'span',
-                    { className: 'dgm-pill dgm-pill-installed' },
-                    h(CheckIcon, { size: 11 }),
-                    t('market.card.installed')
-                  )
-                : null
+              { className: 'dgm-detail-head' },
+              h(DetailHero, { game: game }),
+              h(
+                'div',
+                { className: 'dgm-detail-head-copy' },
+                h(
+                  'div',
+                  { className: 'dgm-detail-title-line' },
+                  h('h1', { className: 'dgm-detail-title', tabIndex: -1, 'data-page-heading': true }, game.name || game.id),
+                  game.updateAvailable && game.updateVersion
+                    ? h('span', { className: 'dgm-pill dgm-pill-update' }, t('detail.update.available', { version: game.updateVersion }))
+                    : null,
+                  game.installed
+                    ? h(
+                        'span',
+                        { className: 'dgm-pill dgm-pill-installed' },
+                        h(CheckIcon, { size: 11 }),
+                        t('market.card.installed')
+                      )
+                    : null
+                ),
+                subtitleParts.length > 0 ? h('p', { className: 'dgm-detail-subtitle' }, subtitleParts.join(' · ')) : null,
+                h(PrimaryAction, {
+                  action: action,
+                  job: job,
+                  t: t,
+                  onInstall: props.onInstall,
+                  onCancelInstall: props.onCancelInstall,
+                  onUpdate: props.onUpdate,
+                  onPlay: props.onPlay,
+                }),
+                action.secondary ? h(SecondaryAction, { secondary: action.secondary, t: t, onClick: handleSecondary }) : null
+              )
             ),
-            subtitleParts.length > 0 ? h('p', { className: 'dgm-detail-subtitle' }, subtitleParts.join(' · ')) : null,
+            h('h2', { className: 'dgm-about-title' }, t('detail.about')),
             h(
               'div',
               { className: `dgm-detail-description${longDescription && !expanded ? ' is-collapsed' : ''}` },
@@ -13248,6 +13497,15 @@ window.__ModuleLoader__.load({
                     'aria-expanded': expanded ? 'true' : 'false',
                   },
                   t(expanded ? 'detail.collapse' : 'detail.expand')
+                )
+              : null,
+            ['snake', '2048', 'jump', 'breakout'].includes(game.id)
+              ? h(
+                  'section',
+                  { className: 'dgm-howto' },
+                  h('h2', { className: 'dgm-about-title' }, t('detail.controls')),
+                  h('p', null, t(['detail', 'controls', game.id].join('.'))),
+                  h('p', { className: 'dgm-howto-save' }, h(CheckIcon, { size: 14 }), t('detail.save.note'))
                 )
               : null,
             screenshots.length > 0
@@ -13301,16 +13559,7 @@ window.__ModuleLoader__.load({
           h(
             'aside',
             { className: 'dgm-detail-rail', 'aria-label': t('market.title') },
-            h(PrimaryAction, {
-              action: action,
-              job: job,
-              t: t,
-              onInstall: props.onInstall,
-              onCancelInstall: props.onCancelInstall,
-              onUpdate: props.onUpdate,
-              onPlay: props.onPlay,
-            }),
-            action.secondary ? h(SecondaryAction, { secondary: action.secondary, t: t, onClick: handleSecondary }) : null,
+            h('h2', { className: 'dgm-rail-title' }, t('detail.info')),
             h(
               'dl',
               { className: 'dgm-detail-meta' },
@@ -13333,8 +13582,9 @@ window.__ModuleLoader__.load({
             }),
             game.installed && game.source !== 'builtin'
               ? h(
-                  'div',
+                  'details',
                   { className: 'dgm-rail-actions' },
+                  h('summary', null, t('detail.manage')),
                   h(
                     'button',
                     {
@@ -14139,10 +14389,9 @@ window.__ModuleLoader__.load({
     const getMarketApi = __mods["packages/client/src/api.js"].getMarketApi;
     const makeT = __mods["packages/client/src/locale.js"].makeT;
     const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
-    const formatRelativeTime = __mods["packages/client/src/format.js"].formatRelativeTime;
     const BackIcon = __mods["packages/client/src/icons.js"].BackIcon;
-    const FolderOpenIcon = __mods["packages/client/src/icons.js"].FolderOpenIcon;
     const MoreIcon = __mods["packages/client/src/icons.js"].MoreIcon;
+    const UploadIcon = __mods["packages/client/src/icons.js"].UploadIcon;
     const StyleTag = __mods["packages/client/src/styles.js"].StyleTag;
     const backToConversation = __mods["packages/client/src/navigation.js"].backToConversation;
     const openGameMarket = __mods["packages/client/src/navigation.js"].openGameMarket;
@@ -14196,7 +14445,7 @@ window.__ModuleLoader__.load({
       const diagnosticRef = React.useRef(false);
       const activePanelId = useActivePanel(props, diagnosticRef);
       const binding = useSessionBinding(props, diagnosticRef);
-      const locale = detectLocale();
+      const locale = detectLocale(props && props.t);
       const t = makeT(props && props.t, locale);
       const rootRef = React.useRef(null);
       const scrollRef = React.useRef(null);
@@ -14695,7 +14944,7 @@ window.__ModuleLoader__.load({
               'h1',
               {
                 key: 'title',
-                className: 'dgm-title',
+                className: 'dgm-sr-only',
                 tabIndex: -1,
                 'data-page-heading': true,
               },
@@ -14763,15 +15012,6 @@ window.__ModuleLoader__.load({
                   })
                 )
               : null,
-            state.market.refreshedAt > 0
-              ? h(
-                  'span',
-                  { key: 'sync', className: 'dgm-header-sync' },
-                  t('panel.synced', {
-                    relativeTime: formatRelativeTime(new Date(state.market.refreshedAt).toISOString(), now, locale),
-                  })
-                )
-              : null,
             state.market.offline
               ? h('span', {
                   key: 'offline',
@@ -14787,12 +15027,13 @@ window.__ModuleLoader__.load({
                   {
                     key: 'local',
                     type: 'button',
-                    className: 'dgm-icon-btn dgm-local-install',
+                    className: 'dgm-btn dgm-upload dgm-local-install',
                     onClick: handlePickFile,
-                    'aria-label': t('market.localInstall'),
-                    title: t('market.localInstall'),
+                    'aria-label': t('market.upload'),
+                    title: t('market.localInstall.body'),
                   },
-                  h(FolderOpenIcon, { size: 15 })
+                  h(UploadIcon, { size: 14 }),
+                  h('span', { className: 'dgm-upload-label' }, t('market.upload'))
                 )
               : null,
           ];
@@ -15083,85 +15324,26 @@ window.__ModuleLoader__.load({
     const React = __react;
     const store = __mods["packages/client/src/store.js"].store;
     const sessionBound = __mods["packages/client/src/store.js"].sessionBound;
-    const deriveSidebarStatus = __mods["packages/client/src/chip-state.js"].deriveSidebarStatus;
-    const sidebarLabelKey = __mods["packages/client/src/chip-state.js"].sidebarLabelKey;
     const GameMarketIcon = __mods["packages/client/src/icons.js"].GameMarketIcon;
-    const makeT = __mods["packages/client/src/locale.js"].makeT;
     const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
+    const translate = __mods["packages/client/src/locale.js"].translate;
     const openGameMarket = __mods["packages/client/src/navigation.js"].openGameMarket;
-    const useActivePanel = __mods["packages/client/src/hooks.js"].useActivePanel;
-    const useClock = __mods["packages/client/src/hooks.js"].useClock;
     const useSessionBinding = __mods["packages/client/src/hooks.js"].useSessionBinding;
-    const useStoreState = __mods["packages/client/src/hooks.js"].useStoreState;
     /**
      * Sidebar entry icon.
      *
      * The host sidebar owns the row button, focus ring, aria-label and the
-     * `selectPanel` click (verified in `ui-sidebar`'s `PanelRow`). This component is
-     * therefore the glyph + status dot only. `interactive` is an opt-in fallback for
-     * hosts that do not wrap the glyph; it is never enabled by the DSH row.
+     * `selectPanel` click. This component is the glyph only: runtime state lives on
+     * the session Game tab, not on the sidebar row (UX review 2026-10-19).
      */
 
     const h = React.createElement;
 
-    const STATUS_COLORS = Object.freeze({
-      running: 'var(--dsw-alias-label-secondary, #5c6470)',
-      waiting: 'var(--dsw-alias-state-business-primary, #4d6bfe)',
-      error: 'var(--dsw-alias-state-error-primary, #c93c37)',
-      completed: 'var(--dsw-alias-state-success-primary, #1a7f37)',
-      resume: 'var(--dsw-alias-label-tertiary, #7a828e)',
-    });
-
-    function StatusGlyph(props) {
-      const status = props.status;
-      const color = STATUS_COLORS[status] || STATUS_COLORS.running;
-      const base = {
-        position: 'absolute',
-        top: '-3px',
-        right: '-3px',
-        width: '10px',
-        height: '10px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        pointerEvents: 'none',
-      };
-      let glyph = null;
-      if (status === 'waiting') {
-        glyph = h('circle', { cx: 5, cy: 5, r: 3.6, fill: 'transparent', stroke: color, strokeWidth: 2 });
-      } else if (status === 'completed') {
-        glyph = [
-          h('circle', { key: 'ring', cx: 5, cy: 5, r: 4.1, fill: 'transparent', stroke: color, strokeWidth: 1 }),
-          h('circle', { key: 'dot', cx: 5, cy: 5, r: 2.7, fill: color }),
-        ];
-      } else if (status === 'error') {
-        glyph = h('circle', { cx: 5, cy: 5, r: 3.4, fill: color });
-      } else if (status === 'resume') {
-        glyph = [
-          h('rect', { key: 'a', x: 2.4, y: 2.2, width: 1.7, height: 5.6, rx: 0.8, fill: color }),
-          h('rect', { key: 'b', x: 5.9, y: 2.2, width: 1.7, height: 5.6, rx: 0.8, fill: color }),
-        ];
-      } else if (status === 'running') {
-        glyph = h('circle', { cx: 5, cy: 5, r: 2.4, fill: color });
-      }
-      if (!glyph) return null;
-      return h(
-        'span',
-        { style: base, 'data-status': status },
-        h('svg', { width: 10, height: 10, viewBox: '0 0 10 10', 'aria-hidden': 'true', focusable: 'false' }, glyph)
-      );
-    }
-
     function GameMarketSidebarIcon(props) {
       const size = props && typeof props.size === 'number' ? props.size : 18;
       const interactive = Boolean(props && props.interactive === true);
-      const state = useStoreState();
-      const now = useClock(1000);
       const diagnosticRef = React.useRef(false);
       const binding = useSessionBinding(props || {}, diagnosticRef);
-      const activePanelId = useActivePanel(props || {}, diagnosticRef);
-      const locale = detectLocale();
-      const t = makeT(props && props.t, locale);
 
       React.useEffect(
         function bindCurrentSession() {
@@ -15172,18 +15354,11 @@ window.__ModuleLoader__.load({
         [binding.sessionId]
       );
 
-      const status = deriveSidebarStatus(state, now, {
-        sessionId: binding.sessionId || state.bindingSessionId,
-        dshStatus: binding.dshStatus,
-        activePanelId: activePanelId,
-      });
-      const label = t(sidebarLabelKey(status));
       const buttonProps = interactive
         ? {
             role: 'button',
             tabIndex: 0,
-            'aria-label': label,
-            'data-status': status,
+            'aria-label': translate(detectLocale(), 'sidebar.label'),
             style: { cursor: 'pointer', position: 'relative', display: 'inline-flex', color: 'inherit' },
             onClick: openGameMarket,
             onKeyDown: function activate(event) {
@@ -15195,14 +15370,106 @@ window.__ModuleLoader__.load({
           }
         : { 'aria-hidden': 'true', style: { position: 'relative', display: 'inline-flex', color: 'inherit' } };
 
-      return h('span', buttonProps, h(GameMarketIcon, { size: size }), h(StatusGlyph, { status: status }));
+      return h('span', buttonProps, h(GameMarketIcon, { size: size }));
     }
 
     return { GameMarketSidebarIcon };
     })();
 
+    // module: packages/client/src/components/game-tab-label.js
+    __mods["packages/client/src/components/game-tab-label.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
+    const store = __mods["packages/client/src/store.js"].store;
+    const deriveTabStatus = __mods["packages/client/src/chip-state.js"].deriveTabStatus;
+    const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
+    const translate = __mods["packages/client/src/locale.js"].translate;
+    const useClock = __mods["packages/client/src/hooks.js"].useClock;
+    const useStoreState = __mods["packages/client/src/hooks.js"].useStoreState;
+    /**
+     * Conversation "Game" tab label with a compact state badge.
+     *
+     * The host renders a view's `label` as the tab button child, so this component
+     * is mounted inside that button and subscribes to the module store directly.
+     * The sidebar entry deliberately carries no state (UX review 2026-10-19): the
+     * status belongs to this session-level Game button.
+     */
+
+    const h = React.createElement;
+
+    const BADGE_STYLES = Object.freeze({
+      waiting: { color: '#4d6bfe', background: 'rgba(77, 107, 254, 0.13)' },
+      completed: { color: '#178a4c', background: 'rgba(23, 138, 76, 0.13)' },
+      error: { color: '#c93c37', background: 'rgba(201, 60, 55, 0.13)' },
+      resume: { color: '#b26b00', background: 'rgba(178, 107, 0, 0.14)' },
+    });
+
+    const BADGE_KEYS = Object.freeze({
+      waiting: 'entry.tab.badge.waiting',
+      completed: 'entry.tab.badge.completed',
+      error: 'entry.tab.badge.error',
+      resume: 'entry.tab.badge.resume',
+    });
+
+    function GameTabLabel() {
+      const state = useStoreState();
+      const now = useClock(1000);
+      const locale = detectLocale();
+      const status = deriveTabStatus(state, now, { sessionId: state.bindingSessionId });
+      const badge = status ? BADGE_STYLES[status] : null;
+      return h(
+        'span',
+        {
+          style: {
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            lineHeight: '1',
+          },
+        },
+        translate(locale, 'entry.tab.game'),
+        badge
+          ? h(
+              'span',
+              {
+                'data-game-tab-status': status,
+                style: {
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  height: '18px',
+                  padding: '0 7px',
+                  borderRadius: '999px',
+                  fontSize: '10.5px',
+                  fontWeight: 700,
+                  letterSpacing: '0.01em',
+                  whiteSpace: 'nowrap',
+                  color: badge.color,
+                  background: badge.background,
+                },
+              },
+              h('span', {
+                'aria-hidden': 'true',
+                style: {
+                  width: '5px',
+                  height: '5px',
+                  borderRadius: '50%',
+                  background: 'currentColor',
+                },
+              }),
+              translate(locale, BADGE_KEYS[status])
+            )
+          : null
+      );
+    }
+
+    return { GameTabLabel };
+    })();
+
     // module: packages/client/src/main.js
     __mods["packages/client/src/main.js"] = (function () {
+    const __react = require('react');
+    const React = __react;
     const NS = __mods["packages/client/src/locale.js"].NS;
     const ZH = __mods["packages/client/src/locale.js"].ZH;
     const EN = __mods["packages/client/src/locale.js"].EN;
@@ -15219,6 +15486,7 @@ window.__ModuleLoader__.load({
     const GameMarketPanel = __mods["packages/client/src/components/panel.js"].GameMarketPanel;
     const GameEntryView = __mods["packages/client/src/components/game-entry-view.js"].GameEntryView;
     const GameMarketSidebarIcon = __mods["packages/client/src/components/sidebar-icon.js"].GameMarketSidebarIcon;
+    const GameTabLabel = __mods["packages/client/src/components/game-tab-label.js"].GameTabLabel;
     /**
      * DSH Client plugin entry.
      *
@@ -15230,6 +15498,8 @@ window.__ModuleLoader__.load({
      */
 
     const inject = ['slots', 'layout', 'locale'];
+
+    const h = React.createElement;
 
     function noopDisposer() {
       return function noop() {};
@@ -15290,19 +15560,10 @@ window.__ModuleLoader__.load({
         return translate('zh', 'sidebar.label');
       }
 
+      // The host renders the resolved label value as the tab's children; returning
+      // a component gives the tab a live, session-level status badge.
       function gameTabLabel() {
-        try {
-          if (boundTranslate === null && ctx.locale && typeof ctx.locale.bind === 'function') {
-            boundTranslate = ctx.locale.bind(NS);
-          }
-          if (typeof boundTranslate === 'function') {
-            const value = boundTranslate('entry.tab.game');
-            if (typeof value === 'string' && value.length > 0 && value !== 'entry.tab.game') return value;
-          }
-        } catch (error) {
-          reportDiagnostic('game-tab-label-failed', error);
-        }
-        return translate('zh', 'entry.tab.game');
+        return h(GameTabLabel, null);
       }
 
       function injectSlot(slotName, callback) {

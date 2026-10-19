@@ -95,10 +95,12 @@ test('search shortcut ignores inputs and modifiers, IME and activation keys work
   assert.equal(isActivationKey({ key: 'Escape' }), false);
 });
 
-test('row menus open with Shift+F10 or ArrowRight', function () {
+test('row menus open with Shift+F10, ArrowRight or ArrowDown', function () {
   assert.equal(isMenuOpenKey({ key: 'F10', shiftKey: true }), true);
   assert.equal(isMenuOpenKey({ key: 'F10', shiftKey: false }), false);
   assert.equal(isMenuOpenKey({ key: 'ArrowRight' }), true);
+  assert.equal(isMenuOpenKey({ key: 'ArrowDown' }), true);
+  assert.equal(isMenuOpenKey({ key: 'ArrowDown', metaKey: true }), false);
   assert.equal(isMenuOpenKey({ key: 'ArrowRight', ctrlKey: true }), false);
   assert.equal(isMenuOpenKey({ key: 'Enter' }), false);
 });

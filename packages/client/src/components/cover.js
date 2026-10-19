@@ -8,6 +8,7 @@
 import React from 'react';
 import { coverTone, initialFor } from '../catalog.js';
 import { GamepadIcon } from '../icons.js';
+import { GameArtwork, hasGameArtwork } from './game-artwork.js';
 
 const h = React.createElement;
 
@@ -26,7 +27,8 @@ function toneStyle(game) {
 export function GameCover(props) {
   const game = props.game || {};
   const variant = props.variant || 'card';
-  const source = game.cover || game.icon || null;
+  const illustrated = hasGameArtwork(game.id);
+  const source = game.cover || (illustrated ? null : game.icon) || null;
   const [failed, setFailed] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
 
@@ -51,7 +53,7 @@ export function GameCover(props) {
     h(
       'span',
       { className: 'dgm-cover-art' },
-      h('span', { className: 'dgm-cover-initial' }, initialFor(game.name || game.id))
+      illustrated ? h(GameArtwork, { id: game.id }) : h('span', { className: 'dgm-cover-initial' }, initialFor(game.name || game.id))
     ),
     showImage
       ? h('img', {
@@ -70,8 +72,8 @@ export function GameCover(props) {
           },
         })
       : null,
-    h('span', { className: 'dgm-cover-grain' }),
-    variant === 'row' ? null : h('span', { className: 'dgm-cover-glyph' }, h(GamepadIcon, { size: variant === 'hero' ? 22 : 16 }))
+    illustrated ? null : h('span', { className: 'dgm-cover-grain' }),
+    variant === 'row' || illustrated ? null : h('span', { className: 'dgm-cover-glyph' }, h(GamepadIcon, { size: variant === 'hero' ? 22 : 16 }))
   );
 }
 

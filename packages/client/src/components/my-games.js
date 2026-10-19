@@ -1,7 +1,7 @@
 /** My Games library (PRD 9.4): ordered rows, update/uninstall/delete entry points. */
 import React from 'react';
 import { hasUpdate, isBuiltin, progressSummary, sortMyGames } from '../catalog.js';
-import { formatRelativeTime, formatScore } from '../format.js';
+import { formatCount, formatRelativeTime, formatScore } from '../format.js';
 import { isMenuOpenKey } from '../keyboard.js';
 import { MoreIcon, TrashIcon } from '../icons.js';
 import { EmptyBlock, ErrorBlock, InlineBanner, SkeletonRows } from './state-views.js';
@@ -29,6 +29,7 @@ function RowMenu(props) {
   const onClose = props.onClose;
   const menuRef = React.useRef(null);
   const itemsRef = React.useRef([]);
+  const [opensUp, setOpensUp] = React.useState(false);
   const builtin = isBuiltin(game);
   const items = [];
   if (hasUpdate(game) && !builtin) {
@@ -66,6 +67,12 @@ function RowMenu(props) {
         return button && button.disabled !== true && typeof button.focus === 'function';
       });
       if (first) first.focus();
+      if (menuRef.current) {
+        const menu = menuRef.current;
+        const scroller = menu.closest('.dgm-content');
+        const edge = scroller ? scroller.getBoundingClientRect().bottom : window.innerHeight;
+        if (menu.getBoundingClientRect().bottom > edge - 12) setOpensUp(true);
+      }
     },
     []
   );
@@ -73,6 +80,7 @@ function RowMenu(props) {
   React.useEffect(
     function closeOnOutside() {
       function onPointerDown(event) {
+        if (props.triggerRef && props.triggerRef.current && props.triggerRef.current.contains(event.target)) return;
         if (menuRef.current && !menuRef.current.contains(event.target)) onClose();
       }
       document.addEventListener('mousedown', onPointerDown, true);
@@ -127,6 +135,7 @@ function RowMenu(props) {
     'div',
     {
       className: 'dgm-menu',
+      'data-opens-up': opensUp ? 'true' : 'false',
       role: 'menu',
       ref: menuRef,
       'aria-label': t('mygames.menu'),
@@ -366,6 +375,7 @@ function MyGameRow(props) {
         ? h(RowMenu, {
             t: t,
             game: game,
+            triggerRef: menuButtonRef,
             onUpdate: props.onUpdate,
             onUninstall: props.onUninstall,
             onDeleteData: props.onDeleteData,
@@ -442,6 +452,17 @@ export function MyGamesPage(props) {
       : null,
     h(
       'div',
+      { className: 'dgm-library-head' },
+      h(
+        'div',
+        null,
+        h('h1', { className: 'dgm-page-title', 'data-page-heading': true, tabIndex: -1 }, t('mygames.title')),
+        h('p', null, t('mygames.intro'))
+      ),
+      h('span', { className: 'dgm-library-count' }, t('mygames.count', { count: formatCount(installed.length, locale) }))
+    ),
+    h(
+      'div',
       { className: 'dgm-list', role: 'list', ref: listRef },
       installed.map(function renderRow(game) {
         return h(MyGameRow, {
@@ -461,26 +482,14 @@ export function MyGamesPage(props) {
         });
       })
     ),
-    h(
-      'footer',
-      { className: 'dgm-footer' },
-      market.refreshedAt > 0
-        ? h(
-            'span',
-            { className: 'dgm-footer-text' },
-            t('market.footer.synced', {
-              relativeTime: formatRelativeTime(new Date(market.refreshedAt).toISOString(), now, locale),
-            })
-          )
-        : null,
-      market.offline
-        ? h(
-            'span',
-            { className: 'dgm-footer-offline' },
+    market.offline
+      ? h(
+          'footer',
+          { className: 'dgm-footer' },
+          h('span', { className: 'dgm-footer-offline' },
             h('span', { className: 'dgm-dot', 'aria-hidden': 'true' }),
-            t('market.footer.offline')
-          )
-        : null
-    )
+            t('market.footer.offline'))
+        )
+      : null
   );
 }
