@@ -195,7 +195,7 @@ function buildManager(overrides) {
       return options.clientIdentity || { version: '1.2.0', buildCommit: COMMIT_RUNNING };
     },
     getPageIdentity: function pageIdentity() {
-      return createFakePageIdentity();
+      return options.pageIdentity || createFakePageIdentity();
     },
     getRuntimeInstances: options.getRuntimeInstances || function noInstances() {
       return [];
@@ -606,4 +606,138 @@ test('runtime registry entries are collected without clearing live registrations
   assert.equal(registerRuntimeInstance({ instanceId: INSTANCE_ID, gameId: 'other', controller: {} }) instanceof Function, true);
   unregister();
   clearRuntimeInstances();
+});
+
+test('hidden pages keep polling so a hidden window can still coordinate its game', async function () {
+  const api = createFakeApi();
+  const built = buildManager({ api: api });
+  built.manager.setVisibility('hidden');
+  assert.ok(built.scheduler.pendingCount() > 0, 'a hidden page still schedules inspection');
+  const delay = built.scheduler.nextDelay();
+  assert.equal(delay <= 3000, true, 'hidden poll stays inside the 15s coordination window');
+  built.scheduler.runNext();
+  await waitFor(function inspected() {
+    return api.count('inspect') === 1;
+  });
+  assert.equal(api.count('inspect'), 1);
+  built.manager.stop();
+});
+
+test('a Client without an embedded version does not invent one in client-report', async function () {
+  const api = createFakeApi();
+  const built = buildManager({ api: api, clientIdentity: { version: null, buildCommit: null } });
+  await built.manager.reportClient();
+  assert.equal(api.count('client-report'), 0, 'no fabricated buildVersion is sent');
+  built.manager.stop();
+});
+
+test('begin is refused locally when the Host capability is fail-closed', async function () {
+  const api = createFakeApi({
+    inspect: function inspect() {
+      return Promise.resolve(
+        inspectionFixture({
+          capability: { hmr: 'unknown', updatePath: 'unsupported', canBeginUpdate: false, reasonKey: 'update.reason.hmrUnknown' },
+        })
+      );
+    },
+  });
+  const built = buildManager({ api: api });
+  await built.manager.inspect();
+  const result = await built.manager.begin('tgt_1');
+  assert.equal(result.ok, false);
+  assert.equal(result.blocked, true);
+  assert.equal(api.count('begin'), 0);
+  assert.equal(built.store.getState().update.actionError.code, GM.UPDATE_ADAPTER_UNAVAILABLE);
+  built.manager.stop();
+});
+
+test('a failed inspection keeps the last successful inspection visible', async function () {
+  let failures = 0;
+  const api = createFakeApi({
+    inspect: function inspect() {
+      if (failures === 1) {
+        const error = new Error('host down');
+        error.code = GM.HOST_UNAVAILABLE;
+        error.retryable = true;
+        return Promise.reject(error);
+      }
+      return Promise.resolve(inspectionFixture());
+    },
+  });
+  const built = buildManager({ api: api });
+  await built.manager.inspect();
+  failures = 1;
+  await built.manager.inspect();
+  const state = built.store.getState();
+  assert.equal(state.update.status, 'ready', 'stale inspection stays rendered');
+  assert.ok(state.update.inspection, 'last successful inspection retained');
+  assert.equal(state.update.error.code, GM.HOST_UNAVAILABLE);
+  failures = 2;
+  await built.manager.inspect();
+  assert.equal(built.store.getState().update.error, null, 'a later success clears the error');
+  built.manager.stop();
+});
+
+test('a Host that lost the operation is re-inspected instead of polling a dead id', async function () {
+  let inspections = 0;
+  const api = createFakeApi({
+    inspect: function inspect() {
+      inspections += 1;
+      return Promise.resolve(
+        inspections === 1
+          ? inspectionFixture({ operation: { operationId: OPERATION_ID, state: 'activating', installedVersion: '1.3.0', awaiting: 'health' } })
+          : inspectionFixture({ operation: null })
+      );
+    },
+    observe: function observe() {
+      const error = new Error('Unknown update operation');
+      error.code = GM.INVALID_PARAM;
+      return Promise.reject(error);
+    },
+  });
+  const built = buildManager({ api: api });
+  await built.manager.inspect();
+  built.scheduler.runNext();
+  for (let i = 0; i < 20 && api.count('inspect') < 2; i += 1) {
+    await flush(2);
+    if (api.count('inspect') < 2) built.scheduler.runNext();
+  }
+  assert.equal(built.manager.getDiagnostics().currentOperationId, null);
+  assert.equal(api.count('inspect'), 2, 'a fresh inspection replaced the dead observation');
+  built.manager.stop();
+});
+
+test('two windows coordinate the same operation independently (no duplicate begins)', async function () {
+  const api = createFakeApi({
+    inspect: function inspect() {
+      return Promise.resolve(inspectionFixture({ operation: { operationId: OPERATION_ID, state: 'inspecting', progress: null } }));
+    },
+    coordinate: function coordinate() {
+      return Promise.resolve({ accepted: true, phase: 'waiting', pending: { windows: 1, instances: 0 } });
+    },
+  });
+  const windowA = buildManager({
+    api: api,
+    pageIdentity: { windowId: 'a'.repeat(32), clientId: 'c'.repeat(32), pageToken: 'e'.repeat(32), startedAt: new Date().toISOString() },
+  });
+  const windowB = buildManager({
+    api: api,
+    pageIdentity: { windowId: 'b'.repeat(32), clientId: 'f'.repeat(32), pageToken: 'g'.repeat(32), startedAt: new Date().toISOString() },
+  });
+  await windowA.manager.inspect();
+  await windowB.manager.inspect();
+  await waitFor(function bothReported() {
+    return api.count('coordinate') === 2;
+  });
+  const windowIds = api.calls
+    .filter(function only(call) {
+      return call.method === 'coordinate';
+    })
+    .map(function id(call) {
+      return call.payload.windowId;
+    });
+  assert.deepEqual(windowIds.sort(), ['a'.repeat(32), 'b'.repeat(32)]);
+  assert.equal(api.count('begin'), 0, 'observing windows never start an install');
+  windowA.manager.stop();
+  windowB.manager.stop();
 });

@@ -1718,17 +1718,23 @@ window.__ModuleLoader__.load({
     /** States where the Host operation is still running (poll `observe`). */
     const UPDATE_ACTIVE_STATES = Object.freeze(['inspecting', 'installing', 'applied', 'activating']);
 
-    /** Terminal states retained by the Host until the next `begin`. */
+    /**
+     * Terminal states retained by the Host until the next `begin` (mirrors
+     * packages/shared/src/platform-update.js). `too-late` is NOT terminal: the
+     * install continues and the Client must keep observing to the real result.
+     */
     const UPDATE_TERMINAL_STATES = Object.freeze([
       'updated',
       'pending-restart',
       'already-at-target',
       'verification-failed',
       'stale-runtime',
-      'too-late',
       'cancelled',
       'failed',
     ]);
+
+    /** States where the Host observation can still progress (poll `observe`). */
+    const UPDATE_CONTINUES_STATES = Object.freeze(UPDATE_ACTIVE_STATES.concat(['too-late']));
 
     /** The only success terminal state (Host + Client identity both verified). */
     const UPDATE_SUCCESS_STATE = 'updated';
@@ -1753,6 +1759,15 @@ window.__ModuleLoader__.load({
     /** Installed spec shapes that mean "development source" (never auto-migrated). */
     const UPDATE_DEV_SPEC_SHAPES = Object.freeze(['path', 'file']);
 
+    /**
+     * Mirrors of frozen shared contract enums (packages/shared/src/platform-update.js).
+     * Kept local so the browser bundle does not pull the Host-side validator module;
+     * packages/client/test/update-contract-mirror.test.js fails on drift.
+     */
+    const UPDATE_SPEC_SHAPES = Object.freeze(['git-url', 'registry', 'path', 'file', 'unknown']);
+    const UPDATE_VERIFICATION_FAILED_REASONS = Object.freeze(['response-lost', 'version-mismatch', 'ambiguous-install']);
+    const UPDATE_STALE_RUNTIME_REASONS = Object.freeze(['client-old', 'host-old', 'dev-row-shadows-package']);
+
     /** How long a manual discovery refresh stays throttled by the Host (default). */
     const UPDATE_REFRESH_THROTTLE_MS = 60000;
 
@@ -1760,8 +1775,12 @@ window.__ModuleLoader__.load({
     const UPDATE_TIMING = Object.freeze({
       /** Re-read `/platform-update` while visible and no operation is active. */
       inspectVisibleMs: 3000,
-      /** Same, when the page is hidden (idle windows still need to report). */
-      inspectHiddenMs: 10000,
+      /**
+       * Same, when the page is hidden. It must stay well inside the Host's 15s
+       * coordination window: a hidden window may still own an active game and has
+       * to pause+save it before the package change.
+       */
+      inspectHiddenMs: 3000,
       /** Poll `/platform-update/observe` while an operation is active. */
       observeMs: 1000,
       /** Backoff cap after observe/inspect failures (resume after RPC loss). */
@@ -1777,7 +1796,7 @@ window.__ModuleLoader__.load({
     /** Update-specific error codes that the UI maps to actionable copy. */
     const UPDATE_ERROR_CODES = Object.freeze(['GM-4090', 'GM-5038', 'GM-5040', 'GM-4091']);
 
-    return { MAIN_PANEL_KEY, SIDEBAR_ORDER, PAGES, RUNTIME_STATES, PAUSED_REASONS, CATEGORIES, CATEGORY_ALL, CATEGORY_FILTERS, SEARCH_DEBOUNCE_MS, SKELETON_DELAY_MS, SLOW_LOAD_MS, SECTION_LIMIT, NEW_WINDOW_MS, MAX_SCREENSHOTS, INSTALL_JOB_STAGES, INSTALL_ACTIVE_STAGES, INSTALL_CANCELLABLE_STAGES, INSTALL_CLEANUP_STAGES, INSTALL_STAGE_HINT_MS, INSTALL_BUSY_RETRY_DELAYS_MS, TOAST_MS, TOAST_UPDATE_MS, TOAST_LIMIT, HEADER_HEIGHT, SEARCH_EXPANDED_MIN_WIDTH, UPDATE_ROUTES, UPDATE_STATES, UPDATE_ACTIVE_STATES, UPDATE_TERMINAL_STATES, UPDATE_SUCCESS_STATE, UPDATE_PROGRESS_STATES, UPDATE_CANCEL_RESULTS, UPDATE_DISCOVERY_STATES, UPDATE_DEV_SPEC_SHAPES, UPDATE_REFRESH_THROTTLE_MS, UPDATE_TIMING, UPDATE_ERROR_CODES };
+    return { MAIN_PANEL_KEY, SIDEBAR_ORDER, PAGES, RUNTIME_STATES, PAUSED_REASONS, CATEGORIES, CATEGORY_ALL, CATEGORY_FILTERS, SEARCH_DEBOUNCE_MS, SKELETON_DELAY_MS, SLOW_LOAD_MS, SECTION_LIMIT, NEW_WINDOW_MS, MAX_SCREENSHOTS, INSTALL_JOB_STAGES, INSTALL_ACTIVE_STAGES, INSTALL_CANCELLABLE_STAGES, INSTALL_CLEANUP_STAGES, INSTALL_STAGE_HINT_MS, INSTALL_BUSY_RETRY_DELAYS_MS, TOAST_MS, TOAST_UPDATE_MS, TOAST_LIMIT, HEADER_HEIGHT, SEARCH_EXPANDED_MIN_WIDTH, UPDATE_ROUTES, UPDATE_STATES, UPDATE_ACTIVE_STATES, UPDATE_TERMINAL_STATES, UPDATE_CONTINUES_STATES, UPDATE_SUCCESS_STATE, UPDATE_PROGRESS_STATES, UPDATE_CANCEL_RESULTS, UPDATE_DISCOVERY_STATES, UPDATE_DEV_SPEC_SHAPES, UPDATE_SPEC_SHAPES, UPDATE_VERIFICATION_FAILED_REASONS, UPDATE_STALE_RUNTIME_REASONS, UPDATE_REFRESH_THROTTLE_MS, UPDATE_TIMING, UPDATE_ERROR_CODES };
     })();
 
     // module: packages/client/src/store.js
@@ -1792,6 +1811,7 @@ window.__ModuleLoader__.load({
     const TOAST_LIMIT = __mods["packages/client/src/constants.js"].TOAST_LIMIT;
     const UPDATE_STATES = __mods["packages/client/src/constants.js"].UPDATE_STATES;
     const UPDATE_ACTIVE_STATES = __mods["packages/client/src/constants.js"].UPDATE_ACTIVE_STATES;
+    const UPDATE_CONTINUES_STATES = __mods["packages/client/src/constants.js"].UPDATE_CONTINUES_STATES;
     const UPDATE_PROGRESS_STATES = __mods["packages/client/src/constants.js"].UPDATE_PROGRESS_STATES;
     /**
      * Module-level client store.
@@ -2030,8 +2050,8 @@ window.__ModuleLoader__.load({
     function mergeObservation(previous, next) {
       if (!isUpdateObservation(next)) return previous;
       if (!isUpdateObservation(previous) || previous.operationId !== next.operationId) return next;
-      const previousTerminal = UPDATE_ACTIVE_STATES.indexOf(previous.state) === -1;
-      const nextTerminal = UPDATE_ACTIVE_STATES.indexOf(next.state) === -1;
+      const previousTerminal = UPDATE_CONTINUES_STATES.indexOf(previous.state) === -1;
+      const nextTerminal = UPDATE_CONTINUES_STATES.indexOf(next.state) === -1;
       if (previousTerminal && !nextTerminal) return previous;
       if (!previousTerminal && !nextTerminal) {
         const previousIndex = updateProgressIndex(previous);
@@ -4957,7 +4977,11 @@ window.__ModuleLoader__.load({
     /** Replaced at build time; keep the assignment on one line. */
     const RAW_IDENTITY = "{\"version\":\"1.2.0\",\"buildCommit\":null}";
 
-    const SEMVER_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
+    // Mirrors packages/shared/src/platform-update.js SEMVER_RE (no leading zeros,
+    // standard prerelease/build identifiers). packages/client/test/update-contract-mirror.test.js
+    // keeps the two in sync.
+    const SEMVER_RE =
+      /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
     const FULL_COMMIT_RE = /^[a-f0-9]{40}$/;
 
     const BUILD_IDENTITY_TOKEN = '__DGM_CLIENT_BUILD_IDENTITY__';
@@ -4969,7 +4993,7 @@ window.__ModuleLoader__.load({
 
     /** True for a plain / prerelease semver version string. */
     function isBuildVersion(value) {
-      return typeof value === 'string' && SEMVER_RE.test(value);
+      return typeof value === 'string' && value.length > 0 && value.length <= 128 && SEMVER_RE.test(value);
     }
 
     /**
@@ -5037,11 +5061,16 @@ window.__ModuleLoader__.load({
     __mods["packages/client/src/update-state.js"] = (function () {
     const GM = __mods["packages/shared/src/errors.js"].GM;
     const UPDATE_ACTIVE_STATES = __mods["packages/client/src/constants.js"].UPDATE_ACTIVE_STATES;
+    const UPDATE_CONTINUES_STATES = __mods["packages/client/src/constants.js"].UPDATE_CONTINUES_STATES;
     const UPDATE_DEV_SPEC_SHAPES = __mods["packages/client/src/constants.js"].UPDATE_DEV_SPEC_SHAPES;
     const UPDATE_DISCOVERY_STATES = __mods["packages/client/src/constants.js"].UPDATE_DISCOVERY_STATES;
     const UPDATE_PROGRESS_STATES = __mods["packages/client/src/constants.js"].UPDATE_PROGRESS_STATES;
+    const UPDATE_SPEC_SHAPES = __mods["packages/client/src/constants.js"].UPDATE_SPEC_SHAPES;
+    const UPDATE_STALE_RUNTIME_REASONS = __mods["packages/client/src/constants.js"].UPDATE_STALE_RUNTIME_REASONS;
     const UPDATE_STATES = __mods["packages/client/src/constants.js"].UPDATE_STATES;
     const UPDATE_SUCCESS_STATE = __mods["packages/client/src/constants.js"].UPDATE_SUCCESS_STATE;
+    const UPDATE_TERMINAL_STATES = __mods["packages/client/src/constants.js"].UPDATE_TERMINAL_STATES;
+    const UPDATE_VERIFICATION_FAILED_REASONS = __mods["packages/client/src/constants.js"].UPDATE_VERIFICATION_FAILED_REASONS;
     const isBuildCommit = __mods["packages/client/src/build-identity.js"].isBuildCommit;
     const isBuildVersion = __mods["packages/client/src/build-identity.js"].isBuildVersion;
     /**
@@ -5057,7 +5086,6 @@ window.__ModuleLoader__.load({
 
     const HOST_EPOCH_RE = /^[A-Za-z0-9._:-]{1,128}$/;
     const FULL_COMMIT_RE = /^[a-f0-9]{40}$/;
-    const SPEC_SHAPES = Object.freeze(['git-url', 'registry', 'path', 'file', 'unknown']);
     const HMR_VALUES = Object.freeze(['present', 'absent', 'unknown']);
     const UPDATE_PATHS = Object.freeze(['in-place-hmr', 'restart-required', 'unsupported']);
     const AWAITING_VALUES = Object.freeze(['restart', 'reload', 'health']);
@@ -5120,7 +5148,7 @@ window.__ModuleLoader__.load({
       return Object.freeze({
         bundleId: textValue(input.bundleId),
         spec: textValue(input.spec),
-        specShape: enumValue(input.specShape, SPEC_SHAPES, 'unknown'),
+        specShape: enumValue(input.specShape, UPDATE_SPEC_SHAPES, 'unknown'),
         version: textValue(input.version),
         enabled: typeof input.enabled === 'boolean' ? input.enabled : null,
         loadedVersion: textValue(input.loadedVersion),
@@ -5214,6 +5242,9 @@ window.__ModuleLoader__.load({
       if (state === null) return null;
       const operationId = textValue(raw.operationId);
       if (operationId === null) return null;
+      let reason = textValue(raw.reason);
+      if (state === 'verification-failed') reason = enumValue(reason, UPDATE_VERIFICATION_FAILED_REASONS, null);
+      else if (state === 'stale-runtime') reason = enumValue(reason, UPDATE_STALE_RUNTIME_REASONS, null);
       return Object.freeze({
         operationId: operationId,
         state: state,
@@ -5228,7 +5259,7 @@ window.__ModuleLoader__.load({
         host: textValue(raw.host),
         client: textValue(raw.client),
         restartReason: textValue(raw.restartReason),
-        reason: textValue(raw.reason),
+        reason: reason,
         cancelledBy: enumValue(raw.cancelledBy, CANCELLED_BY, null),
         error: normalizeObservationError(raw.error),
         oldVersionStillRunning: raw.oldVersionStillRunning === true,
@@ -5247,8 +5278,16 @@ window.__ModuleLoader__.load({
       return Boolean(observation && UPDATE_ACTIVE_STATES.indexOf(observation.state) !== -1);
     }
 
+    /**
+     * True while the Host observation may still advance. `too-late` belongs here:
+     * the install continues after a failed cancel, so polling must not stop.
+     */
+    function isContinuingObservation(observation) {
+      return Boolean(observation && UPDATE_CONTINUES_STATES.indexOf(observation.state) !== -1);
+    }
+
     function isTerminalObservation(observation) {
-      return Boolean(observation && UPDATE_STATES.indexOf(observation.state) !== -1 && UPDATE_ACTIVE_STATES.indexOf(observation.state) === -1);
+      return Boolean(observation && UPDATE_TERMINAL_STATES.indexOf(observation.state) !== -1);
     }
 
     /**
@@ -5389,7 +5428,8 @@ window.__ModuleLoader__.load({
         operationId: observation.operationId,
         state: state,
         active: active,
-        terminal: !active,
+        observing: UPDATE_CONTINUES_STATES.indexOf(state) !== -1,
+        terminal: UPDATE_TERMINAL_STATES.indexOf(state) !== -1,
         success: state === UPDATE_SUCCESS_STATE,
         titleKey: 'update.state.unknown.title',
         detailKey: 'update.state.unknown.body',
@@ -5476,6 +5516,7 @@ window.__ModuleLoader__.load({
       if (state === 'too-late') {
         result.titleKey = 'update.state.tooLate.title';
         result.detailKey = 'update.state.tooLate.body';
+        result.observing = true;
         return result;
       }
       if (state === 'cancelled') {
@@ -5631,7 +5672,7 @@ window.__ModuleLoader__.load({
       return view;
     }
 
-    return { timestampValue, timestampMs, normalizeHostIdentity, normalizeInstalled, normalizeTarget, normalizeDiscovery, normalizeCapability, normalizeObservation, isUpdateState, isActiveObservation, isTerminalObservation, normalizeInspection, normalizeClientIdentity, commitFromSpec, isDevSource, compareTarget, blockedReason, describeObservation, deriveUpdateView };
+    return { timestampValue, timestampMs, normalizeHostIdentity, normalizeInstalled, normalizeTarget, normalizeDiscovery, normalizeCapability, normalizeObservation, isUpdateState, isActiveObservation, isContinuingObservation, isTerminalObservation, normalizeInspection, normalizeClientIdentity, commitFromSpec, isDevSource, compareTarget, blockedReason, describeObservation, deriveUpdateView };
     })();
 
     // module: packages/client/src/page-identity.js
@@ -9391,12 +9432,13 @@ window.__ModuleLoader__.load({
     const GM = __mods["packages/shared/src/errors.js"].GM;
     const UPDATE_TIMING = __mods["packages/client/src/constants.js"].UPDATE_TIMING;
     const UPDATE_SUCCESS_STATE = __mods["packages/client/src/constants.js"].UPDATE_SUCCESS_STATE;
-    const isActiveObservation = __mods["packages/client/src/update-state.js"].isActiveObservation;
+    const isContinuingObservation = __mods["packages/client/src/update-state.js"].isContinuingObservation;
     const isDevSource = __mods["packages/client/src/update-state.js"].isDevSource;
     const normalizeInspection = __mods["packages/client/src/update-state.js"].normalizeInspection;
     const normalizeObservation = __mods["packages/client/src/update-state.js"].normalizeObservation;
     const normalizeUiError = __mods["packages/client/src/ui-errors.js"].normalizeUiError;
     const CLIENT_BUILD = __mods["packages/client/src/build-identity.js"].CLIENT_BUILD;
+    const isBuildVersion = __mods["packages/client/src/build-identity.js"].isBuildVersion;
     const defaultPageIdentity = __mods["packages/client/src/page-identity.js"].getPageIdentity;
     const defaultRuntimeInstances = __mods["packages/client/src/runtime-registry.js"].listRuntimeInstances;
     const defaultPauseInstance = __mods["packages/client/src/runtime-adapter.js"].pauseRuntimeBounded;
@@ -9597,10 +9639,17 @@ window.__ModuleLoader__.load({
         const page = identity();
         const build = clientIdentity();
         if (!api || typeof api.clientReport !== 'function' || !page) return Promise.resolve(false);
+        if (!isBuildVersion(build.version)) {
+          // A bundle without an embedded identity must not invent a version: the
+          // Host validates buildVersion as an exact semver and treats a missing
+          // report as an old/unknown Client (stale-runtime) instead.
+          reportDiagnostic('update-client-identity-missing');
+          return Promise.resolve(false);
+        }
         const body = {
           clientId: page.clientId,
           windowId: page.windowId,
-          buildVersion: typeof build.version === 'string' ? build.version : null,
+          buildVersion: build.version,
           buildCommit: typeof build.buildCommit === 'string' ? build.buildCommit : null,
           pageToken: page.pageToken,
           startedAt: page.startedAt,
@@ -9625,7 +9674,7 @@ window.__ModuleLoader__.load({
           reportTimer = null;
           const update = readUpdate();
           const operation = update ? update.operation : null;
-          const active = isActiveObservation(operation) || (update && update.starting === true);
+          const active = isContinuingObservation(operation) || (update && update.starting === true);
           if (!active) return;
           void reportClient();
           scheduleClientReport();
@@ -9649,7 +9698,7 @@ window.__ModuleLoader__.load({
       function applyInspection(inspection) {
         dispatch(updateInspectReady(inspection, now()));
         const operation = inspection.operation;
-        if (operation && isActiveObservation(operation)) {
+        if (operation && isContinuingObservation(operation)) {
           ensureObserve(operation.operationId);
           scheduleClientReport();
           if (operation.state === 'inspecting') void coordinateOperation(operation.operationId);
@@ -9741,7 +9790,7 @@ window.__ModuleLoader__.load({
             }
             observeFailures = 0;
             dispatch(updateObservation(observation, now()));
-            if (isActiveObservation(observation)) {
+            if (isContinuingObservation(observation)) {
               if (observation.state === 'inspecting') void coordinateOperation(operationId);
               return true;
             }
@@ -9751,6 +9800,15 @@ window.__ModuleLoader__.load({
           .catch(function failed(error) {
             observeFailures += 1;
             reportDiagnostic('update-observe-failed', error);
+            if (error && error.code === GM.INVALID_PARAM) {
+              // The Host no longer knows this operation (restart/record loss).
+              // Stop polling the dead id; a fresh inspection adopts the persisted
+              // operation if there is one.
+              currentOperationId = null;
+              clearTimer('observe');
+              scheduleInspect(0);
+              return 'unknown-operation';
+            }
             return false;
           })
           .finally(function done() {
@@ -9758,7 +9816,7 @@ window.__ModuleLoader__.load({
             if (stopped || currentOperationId !== operationId) return;
             const update = readUpdate();
             const operation = update ? update.operation : null;
-            if (operation && isActiveObservation(operation)) {
+            if (operation && isContinuingObservation(operation)) {
               const backoff = Math.min(UPDATE_TIMING.observeMs * Math.pow(2, Math.max(0, observeFailures - 1)), UPDATE_TIMING.backoffMaxMs);
               scheduleObserve(backoff, operationId);
             }
@@ -9937,7 +9995,7 @@ window.__ModuleLoader__.load({
         if (beginInFlight) return Promise.resolve({ ok: false, busy: true });
         const update = readUpdate();
         if (!update) return Promise.resolve({ ok: false, error: { code: GM.HOST_UNAVAILABLE } });
-        const activeOperation = update.operation && isActiveObservation(update.operation) ? update.operation : null;
+        const activeOperation = update.operation && isContinuingObservation(update.operation) ? update.operation : null;
         if (activeOperation !== null) {
           // Idempotent: repeated clicks / another window's operation keep the same
           // operationId; never start a second install.
@@ -9957,6 +10015,12 @@ window.__ModuleLoader__.load({
         }
         if (isDevSource(inspection.installed)) {
           dispatch(updateActionFailed({ code: GM.UPDATE_ADAPTER_UNAVAILABLE, retryable: false }));
+          return Promise.resolve({ ok: false, blocked: true });
+        }
+        if (inspection.capability.canBeginUpdate !== true) {
+          // Fail closed exactly like the Host: never show/allow a begin the Host
+          // would refuse (unknown capability, dev source, anomaly, no target...).
+          dispatch(updateActionFailed({ code: GM.UPDATE_ADAPTER_UNAVAILABLE, retryable: true }));
           return Promise.resolve({ ok: false, blocked: true });
         }
         const api = getApi();
@@ -9994,7 +10058,7 @@ window.__ModuleLoader__.load({
       function cancel() {
         const update = readUpdate();
         const operation = update && update.operation ? update.operation : null;
-        if (!operation || !isActiveObservation(operation)) {
+        if (!operation || !isContinuingObservation(operation)) {
           return Promise.resolve({ ok: false, status: 'not-running' });
         }
         const api = getApi();
@@ -10050,7 +10114,9 @@ window.__ModuleLoader__.load({
           scheduleInspect(0);
           if (currentOperationId !== null) scheduleObserve(0, currentOperationId);
         } else {
-          clearTimer('inspect');
+          // Keep a slower poll running: a hidden tab may still own an active game
+          // that the Host's coordination phase needs paused+saved.
+          scheduleInspect();
         }
       }
 

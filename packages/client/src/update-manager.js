@@ -16,9 +16,9 @@
  */
 import { GM } from '../../shared/src/errors.js';
 import { UPDATE_TIMING, UPDATE_SUCCESS_STATE } from './constants.js';
-import { isActiveObservation, isDevSource, normalizeInspection, normalizeObservation } from './update-state.js';
+import { isContinuingObservation, isDevSource, normalizeInspection, normalizeObservation } from './update-state.js';
 import { normalizeUiError } from './ui-errors.js';
-import { CLIENT_BUILD } from './build-identity.js';
+import { CLIENT_BUILD, isBuildVersion } from './build-identity.js';
 import { getPageIdentity as defaultPageIdentity } from './page-identity.js';
 import { listRuntimeInstances as defaultRuntimeInstances } from './runtime-registry.js';
 import { pauseRuntimeBounded as defaultPauseInstance } from './runtime-adapter.js';
@@ -190,10 +190,17 @@ export function createUpdateManager(options) {
     const page = identity();
     const build = clientIdentity();
     if (!api || typeof api.clientReport !== 'function' || !page) return Promise.resolve(false);
+    if (!isBuildVersion(build.version)) {
+      // A bundle without an embedded identity must not invent a version: the
+      // Host validates buildVersion as an exact semver and treats a missing
+      // report as an old/unknown Client (stale-runtime) instead.
+      reportDiagnostic('update-client-identity-missing');
+      return Promise.resolve(false);
+    }
     const body = {
       clientId: page.clientId,
       windowId: page.windowId,
-      buildVersion: typeof build.version === 'string' ? build.version : null,
+      buildVersion: build.version,
       buildCommit: typeof build.buildCommit === 'string' ? build.buildCommit : null,
       pageToken: page.pageToken,
       startedAt: page.startedAt,
@@ -218,7 +225,7 @@ export function createUpdateManager(options) {
       reportTimer = null;
       const update = readUpdate();
       const operation = update ? update.operation : null;
-      const active = isActiveObservation(operation) || (update && update.starting === true);
+      const active = isContinuingObservation(operation) || (update && update.starting === true);
       if (!active) return;
       void reportClient();
       scheduleClientReport();
@@ -242,7 +249,7 @@ export function createUpdateManager(options) {
   function applyInspection(inspection) {
     dispatch(updateInspectReady(inspection, now()));
     const operation = inspection.operation;
-    if (operation && isActiveObservation(operation)) {
+    if (operation && isContinuingObservation(operation)) {
       ensureObserve(operation.operationId);
       scheduleClientReport();
       if (operation.state === 'inspecting') void coordinateOperation(operation.operationId);
@@ -334,7 +341,7 @@ export function createUpdateManager(options) {
         }
         observeFailures = 0;
         dispatch(updateObservation(observation, now()));
-        if (isActiveObservation(observation)) {
+        if (isContinuingObservation(observation)) {
           if (observation.state === 'inspecting') void coordinateOperation(operationId);
           return true;
         }
@@ -344,6 +351,15 @@ export function createUpdateManager(options) {
       .catch(function failed(error) {
         observeFailures += 1;
         reportDiagnostic('update-observe-failed', error);
+        if (error && error.code === GM.INVALID_PARAM) {
+          // The Host no longer knows this operation (restart/record loss).
+          // Stop polling the dead id; a fresh inspection adopts the persisted
+          // operation if there is one.
+          currentOperationId = null;
+          clearTimer('observe');
+          scheduleInspect(0);
+          return 'unknown-operation';
+        }
         return false;
       })
       .finally(function done() {
@@ -351,7 +367,7 @@ export function createUpdateManager(options) {
         if (stopped || currentOperationId !== operationId) return;
         const update = readUpdate();
         const operation = update ? update.operation : null;
-        if (operation && isActiveObservation(operation)) {
+        if (operation && isContinuingObservation(operation)) {
           const backoff = Math.min(UPDATE_TIMING.observeMs * Math.pow(2, Math.max(0, observeFailures - 1)), UPDATE_TIMING.backoffMaxMs);
           scheduleObserve(backoff, operationId);
         }
@@ -530,7 +546,7 @@ export function createUpdateManager(options) {
     if (beginInFlight) return Promise.resolve({ ok: false, busy: true });
     const update = readUpdate();
     if (!update) return Promise.resolve({ ok: false, error: { code: GM.HOST_UNAVAILABLE } });
-    const activeOperation = update.operation && isActiveObservation(update.operation) ? update.operation : null;
+    const activeOperation = update.operation && isContinuingObservation(update.operation) ? update.operation : null;
     if (activeOperation !== null) {
       // Idempotent: repeated clicks / another window's operation keep the same
       // operationId; never start a second install.
@@ -550,6 +566,12 @@ export function createUpdateManager(options) {
     }
     if (isDevSource(inspection.installed)) {
       dispatch(updateActionFailed({ code: GM.UPDATE_ADAPTER_UNAVAILABLE, retryable: false }));
+      return Promise.resolve({ ok: false, blocked: true });
+    }
+    if (inspection.capability.canBeginUpdate !== true) {
+      // Fail closed exactly like the Host: never show/allow a begin the Host
+      // would refuse (unknown capability, dev source, anomaly, no target...).
+      dispatch(updateActionFailed({ code: GM.UPDATE_ADAPTER_UNAVAILABLE, retryable: true }));
       return Promise.resolve({ ok: false, blocked: true });
     }
     const api = getApi();
@@ -587,7 +609,7 @@ export function createUpdateManager(options) {
   function cancel() {
     const update = readUpdate();
     const operation = update && update.operation ? update.operation : null;
-    if (!operation || !isActiveObservation(operation)) {
+    if (!operation || !isContinuingObservation(operation)) {
       return Promise.resolve({ ok: false, status: 'not-running' });
     }
     const api = getApi();
@@ -643,7 +665,9 @@ export function createUpdateManager(options) {
       scheduleInspect(0);
       if (currentOperationId !== null) scheduleObserve(0, currentOperationId);
     } else {
-      clearTimer('inspect');
+      // Keep a slower poll running: a hidden tab may still own an active game
+      // that the Host's coordination phase needs paused+saved.
+      scheduleInspect();
     }
   }
 

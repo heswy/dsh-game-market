@@ -6,7 +6,7 @@
  * Reducers are pure; timestamps are always passed in by the caller.
  */
 import { DSH_SESSION_ID_PATTERN } from '../../shared/src/constants.js';
-import { PAGES, RUNTIME_STATES, PAUSED_REASONS, CATEGORY_FILTERS, CATEGORY_ALL, INSTALL_JOB_STAGES, TOAST_LIMIT, UPDATE_STATES, UPDATE_ACTIVE_STATES, UPDATE_PROGRESS_STATES } from './constants.js';
+import { PAGES, RUNTIME_STATES, PAUSED_REASONS, CATEGORY_FILTERS, CATEGORY_ALL, INSTALL_JOB_STAGES, TOAST_LIMIT, UPDATE_STATES, UPDATE_ACTIVE_STATES, UPDATE_CONTINUES_STATES, UPDATE_PROGRESS_STATES } from './constants.js';
 
 const AGENT_STATES = Object.freeze(['idle', 'running', 'waiting-user', 'completed', 'error']);
 const DIALOG_KINDS = Object.freeze(['uninstall', 'delete-data', 'restart', 'install-local', 'platform-update']);
@@ -237,8 +237,8 @@ function updateProgressIndex(state) {
 function mergeObservation(previous, next) {
   if (!isUpdateObservation(next)) return previous;
   if (!isUpdateObservation(previous) || previous.operationId !== next.operationId) return next;
-  const previousTerminal = UPDATE_ACTIVE_STATES.indexOf(previous.state) === -1;
-  const nextTerminal = UPDATE_ACTIVE_STATES.indexOf(next.state) === -1;
+  const previousTerminal = UPDATE_CONTINUES_STATES.indexOf(previous.state) === -1;
+  const nextTerminal = UPDATE_CONTINUES_STATES.indexOf(next.state) === -1;
   if (previousTerminal && !nextTerminal) return previous;
   if (!previousTerminal && !nextTerminal) {
     const previousIndex = updateProgressIndex(previous);

@@ -207,6 +207,10 @@ test('too-late keeps observing and never claims cancellation', function () {
   assert.equal(described.success, false);
   assert.equal(described.titleKey, 'update.state.tooLate.title');
   assert.equal(described.action, null);
+  // The install continues after a failed cancel: not terminal, keep polling.
+  assert.equal(described.terminal, false);
+  assert.equal(described.observing, true);
+  assert.equal(described.active, false);
 });
 
 test('cancel is offered only while inspecting/installing', function () {

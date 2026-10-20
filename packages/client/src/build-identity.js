@@ -17,7 +17,11 @@
 /** Replaced at build time; keep the assignment on one line. */
 const RAW_IDENTITY = '__DGM_CLIENT_BUILD_IDENTITY__';
 
-const SEMVER_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
+// Mirrors packages/shared/src/platform-update.js SEMVER_RE (no leading zeros,
+// standard prerelease/build identifiers). packages/client/test/update-contract-mirror.test.js
+// keeps the two in sync.
+const SEMVER_RE =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
 const FULL_COMMIT_RE = /^[a-f0-9]{40}$/;
 
 export const BUILD_IDENTITY_TOKEN = '__DGM_CLIENT_BUILD_IDENTITY__';
@@ -29,7 +33,7 @@ export function isBuildCommit(value) {
 
 /** True for a plain / prerelease semver version string. */
 export function isBuildVersion(value) {
-  return typeof value === 'string' && SEMVER_RE.test(value);
+  return typeof value === 'string' && value.length > 0 && value.length <= 128 && SEMVER_RE.test(value);
 }
 
 /**

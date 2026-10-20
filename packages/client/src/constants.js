@@ -137,17 +137,23 @@ export const UPDATE_STATES = Object.freeze([
 /** States where the Host operation is still running (poll `observe`). */
 export const UPDATE_ACTIVE_STATES = Object.freeze(['inspecting', 'installing', 'applied', 'activating']);
 
-/** Terminal states retained by the Host until the next `begin`. */
+/**
+ * Terminal states retained by the Host until the next `begin` (mirrors
+ * packages/shared/src/platform-update.js). `too-late` is NOT terminal: the
+ * install continues and the Client must keep observing to the real result.
+ */
 export const UPDATE_TERMINAL_STATES = Object.freeze([
   'updated',
   'pending-restart',
   'already-at-target',
   'verification-failed',
   'stale-runtime',
-  'too-late',
   'cancelled',
   'failed',
 ]);
+
+/** States where the Host observation can still progress (poll `observe`). */
+export const UPDATE_CONTINUES_STATES = Object.freeze(UPDATE_ACTIVE_STATES.concat(['too-late']));
 
 /** The only success terminal state (Host + Client identity both verified). */
 export const UPDATE_SUCCESS_STATE = 'updated';
@@ -172,6 +178,15 @@ export const UPDATE_DISCOVERY_STATES = Object.freeze([
 /** Installed spec shapes that mean "development source" (never auto-migrated). */
 export const UPDATE_DEV_SPEC_SHAPES = Object.freeze(['path', 'file']);
 
+/**
+ * Mirrors of frozen shared contract enums (packages/shared/src/platform-update.js).
+ * Kept local so the browser bundle does not pull the Host-side validator module;
+ * packages/client/test/update-contract-mirror.test.js fails on drift.
+ */
+export const UPDATE_SPEC_SHAPES = Object.freeze(['git-url', 'registry', 'path', 'file', 'unknown']);
+export const UPDATE_VERIFICATION_FAILED_REASONS = Object.freeze(['response-lost', 'version-mismatch', 'ambiguous-install']);
+export const UPDATE_STALE_RUNTIME_REASONS = Object.freeze(['client-old', 'host-old', 'dev-row-shadows-package']);
+
 /** How long a manual discovery refresh stays throttled by the Host (default). */
 export const UPDATE_REFRESH_THROTTLE_MS = 60000;
 
@@ -179,8 +194,12 @@ export const UPDATE_REFRESH_THROTTLE_MS = 60000;
 export const UPDATE_TIMING = Object.freeze({
   /** Re-read `/platform-update` while visible and no operation is active. */
   inspectVisibleMs: 3000,
-  /** Same, when the page is hidden (idle windows still need to report). */
-  inspectHiddenMs: 10000,
+  /**
+   * Same, when the page is hidden. It must stay well inside the Host's 15s
+   * coordination window: a hidden window may still own an active game and has
+   * to pause+save it before the package change.
+   */
+  inspectHiddenMs: 3000,
   /** Poll `/platform-update/observe` while an operation is active. */
   observeMs: 1000,
   /** Backoff cap after observe/inspect failures (resume after RPC loss). */

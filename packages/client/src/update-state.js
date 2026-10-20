@@ -9,12 +9,11 @@
  *     (`build-identity.js`), never from a Host response.
  */
 import { GM } from '../../shared/src/errors.js';
-import { UPDATE_ACTIVE_STATES, UPDATE_DEV_SPEC_SHAPES, UPDATE_DISCOVERY_STATES, UPDATE_PROGRESS_STATES, UPDATE_STATES, UPDATE_SUCCESS_STATE } from './constants.js';
+import { UPDATE_ACTIVE_STATES, UPDATE_CONTINUES_STATES, UPDATE_DEV_SPEC_SHAPES, UPDATE_DISCOVERY_STATES, UPDATE_PROGRESS_STATES, UPDATE_SPEC_SHAPES, UPDATE_STALE_RUNTIME_REASONS, UPDATE_STATES, UPDATE_SUCCESS_STATE, UPDATE_TERMINAL_STATES, UPDATE_VERIFICATION_FAILED_REASONS } from './constants.js';
 import { isBuildCommit, isBuildVersion } from './build-identity.js';
 
 const HOST_EPOCH_RE = /^[A-Za-z0-9._:-]{1,128}$/;
 const FULL_COMMIT_RE = /^[a-f0-9]{40}$/;
-const SPEC_SHAPES = Object.freeze(['git-url', 'registry', 'path', 'file', 'unknown']);
 const HMR_VALUES = Object.freeze(['present', 'absent', 'unknown']);
 const UPDATE_PATHS = Object.freeze(['in-place-hmr', 'restart-required', 'unsupported']);
 const AWAITING_VALUES = Object.freeze(['restart', 'reload', 'health']);
@@ -77,7 +76,7 @@ export function normalizeInstalled(raw) {
   return Object.freeze({
     bundleId: textValue(input.bundleId),
     spec: textValue(input.spec),
-    specShape: enumValue(input.specShape, SPEC_SHAPES, 'unknown'),
+    specShape: enumValue(input.specShape, UPDATE_SPEC_SHAPES, 'unknown'),
     version: textValue(input.version),
     enabled: typeof input.enabled === 'boolean' ? input.enabled : null,
     loadedVersion: textValue(input.loadedVersion),
@@ -171,6 +170,9 @@ export function normalizeObservation(raw) {
   if (state === null) return null;
   const operationId = textValue(raw.operationId);
   if (operationId === null) return null;
+  let reason = textValue(raw.reason);
+  if (state === 'verification-failed') reason = enumValue(reason, UPDATE_VERIFICATION_FAILED_REASONS, null);
+  else if (state === 'stale-runtime') reason = enumValue(reason, UPDATE_STALE_RUNTIME_REASONS, null);
   return Object.freeze({
     operationId: operationId,
     state: state,
@@ -185,7 +187,7 @@ export function normalizeObservation(raw) {
     host: textValue(raw.host),
     client: textValue(raw.client),
     restartReason: textValue(raw.restartReason),
-    reason: textValue(raw.reason),
+    reason: reason,
     cancelledBy: enumValue(raw.cancelledBy, CANCELLED_BY, null),
     error: normalizeObservationError(raw.error),
     oldVersionStillRunning: raw.oldVersionStillRunning === true,
@@ -204,8 +206,16 @@ export function isActiveObservation(observation) {
   return Boolean(observation && UPDATE_ACTIVE_STATES.indexOf(observation.state) !== -1);
 }
 
+/**
+ * True while the Host observation may still advance. `too-late` belongs here:
+ * the install continues after a failed cancel, so polling must not stop.
+ */
+export function isContinuingObservation(observation) {
+  return Boolean(observation && UPDATE_CONTINUES_STATES.indexOf(observation.state) !== -1);
+}
+
 export function isTerminalObservation(observation) {
-  return Boolean(observation && UPDATE_STATES.indexOf(observation.state) !== -1 && UPDATE_ACTIVE_STATES.indexOf(observation.state) === -1);
+  return Boolean(observation && UPDATE_TERMINAL_STATES.indexOf(observation.state) !== -1);
 }
 
 /**
@@ -346,7 +356,8 @@ export function describeObservation(observation, options) {
     operationId: observation.operationId,
     state: state,
     active: active,
-    terminal: !active,
+    observing: UPDATE_CONTINUES_STATES.indexOf(state) !== -1,
+    terminal: UPDATE_TERMINAL_STATES.indexOf(state) !== -1,
     success: state === UPDATE_SUCCESS_STATE,
     titleKey: 'update.state.unknown.title',
     detailKey: 'update.state.unknown.body',
@@ -433,6 +444,7 @@ export function describeObservation(observation, options) {
   if (state === 'too-late') {
     result.titleKey = 'update.state.tooLate.title';
     result.detailKey = 'update.state.tooLate.body';
+    result.observing = true;
     return result;
   }
   if (state === 'cancelled') {
