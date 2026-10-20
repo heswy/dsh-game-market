@@ -490,7 +490,11 @@ test('promote dry-run emits an exact DSH plugin-market-index format 1 document',
   assert.equal(json.installSpec, `git+https://github.com/heswy/dsh-game-market.git#${release}`);
   assert.equal(serializePluginIndex(index), json.indexText);
 
-  // dry-run writes nothing: no index file, clean worktree, HEAD unchanged
+  // dry-run writes nothing even with --out: no index file, clean worktree, HEAD unchanged
+  const withOut = promote(fixture, ['--release', release, '--out', 'release-out/plugins.json']);
+  assert.equal(withOut.status, 0, withOut.stderr);
+  assert.equal(withOut.stdoutJson.written, false);
+  assert.equal(fs.existsSync(path.join(fixture.dir, 'release-out/plugins.json')), false);
   assert.equal(status(fixture.dir), '');
   assert.equal(fs.existsSync(path.join(fixture.dir, INDEX_PATH)), false);
   assert.equal(head(fixture.dir), release);
@@ -525,6 +529,14 @@ test('promote rejects branches, tags, short SHAs and non-existent commits', (t) 
     assert.notEqual(result.status, 0, `promote somehow accepted ${target}`);
     assert.equal(result.stderrJson.code, code, `unexpected code for ${target}: ${result.stderr}`);
   }
+});
+
+test('promote rejects a non-official origin remote', (t) => {
+  const fixture = makeFixture({ remote: 'git@github.com:someone-else/dsh-game-market.git' });
+  t.after(() => fixture.cleanup());
+  const result = promote(fixture, ['--release', 'a'.repeat(40)]);
+  assert.notEqual(result.status, 0);
+  assert.equal(result.stderrJson.code, 'E_RELEASE_REPO_MISMATCH');
 });
 
 test('promote rejects an unreachable (dangling) commit', (t) => {

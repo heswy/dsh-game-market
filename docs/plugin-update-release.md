@@ -164,6 +164,10 @@ curl -fsSL https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform
 - **不重写 tag**（本流程本来就不打 tag）；R 一旦发布不可变；同 version 不同 commit 永远拒绝。
 - 失败安装的恢复：重新读取原生 `pluginManager` 状态与实际版本，按契约 §9.7 区分「失败，旧版本仍运行」与「需恢复旧版本」；必要时经原生链路安装预先记录的旧精确 target。
 
+### 步骤 1 的已知过渡态（第二次及以后发布）
+
+版本提交 P 里通常还带着**上一个 release 的** `platform-updates/release.json`（版本号是旧的）。构建脚本必须把这种「版本不一致的旧身份」当作 stale identity 忽略（`buildCommit:null`），而不是让 `npm run build` 直接失败；真正的严格身份校验发生在发布工具：`release:prepare` 在构建前写入与 P 匹配的 `release.json`，并在 R 上强制要求 `client.js` 嵌入 `version + clientBuildCommit=P`。若 CI 在 P 上因旧 release.json 版本不一致而构建失败，那是 build-client 的过渡态 bug（见 Q2 关联讨论），不是发布流程要求的结果。
+
 ## 4. 老用户一次性迁移（v1.2.0 → V1.5）
 
 v1.2.0 **没有更新 UI**，无法事后给它加按钮：
