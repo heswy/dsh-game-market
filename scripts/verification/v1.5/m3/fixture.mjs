@@ -130,19 +130,26 @@ export function removeFixtureTls(created) {
  * transport. `scenarioBodies` is intentionally data-only.
  */
 export function defaultFixtureBody() {
+  // Exact DSH plugin-market-index format-1 shape (as accepted by the frozen
+  // strict validator in packages/shared/src/platform-update.js). The content is
+  // verification data, not the production index; callers overwrite it per case.
   return `${JSON.stringify({
-    schemaVersion: 1,
+    format: 1,
+    title: { en: 'DSH plugin index (M3 verification fixture)', zh: 'DSH 插件索引（M3 验证夹具）' },
     plugins: [
       {
         name: 'dsh-game-market',
-        version: '1.2.0',
-        channel: 'stable',
-        source: {
-          type: 'git',
-          url: 'https://github.com/heswy/dsh-game-market.git',
-          commit: 'f422e8d04b3b3de3f920a794317c0d28ee1246a2',
-        },
-        publishedAt: '2026-10-18T00:00:00.000Z',
+        versions: [
+          {
+            version: '1.2.0',
+            publishTimestamp: 1761000000,
+            source: {
+              type: 'git',
+              url: 'https://github.com/heswy/dsh-game-market.git',
+              commit: 'f422e8d04b3b3de3f920a794317c0d28ee1246a2',
+            },
+          },
+        ],
       },
     ],
   }, null, 2)}\n`;
@@ -155,6 +162,13 @@ function defaultScenarios() {
     ['malformed-json', { kind: 'fixture', status: 200, contentType: 'application/json', body: '{ this is not json\n' }],
     ['oversize', { kind: 'fixture', status: 200, contentType: 'application/json', body: `{"padding":"${'x'.repeat(300 * 1024)}"}\n` }],
     ['slow', { kind: 'fixture', status: 200, contentType: 'application/json', body: defaultFixtureBody(), delayMs: 4000 }],
+    // Deliberately longer than the frozen 5s whole-index budget (discovery timeout case).
+    ['timeout', { kind: 'fixture', status: 200, contentType: 'application/json', body: defaultFixtureBody(), delayMs: 8000 }],
+    // Connection dies before any HTTP response (network-failure/offline case).
+    ['abort', { kind: 'abort' }],
+    // Redirect policy cases: http downgrade is rejected; a loop exceeds maxRedirects=3.
+    ['redirect-http', { kind: 'redirect', status: 302, location: 'http://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json' }],
+    ['redirect-loop', { kind: 'redirect', status: 302, location: 'https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json' }],
   ]);
 }
 
@@ -314,10 +328,12 @@ export async function createIndexTransport({
     return { method: match[1], requestPath: match[2], headers, headerLength: split + 4, raw: buffer.subarray(0, split + 4) };
   }
 
+  const STATUS_TEXT = { 200: 'OK', 302: 'Found', 400: 'Bad Request', 403: 'Forbidden', 404: 'Not Found', 502: 'Bad Gateway', 503: 'Service Unavailable' };
+
   function writeResponse(socket, { status = 200, contentType = 'application/json', body = '', extraHeaders = [] }) {
     const payload = Buffer.isBuffer(body) ? body : Buffer.from(body, 'utf8');
     const head = [
-      `HTTP/1.1 ${status} ${status === 200 ? 'OK' : status === 503 ? 'Service Unavailable' : 'Status'}`,
+      `HTTP/1.1 ${status} ${STATUS_TEXT[status] ?? 'Status'}`,
       `Content-Type: ${contentType}`,
       `Content-Length: ${payload.length}`,
       'Connection: close',
@@ -367,6 +383,28 @@ export async function createIndexTransport({
       return;
     }
     record.mode = 'fixture';
+    if (scenario.kind === 'abort') {
+      record.aborted = true;
+      record.status = null;
+      record.bytes = 0;
+      record.sha256 = null;
+      tlsSocket.destroy();
+      return;
+    }
+    if (scenario.kind === 'redirect') {
+      record.kind = 'redirect';
+      record.status = scenario.status ?? 302;
+      record.location = scenario.location ?? null;
+      record.bytes = 0;
+      record.sha256 = null;
+      writeResponse(tlsSocket, {
+        status: record.status,
+        contentType: 'text/plain',
+        body: 'fixture redirect\n',
+        extraHeaders: [`Location: ${scenario.location}`],
+      });
+      return;
+    }
     record.status = scenario.status ?? 200;
     record.bytes = Buffer.byteLength(scenario.body ?? '');
     record.sha256 = sha256(Buffer.from(scenario.body ?? '', 'utf8'));
@@ -465,8 +503,19 @@ export async function createIndexTransport({
     port,
     origin: `http://127.0.0.1:${port}`,
     tlsMaterial,
-    fixtureSha256: sha256(Buffer.from(fixtureBody(), 'utf8')),
+    get fixtureSha256() {
+      return sha256(Buffer.from(fixtureBody(), 'utf8'));
+    },
     control: {
+      /** Replace the body served for the fixed URL by the 'valid' scenario. */
+      setFixtureBody(body) {
+        const scenario = state.scenarios.get('valid');
+        scenario.body = typeof body === 'string' ? body : `${JSON.stringify(body, null, 2)}\n`;
+        scenario.status = 200;
+        scenario.contentType = 'application/json';
+        state.scenario = 'valid';
+        return { scenario: 'valid', bytes: Buffer.byteLength(scenario.body), sha256: sha256(Buffer.from(scenario.body, 'utf8')) };
+      },
       setScenario(scenarioName) {
         if (!state.scenarios.has(scenarioName)) throw new Error(`unknown fixture scenario ${scenarioName}`);
         state.scenario = scenarioName;

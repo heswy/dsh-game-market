@@ -308,11 +308,11 @@ export function injectProbeRow(home, { runDir, bootTag, fixedIndexUrl = FIXED_IN
 }
 
 /** Inject a dev row that boots this worktree's Host plugin (M2 lab pattern). */
-export function injectDevGameMarketRow(home, { pluginRoot = REPO_ROOT, profile = 'web' } = {}) {
+export function injectDevGameMarketRow(home, { pluginRoot = REPO_ROOT, profile = 'web', config = null } = {}) {
   return HARNESS.injectProbeRow(home, {
     id: GAME_MARKET_ID,
     entry: path.join(pluginRoot, 'index.js'),
-    config: { devMode: true },
+    config: config === null ? { devMode: true } : { devMode: true, ...config },
     profile,
   });
 }
@@ -439,10 +439,11 @@ export async function bootProbeHost({
   profile = 'web',
   logName = null,
   fixedIndexUrl = FIXED_INDEX_URL,
+  gameMarketConfig = null,
 } = {}) {
   const home = providedHome ?? await makeIsolatedHome(name);
   injectProbeRow(home, { runDir, bootTag, fixedIndexUrl, profile });
-  if (pluginMode === 'dev-row') injectDevGameMarketRow(home, { profile });
+  if (pluginMode === 'dev-row') injectDevGameMarketRow(home, { profile, config: gameMarketConfig });
   const host = await startHostNode(home, { port, logName: logName ?? name, env });
   const probe = new Probe(bootTag, { runDir, home, port });
   const ready = await probe.waitReady();

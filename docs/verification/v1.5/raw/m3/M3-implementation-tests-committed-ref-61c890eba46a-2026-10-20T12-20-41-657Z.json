@@ -1,0 +1,5090 @@
+{
+  "id": "M3-implementation-tests",
+  "title": "Independent re-run of the M3 implementation test suites on a committed tree (shared/host/client/release)",
+  "commands": [
+    "node --test tests/v1.5-platform-update.test.js",
+    "node --test packages/host/test/index.js",
+    "node --test packages/client/test/index.js",
+    "node --test tests/v1.5-release-tools.test.js"
+  ],
+  "startedAt": "2026-10-20T12:20:41.658Z",
+  "finishedAt": "2026-10-20T12:21:48.102Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "shared-platform-update-exit-zero",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 209
+      }
+    },
+    {
+      "name": "shared-platform-update-parsed-tests-positive",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "tests": 13,
+        "suites": 0,
+        "pass": 13,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    },
+    {
+      "name": "shared-platform-update-parsed-failures-zero",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "counts": {
+          "tests": 13,
+          "suites": 0,
+          "pass": 13,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "failed": []
+      }
+    },
+    {
+      "name": "shared-platform-update-named-test-lines-captured",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "namedTests": 13
+      }
+    },
+    {
+      "name": "shared-platform-update-per-test-results",
+      "ok": true,
+      "required": false,
+      "detail": [
+        {
+          "name": "the fixed discovery policy constants are the frozen ones",
+          "ok": true
+        },
+        {
+          "name": "GM-5039 is the documented index-unavailable code (503) with mappings",
+          "ok": true
+        },
+        {
+          "name": "format 1: a minimal official index validates and undefined members are dropped",
+          "ok": true
+        },
+        {
+          "name": "format 1: structural violations are rejected with a JSON path",
+          "ok": true
+        },
+        {
+          "name": "format 1: icons accept bounded inline data URLs and same-origin references",
+          "ok": true
+        },
+        {
+          "name": "target binding: only the official repo root git pin is selectable",
+          "ok": true
+        },
+        {
+          "name": "target channels: stable excludes prereleases; test is explicit opt-in",
+          "ok": true
+        },
+        {
+          "name": "target identity is deterministic, opaque and validated",
+          "ok": true
+        },
+        {
+          "name": "SemVer helpers implement SemVer 2.0.0 precedence",
+          "ok": true
+        },
+        {
+          "name": "profile dependency specs map to the frozen specShape/specCommit vocabulary",
+          "ok": true
+        },
+        {
+          "name": "release identity validates schemaVersion/version/clientBuildCommit/repo",
+          "ok": true
+        },
+        {
+          "name": "same-version-different-commit anomaly is detected against cache or profile",
+          "ok": true
+        },
+        {
+          "name": "channel normalisation defaults to stable and rejects unknown names",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "host-suite-exit-zero",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 22263
+      }
+    },
+    {
+      "name": "host-suite-parsed-tests-positive",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "tests": 291,
+        "suites": 0,
+        "pass": 291,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    },
+    {
+      "name": "host-suite-parsed-failures-zero",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "counts": {
+          "tests": 291,
+          "suites": 0,
+          "pass": 291,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "failed": []
+      }
+    },
+    {
+      "name": "host-suite-named-test-lines-captured",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "namedTests": 291
+      }
+    },
+    {
+      "name": "host-suite-per-test-results",
+      "ok": true,
+      "required": false,
+      "detail": [
+        {
+          "name": "layered default uses the official snapshot exclusively when it is reachable",
+          "ok": true
+        },
+        {
+          "name": "a valid empty official index is authoritative and does not fall back to seed",
+          "ok": true
+        },
+        {
+          "name": "bundled seed serves list/install while the official request hangs",
+          "ok": true
+        },
+        {
+          "name": "GitHub Release assets may redirect to release-assets.githubusercontent.com",
+          "ok": true
+        },
+        {
+          "name": "official index failure does not create a fake remote cache",
+          "ok": true
+        },
+        {
+          "name": "layered default installs from the official HTTPS package when the snapshot is fresh",
+          "ok": true
+        },
+        {
+          "name": "layered default falls back to the bundled seed when the official source is unreachable",
+          "ok": true
+        },
+        {
+          "name": "resource origin binds loopback only and keeps one stable port per process",
+          "ok": true
+        },
+        {
+          "name": "resource origin exposes only instance resources and the wrapper (no Host write surface)",
+          "ok": true
+        },
+        {
+          "name": "LaunchInfo carries the §7.6 resource fields for asset-zip-v2, entryUrl is the one-shot launch URL",
+          "ok": true
+        },
+        {
+          "name": "LaunchInfo keeps html-v1 entryUrl on the V1 /entry route and still adds resource fields",
+          "ok": true
+        },
+        {
+          "name": "one-shot launch: first GET consumes, replay is 410 GM-4013, resource URL stays 200",
+          "ok": true
+        },
+        {
+          "name": "credentials are repeatable GET/HEAD for every manifest file, with exact MIME per file",
+          "ok": true
+        },
+        {
+          "name": "asset-zip-v2 sends the same CSP on every package document (HTML + SVG), not just the entry (CR7-01)",
+          "ok": true
+        },
+        {
+          "name": "credential lifecycle: renew extends TTL, release invalidates immediately, expiry returns 403",
+          "ok": true
+        },
+        {
+          "name": "cross-instance and unknown credentials are denied, valid credential is the positive control",
+          "ok": true
+        },
+        {
+          "name": "cross-version/cross-package files are not reachable through another instance",
+          "ok": true
+        },
+        {
+          "name": "path traversal, absolute paths, encoded separators, directories and descriptors are rejected",
+          "ok": true
+        },
+        {
+          "name": "malformed instance/token path segments are credential errors, not filesystem errors",
+          "ok": true
+        },
+        {
+          "name": "resource responses carry the S-A1 frozen header set and never cookies/redirects/credentials",
+          "ok": true
+        },
+        {
+          "name": "content is checked against the declared type (extension + magic), tampering is observable",
+          "ok": true
+        },
+        {
+          "name": "on-disk tampering after launch fails integrity instead of serving different bytes",
+          "ok": true
+        },
+        {
+          "name": "resource token and launch nonce never appear in diagnostics",
+          "ok": true
+        },
+        {
+          "name": "wrapper is platform-served, static, uncredentialed, game-free and pins frame-src/child-src",
+          "ok": true
+        },
+        {
+          "name": "wrapper frame-ancestors falls back to the configured allowlist when dshWebOrigin is unknown",
+          "ok": true
+        },
+        {
+          "name": "wrapper relay is point-to-point: only parent<->game messages are forwarded, payload untouched",
+          "ok": true
+        },
+        {
+          "name": "startup maintenance flags inconsistent asset-zip-v2 packages and leaves valid ones alone",
+          "ok": true
+        },
+        {
+          "name": "shared resource URL helpers agree with the served origin",
+          "ok": true
+        },
+        {
+          "name": "close() is idempotent and the factory exposes the documented surface",
+          "ok": true
+        },
+        {
+          "name": "resource errors use the Host GM -> HTTP mapping, not just codes",
+          "ok": true
+        },
+        {
+          "name": "runtime-renew / runtime-release routes refresh and invalidate the resource credential",
+          "ok": true
+        },
+        {
+          "name": "asset-zip-v2 launch fails closed without a resource origin and /entry never serves it",
+          "ok": true
+        },
+        {
+          "name": "createHost wires the resource origin into launch and disposes it cleanly",
+          "ok": true
+        },
+        {
+          "name": "an unbindable resource origin fails closed with GM-5038 (no silent fallback)",
+          "ok": true
+        },
+        {
+          "name": "catalog lists a bundled asset-zip-v2 built-in with validated package metadata",
+          "ok": true
+        },
+        {
+          "name": "an asset-zip-v2 built-in that is not bundled in this tree is skipped, not shown broken",
+          "ok": true
+        },
+        {
+          "name": "a tampered built-in package fails closed: listed as package-invalid and launch is rejected",
+          "ok": true
+        },
+        {
+          "name": "an invalid descriptor also fails closed with GM-4277",
+          "ok": true
+        },
+        {
+          "name": "built-in asset-zip-v2 launch uses the same resource-origin LaunchInfo as an installed package",
+          "ok": true
+        },
+        {
+          "name": "built-in package resources are served only from the descriptor files[] whitelist",
+          "ok": true
+        },
+        {
+          "name": "built-in asset-zip-v2 is not served over the DSH /entry route (GM-4043)",
+          "ok": true
+        },
+        {
+          "name": "built-in runtime lifecycle: renew keeps TTL, release invalidates the resource credential",
+          "ok": true
+        },
+        {
+          "name": "built-in games can never be uninstalled (GM-4038), including asset-zip-v2 ones",
+          "ok": true
+        },
+        {
+          "name": "snake (html-v1 builtin) does not regress and is not joined by an unbuilt orbit-courier",
+          "ok": true
+        },
+        {
+          "name": "the real games/orbit-courier/dist package passes catalog validation when present",
+          "ok": true
+        },
+        {
+          "name": "a shipped built-in that lost only its descriptor stays visible, broken and install-protected",
+          "ok": true
+        },
+        {
+          "name": "a built-in with its whole dist directory absent is treated as not shipped",
+          "ok": true
+        },
+        {
+          "name": "an unreadable built-in package is reported as broken, never silently skipped (CR8-04)",
+          "ok": true
+        },
+        {
+          "name": "a healthy shipped built-in still validates and launches (CR8-04 non-regression)",
+          "ok": true
+        },
+        {
+          "name": "health returns the documented snapshot and envelope",
+          "ok": true
+        },
+        {
+          "name": "request ids are unique and health HEAD has no body",
+          "ok": true
+        },
+        {
+          "name": "devMode only registers the dev agent-state route",
+          "ok": true
+        },
+        {
+          "name": "POST requires application/json, bounded bodies and object JSON",
+          "ok": true
+        },
+        {
+          "name": "unknown methods map to GM-4004 and method-specific routes stay exact",
+          "ok": true
+        },
+        {
+          "name": "all contract paths except the dev route are registered exactly",
+          "ok": true
+        },
+        {
+          "name": "missing connection does not throw and registers no routes",
+          "ok": true
+        },
+        {
+          "name": "event registration failures do not abort apply",
+          "ok": true
+        },
+        {
+          "name": "unwritable storage flips health to read-only and rejects writes with GM-5025",
+          "ok": true
+        },
+        {
+          "name": "broken built-in is explained by health diagnostics",
+          "ok": true
+        },
+        {
+          "name": "host unavailable returns GM-5031 and unknown paths map to 404",
+          "ok": true
+        },
+        {
+          "name": "config parsing is defensive and respects DSH_HOME",
+          "ok": true
+        },
+        {
+          "name": "GET /games returns built-in GameRecords from game.json",
+          "ok": true
+        },
+        {
+          "name": "GET /installed and GET /game expose the same record + active session",
+          "ok": true
+        },
+        {
+          "name": "games list supports q/category filters and validates ids",
+          "ok": true
+        },
+        {
+          "name": "missing dist is reported by installed/health while manifest fields still come from game.json",
+          "ok": true
+        },
+        {
+          "name": "preview serves only manifest-declared files",
+          "ok": true
+        },
+        {
+          "name": "GameRecord projection reflects save/session/score state",
+          "ok": true
+        },
+        {
+          "name": "GET /save is 404 before the first save",
+          "ok": true
+        },
+        {
+          "name": "POST /save creates revision 1 and GET include=data returns values",
+          "ok": true
+        },
+        {
+          "name": "subsequent saves increment revision, merge keys and keep a .bak",
+          "ok": true
+        },
+        {
+          "name": "expectedRevision is enforced and 0 creates the first save",
+          "ok": true
+        },
+        {
+          "name": "concurrent expectedRevision writes are serialised (one wins, one conflicts)",
+          "ok": true
+        },
+        {
+          "name": "storage key validation rejects invalid and prototype-pollution keys",
+          "ok": true
+        },
+        {
+          "name": "single-value and key-count quotas are enforced without partial writes",
+          "ok": true
+        },
+        {
+          "name": "total 1 MiB quota is enforced at the service level",
+          "ok": true
+        },
+        {
+          "name": "save schema newer than the game manifest returns GM-4099",
+          "ok": true
+        },
+        {
+          "name": "a corrupt current.json recovers from .bak and quarantines evidence",
+          "ok": true
+        },
+        {
+          "name": "a corrupt save is never reported as Continue-able",
+          "ok": true
+        },
+        {
+          "name": "unknown games and malformed bodies are rejected",
+          "ok": true
+        },
+        {
+          "name": "POST /save-remove deletes a key and releases its quota",
+          "ok": true
+        },
+        {
+          "name": "JSON null is a normal saved value and differs from key removal",
+          "ok": true
+        },
+        {
+          "name": "POST /save-remove is idempotent for missing keys/saves and honours CAS",
+          "ok": true
+        },
+        {
+          "name": "session start is idempotent and end closes exactly once",
+          "ok": true
+        },
+        {
+          "name": "concurrent starts adopt a single running session",
+          "ok": true
+        },
+        {
+          "name": "session end validates outcome/playSessionId and unknown sessions",
+          "ok": true
+        },
+        {
+          "name": "health reports preserved running sessions",
+          "ok": true
+        },
+        {
+          "name": "session records are capped at 100, newest first",
+          "ok": true
+        },
+        {
+          "name": "a running session survives a new Host instance (V0 keeps running)",
+          "ok": true
+        },
+        {
+          "name": "GET /scores returns empty state before any submission",
+          "ok": true
+        },
+        {
+          "name": "best/history follow higher-better semantics and ties keep the earlier entry",
+          "ok": true
+        },
+        {
+          "name": "manifest score range, integer and type validation map to GM-4006/GM-4002",
+          "ok": true
+        },
+        {
+          "name": "meta is size-limited and duplicate operationId is idempotent",
+          "ok": true
+        },
+        {
+          "name": "concurrent duplicate operationIds resolve once",
+          "ok": true
+        },
+        {
+          "name": "lower-better direction from the manifest is honoured",
+          "ok": true
+        },
+        {
+          "name": "history is capped at 200 while best is never evicted",
+          "ok": true
+        },
+        {
+          "name": "preferences start with the documented defaults (no file side effect)",
+          "ok": true
+        },
+        {
+          "name": "preferences merge writes and persist across reads",
+          "ok": true
+        },
+        {
+          "name": "theme and session fields are never persisted",
+          "ok": true
+        },
+        {
+          "name": "invalid preference fields are rejected",
+          "ok": true
+        },
+        {
+          "name": "a malformed preferences file falls back to defaults",
+          "ok": true
+        },
+        {
+          "name": "unknown DSH sessions return a cached idle snapshot",
+          "ok": true
+        },
+        {
+          "name": "dev override sets state/label/labelKey and validates input",
+          "ok": true
+        },
+        {
+          "name": "real session events: running → tool label → completed/error → ack",
+          "ok": true
+        },
+        {
+          "name": "AskUserQuestion tool call maps to a waiting-user question presence",
+          "ok": true
+        },
+        {
+          "name": "question wait is only cleared by its own tool result (and turn end)",
+          "ok": true
+        },
+        {
+          "name": "waiting-user has highest priority and survives lower-priority events",
+          "ok": true
+        },
+        {
+          "name": "turn/end reason kinds map to completed, idle or error",
+          "ok": true
+        },
+        {
+          "name": "dedupe, label-only changes, stale ack and pre-step waterfall",
+          "ok": true
+        },
+        {
+          "name": "agent snapshots never include prompt/tool content and logs stay redacted",
+          "ok": true
+        },
+        {
+          "name": "ETag / If-None-Match returns 304 and changes after a transition",
+          "ok": true
+        },
+        {
+          "name": "POST /launch returns complete LaunchInfo and a usable entryUrl",
+          "ok": true
+        },
+        {
+          "name": "POST /launch validates game, version, mode and session id",
+          "ok": true
+        },
+        {
+          "name": "compatibility checks map to GM-4260/GM-4261 and invalid ranges to GM-4221",
+          "ok": true
+        },
+        {
+          "name": "launch refuses a built-in without its entry file",
+          "ok": true
+        },
+        {
+          "name": "GET /entry serves self-contained HTML with the full CSP and cache headers",
+          "ok": true
+        },
+        {
+          "name": "HEAD /entry keeps headers and omits the body",
+          "ok": true
+        },
+        {
+          "name": "GET /entry returns readable JSON errors for bad params/version/missing assets",
+          "ok": true
+        },
+        {
+          "name": "preview routing is restricted to declared manifest files",
+          "ok": true
+        },
+        {
+          "name": "atomic writes create .tmp-free files, .bak, lock cleanup and 0600 mode",
+          "ok": true
+        },
+        {
+          "name": "writes to the same path are serialised in call order",
+          "ok": true
+        },
+        {
+          "name": "a corrupt primary recovers from .bak and quarantines the evidence",
+          "ok": true
+        },
+        {
+          "name": "a .bak-only file is used without quarantining",
+          "ok": true
+        },
+        {
+          "name": "two corrupt copies yield null and keep both quarantine files",
+          "ok": true
+        },
+        {
+          "name": "a newer schema is rejected without modifying the file",
+          "ok": true
+        },
+        {
+          "name": "an unwritable root flips to read-only and writes return GM-5025",
+          "ok": true
+        },
+        {
+          "name": "paths cannot escape the storage root and directories can be listed",
+          "ok": true
+        },
+        {
+          "name": "non-serialisable values are rejected before touching disk",
+          "ok": true
+        },
+        {
+          "name": "file Registry loads, validates, caches and merges with built-ins",
+          "ok": true
+        },
+        {
+          "name": "DSH_GAME_REGISTRY_URL wins over config.registry.url",
+          "ok": true
+        },
+        {
+          "name": "config file Registry requires allowLocalFile and reports a config issue",
+          "ok": true
+        },
+        {
+          "name": "file Registry without allowLocalFile but non-file url is rejected (https only)",
+          "ok": true
+        },
+        {
+          "name": "ETag / If-None-Match: a 304 refreshes fetchedAt without rewriting games",
+          "ok": true
+        },
+        {
+          "name": "stale (7h) and expired (15d) caches fall back without remote games",
+          "ok": true
+        },
+        {
+          "name": "whole-index validation rejects one bad entry and keeps the previous cache",
+          "ok": true
+        },
+        {
+          "name": "index size and entry-count limits reject the whole document",
+          "ok": true
+        },
+        {
+          "name": "manual refresh is throttled to 5 minutes unless force is set",
+          "ok": true
+        },
+        {
+          "name": "concurrent refreshes share a single flight",
+          "ok": true
+        },
+        {
+          "name": "network failure keeps the cached games and reports offline",
+          "ok": true
+        },
+        {
+          "name": "preview assets are cached and served from /preview only",
+          "ok": true
+        },
+        {
+          "name": "preview downloads are skipped when type/size do not match",
+          "ok": true
+        },
+        {
+          "name": "config.allowedHosts extends package URL admission",
+          "ok": true
+        },
+        {
+          "name": "the bundle default file Registry is used when nothing is configured",
+          "ok": true
+        },
+        {
+          "name": "invalid UTF-8/BOM/JSON Registry payloads map to GM-5032",
+          "ok": true
+        },
+        {
+          "name": "POST /install downloads, verifies and atomically installs a package",
+          "ok": true
+        },
+        {
+          "name": "operationId is idempotent and does not re-download",
+          "ok": true
+        },
+        {
+          "name": "installing the same version with the same sha256 is a no-op",
+          "ok": true
+        },
+        {
+          "name": "sha256 mismatch fails with GM-5015 and leaves no half install",
+          "ok": true
+        },
+        {
+          "name": "package size mismatch fails with GM-5037",
+          "ok": true
+        },
+        {
+          "name": "packages over 20 MiB are rejected with GM-4135",
+          "ok": true
+        },
+        {
+          "name": "non-self-contained packages fail with GM-4225",
+          "ok": true
+        },
+        {
+          "name": "package encoding and manifest uniqueness are enforced at install",
+          "ok": true
+        },
+        {
+          "name": "invalid inline manifests fail with package GM codes",
+          "ok": true
+        },
+        {
+          "name": "manifest id/version must match the Registry entry (GM-4095)",
+          "ok": true
+        },
+        {
+          "name": "unknown ids and built-in ids are rejected",
+          "ok": true
+        },
+        {
+          "name": "incompatible runtime/sdk ranges are rejected before writing",
+          "ok": true
+        },
+        {
+          "name": "registry URL redirects are re-validated and http downgrades are rejected",
+          "ok": true
+        },
+        {
+          "name": "update keeps current+1 versions and records previousVersion",
+          "ok": true
+        },
+        {
+          "name": "requesting an unavailable version returns GM-4094",
+          "ok": true
+        },
+        {
+          "name": "updating while the game is running is refused with GM-4096",
+          "ok": true
+        },
+        {
+          "name": "uninstall keeps saves/scores/sessions by default and is idempotent",
+          "ok": true
+        },
+        {
+          "name": "deleteData needs confirmDataDeletion and removes game data",
+          "ok": true
+        },
+        {
+          "name": "deleteData also removes backups so reinstall starts clean",
+          "ok": true
+        },
+        {
+          "name": "deleteData failure keeps the game installed and is retryable",
+          "ok": true
+        },
+        {
+          "name": "deleteData surfaces permission errors instead of treating data as missing",
+          "ok": true
+        },
+        {
+          "name": "uninstall prunes the retained previous version directory (current+1 window)",
+          "ok": true
+        },
+        {
+          "name": "uninstall cleanup failure is reported as warnings and other games stay intact",
+          "ok": true
+        },
+        {
+          "name": "uninstall record-write failure is retryable and keeps package trees untouched",
+          "ok": true
+        },
+        {
+          "name": "CR8-01 uninstall never traverses a symlinked game package root",
+          "ok": true
+        },
+        {
+          "name": "CR8-01 uninstall never traverses a symlinked packages ancestor",
+          "ok": true
+        },
+        {
+          "name": "uninstall renames symlinks without following their targets",
+          "ok": true
+        },
+        {
+          "name": "built-in games cannot be uninstalled (GM-4038)",
+          "ok": true
+        },
+        {
+          "name": "uninstalling a running game is refused (GM-4096)",
+          "ok": true
+        },
+        {
+          "name": "an unfinished Play Session alone does not block uninstall (Continue is not running)",
+          "ok": true
+        },
+        {
+          "name": "POST /install-local accepts raw text/html and records source local",
+          "ok": true
+        },
+        {
+          "name": "install-local validates content type, size and package contents",
+          "ok": true
+        },
+        {
+          "name": "install-local updates keep previousVersion like registry installs",
+          "ok": true
+        },
+        {
+          "name": "install lock is cross-process, stale-lock takeover works and staging is cleaned",
+          "ok": true
+        },
+        {
+          "name": "uninstall reports GM-4097 while another install/uninstall runs",
+          "ok": true
+        },
+        {
+          "name": "concurrent installs of different games are serialised without corrupting state",
+          "ok": true
+        },
+        {
+          "name": "a placement I/O failure leaves the previous installation untouched",
+          "ok": true
+        },
+        {
+          "name": "registry preview assets are attached to the installed record",
+          "ok": true
+        },
+        {
+          "name": "POST /launch serves an installed package with LaunchInfo v1 fields",
+          "ok": true
+        },
+        {
+          "name": "launch refuses a tampered registry package (GM-5014) and /entry re-checks it",
+          "ok": true
+        },
+        {
+          "name": "local installs re-parse the inline manifest before launch and serve",
+          "ok": true
+        },
+        {
+          "name": "/entry validates instance binding and expiry",
+          "ok": true
+        },
+        {
+          "name": "runtime-renew extends a live instance; runtime-release is per-instance",
+          "ok": true
+        },
+        {
+          "name": "CSP frame-ancestors uses config, appends loopback and never falls back to *",
+          "ok": true
+        },
+        {
+          "name": "invalid frame-ancestors entries are dropped and reported as config issues",
+          "ok": true
+        },
+        {
+          "name": "launch errors: unknown, registry-only, version mismatch, invalid mode",
+          "ok": true
+        },
+        {
+          "name": "preview links on launch come from the same-origin cache",
+          "ok": true
+        },
+        {
+          "name": "GET /games merges built-in, Registry and installed entries",
+          "ok": true
+        },
+        {
+          "name": "GET /games filters by q/category, limits and cursors",
+          "ok": true
+        },
+        {
+          "name": "GET /game returns the V1 detail envelope plus legacy fields",
+          "ok": true
+        },
+        {
+          "name": "updateAvailable is computed from the Registry and clears after installing",
+          "ok": true
+        },
+        {
+          "name": "local installs are listed with source local and no Registry entry",
+          "ok": true
+        },
+        {
+          "name": "GET /installed excludes registry-only entries",
+          "ok": true
+        },
+        {
+          "name": "devMode lists dev games in /games but not /installed, and serves their entry",
+          "ok": true
+        },
+        {
+          "name": "dev games without devMode are ignored and invalid dev roots are reported",
+          "ok": true
+        },
+        {
+          "name": "health exposes registry and installation counts",
+          "ok": true
+        },
+        {
+          "name": "startup clears staging job dirs and trash older than 7 days",
+          "ok": true
+        },
+        {
+          "name": "startup removes package directories with no installation record",
+          "ok": true
+        },
+        {
+          "name": "startup prunes versions outside current+previous and repairs records",
+          "ok": true
+        },
+        {
+          "name": "a fresh storage root is not populated by startup maintenance",
+          "ok": true
+        },
+        {
+          "name": "startup cleanup is skipped while another install holds the lock",
+          "ok": true
+        },
+        {
+          "name": "local asset-zip-v2 install persists the V1.5 installation record",
+          "ok": true
+        },
+        {
+          "name": "registry asset-zip-v2 install binds format/url/filesDigest from the v2 index",
+          "ok": true
+        },
+        {
+          "name": "local ZIP upload separates Content-Type, magic and size limits (§1.8/§3)",
+          "ok": true
+        },
+        {
+          "name": "format changes require a new version and html-v1 keeps working (§5.4, A01)",
+          "ok": true
+        },
+        {
+          "name": "startup recovery marks inconsistent asset-zip-v2 records broken without deleting data (§6.5)",
+          "ok": true
+        },
+        {
+          "name": "legacy installations.json records are normalized on read and persisted on write (§6.2)",
+          "ok": true
+        },
+        {
+          "name": "verifyInstalledRecord: html-v1 sha256 and asset-zip-v2 descriptor digests (§6.5)",
+          "ok": true
+        },
+        {
+          "name": "A03 representative rejections also hold in the Host test harness",
+          "ok": true
+        },
+        {
+          "name": "CR7-02 rollback: a retained asset-zip-v2 directory is reused, bytes untouched",
+          "ok": true
+        },
+        {
+          "name": "CR7-02 rollback: tampered retained directory or same-version bytes are still GM-4094",
+          "ok": true
+        },
+        {
+          "name": "CR7-02 rollback: local html-v1 with a null record sha256 still rolls back",
+          "ok": true
+        },
+        {
+          "name": "M2-FIX uninstall removes current and retained previous ZIP directories",
+          "ok": true
+        },
+        {
+          "name": "M2-FIX deleteData:true uninstall removes both versions and the save data",
+          "ok": true
+        },
+        {
+          "name": "CR7-02 failure: record-write failure keeps reused bytes and cleans only new directories",
+          "ok": true
+        },
+        {
+          "name": "explicit source: a v2 index is validated strictly and cached in registry-cache-v2.json only",
+          "ok": true
+        },
+        {
+          "name": "v2 index: package.format is mandatory and one bad entry rejects the whole document (GM-5032)",
+          "ok": true
+        },
+        {
+          "name": "v2 index: a ZIP entry is accepted (format explicit) and listed by the Host",
+          "ok": true
+        },
+        {
+          "name": "v1 index: an asset-zip-v2 entry rejects the whole document and falls back (GM-5032)",
+          "ok": true
+        },
+        {
+          "name": "default source: v2 is used first and cached separately",
+          "ok": true
+        },
+        {
+          "name": "default source: an unavailable v2 index falls back to the v1 official index",
+          "ok": true
+        },
+        {
+          "name": "cache isolation: a fresh v1 cache is used as the v1 fallback, never as a v2 snapshot",
+          "ok": true
+        },
+        {
+          "name": "cache isolation: a malformed registry-cache-v2.json is treated as no cache and falls back to seed",
+          "ok": true
+        },
+        {
+          "name": "v2 cache: sourceUrl mismatch means \"no cache\" (no stale directory is reused)",
+          "ok": true
+        },
+        {
+          "name": "v2 package URL admission reuses the V1 host allowlist/same-host rules",
+          "ok": true
+        },
+        {
+          "name": "default layered config points at the v2 policy source with the v1 index as fallback",
+          "ok": true
+        },
+        {
+          "name": "explicit file Registry: a v2 index is detected and validated with the v2 rules",
+          "ok": true
+        },
+        {
+          "name": "v2 index with one bad entry keeps the previous v2 cache (whole-index validation)",
+          "ok": true
+        },
+        {
+          "name": "GET /platform-update is always a 200 envelope with the frozen shape",
+          "ok": true
+        },
+        {
+          "name": "manual refresh validates the fixed official index and caches the target atomically",
+          "ok": true
+        },
+        {
+          "name": "manual refresh is throttled for 60s and does not re-check",
+          "ok": true
+        },
+        {
+          "name": "concurrent refreshes share a single in-flight check",
+          "ok": true
+        },
+        {
+          "name": "network failure keeps the last successful target and never blocks games",
+          "ok": true
+        },
+        {
+          "name": "malformed or unbound indexes are rejected as invalid while keeping the last target",
+          "ok": true
+        },
+        {
+          "name": "redirect downgrade and oversized indexes are rejected without a target",
+          "ok": true
+        },
+        {
+          "name": "a 5s index timeout is enforced and surfaced as a retryable offline state",
+          "ok": true
+        },
+        {
+          "name": "startup silent check runs only when the last attempt is older than 6h",
+          "ok": true
+        },
+        {
+          "name": "same version with a different commit is reported as an anomaly",
+          "ok": true
+        },
+        {
+          "name": "H1 route surface fails closed and client-report stores per-window identity",
+          "ok": true
+        },
+        {
+          "name": "begin fails closed with GM-5038 when a validated target exists but no plugin manager is reachable",
+          "ok": true
+        },
+        {
+          "name": "the plugin manager is re-resolved after activation (t0-missing → later present)",
+          "ok": true
+        },
+        {
+          "name": "profile discovery handles multiple profiles and dev-row shadowing without guessing",
+          "ok": true
+        },
+        {
+          "name": "derived capability matrix follows the frozen HMR/dev/anomaly rules",
+          "ok": true
+        },
+        {
+          "name": "health identity is frozen at activation (disk-new/running-old stays old)",
+          "ok": true
+        },
+        {
+          "name": "/health exposes additive buildCommit/loadedVersion without regressing old fields",
+          "ok": true
+        },
+        {
+          "name": "adapter resolves the plugin manager lazily (t0 missing, later present)",
+          "ok": true
+        },
+        {
+          "name": "adapter reports unavailable when a public method is missing",
+          "ok": true
+        },
+        {
+          "name": "describe maps bundle state (enabled/version/availability) from listBundles",
+          "ok": true
+        },
+        {
+          "name": "describe detects a dev row shadowing the installed package",
+          "ok": true
+        },
+        {
+          "name": "describe treats an explicit dev-source identity as shadowed without plugins",
+          "ok": true
+        },
+        {
+          "name": "HMR capability: present is detected once the service registers (stable samples)",
+          "ok": true
+        },
+        {
+          "name": "HMR capability: absent requires continuous absence (t0 race cannot produce a false absent)",
+          "ok": true
+        },
+        {
+          "name": "HMR capability: unresolvable/throwing probes fail closed as unknown",
+          "ok": true
+        },
+        {
+          "name": "HMR capability: a single transient presence then absence is unknown, never absent",
+          "ok": true
+        },
+        {
+          "name": "HMR capability cache is per hostEpoch and invalidated by tree changes",
+          "ok": true
+        },
+        {
+          "name": "install constructs the exact frozen spec and never forwards a foreign target",
+          "ok": true
+        },
+        {
+          "name": "install fails closed when the plugin manager is unreachable",
+          "ok": true
+        },
+        {
+          "name": "waitForInstall passes through null (null is not success) and active results",
+          "ok": true
+        },
+        {
+          "name": "cancelInstall passes the native three-state answer through",
+          "ok": true
+        },
+        {
+          "name": "expected client identity comes from the running bundle release identity",
+          "ok": true
+        },
+        {
+          "name": "happy path: inspecting→installing→applied(intermediate)→activating→updated with both ends verified",
+          "ok": true
+        },
+        {
+          "name": "coordination: no package change until every active instance confirms pause+save",
+          "ok": true
+        },
+        {
+          "name": "coordination: a failed save aborts before any package change with actionable state",
+          "ok": true
+        },
+        {
+          "name": "coordination: an unresponsive instance times out and aborts, never installs",
+          "ok": true
+        },
+        {
+          "name": "coordination: idle windows are allowed, unknown/mismatched instances are rejected",
+          "ok": true
+        },
+        {
+          "name": "idempotency: same target returns the same operation; a different target is busy (GM-4091)",
+          "ok": true
+        },
+        {
+          "name": "already-at-target: running identity match creates a terminal idempotent observation",
+          "ok": true
+        },
+        {
+          "name": "already-at-target: disk at target with no HMR reports pending-restart, not success",
+          "ok": true
+        },
+        {
+          "name": "ambiguous-install is never mapped to success without verified version+commit",
+          "ok": true
+        },
+        {
+          "name": "native management failure reports failed with oldVersionStillRunning=true",
+          "ok": true
+        },
+        {
+          "name": "applied with a mismatched installed version is verification-failed(version-mismatch)",
+          "ok": true
+        },
+        {
+          "name": "non-HMR restart-required maps to pending-restart (never updated)",
+          "ok": true
+        },
+        {
+          "name": "cancel during installing: native cancelled maps to cancelled(cancelledBy=user)",
+          "ok": true
+        },
+        {
+          "name": "cancel too-late keeps observing to the real terminal state (no rollback claim)",
+          "ok": true
+        },
+        {
+          "name": "stale client (old page) reports stale-runtime(client-old) until it refreshes",
+          "ok": true
+        },
+        {
+          "name": "no client report in time ⇒ verification-failed(response-lost), never success",
+          "ok": true
+        },
+        {
+          "name": "Host running identity never moves ⇒ stale-runtime(host-old), never updated",
+          "ok": true
+        },
+        {
+          "name": "recovery after HMR dispose mid-install: persisted record reattaches, waitForInstall null is not success",
+          "ok": true
+        },
+        {
+          "name": "recovery after non-HMR restart: pending-restart record becomes activating→updated",
+          "ok": true
+        },
+        {
+          "name": "recovery after an interrupted coordination aborts with no package change",
+          "ok": true
+        },
+        {
+          "name": "terminal observation is retained until the next begin; new begin replaces it",
+          "ok": true
+        },
+        {
+          "name": "dev-row shadow blocks begin (GM-4090 dev-source) without installing",
+          "ok": true
+        },
+        {
+          "name": "unknown capability blocks begin with GM-5038 (fail closed)",
+          "ok": true
+        },
+        {
+          "name": "multi-window concurrent begins collapse into one operation and one install",
+          "ok": true
+        },
+        {
+          "name": "routes: begin → observe → pending-restart through the real Host composition",
+          "ok": true
+        },
+        {
+          "name": "routes: begin rejects a forged/unknown targetId with GM-4090 (no install)",
+          "ok": true
+        },
+        {
+          "name": "routes: cancel during installing reports too-late and observation continues",
+          "ok": true
+        },
+        {
+          "name": "routes: client-report records the browser identity it is given",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "client-suite-exit-zero",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 992
+      }
+    },
+    {
+      "name": "client-suite-parsed-tests-positive",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "tests": 249,
+        "suites": 0,
+        "pass": 249,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    },
+    {
+      "name": "client-suite-parsed-failures-zero",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "counts": {
+          "tests": 249,
+          "suites": 0,
+          "pass": 249,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "failed": []
+      }
+    },
+    {
+      "name": "client-suite-named-test-lines-captured",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "namedTests": 249
+      }
+    },
+    {
+      "name": "client-suite-per-test-results",
+      "ok": true,
+      "required": false,
+      "detail": [
+        {
+          "name": "initial store state is the Market page with an idle runtime",
+          "ok": true
+        },
+        {
+          "name": "page transitions accept only known pages and notify subscribers once",
+          "ok": true
+        },
+        {
+          "name": "binding a session resets agent state and rejects invalid ids",
+          "ok": true
+        },
+        {
+          "name": "agent snapshots replace per epoch/seq and refresh 304 timestamps",
+          "ok": true
+        },
+        {
+          "name": "agent snapshots for another session and malformed states are ignored",
+          "ok": true
+        },
+        {
+          "name": "poll failures are recorded as codes and a later snapshot clears them",
+          "ok": true
+        },
+        {
+          "name": "paused games are validated and belong to the bound session",
+          "ok": true
+        },
+        {
+          "name": "turn ignore, completion ack, market cache and runtime transitions",
+          "ok": true
+        },
+        {
+          "name": "reduce is pure: unchanged actions return the same object",
+          "ok": true
+        },
+        {
+          "name": "the Game tab resumes the last game played in the same Session",
+          "ok": true
+        },
+        {
+          "name": "the Game tab falls back to the Market when the remembered game is gone",
+          "ok": true
+        },
+        {
+          "name": "runtime-start without a Session does not record a Game-tab target",
+          "ok": true
+        },
+        {
+          "name": "runtime-launch-refresh merges renewed metadata without touching the state machine",
+          "ok": true
+        },
+        {
+          "name": "chip is hidden without an agent snapshot",
+          "ok": true
+        },
+        {
+          "name": "waiting-user has the highest priority and no 5s threshold",
+          "ok": true
+        },
+        {
+          "name": "waiting label kinds come from the Host labelKey",
+          "ok": true
+        },
+        {
+          "name": "resume wins over running and expires after ten minutes",
+          "ok": true
+        },
+        {
+          "name": "a paused game from another session does not show its resume chip",
+          "ok": true
+        },
+        {
+          "name": "running needs five full seconds from the Host since timestamp",
+          "ok": true
+        },
+        {
+          "name": "ignoring a turn hides only that turn; a new turn reappears",
+          "ok": true
+        },
+        {
+          "name": "waiting-user overrides a previous turn ignore",
+          "ok": true
+        },
+        {
+          "name": "stale snapshots hide running and waiting but keep a local paused game",
+          "ok": true
+        },
+        {
+          "name": "the chip never renders while the Game Market panel is active",
+          "ok": true
+        },
+        {
+          "name": "turn key falls back from turnId to since and reports resumable saves",
+          "ok": true
+        },
+        {
+          "name": "findResumableGame prefers the paused game over a Host save",
+          "ok": true
+        },
+        {
+          "name": "sidebar status follows waiting > completed > running > resume",
+          "ok": true
+        },
+        {
+          "name": "sidebar completed clears after acknowledgement and DSH status supplements waiting",
+          "ok": true
+        },
+        {
+          "name": "deriveTabStatus surfaces waiting/error/completed/resume only",
+          "ok": true
+        },
+        {
+          "name": "polling requires visibility and a bound session",
+          "ok": true
+        },
+        {
+          "name": "the game runtime polls its sticky bound session, not a newly selected one",
+          "ok": true
+        },
+        {
+          "name": "backoff doubles to the shared cap",
+          "ok": true
+        },
+        {
+          "name": "poller fetches a snapshot, honours ETag/304, and schedules the next tick",
+          "ok": true
+        },
+        {
+          "name": "poller backs off after failures and stops scheduling while hidden",
+          "ok": true
+        },
+        {
+          "name": "zh and en dictionaries have exactly the same keys and no empty values",
+          "ok": true
+        },
+        {
+          "name": "required UI keys exist in both dictionaries",
+          "ok": true
+        },
+        {
+          "name": "every static t() key used in source exists in the dictionary",
+          "ok": true
+        },
+        {
+          "name": "V1 Market, detail and error copy exists in both dictionaries",
+          "ok": true
+        },
+        {
+          "name": "locale switching returns the matching Market copy",
+          "ok": true
+        },
+        {
+          "name": "interpolation and translate fallbacks are safe",
+          "ok": true
+        },
+        {
+          "name": "user-facing Chinese exists only in the locale module",
+          "ok": true
+        },
+        {
+          "name": "browser source keeps the zero-dependency import rules",
+          "ok": true
+        },
+        {
+          "name": "runtime release requires our own instance id (CR-05)",
+          "ok": true
+        },
+        {
+          "name": "entry URL guard only accepts the same-origin relative entry route",
+          "ok": true
+        },
+        {
+          "name": "launch info validation rejects scheme, instance, nonce, mode and viewport errors",
+          "ok": true
+        },
+        {
+          "name": "load deadlines match the shared slow/error thresholds",
+          "ok": true
+        },
+        {
+          "name": "runtime error codes map to explicit, existing copy keys",
+          "ok": true
+        },
+        {
+          "name": "presence prioritizes waiting over runtime errors and degrades to idle when stale",
+          "ok": true
+        },
+        {
+          "name": "runtime controller factory degrades the stub to GM-NO_RUNTIME",
+          "ok": true
+        },
+        {
+          "name": "pauseRuntime distinguishes success, failed save and thrown pause",
+          "ok": true
+        },
+        {
+          "name": "pauseRuntimeBounded never leaves the UI waiting forever",
+          "ok": true
+        },
+        {
+          "name": "absolute loopback resource entry URLs are accepted; external ones are not",
+          "ok": true
+        },
+        {
+          "name": "launch info validation covers the V1.5 resource extension",
+          "ok": true
+        },
+        {
+          "name": "resource-credential reload policy only applies to V1.5 launches",
+          "ok": true
+        },
+        {
+          "name": "reloadRuntime delegates to controller.reload and reports acceptance",
+          "ok": true
+        },
+        {
+          "name": "current session prefers a non-blank mainView retention",
+          "ok": true
+        },
+        {
+          "name": "session status selectors tolerate missing entries",
+          "ok": true
+        },
+        {
+          "name": "refreshMarket stores items and preserves cached items on failure",
+          "ok": true
+        },
+        {
+          "name": "beginGame captures the current session as a sticky runtime binding",
+          "ok": true
+        },
+        {
+          "name": "paused game records and leave transitions keep the resume window data",
+          "ok": true
+        },
+        {
+          "name": "acknowledgeCompleted clears locally even if the Host ack fails",
+          "ok": true
+        },
+        {
+          "name": "formatting helpers degrade safely",
+          "ok": true
+        },
+        {
+          "name": "built client.js is a DSH module-loader bundle with the right id",
+          "ok": true
+        },
+        {
+          "name": "bundle materializes with only react and exports inject/apply",
+          "ok": true
+        },
+        {
+          "name": "apply registers locale, main panel, sidebar row and header chip inside effects",
+          "ok": true
+        },
+        {
+          "name": "external allowlist is exactly the reviewed minimal set",
+          "ok": true
+        },
+        {
+          "name": "allowlisted bare imports bundle as require(\"<specifier>\") and alias correctly",
+          "ok": true
+        },
+        {
+          "name": "the bundled external fixture materializes with a require() module loader",
+          "ok": true
+        },
+        {
+          "name": "every other bare import still throws (no arbitrary bare imports)",
+          "ok": true
+        },
+        {
+          "name": "unknown external specifiers cannot be injected through collectModules",
+          "ok": true
+        },
+        {
+          "name": "multi-line imports are joined instead of being mis-bundled",
+          "ok": true
+        },
+        {
+          "name": "bundleExpression still rejects external imports (games get no host modules)",
+          "ok": true
+        },
+        {
+          "name": "comment text that looks like an inline manifest script cannot pollute game HTML",
+          "ok": true
+        },
+        {
+          "name": "the committed client.js only requires allowlisted platform modules",
+          "ok": true
+        },
+        {
+          "name": "client category list matches the frozen manifest enum",
+          "ok": true
+        },
+        {
+          "name": "normalizeGame accepts V0 records and canonical V1 summaries",
+          "ok": true
+        },
+        {
+          "name": "image URLs stay same-origin (no CDN or external hosts reach the renderer)",
+          "ok": true
+        },
+        {
+          "name": "compatibility, update and size fields normalize from the installation view",
+          "ok": true
+        },
+        {
+          "name": "normalizeDetailPayload handles the V1 wrapper and bare V0 records",
+          "ok": true
+        },
+        {
+          "name": "local search matches name, author, category label, tags and id",
+          "ok": true
+        },
+        {
+          "name": "category filters accept ids and \"all\"",
+          "ok": true
+        },
+        {
+          "name": "catalog ordering puts installed games first and then uses name order",
+          "ok": true
+        },
+        {
+          "name": "hero picks the most recent resumable installed game",
+          "ok": true
+        },
+        {
+          "name": "sections follow PRD ordering, limits and offline rules",
+          "ok": true
+        },
+        {
+          "name": "section lists are capped at eight entries",
+          "ok": true
+        },
+        {
+          "name": "My Games ordering: resumable, then played, then newest install, then name",
+          "ok": true
+        },
+        {
+          "name": "progress summary prefers score, then generic progress",
+          "ok": true
+        },
+        {
+          "name": "permission line follows capabilities and rejects unknown declarations",
+          "ok": true
+        },
+        {
+          "name": "detail action matrix: install / incompatible / offline / cancel / retry",
+          "ok": true
+        },
+        {
+          "name": "detail action matrix: play / continue / resume / update / reinstall",
+          "ok": true
+        },
+        {
+          "name": "screenshots, builtin/update helpers and cover tones behave deterministically",
+          "ok": true
+        },
+        {
+          "name": "local filtering of 500 games stays well under the 150ms budget",
+          "ok": true
+        },
+        {
+          "name": "normalizeCatalog tolerates bare arrays and drops invalid entries",
+          "ok": true
+        },
+        {
+          "name": "grid navigation handles four directions, rows and Home/End",
+          "ok": true
+        },
+        {
+          "name": "chip and menu focus move with wraparound",
+          "ok": true
+        },
+        {
+          "name": "dialog tab trap loops in both directions",
+          "ok": true
+        },
+        {
+          "name": "Esc priority closes the innermost surface first",
+          "ok": true
+        },
+        {
+          "name": "search shortcut ignores inputs and modifiers, IME and activation keys work",
+          "ok": true
+        },
+        {
+          "name": "row menus open with Shift+F10, ArrowRight or ArrowDown",
+          "ok": true
+        },
+        {
+          "name": "measured first-row offsets yield the column count",
+          "ok": true
+        },
+        {
+          "name": "search debounce waits the PRD 150ms and applies only the latest value",
+          "ok": true
+        },
+        {
+          "name": "debounce flush applies immediately and cancel drops the pending value",
+          "ok": true
+        },
+        {
+          "name": "debounce is a no-op when there is nothing pending",
+          "ok": true
+        },
+        {
+          "name": "every GM code maps to an existing bilingual message key",
+          "ok": true
+        },
+        {
+          "name": "unknown and field-level manifest codes degrade safely",
+          "ok": true
+        },
+        {
+          "name": "install failure stages group the PRD copy correctly",
+          "ok": true
+        },
+        {
+          "name": "stage labels cover every visible install stage",
+          "ok": true
+        },
+        {
+          "name": "offline, busy and retryable classifications",
+          "ok": true
+        },
+        {
+          "name": "the GM mapping table never leaks the raw diagnostic message",
+          "ok": true
+        },
+        {
+          "name": "listGames only sends the provided query parameters and unwraps the envelope",
+          "ok": true
+        },
+        {
+          "name": "getGame and getScores use the id query",
+          "ok": true
+        },
+        {
+          "name": "install posts the frozen JSON body with a stable operation id",
+          "ok": true
+        },
+        {
+          "name": "uninstall only confirms data deletion when explicitly requested",
+          "ok": true
+        },
+        {
+          "name": "registry refresh posts force and operationId",
+          "ok": true
+        },
+        {
+          "name": "install-local sends raw text/html with the operation id in the query",
+          "ok": true
+        },
+        {
+          "name": "install-local can read a File through FileReader when .text() is absent",
+          "ok": true
+        },
+        {
+          "name": "readFileText prefers File.text() and surfaces reader failures",
+          "ok": true
+        },
+        {
+          "name": "error envelopes become GameMarketApiError with code and retryability",
+          "ok": true
+        },
+        {
+          "name": "a non-JSON response from an older Host maps to GM-5031",
+          "ok": true
+        },
+        {
+          "name": "network failures and caller aborts are distinguishable",
+          "ok": true
+        },
+        {
+          "name": "request timeouts are reported as timed out transport errors",
+          "ok": true
+        },
+        {
+          "name": "query builder drops empty values",
+          "ok": true
+        },
+        {
+          "name": "install-local zip uploads the exact raw bytes with Content-Type application/zip",
+          "ok": true
+        },
+        {
+          "name": "install-local zip reads a File via arrayBuffer() and never calls text()",
+          "ok": true
+        },
+        {
+          "name": "install-local zip falls back to FileReader.readAsArrayBuffer",
+          "ok": true
+        },
+        {
+          "name": "install-local zip accepts an inline Blob-like bytes source",
+          "ok": true
+        },
+        {
+          "name": "install-local rejects an unsupported local package type with GM-4150",
+          "ok": true
+        },
+        {
+          "name": "install-local still sends HTML as text/html (no regression)",
+          "ok": true
+        },
+        {
+          "name": "readFileBytes normalizes ArrayBuffer/views and surfaces reader failures",
+          "ok": true
+        },
+        {
+          "name": "file picker accepts both carriers by extension and MIME",
+          "ok": true
+        },
+        {
+          "name": "format is decided by file name extension first (host filename rule)",
+          "ok": true
+        },
+        {
+          "name": "MIME type is a fallback only when the name has no known extension",
+          "ok": true
+        },
+        {
+          "name": "selection validation rejects unsupported and oversized files",
+          "ok": true
+        },
+        {
+          "name": "package file names parse to id/version/format for the confirmation dialog",
+          "ok": true
+        },
+        {
+          "name": "overwrite target only names installed, non-builtin games",
+          "ok": true
+        },
+        {
+          "name": "install dispatches queued then installed and returns the payload",
+          "ok": true
+        },
+        {
+          "name": "installs are serialized globally: the second request waits for the first",
+          "ok": true
+        },
+        {
+          "name": "a duplicate request for the same game shares the pending promise",
+          "ok": true
+        },
+        {
+          "name": "busy errors (GM-4091 / GM-4097) retry without surfacing a failure",
+          "ok": true
+        },
+        {
+          "name": "permanent failures keep the stage, failure bucket and reason key",
+          "ok": true
+        },
+        {
+          "name": "cancel aborts the running request and reports cancellation",
+          "ok": true
+        },
+        {
+          "name": "uninstall clears the row job and passes deleteData through",
+          "ok": true
+        },
+        {
+          "name": "local installs use the raw-file API and mark the job installed",
+          "ok": true
+        },
+        {
+          "name": "local zip installs pass format and raw bytes through unchanged",
+          "ok": true
+        },
+        {
+          "name": "missing Host API degrades to a failed job instead of throwing",
+          "ok": true
+        },
+        {
+          "name": "stage hint switches to downloading while the request is in flight",
+          "ok": true
+        },
+        {
+          "name": "initial state includes the V1 market, detail, UI, install, dialog and toast slices",
+          "ok": true
+        },
+        {
+          "name": "detail navigation loads, stores scores and returns to the source list with focus",
+          "ok": true
+        },
+        {
+          "name": "detail close returns to Market with a card focus intent",
+          "ok": true
+        },
+        {
+          "name": "tabs reset detail state; detail is not reachable through a raw page action",
+          "ok": true
+        },
+        {
+          "name": "query, category and search state validate their inputs",
+          "ok": true
+        },
+        {
+          "name": "scroll positions are stored per page and validated",
+          "ok": true
+        },
+        {
+          "name": "dialogs cover uninstall confirmation, data deletion and focus return",
+          "ok": true
+        },
+        {
+          "name": "toasts deduplicate by id, cap at three and dismiss by id",
+          "ok": true
+        },
+        {
+          "name": "install jobs track stages, percentages, failures and clearing",
+          "ok": true
+        },
+        {
+          "name": "market payloads carry offline and registry state",
+          "ok": true
+        },
+        {
+          "name": "focus intents are set, consumed and never duplicated by invalid data",
+          "ok": true
+        },
+        {
+          "name": "reduce stays pure for invalid and unchanged actions",
+          "ok": true
+        },
+        {
+          "name": "loadCatalog normalizes games and records refresh time, registry and health",
+          "ok": true
+        },
+        {
+          "name": "seed Registry snapshots are usable, not offline",
+          "ok": true
+        },
+        {
+          "name": "the catalog follows nextCursor pages until the list is complete",
+          "ok": true
+        },
+        {
+          "name": "an offline registry marks the catalog offline but keeps the data",
+          "ok": true
+        },
+        {
+          "name": "when /games fails, /installed is used as the offline catalog",
+          "ok": true
+        },
+        {
+          "name": "when both catalog routes fail the error is kept and cached games survive",
+          "ok": true
+        },
+        {
+          "name": "openDetail loads the V1 payload, scores and can be closed",
+          "ok": true
+        },
+        {
+          "name": "loadDetail accepts a bare V0 game record and reports detail failures",
+          "ok": true
+        },
+        {
+          "name": "startInstall refreshes the catalog, clears the job and raises the install toast",
+          "ok": true
+        },
+        {
+          "name": "update installs use the update toast and pass the version",
+          "ok": true
+        },
+        {
+          "name": "cancelled and failed installs do not show a success toast",
+          "ok": true
+        },
+        {
+          "name": "uninstall keeps saves by default and deletes data only when confirmed",
+          "ok": true
+        },
+        {
+          "name": "uninstalling from the detail page returns to the market",
+          "ok": true
+        },
+        {
+          "name": "local installs toast the game name and clear both job keys",
+          "ok": true
+        },
+        {
+          "name": "local zip installs forward format and raw bytes to the manager",
+          "ok": true
+        },
+        {
+          "name": "local html installs keep the default html-v1 format when none is given",
+          "ok": true
+        },
+        {
+          "name": "the install-local confirmation passes the selected format to the manager",
+          "ok": true
+        },
+        {
+          "name": "without an explicit format a .dshgame.zip name is detected as asset-zip-v2",
+          "ok": true
+        },
+        {
+          "name": "the Market panel confirm action uses the dialog format helper (source guard)",
+          "ok": true
+        },
+        {
+          "name": "dialog format travels through the real install manager to an application/zip upload",
+          "ok": true
+        },
+        {
+          "name": "local install failures surface the mapped GM message",
+          "ok": true
+        },
+        {
+          "name": "registry refresh handles success, throttling and offline failures",
+          "ok": true
+        },
+        {
+          "name": "toast helpers and search actions dispatch the expected state",
+          "ok": true
+        },
+        {
+          "name": "normalizeInspection accepts the frozen §8 shape and never invents fields",
+          "ok": true
+        },
+        {
+          "name": "normalizeInspection tolerates a never-checked Host (200 envelope, empty state)",
+          "ok": true
+        },
+        {
+          "name": "invalid inspection payloads normalize to null instead of guessing",
+          "ok": true
+        },
+        {
+          "name": "observation normalization drops numeric progress and keeps only the union fields",
+          "ok": true
+        },
+        {
+          "name": "unknown observation states are rejected (UI only renders contract states)",
+          "ok": true
+        },
+        {
+          "name": "active/terminal state lists match the contract state machine",
+          "ok": true
+        },
+        {
+          "name": "applied and installing and activating are never rendered as success",
+          "ok": true
+        },
+        {
+          "name": "only updated is the success terminal state",
+          "ok": true
+        },
+        {
+          "name": "pending-restart says installed-but-effective-after-restart, not updated",
+          "ok": true
+        },
+        {
+          "name": "recovery actions are explicit per branch",
+          "ok": true
+        },
+        {
+          "name": "too-late keeps observing and never claims cancellation",
+          "ok": true
+        },
+        {
+          "name": "cancel is offered only while inspecting/installing",
+          "ok": true
+        },
+        {
+          "name": "coordination state surfaces pending and failed counts",
+          "ok": true
+        },
+        {
+          "name": "target comparison only claims up-to-date when version+commit match",
+          "ok": true
+        },
+        {
+          "name": "blocked reasons follow the frozen capability reason enum (fail closed)",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView exposes discovery/target/identity for the section",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView hides the UI for an unsupported (old) Host",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView keeps the cached target while offline and never claims success",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView renders the host operation and applied stays non-success",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView shows a local starting state before the first observation",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView computes the refresh throttle window from nextCheckAt",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView surfaces begin/refresh action errors and coordination state",
+          "ok": true
+        },
+        {
+          "name": "client identity normalization never fabricates a version",
+          "ok": true
+        },
+        {
+          "name": "inspection anomaly (same version different commit) is preserved for the UI",
+          "ok": true
+        },
+        {
+          "name": "inspect GETs the platform-update route and unwraps the envelope",
+          "ok": true
+        },
+        {
+          "name": "refresh POSTs an empty JSON body",
+          "ok": true
+        },
+        {
+          "name": "begin sends only the verified target id and rejects a missing id locally",
+          "ok": true
+        },
+        {
+          "name": "observe passes the operation id as a query parameter",
+          "ok": true
+        },
+        {
+          "name": "cancel posts the operation id and preserves the cancel status union",
+          "ok": true
+        },
+        {
+          "name": "coordinate posts the window payload verbatim (no invented fields)",
+          "ok": true
+        },
+        {
+          "name": "client-report posts the embedded build identity fields",
+          "ok": true
+        },
+        {
+          "name": "error envelopes become GameMarketApiError with the GM code and retryable flag",
+          "ok": true
+        },
+        {
+          "name": "an old Host without the route surfaces as GM-4004 with the HTTP status (UI hides itself)",
+          "ok": true
+        },
+        {
+          "name": "query builder keeps only defined values",
+          "ok": true
+        },
+        {
+          "name": "build identity helpers validate semver and full commits only",
+          "ok": true
+        },
+        {
+          "name": "the unbundled source parses as \"not embedded\" instead of claiming a version",
+          "ok": true
+        },
+        {
+          "name": "release.json validation is strict (schema/version/commit)",
+          "ok": true
+        },
+        {
+          "name": "page identity issues 32-hex tokens and keeps windowId across a reload",
+          "ok": true
+        },
+        {
+          "name": "page identity degrades safely without storage or crypto",
+          "ok": true
+        },
+        {
+          "name": "build-client embeds the identity from a release.json and stays byte deterministic",
+          "ok": true
+        },
+        {
+          "name": "a stale release.json (previous version) warns but embeds no buildCommit",
+          "ok": true
+        },
+        {
+          "name": "build-client fails loudly on an unreadable/invalid release.json",
+          "ok": true
+        },
+        {
+          "name": "default build embeds the identity of the current tree (or null without release.json)",
+          "ok": true
+        },
+        {
+          "name": "start reports this build identity (never the Host version) and loads the inspection",
+          "ok": true
+        },
+        {
+          "name": "an active persisted operation is observed at ~1s and only updated is success",
+          "ok": true
+        },
+        {
+          "name": "observation reaches updated terminal state and stops polling",
+          "ok": true
+        },
+        {
+          "name": "repeated begin calls never start a second install and reuse the operation id",
+          "ok": true
+        },
+        {
+          "name": "begin rejects a forged target id without calling the Host",
+          "ok": true
+        },
+        {
+          "name": "coordination reports saved:true only for a clean platform pause",
+          "ok": true
+        },
+        {
+          "name": "a save failure is reported saved:false and visibly blocks the update",
+          "ok": true
+        },
+        {
+          "name": "an unresponsive instance is reported paused:false and saved:false",
+          "ok": true
+        },
+        {
+          "name": "an idle window reports idle with an empty instance list",
+          "ok": true
+        },
+        {
+          "name": "coordination happens once per operation per page life (multi-window safe)",
+          "ok": true
+        },
+        {
+          "name": "page refresh resumes the persisted operation and reports identity again",
+          "ok": true
+        },
+        {
+          "name": "an old Host without the routes marks the UI unsupported and stops polling",
+          "ok": true
+        },
+        {
+          "name": "cancel too-late does not claim cancellation and keeps observing",
+          "ok": true
+        },
+        {
+          "name": "refresh keeps the inspection and surfaces throttling without an error",
+          "ok": true
+        },
+        {
+          "name": "client identity is re-reported periodically while an update is running",
+          "ok": true
+        },
+        {
+          "name": "runtime registry entries are collected without clearing live registrations",
+          "ok": true
+        },
+        {
+          "name": "zh confirmation copy states all-sessions/restart and exact version+commit",
+          "ok": true
+        },
+        {
+          "name": "en confirmation copy states all-sessions/restart and exact version+commit",
+          "ok": true
+        },
+        {
+          "name": "confirmation copy adds the no-HMR restart note only when applicable",
+          "ok": true
+        },
+        {
+          "name": "confirmation copy never invents a target version or commit",
+          "ok": true
+        },
+        {
+          "name": "channel labels are localized and unknown channels stay verbatim",
+          "ok": true
+        },
+        {
+          "name": "shortCommit keeps the full value for titles/data attributes",
+          "ok": true
+        },
+        {
+          "name": "discovery copy maps update-available / up-to-date / no-target / unknown",
+          "ok": true
+        },
+        {
+          "name": "offline/stale/invalid discovery never claims up to date and keeps last success",
+          "ok": true
+        },
+        {
+          "name": "never-checked discovery is explicit instead of pretending up to date",
+          "ok": true
+        },
+        {
+          "name": "missing inspection with an error maps to an actionable error copy",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "release-tools-exit-zero",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 42193
+      }
+    },
+    {
+      "name": "release-tools-parsed-tests-positive",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "tests": 37,
+        "suites": 0,
+        "pass": 37,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    },
+    {
+      "name": "release-tools-parsed-failures-zero",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "counts": {
+          "tests": 37,
+          "suites": 0,
+          "pass": 37,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "failed": []
+      }
+    },
+    {
+      "name": "release-tools-named-test-lines-captured",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "namedTests": 37
+      }
+    },
+    {
+      "name": "release-tools-per-test-results",
+      "ok": true,
+      "required": false,
+      "detail": [
+        {
+          "name": "prepare dry-run validates everything and writes nothing",
+          "ok": true
+        },
+        {
+          "name": "prepare human dry-run output states it writes nothing",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects a dirty worktree",
+          "ok": true
+        },
+        {
+          "name": "prepare refuses to bump the version itself (P must be pre-bumped)",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects a non-official origin remote",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects an invalid engines declaration",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects a files whitelist that would not ship the release identity",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects a client bundle that does not embed the release identity",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects a non-deterministic build",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects a failed build",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects missing artifacts",
+          "ok": true
+        },
+        {
+          "name": "prepare --write creates the release commit R with identity + artifacts",
+          "ok": true
+        },
+        {
+          "name": "prepare --write is refused twice on the same release commit",
+          "ok": true
+        },
+        {
+          "name": "release commit content is deterministic across repeated runs",
+          "ok": true
+        },
+        {
+          "name": "prepare overwrites a stale release identity inherited from the previous release",
+          "ok": true
+        },
+        {
+          "name": "promote dry-run emits an exact DSH plugin-market-index format 1 document",
+          "ok": true
+        },
+        {
+          "name": "promote human dry-run prints the index and writes nothing",
+          "ok": true
+        },
+        {
+          "name": "promote rejects branches, tags, short SHAs and non-existent commits",
+          "ok": true
+        },
+        {
+          "name": "promote rejects a non-official origin remote",
+          "ok": true
+        },
+        {
+          "name": "promote rejects an unreachable (dangling) commit",
+          "ok": true
+        },
+        {
+          "name": "promote rejects a release commit whose release.json version was tampered with",
+          "ok": true
+        },
+        {
+          "name": "promote rejects an artifact digest mismatch",
+          "ok": true
+        },
+        {
+          "name": "promote stable rejects prerelease versions; test channel accepts them",
+          "ok": true
+        },
+        {
+          "name": "promote rejects an invalid channel/target combination",
+          "ok": true
+        },
+        {
+          "name": "promote refuses an index introduced inside a release-style commit (no self-reference)",
+          "ok": true
+        },
+        {
+          "name": "index self-reference detector identifies an index pinning the target commit",
+          "ok": true
+        },
+        {
+          "name": "promote --write requires an explicit --out path (never a default production write)",
+          "ok": true
+        },
+        {
+          "name": "promote --write writes only the explicit working-tree index and never commits",
+          "ok": true
+        },
+        {
+          "name": "promote --write refuses the production index path without explicit acknowledgement",
+          "ok": true
+        },
+        {
+          "name": "promote refuses an --out path that is part of the release commit",
+          "ok": true
+        },
+        {
+          "name": "promote refuses to replace a published version with a different commit",
+          "ok": true
+        },
+        {
+          "name": "promote refuses to publish an older version than the trusted index",
+          "ok": true
+        },
+        {
+          "name": "promote validates the release from git objects, not from the working tree",
+          "ok": true
+        },
+        {
+          "name": "release:verify rejects a wrong index pin",
+          "ok": true
+        },
+        {
+          "name": "format-1 validator rejects malformed / unsafe index documents",
+          "ok": true
+        },
+        {
+          "name": "release identity validator enforces the frozen schema",
+          "ok": true
+        },
+        {
+          "name": "release tooling never runs push/tag/fetch (git shim audit, dry-run + write)",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "tested-tree-recorded",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "mode": "committed-ref",
+        "head": "61c890eba46ab85c9df7b3e6aacc50602d5686a1",
+        "branch": "feat/v1.5-platform-update",
+        "tree": "/tmp/dsh-v15/m3/verify-trees/61c890eba46ab85c9df7b3e6aacc50602d5686a1",
+        "dirtyWorktreeFiles": 35
+      }
+    },
+    {
+      "name": "tested-committed-tree-not-current-worktree",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "mode": "committed-ref",
+        "treeRoot": "/tmp/dsh-v15/m3/verify-trees/61c890eba46ab85c9df7b3e6aacc50602d5686a1"
+      }
+    },
+    {
+      "name": "independent-rerun-not-lead-report",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "note": "executed by verification; Lead reported numbers are only the comparison baseline"
+      }
+    }
+  ],
+  "runTag": "h1-tests-mvgnj22h-8f14a3",
+  "evidenceLevel": "automated (real test suites executed in this worktree)",
+  "mode": "committed-ref",
+  "testedRef": "61c890eba46ab85c9df7b3e6aacc50602d5686a1",
+  "treePreparation": {
+    "mode": "committed-ref",
+    "ref": "61c890eba46ab85c9df7b3e6aacc50602d5686a1",
+    "tree": "/tmp/dsh-v15/m3/verify-trees/61c890eba46ab85c9df7b3e6aacc50602d5686a1",
+    "nodeModulesSymlinked": true
+  },
+  "suites": [
+    {
+      "id": "shared-platform-update",
+      "command": "node --test tests/v1.5-platform-update.test.js",
+      "exitCode": 0,
+      "elapsedMs": 209,
+      "counts": {
+        "tests": 13,
+        "suites": 0,
+        "pass": 13,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "tests": [
+        {
+          "name": "the fixed discovery policy constants are the frozen ones",
+          "ok": true
+        },
+        {
+          "name": "GM-5039 is the documented index-unavailable code (503) with mappings",
+          "ok": true
+        },
+        {
+          "name": "format 1: a minimal official index validates and undefined members are dropped",
+          "ok": true
+        },
+        {
+          "name": "format 1: structural violations are rejected with a JSON path",
+          "ok": true
+        },
+        {
+          "name": "format 1: icons accept bounded inline data URLs and same-origin references",
+          "ok": true
+        },
+        {
+          "name": "target binding: only the official repo root git pin is selectable",
+          "ok": true
+        },
+        {
+          "name": "target channels: stable excludes prereleases; test is explicit opt-in",
+          "ok": true
+        },
+        {
+          "name": "target identity is deterministic, opaque and validated",
+          "ok": true
+        },
+        {
+          "name": "SemVer helpers implement SemVer 2.0.0 precedence",
+          "ok": true
+        },
+        {
+          "name": "profile dependency specs map to the frozen specShape/specCommit vocabulary",
+          "ok": true
+        },
+        {
+          "name": "release identity validates schemaVersion/version/clientBuildCommit/repo",
+          "ok": true
+        },
+        {
+          "name": "same-version-different-commit anomaly is detected against cache or profile",
+          "ok": true
+        },
+        {
+          "name": "channel normalisation defaults to stable and rejects unknown names",
+          "ok": true
+        }
+      ],
+      "scratchLog": "/tmp/dsh-v15/m3/logs/suite-shared-platform-update.log",
+      "stdoutBytes": 1207,
+      "stderrBytes": 0
+    },
+    {
+      "id": "host-suite",
+      "command": "node --test packages/host/test/index.js",
+      "exitCode": 0,
+      "elapsedMs": 22263,
+      "counts": {
+        "tests": 291,
+        "suites": 0,
+        "pass": 291,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "tests": [
+        {
+          "name": "layered default uses the official snapshot exclusively when it is reachable",
+          "ok": true
+        },
+        {
+          "name": "a valid empty official index is authoritative and does not fall back to seed",
+          "ok": true
+        },
+        {
+          "name": "bundled seed serves list/install while the official request hangs",
+          "ok": true
+        },
+        {
+          "name": "GitHub Release assets may redirect to release-assets.githubusercontent.com",
+          "ok": true
+        },
+        {
+          "name": "official index failure does not create a fake remote cache",
+          "ok": true
+        },
+        {
+          "name": "layered default installs from the official HTTPS package when the snapshot is fresh",
+          "ok": true
+        },
+        {
+          "name": "layered default falls back to the bundled seed when the official source is unreachable",
+          "ok": true
+        },
+        {
+          "name": "resource origin binds loopback only and keeps one stable port per process",
+          "ok": true
+        },
+        {
+          "name": "resource origin exposes only instance resources and the wrapper (no Host write surface)",
+          "ok": true
+        },
+        {
+          "name": "LaunchInfo carries the §7.6 resource fields for asset-zip-v2, entryUrl is the one-shot launch URL",
+          "ok": true
+        },
+        {
+          "name": "LaunchInfo keeps html-v1 entryUrl on the V1 /entry route and still adds resource fields",
+          "ok": true
+        },
+        {
+          "name": "one-shot launch: first GET consumes, replay is 410 GM-4013, resource URL stays 200",
+          "ok": true
+        },
+        {
+          "name": "credentials are repeatable GET/HEAD for every manifest file, with exact MIME per file",
+          "ok": true
+        },
+        {
+          "name": "asset-zip-v2 sends the same CSP on every package document (HTML + SVG), not just the entry (CR7-01)",
+          "ok": true
+        },
+        {
+          "name": "credential lifecycle: renew extends TTL, release invalidates immediately, expiry returns 403",
+          "ok": true
+        },
+        {
+          "name": "cross-instance and unknown credentials are denied, valid credential is the positive control",
+          "ok": true
+        },
+        {
+          "name": "cross-version/cross-package files are not reachable through another instance",
+          "ok": true
+        },
+        {
+          "name": "path traversal, absolute paths, encoded separators, directories and descriptors are rejected",
+          "ok": true
+        },
+        {
+          "name": "malformed instance/token path segments are credential errors, not filesystem errors",
+          "ok": true
+        },
+        {
+          "name": "resource responses carry the S-A1 frozen header set and never cookies/redirects/credentials",
+          "ok": true
+        },
+        {
+          "name": "content is checked against the declared type (extension + magic), tampering is observable",
+          "ok": true
+        },
+        {
+          "name": "on-disk tampering after launch fails integrity instead of serving different bytes",
+          "ok": true
+        },
+        {
+          "name": "resource token and launch nonce never appear in diagnostics",
+          "ok": true
+        },
+        {
+          "name": "wrapper is platform-served, static, uncredentialed, game-free and pins frame-src/child-src",
+          "ok": true
+        },
+        {
+          "name": "wrapper frame-ancestors falls back to the configured allowlist when dshWebOrigin is unknown",
+          "ok": true
+        },
+        {
+          "name": "wrapper relay is point-to-point: only parent<->game messages are forwarded, payload untouched",
+          "ok": true
+        },
+        {
+          "name": "startup maintenance flags inconsistent asset-zip-v2 packages and leaves valid ones alone",
+          "ok": true
+        },
+        {
+          "name": "shared resource URL helpers agree with the served origin",
+          "ok": true
+        },
+        {
+          "name": "close() is idempotent and the factory exposes the documented surface",
+          "ok": true
+        },
+        {
+          "name": "resource errors use the Host GM -> HTTP mapping, not just codes",
+          "ok": true
+        },
+        {
+          "name": "runtime-renew / runtime-release routes refresh and invalidate the resource credential",
+          "ok": true
+        },
+        {
+          "name": "asset-zip-v2 launch fails closed without a resource origin and /entry never serves it",
+          "ok": true
+        },
+        {
+          "name": "createHost wires the resource origin into launch and disposes it cleanly",
+          "ok": true
+        },
+        {
+          "name": "an unbindable resource origin fails closed with GM-5038 (no silent fallback)",
+          "ok": true
+        },
+        {
+          "name": "catalog lists a bundled asset-zip-v2 built-in with validated package metadata",
+          "ok": true
+        },
+        {
+          "name": "an asset-zip-v2 built-in that is not bundled in this tree is skipped, not shown broken",
+          "ok": true
+        },
+        {
+          "name": "a tampered built-in package fails closed: listed as package-invalid and launch is rejected",
+          "ok": true
+        },
+        {
+          "name": "an invalid descriptor also fails closed with GM-4277",
+          "ok": true
+        },
+        {
+          "name": "built-in asset-zip-v2 launch uses the same resource-origin LaunchInfo as an installed package",
+          "ok": true
+        },
+        {
+          "name": "built-in package resources are served only from the descriptor files[] whitelist",
+          "ok": true
+        },
+        {
+          "name": "built-in asset-zip-v2 is not served over the DSH /entry route (GM-4043)",
+          "ok": true
+        },
+        {
+          "name": "built-in runtime lifecycle: renew keeps TTL, release invalidates the resource credential",
+          "ok": true
+        },
+        {
+          "name": "built-in games can never be uninstalled (GM-4038), including asset-zip-v2 ones",
+          "ok": true
+        },
+        {
+          "name": "snake (html-v1 builtin) does not regress and is not joined by an unbuilt orbit-courier",
+          "ok": true
+        },
+        {
+          "name": "the real games/orbit-courier/dist package passes catalog validation when present",
+          "ok": true
+        },
+        {
+          "name": "a shipped built-in that lost only its descriptor stays visible, broken and install-protected",
+          "ok": true
+        },
+        {
+          "name": "a built-in with its whole dist directory absent is treated as not shipped",
+          "ok": true
+        },
+        {
+          "name": "an unreadable built-in package is reported as broken, never silently skipped (CR8-04)",
+          "ok": true
+        },
+        {
+          "name": "a healthy shipped built-in still validates and launches (CR8-04 non-regression)",
+          "ok": true
+        },
+        {
+          "name": "health returns the documented snapshot and envelope",
+          "ok": true
+        },
+        {
+          "name": "request ids are unique and health HEAD has no body",
+          "ok": true
+        },
+        {
+          "name": "devMode only registers the dev agent-state route",
+          "ok": true
+        },
+        {
+          "name": "POST requires application/json, bounded bodies and object JSON",
+          "ok": true
+        },
+        {
+          "name": "unknown methods map to GM-4004 and method-specific routes stay exact",
+          "ok": true
+        },
+        {
+          "name": "all contract paths except the dev route are registered exactly",
+          "ok": true
+        },
+        {
+          "name": "missing connection does not throw and registers no routes",
+          "ok": true
+        },
+        {
+          "name": "event registration failures do not abort apply",
+          "ok": true
+        },
+        {
+          "name": "unwritable storage flips health to read-only and rejects writes with GM-5025",
+          "ok": true
+        },
+        {
+          "name": "broken built-in is explained by health diagnostics",
+          "ok": true
+        },
+        {
+          "name": "host unavailable returns GM-5031 and unknown paths map to 404",
+          "ok": true
+        },
+        {
+          "name": "config parsing is defensive and respects DSH_HOME",
+          "ok": true
+        },
+        {
+          "name": "GET /games returns built-in GameRecords from game.json",
+          "ok": true
+        },
+        {
+          "name": "GET /installed and GET /game expose the same record + active session",
+          "ok": true
+        },
+        {
+          "name": "games list supports q/category filters and validates ids",
+          "ok": true
+        },
+        {
+          "name": "missing dist is reported by installed/health while manifest fields still come from game.json",
+          "ok": true
+        },
+        {
+          "name": "preview serves only manifest-declared files",
+          "ok": true
+        },
+        {
+          "name": "GameRecord projection reflects save/session/score state",
+          "ok": true
+        },
+        {
+          "name": "GET /save is 404 before the first save",
+          "ok": true
+        },
+        {
+          "name": "POST /save creates revision 1 and GET include=data returns values",
+          "ok": true
+        },
+        {
+          "name": "subsequent saves increment revision, merge keys and keep a .bak",
+          "ok": true
+        },
+        {
+          "name": "expectedRevision is enforced and 0 creates the first save",
+          "ok": true
+        },
+        {
+          "name": "concurrent expectedRevision writes are serialised (one wins, one conflicts)",
+          "ok": true
+        },
+        {
+          "name": "storage key validation rejects invalid and prototype-pollution keys",
+          "ok": true
+        },
+        {
+          "name": "single-value and key-count quotas are enforced without partial writes",
+          "ok": true
+        },
+        {
+          "name": "total 1 MiB quota is enforced at the service level",
+          "ok": true
+        },
+        {
+          "name": "save schema newer than the game manifest returns GM-4099",
+          "ok": true
+        },
+        {
+          "name": "a corrupt current.json recovers from .bak and quarantines evidence",
+          "ok": true
+        },
+        {
+          "name": "a corrupt save is never reported as Continue-able",
+          "ok": true
+        },
+        {
+          "name": "unknown games and malformed bodies are rejected",
+          "ok": true
+        },
+        {
+          "name": "POST /save-remove deletes a key and releases its quota",
+          "ok": true
+        },
+        {
+          "name": "JSON null is a normal saved value and differs from key removal",
+          "ok": true
+        },
+        {
+          "name": "POST /save-remove is idempotent for missing keys/saves and honours CAS",
+          "ok": true
+        },
+        {
+          "name": "session start is idempotent and end closes exactly once",
+          "ok": true
+        },
+        {
+          "name": "concurrent starts adopt a single running session",
+          "ok": true
+        },
+        {
+          "name": "session end validates outcome/playSessionId and unknown sessions",
+          "ok": true
+        },
+        {
+          "name": "health reports preserved running sessions",
+          "ok": true
+        },
+        {
+          "name": "session records are capped at 100, newest first",
+          "ok": true
+        },
+        {
+          "name": "a running session survives a new Host instance (V0 keeps running)",
+          "ok": true
+        },
+        {
+          "name": "GET /scores returns empty state before any submission",
+          "ok": true
+        },
+        {
+          "name": "best/history follow higher-better semantics and ties keep the earlier entry",
+          "ok": true
+        },
+        {
+          "name": "manifest score range, integer and type validation map to GM-4006/GM-4002",
+          "ok": true
+        },
+        {
+          "name": "meta is size-limited and duplicate operationId is idempotent",
+          "ok": true
+        },
+        {
+          "name": "concurrent duplicate operationIds resolve once",
+          "ok": true
+        },
+        {
+          "name": "lower-better direction from the manifest is honoured",
+          "ok": true
+        },
+        {
+          "name": "history is capped at 200 while best is never evicted",
+          "ok": true
+        },
+        {
+          "name": "preferences start with the documented defaults (no file side effect)",
+          "ok": true
+        },
+        {
+          "name": "preferences merge writes and persist across reads",
+          "ok": true
+        },
+        {
+          "name": "theme and session fields are never persisted",
+          "ok": true
+        },
+        {
+          "name": "invalid preference fields are rejected",
+          "ok": true
+        },
+        {
+          "name": "a malformed preferences file falls back to defaults",
+          "ok": true
+        },
+        {
+          "name": "unknown DSH sessions return a cached idle snapshot",
+          "ok": true
+        },
+        {
+          "name": "dev override sets state/label/labelKey and validates input",
+          "ok": true
+        },
+        {
+          "name": "real session events: running → tool label → completed/error → ack",
+          "ok": true
+        },
+        {
+          "name": "AskUserQuestion tool call maps to a waiting-user question presence",
+          "ok": true
+        },
+        {
+          "name": "question wait is only cleared by its own tool result (and turn end)",
+          "ok": true
+        },
+        {
+          "name": "waiting-user has highest priority and survives lower-priority events",
+          "ok": true
+        },
+        {
+          "name": "turn/end reason kinds map to completed, idle or error",
+          "ok": true
+        },
+        {
+          "name": "dedupe, label-only changes, stale ack and pre-step waterfall",
+          "ok": true
+        },
+        {
+          "name": "agent snapshots never include prompt/tool content and logs stay redacted",
+          "ok": true
+        },
+        {
+          "name": "ETag / If-None-Match returns 304 and changes after a transition",
+          "ok": true
+        },
+        {
+          "name": "POST /launch returns complete LaunchInfo and a usable entryUrl",
+          "ok": true
+        },
+        {
+          "name": "POST /launch validates game, version, mode and session id",
+          "ok": true
+        },
+        {
+          "name": "compatibility checks map to GM-4260/GM-4261 and invalid ranges to GM-4221",
+          "ok": true
+        },
+        {
+          "name": "launch refuses a built-in without its entry file",
+          "ok": true
+        },
+        {
+          "name": "GET /entry serves self-contained HTML with the full CSP and cache headers",
+          "ok": true
+        },
+        {
+          "name": "HEAD /entry keeps headers and omits the body",
+          "ok": true
+        },
+        {
+          "name": "GET /entry returns readable JSON errors for bad params/version/missing assets",
+          "ok": true
+        },
+        {
+          "name": "preview routing is restricted to declared manifest files",
+          "ok": true
+        },
+        {
+          "name": "atomic writes create .tmp-free files, .bak, lock cleanup and 0600 mode",
+          "ok": true
+        },
+        {
+          "name": "writes to the same path are serialised in call order",
+          "ok": true
+        },
+        {
+          "name": "a corrupt primary recovers from .bak and quarantines the evidence",
+          "ok": true
+        },
+        {
+          "name": "a .bak-only file is used without quarantining",
+          "ok": true
+        },
+        {
+          "name": "two corrupt copies yield null and keep both quarantine files",
+          "ok": true
+        },
+        {
+          "name": "a newer schema is rejected without modifying the file",
+          "ok": true
+        },
+        {
+          "name": "an unwritable root flips to read-only and writes return GM-5025",
+          "ok": true
+        },
+        {
+          "name": "paths cannot escape the storage root and directories can be listed",
+          "ok": true
+        },
+        {
+          "name": "non-serialisable values are rejected before touching disk",
+          "ok": true
+        },
+        {
+          "name": "file Registry loads, validates, caches and merges with built-ins",
+          "ok": true
+        },
+        {
+          "name": "DSH_GAME_REGISTRY_URL wins over config.registry.url",
+          "ok": true
+        },
+        {
+          "name": "config file Registry requires allowLocalFile and reports a config issue",
+          "ok": true
+        },
+        {
+          "name": "file Registry without allowLocalFile but non-file url is rejected (https only)",
+          "ok": true
+        },
+        {
+          "name": "ETag / If-None-Match: a 304 refreshes fetchedAt without rewriting games",
+          "ok": true
+        },
+        {
+          "name": "stale (7h) and expired (15d) caches fall back without remote games",
+          "ok": true
+        },
+        {
+          "name": "whole-index validation rejects one bad entry and keeps the previous cache",
+          "ok": true
+        },
+        {
+          "name": "index size and entry-count limits reject the whole document",
+          "ok": true
+        },
+        {
+          "name": "manual refresh is throttled to 5 minutes unless force is set",
+          "ok": true
+        },
+        {
+          "name": "concurrent refreshes share a single flight",
+          "ok": true
+        },
+        {
+          "name": "network failure keeps the cached games and reports offline",
+          "ok": true
+        },
+        {
+          "name": "preview assets are cached and served from /preview only",
+          "ok": true
+        },
+        {
+          "name": "preview downloads are skipped when type/size do not match",
+          "ok": true
+        },
+        {
+          "name": "config.allowedHosts extends package URL admission",
+          "ok": true
+        },
+        {
+          "name": "the bundle default file Registry is used when nothing is configured",
+          "ok": true
+        },
+        {
+          "name": "invalid UTF-8/BOM/JSON Registry payloads map to GM-5032",
+          "ok": true
+        },
+        {
+          "name": "POST /install downloads, verifies and atomically installs a package",
+          "ok": true
+        },
+        {
+          "name": "operationId is idempotent and does not re-download",
+          "ok": true
+        },
+        {
+          "name": "installing the same version with the same sha256 is a no-op",
+          "ok": true
+        },
+        {
+          "name": "sha256 mismatch fails with GM-5015 and leaves no half install",
+          "ok": true
+        },
+        {
+          "name": "package size mismatch fails with GM-5037",
+          "ok": true
+        },
+        {
+          "name": "packages over 20 MiB are rejected with GM-4135",
+          "ok": true
+        },
+        {
+          "name": "non-self-contained packages fail with GM-4225",
+          "ok": true
+        },
+        {
+          "name": "package encoding and manifest uniqueness are enforced at install",
+          "ok": true
+        },
+        {
+          "name": "invalid inline manifests fail with package GM codes",
+          "ok": true
+        },
+        {
+          "name": "manifest id/version must match the Registry entry (GM-4095)",
+          "ok": true
+        },
+        {
+          "name": "unknown ids and built-in ids are rejected",
+          "ok": true
+        },
+        {
+          "name": "incompatible runtime/sdk ranges are rejected before writing",
+          "ok": true
+        },
+        {
+          "name": "registry URL redirects are re-validated and http downgrades are rejected",
+          "ok": true
+        },
+        {
+          "name": "update keeps current+1 versions and records previousVersion",
+          "ok": true
+        },
+        {
+          "name": "requesting an unavailable version returns GM-4094",
+          "ok": true
+        },
+        {
+          "name": "updating while the game is running is refused with GM-4096",
+          "ok": true
+        },
+        {
+          "name": "uninstall keeps saves/scores/sessions by default and is idempotent",
+          "ok": true
+        },
+        {
+          "name": "deleteData needs confirmDataDeletion and removes game data",
+          "ok": true
+        },
+        {
+          "name": "deleteData also removes backups so reinstall starts clean",
+          "ok": true
+        },
+        {
+          "name": "deleteData failure keeps the game installed and is retryable",
+          "ok": true
+        },
+        {
+          "name": "deleteData surfaces permission errors instead of treating data as missing",
+          "ok": true
+        },
+        {
+          "name": "uninstall prunes the retained previous version directory (current+1 window)",
+          "ok": true
+        },
+        {
+          "name": "uninstall cleanup failure is reported as warnings and other games stay intact",
+          "ok": true
+        },
+        {
+          "name": "uninstall record-write failure is retryable and keeps package trees untouched",
+          "ok": true
+        },
+        {
+          "name": "CR8-01 uninstall never traverses a symlinked game package root",
+          "ok": true
+        },
+        {
+          "name": "CR8-01 uninstall never traverses a symlinked packages ancestor",
+          "ok": true
+        },
+        {
+          "name": "uninstall renames symlinks without following their targets",
+          "ok": true
+        },
+        {
+          "name": "built-in games cannot be uninstalled (GM-4038)",
+          "ok": true
+        },
+        {
+          "name": "uninstalling a running game is refused (GM-4096)",
+          "ok": true
+        },
+        {
+          "name": "an unfinished Play Session alone does not block uninstall (Continue is not running)",
+          "ok": true
+        },
+        {
+          "name": "POST /install-local accepts raw text/html and records source local",
+          "ok": true
+        },
+        {
+          "name": "install-local validates content type, size and package contents",
+          "ok": true
+        },
+        {
+          "name": "install-local updates keep previousVersion like registry installs",
+          "ok": true
+        },
+        {
+          "name": "install lock is cross-process, stale-lock takeover works and staging is cleaned",
+          "ok": true
+        },
+        {
+          "name": "uninstall reports GM-4097 while another install/uninstall runs",
+          "ok": true
+        },
+        {
+          "name": "concurrent installs of different games are serialised without corrupting state",
+          "ok": true
+        },
+        {
+          "name": "a placement I/O failure leaves the previous installation untouched",
+          "ok": true
+        },
+        {
+          "name": "registry preview assets are attached to the installed record",
+          "ok": true
+        },
+        {
+          "name": "POST /launch serves an installed package with LaunchInfo v1 fields",
+          "ok": true
+        },
+        {
+          "name": "launch refuses a tampered registry package (GM-5014) and /entry re-checks it",
+          "ok": true
+        },
+        {
+          "name": "local installs re-parse the inline manifest before launch and serve",
+          "ok": true
+        },
+        {
+          "name": "/entry validates instance binding and expiry",
+          "ok": true
+        },
+        {
+          "name": "runtime-renew extends a live instance; runtime-release is per-instance",
+          "ok": true
+        },
+        {
+          "name": "CSP frame-ancestors uses config, appends loopback and never falls back to *",
+          "ok": true
+        },
+        {
+          "name": "invalid frame-ancestors entries are dropped and reported as config issues",
+          "ok": true
+        },
+        {
+          "name": "launch errors: unknown, registry-only, version mismatch, invalid mode",
+          "ok": true
+        },
+        {
+          "name": "preview links on launch come from the same-origin cache",
+          "ok": true
+        },
+        {
+          "name": "GET /games merges built-in, Registry and installed entries",
+          "ok": true
+        },
+        {
+          "name": "GET /games filters by q/category, limits and cursors",
+          "ok": true
+        },
+        {
+          "name": "GET /game returns the V1 detail envelope plus legacy fields",
+          "ok": true
+        },
+        {
+          "name": "updateAvailable is computed from the Registry and clears after installing",
+          "ok": true
+        },
+        {
+          "name": "local installs are listed with source local and no Registry entry",
+          "ok": true
+        },
+        {
+          "name": "GET /installed excludes registry-only entries",
+          "ok": true
+        },
+        {
+          "name": "devMode lists dev games in /games but not /installed, and serves their entry",
+          "ok": true
+        },
+        {
+          "name": "dev games without devMode are ignored and invalid dev roots are reported",
+          "ok": true
+        },
+        {
+          "name": "health exposes registry and installation counts",
+          "ok": true
+        },
+        {
+          "name": "startup clears staging job dirs and trash older than 7 days",
+          "ok": true
+        },
+        {
+          "name": "startup removes package directories with no installation record",
+          "ok": true
+        },
+        {
+          "name": "startup prunes versions outside current+previous and repairs records",
+          "ok": true
+        },
+        {
+          "name": "a fresh storage root is not populated by startup maintenance",
+          "ok": true
+        },
+        {
+          "name": "startup cleanup is skipped while another install holds the lock",
+          "ok": true
+        },
+        {
+          "name": "local asset-zip-v2 install persists the V1.5 installation record",
+          "ok": true
+        },
+        {
+          "name": "registry asset-zip-v2 install binds format/url/filesDigest from the v2 index",
+          "ok": true
+        },
+        {
+          "name": "local ZIP upload separates Content-Type, magic and size limits (§1.8/§3)",
+          "ok": true
+        },
+        {
+          "name": "format changes require a new version and html-v1 keeps working (§5.4, A01)",
+          "ok": true
+        },
+        {
+          "name": "startup recovery marks inconsistent asset-zip-v2 records broken without deleting data (§6.5)",
+          "ok": true
+        },
+        {
+          "name": "legacy installations.json records are normalized on read and persisted on write (§6.2)",
+          "ok": true
+        },
+        {
+          "name": "verifyInstalledRecord: html-v1 sha256 and asset-zip-v2 descriptor digests (§6.5)",
+          "ok": true
+        },
+        {
+          "name": "A03 representative rejections also hold in the Host test harness",
+          "ok": true
+        },
+        {
+          "name": "CR7-02 rollback: a retained asset-zip-v2 directory is reused, bytes untouched",
+          "ok": true
+        },
+        {
+          "name": "CR7-02 rollback: tampered retained directory or same-version bytes are still GM-4094",
+          "ok": true
+        },
+        {
+          "name": "CR7-02 rollback: local html-v1 with a null record sha256 still rolls back",
+          "ok": true
+        },
+        {
+          "name": "M2-FIX uninstall removes current and retained previous ZIP directories",
+          "ok": true
+        },
+        {
+          "name": "M2-FIX deleteData:true uninstall removes both versions and the save data",
+          "ok": true
+        },
+        {
+          "name": "CR7-02 failure: record-write failure keeps reused bytes and cleans only new directories",
+          "ok": true
+        },
+        {
+          "name": "explicit source: a v2 index is validated strictly and cached in registry-cache-v2.json only",
+          "ok": true
+        },
+        {
+          "name": "v2 index: package.format is mandatory and one bad entry rejects the whole document (GM-5032)",
+          "ok": true
+        },
+        {
+          "name": "v2 index: a ZIP entry is accepted (format explicit) and listed by the Host",
+          "ok": true
+        },
+        {
+          "name": "v1 index: an asset-zip-v2 entry rejects the whole document and falls back (GM-5032)",
+          "ok": true
+        },
+        {
+          "name": "default source: v2 is used first and cached separately",
+          "ok": true
+        },
+        {
+          "name": "default source: an unavailable v2 index falls back to the v1 official index",
+          "ok": true
+        },
+        {
+          "name": "cache isolation: a fresh v1 cache is used as the v1 fallback, never as a v2 snapshot",
+          "ok": true
+        },
+        {
+          "name": "cache isolation: a malformed registry-cache-v2.json is treated as no cache and falls back to seed",
+          "ok": true
+        },
+        {
+          "name": "v2 cache: sourceUrl mismatch means \"no cache\" (no stale directory is reused)",
+          "ok": true
+        },
+        {
+          "name": "v2 package URL admission reuses the V1 host allowlist/same-host rules",
+          "ok": true
+        },
+        {
+          "name": "default layered config points at the v2 policy source with the v1 index as fallback",
+          "ok": true
+        },
+        {
+          "name": "explicit file Registry: a v2 index is detected and validated with the v2 rules",
+          "ok": true
+        },
+        {
+          "name": "v2 index with one bad entry keeps the previous v2 cache (whole-index validation)",
+          "ok": true
+        },
+        {
+          "name": "GET /platform-update is always a 200 envelope with the frozen shape",
+          "ok": true
+        },
+        {
+          "name": "manual refresh validates the fixed official index and caches the target atomically",
+          "ok": true
+        },
+        {
+          "name": "manual refresh is throttled for 60s and does not re-check",
+          "ok": true
+        },
+        {
+          "name": "concurrent refreshes share a single in-flight check",
+          "ok": true
+        },
+        {
+          "name": "network failure keeps the last successful target and never blocks games",
+          "ok": true
+        },
+        {
+          "name": "malformed or unbound indexes are rejected as invalid while keeping the last target",
+          "ok": true
+        },
+        {
+          "name": "redirect downgrade and oversized indexes are rejected without a target",
+          "ok": true
+        },
+        {
+          "name": "a 5s index timeout is enforced and surfaced as a retryable offline state",
+          "ok": true
+        },
+        {
+          "name": "startup silent check runs only when the last attempt is older than 6h",
+          "ok": true
+        },
+        {
+          "name": "same version with a different commit is reported as an anomaly",
+          "ok": true
+        },
+        {
+          "name": "H1 route surface fails closed and client-report stores per-window identity",
+          "ok": true
+        },
+        {
+          "name": "begin fails closed with GM-5038 when a validated target exists but no plugin manager is reachable",
+          "ok": true
+        },
+        {
+          "name": "the plugin manager is re-resolved after activation (t0-missing → later present)",
+          "ok": true
+        },
+        {
+          "name": "profile discovery handles multiple profiles and dev-row shadowing without guessing",
+          "ok": true
+        },
+        {
+          "name": "derived capability matrix follows the frozen HMR/dev/anomaly rules",
+          "ok": true
+        },
+        {
+          "name": "health identity is frozen at activation (disk-new/running-old stays old)",
+          "ok": true
+        },
+        {
+          "name": "/health exposes additive buildCommit/loadedVersion without regressing old fields",
+          "ok": true
+        },
+        {
+          "name": "adapter resolves the plugin manager lazily (t0 missing, later present)",
+          "ok": true
+        },
+        {
+          "name": "adapter reports unavailable when a public method is missing",
+          "ok": true
+        },
+        {
+          "name": "describe maps bundle state (enabled/version/availability) from listBundles",
+          "ok": true
+        },
+        {
+          "name": "describe detects a dev row shadowing the installed package",
+          "ok": true
+        },
+        {
+          "name": "describe treats an explicit dev-source identity as shadowed without plugins",
+          "ok": true
+        },
+        {
+          "name": "HMR capability: present is detected once the service registers (stable samples)",
+          "ok": true
+        },
+        {
+          "name": "HMR capability: absent requires continuous absence (t0 race cannot produce a false absent)",
+          "ok": true
+        },
+        {
+          "name": "HMR capability: unresolvable/throwing probes fail closed as unknown",
+          "ok": true
+        },
+        {
+          "name": "HMR capability: a single transient presence then absence is unknown, never absent",
+          "ok": true
+        },
+        {
+          "name": "HMR capability cache is per hostEpoch and invalidated by tree changes",
+          "ok": true
+        },
+        {
+          "name": "install constructs the exact frozen spec and never forwards a foreign target",
+          "ok": true
+        },
+        {
+          "name": "install fails closed when the plugin manager is unreachable",
+          "ok": true
+        },
+        {
+          "name": "waitForInstall passes through null (null is not success) and active results",
+          "ok": true
+        },
+        {
+          "name": "cancelInstall passes the native three-state answer through",
+          "ok": true
+        },
+        {
+          "name": "expected client identity comes from the running bundle release identity",
+          "ok": true
+        },
+        {
+          "name": "happy path: inspecting→installing→applied(intermediate)→activating→updated with both ends verified",
+          "ok": true
+        },
+        {
+          "name": "coordination: no package change until every active instance confirms pause+save",
+          "ok": true
+        },
+        {
+          "name": "coordination: a failed save aborts before any package change with actionable state",
+          "ok": true
+        },
+        {
+          "name": "coordination: an unresponsive instance times out and aborts, never installs",
+          "ok": true
+        },
+        {
+          "name": "coordination: idle windows are allowed, unknown/mismatched instances are rejected",
+          "ok": true
+        },
+        {
+          "name": "idempotency: same target returns the same operation; a different target is busy (GM-4091)",
+          "ok": true
+        },
+        {
+          "name": "already-at-target: running identity match creates a terminal idempotent observation",
+          "ok": true
+        },
+        {
+          "name": "already-at-target: disk at target with no HMR reports pending-restart, not success",
+          "ok": true
+        },
+        {
+          "name": "ambiguous-install is never mapped to success without verified version+commit",
+          "ok": true
+        },
+        {
+          "name": "native management failure reports failed with oldVersionStillRunning=true",
+          "ok": true
+        },
+        {
+          "name": "applied with a mismatched installed version is verification-failed(version-mismatch)",
+          "ok": true
+        },
+        {
+          "name": "non-HMR restart-required maps to pending-restart (never updated)",
+          "ok": true
+        },
+        {
+          "name": "cancel during installing: native cancelled maps to cancelled(cancelledBy=user)",
+          "ok": true
+        },
+        {
+          "name": "cancel too-late keeps observing to the real terminal state (no rollback claim)",
+          "ok": true
+        },
+        {
+          "name": "stale client (old page) reports stale-runtime(client-old) until it refreshes",
+          "ok": true
+        },
+        {
+          "name": "no client report in time ⇒ verification-failed(response-lost), never success",
+          "ok": true
+        },
+        {
+          "name": "Host running identity never moves ⇒ stale-runtime(host-old), never updated",
+          "ok": true
+        },
+        {
+          "name": "recovery after HMR dispose mid-install: persisted record reattaches, waitForInstall null is not success",
+          "ok": true
+        },
+        {
+          "name": "recovery after non-HMR restart: pending-restart record becomes activating→updated",
+          "ok": true
+        },
+        {
+          "name": "recovery after an interrupted coordination aborts with no package change",
+          "ok": true
+        },
+        {
+          "name": "terminal observation is retained until the next begin; new begin replaces it",
+          "ok": true
+        },
+        {
+          "name": "dev-row shadow blocks begin (GM-4090 dev-source) without installing",
+          "ok": true
+        },
+        {
+          "name": "unknown capability blocks begin with GM-5038 (fail closed)",
+          "ok": true
+        },
+        {
+          "name": "multi-window concurrent begins collapse into one operation and one install",
+          "ok": true
+        },
+        {
+          "name": "routes: begin → observe → pending-restart through the real Host composition",
+          "ok": true
+        },
+        {
+          "name": "routes: begin rejects a forged/unknown targetId with GM-4090 (no install)",
+          "ok": true
+        },
+        {
+          "name": "routes: cancel during installing reports too-late and observation continues",
+          "ok": true
+        },
+        {
+          "name": "routes: client-report records the browser identity it is given",
+          "ok": true
+        }
+      ],
+      "scratchLog": "/tmp/dsh-v15/m3/logs/suite-host.log",
+      "stdoutBytes": 25314,
+      "stderrBytes": 0
+    },
+    {
+      "id": "client-suite",
+      "command": "node --test packages/client/test/index.js",
+      "exitCode": 0,
+      "elapsedMs": 992,
+      "counts": {
+        "tests": 249,
+        "suites": 0,
+        "pass": 249,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "tests": [
+        {
+          "name": "initial store state is the Market page with an idle runtime",
+          "ok": true
+        },
+        {
+          "name": "page transitions accept only known pages and notify subscribers once",
+          "ok": true
+        },
+        {
+          "name": "binding a session resets agent state and rejects invalid ids",
+          "ok": true
+        },
+        {
+          "name": "agent snapshots replace per epoch/seq and refresh 304 timestamps",
+          "ok": true
+        },
+        {
+          "name": "agent snapshots for another session and malformed states are ignored",
+          "ok": true
+        },
+        {
+          "name": "poll failures are recorded as codes and a later snapshot clears them",
+          "ok": true
+        },
+        {
+          "name": "paused games are validated and belong to the bound session",
+          "ok": true
+        },
+        {
+          "name": "turn ignore, completion ack, market cache and runtime transitions",
+          "ok": true
+        },
+        {
+          "name": "reduce is pure: unchanged actions return the same object",
+          "ok": true
+        },
+        {
+          "name": "the Game tab resumes the last game played in the same Session",
+          "ok": true
+        },
+        {
+          "name": "the Game tab falls back to the Market when the remembered game is gone",
+          "ok": true
+        },
+        {
+          "name": "runtime-start without a Session does not record a Game-tab target",
+          "ok": true
+        },
+        {
+          "name": "runtime-launch-refresh merges renewed metadata without touching the state machine",
+          "ok": true
+        },
+        {
+          "name": "chip is hidden without an agent snapshot",
+          "ok": true
+        },
+        {
+          "name": "waiting-user has the highest priority and no 5s threshold",
+          "ok": true
+        },
+        {
+          "name": "waiting label kinds come from the Host labelKey",
+          "ok": true
+        },
+        {
+          "name": "resume wins over running and expires after ten minutes",
+          "ok": true
+        },
+        {
+          "name": "a paused game from another session does not show its resume chip",
+          "ok": true
+        },
+        {
+          "name": "running needs five full seconds from the Host since timestamp",
+          "ok": true
+        },
+        {
+          "name": "ignoring a turn hides only that turn; a new turn reappears",
+          "ok": true
+        },
+        {
+          "name": "waiting-user overrides a previous turn ignore",
+          "ok": true
+        },
+        {
+          "name": "stale snapshots hide running and waiting but keep a local paused game",
+          "ok": true
+        },
+        {
+          "name": "the chip never renders while the Game Market panel is active",
+          "ok": true
+        },
+        {
+          "name": "turn key falls back from turnId to since and reports resumable saves",
+          "ok": true
+        },
+        {
+          "name": "findResumableGame prefers the paused game over a Host save",
+          "ok": true
+        },
+        {
+          "name": "sidebar status follows waiting > completed > running > resume",
+          "ok": true
+        },
+        {
+          "name": "sidebar completed clears after acknowledgement and DSH status supplements waiting",
+          "ok": true
+        },
+        {
+          "name": "deriveTabStatus surfaces waiting/error/completed/resume only",
+          "ok": true
+        },
+        {
+          "name": "polling requires visibility and a bound session",
+          "ok": true
+        },
+        {
+          "name": "the game runtime polls its sticky bound session, not a newly selected one",
+          "ok": true
+        },
+        {
+          "name": "backoff doubles to the shared cap",
+          "ok": true
+        },
+        {
+          "name": "poller fetches a snapshot, honours ETag/304, and schedules the next tick",
+          "ok": true
+        },
+        {
+          "name": "poller backs off after failures and stops scheduling while hidden",
+          "ok": true
+        },
+        {
+          "name": "zh and en dictionaries have exactly the same keys and no empty values",
+          "ok": true
+        },
+        {
+          "name": "required UI keys exist in both dictionaries",
+          "ok": true
+        },
+        {
+          "name": "every static t() key used in source exists in the dictionary",
+          "ok": true
+        },
+        {
+          "name": "V1 Market, detail and error copy exists in both dictionaries",
+          "ok": true
+        },
+        {
+          "name": "locale switching returns the matching Market copy",
+          "ok": true
+        },
+        {
+          "name": "interpolation and translate fallbacks are safe",
+          "ok": true
+        },
+        {
+          "name": "user-facing Chinese exists only in the locale module",
+          "ok": true
+        },
+        {
+          "name": "browser source keeps the zero-dependency import rules",
+          "ok": true
+        },
+        {
+          "name": "runtime release requires our own instance id (CR-05)",
+          "ok": true
+        },
+        {
+          "name": "entry URL guard only accepts the same-origin relative entry route",
+          "ok": true
+        },
+        {
+          "name": "launch info validation rejects scheme, instance, nonce, mode and viewport errors",
+          "ok": true
+        },
+        {
+          "name": "load deadlines match the shared slow/error thresholds",
+          "ok": true
+        },
+        {
+          "name": "runtime error codes map to explicit, existing copy keys",
+          "ok": true
+        },
+        {
+          "name": "presence prioritizes waiting over runtime errors and degrades to idle when stale",
+          "ok": true
+        },
+        {
+          "name": "runtime controller factory degrades the stub to GM-NO_RUNTIME",
+          "ok": true
+        },
+        {
+          "name": "pauseRuntime distinguishes success, failed save and thrown pause",
+          "ok": true
+        },
+        {
+          "name": "pauseRuntimeBounded never leaves the UI waiting forever",
+          "ok": true
+        },
+        {
+          "name": "absolute loopback resource entry URLs are accepted; external ones are not",
+          "ok": true
+        },
+        {
+          "name": "launch info validation covers the V1.5 resource extension",
+          "ok": true
+        },
+        {
+          "name": "resource-credential reload policy only applies to V1.5 launches",
+          "ok": true
+        },
+        {
+          "name": "reloadRuntime delegates to controller.reload and reports acceptance",
+          "ok": true
+        },
+        {
+          "name": "current session prefers a non-blank mainView retention",
+          "ok": true
+        },
+        {
+          "name": "session status selectors tolerate missing entries",
+          "ok": true
+        },
+        {
+          "name": "refreshMarket stores items and preserves cached items on failure",
+          "ok": true
+        },
+        {
+          "name": "beginGame captures the current session as a sticky runtime binding",
+          "ok": true
+        },
+        {
+          "name": "paused game records and leave transitions keep the resume window data",
+          "ok": true
+        },
+        {
+          "name": "acknowledgeCompleted clears locally even if the Host ack fails",
+          "ok": true
+        },
+        {
+          "name": "formatting helpers degrade safely",
+          "ok": true
+        },
+        {
+          "name": "built client.js is a DSH module-loader bundle with the right id",
+          "ok": true
+        },
+        {
+          "name": "bundle materializes with only react and exports inject/apply",
+          "ok": true
+        },
+        {
+          "name": "apply registers locale, main panel, sidebar row and header chip inside effects",
+          "ok": true
+        },
+        {
+          "name": "external allowlist is exactly the reviewed minimal set",
+          "ok": true
+        },
+        {
+          "name": "allowlisted bare imports bundle as require(\"<specifier>\") and alias correctly",
+          "ok": true
+        },
+        {
+          "name": "the bundled external fixture materializes with a require() module loader",
+          "ok": true
+        },
+        {
+          "name": "every other bare import still throws (no arbitrary bare imports)",
+          "ok": true
+        },
+        {
+          "name": "unknown external specifiers cannot be injected through collectModules",
+          "ok": true
+        },
+        {
+          "name": "multi-line imports are joined instead of being mis-bundled",
+          "ok": true
+        },
+        {
+          "name": "bundleExpression still rejects external imports (games get no host modules)",
+          "ok": true
+        },
+        {
+          "name": "comment text that looks like an inline manifest script cannot pollute game HTML",
+          "ok": true
+        },
+        {
+          "name": "the committed client.js only requires allowlisted platform modules",
+          "ok": true
+        },
+        {
+          "name": "client category list matches the frozen manifest enum",
+          "ok": true
+        },
+        {
+          "name": "normalizeGame accepts V0 records and canonical V1 summaries",
+          "ok": true
+        },
+        {
+          "name": "image URLs stay same-origin (no CDN or external hosts reach the renderer)",
+          "ok": true
+        },
+        {
+          "name": "compatibility, update and size fields normalize from the installation view",
+          "ok": true
+        },
+        {
+          "name": "normalizeDetailPayload handles the V1 wrapper and bare V0 records",
+          "ok": true
+        },
+        {
+          "name": "local search matches name, author, category label, tags and id",
+          "ok": true
+        },
+        {
+          "name": "category filters accept ids and \"all\"",
+          "ok": true
+        },
+        {
+          "name": "catalog ordering puts installed games first and then uses name order",
+          "ok": true
+        },
+        {
+          "name": "hero picks the most recent resumable installed game",
+          "ok": true
+        },
+        {
+          "name": "sections follow PRD ordering, limits and offline rules",
+          "ok": true
+        },
+        {
+          "name": "section lists are capped at eight entries",
+          "ok": true
+        },
+        {
+          "name": "My Games ordering: resumable, then played, then newest install, then name",
+          "ok": true
+        },
+        {
+          "name": "progress summary prefers score, then generic progress",
+          "ok": true
+        },
+        {
+          "name": "permission line follows capabilities and rejects unknown declarations",
+          "ok": true
+        },
+        {
+          "name": "detail action matrix: install / incompatible / offline / cancel / retry",
+          "ok": true
+        },
+        {
+          "name": "detail action matrix: play / continue / resume / update / reinstall",
+          "ok": true
+        },
+        {
+          "name": "screenshots, builtin/update helpers and cover tones behave deterministically",
+          "ok": true
+        },
+        {
+          "name": "local filtering of 500 games stays well under the 150ms budget",
+          "ok": true
+        },
+        {
+          "name": "normalizeCatalog tolerates bare arrays and drops invalid entries",
+          "ok": true
+        },
+        {
+          "name": "grid navigation handles four directions, rows and Home/End",
+          "ok": true
+        },
+        {
+          "name": "chip and menu focus move with wraparound",
+          "ok": true
+        },
+        {
+          "name": "dialog tab trap loops in both directions",
+          "ok": true
+        },
+        {
+          "name": "Esc priority closes the innermost surface first",
+          "ok": true
+        },
+        {
+          "name": "search shortcut ignores inputs and modifiers, IME and activation keys work",
+          "ok": true
+        },
+        {
+          "name": "row menus open with Shift+F10, ArrowRight or ArrowDown",
+          "ok": true
+        },
+        {
+          "name": "measured first-row offsets yield the column count",
+          "ok": true
+        },
+        {
+          "name": "search debounce waits the PRD 150ms and applies only the latest value",
+          "ok": true
+        },
+        {
+          "name": "debounce flush applies immediately and cancel drops the pending value",
+          "ok": true
+        },
+        {
+          "name": "debounce is a no-op when there is nothing pending",
+          "ok": true
+        },
+        {
+          "name": "every GM code maps to an existing bilingual message key",
+          "ok": true
+        },
+        {
+          "name": "unknown and field-level manifest codes degrade safely",
+          "ok": true
+        },
+        {
+          "name": "install failure stages group the PRD copy correctly",
+          "ok": true
+        },
+        {
+          "name": "stage labels cover every visible install stage",
+          "ok": true
+        },
+        {
+          "name": "offline, busy and retryable classifications",
+          "ok": true
+        },
+        {
+          "name": "the GM mapping table never leaks the raw diagnostic message",
+          "ok": true
+        },
+        {
+          "name": "listGames only sends the provided query parameters and unwraps the envelope",
+          "ok": true
+        },
+        {
+          "name": "getGame and getScores use the id query",
+          "ok": true
+        },
+        {
+          "name": "install posts the frozen JSON body with a stable operation id",
+          "ok": true
+        },
+        {
+          "name": "uninstall only confirms data deletion when explicitly requested",
+          "ok": true
+        },
+        {
+          "name": "registry refresh posts force and operationId",
+          "ok": true
+        },
+        {
+          "name": "install-local sends raw text/html with the operation id in the query",
+          "ok": true
+        },
+        {
+          "name": "install-local can read a File through FileReader when .text() is absent",
+          "ok": true
+        },
+        {
+          "name": "readFileText prefers File.text() and surfaces reader failures",
+          "ok": true
+        },
+        {
+          "name": "error envelopes become GameMarketApiError with code and retryability",
+          "ok": true
+        },
+        {
+          "name": "a non-JSON response from an older Host maps to GM-5031",
+          "ok": true
+        },
+        {
+          "name": "network failures and caller aborts are distinguishable",
+          "ok": true
+        },
+        {
+          "name": "request timeouts are reported as timed out transport errors",
+          "ok": true
+        },
+        {
+          "name": "query builder drops empty values",
+          "ok": true
+        },
+        {
+          "name": "install-local zip uploads the exact raw bytes with Content-Type application/zip",
+          "ok": true
+        },
+        {
+          "name": "install-local zip reads a File via arrayBuffer() and never calls text()",
+          "ok": true
+        },
+        {
+          "name": "install-local zip falls back to FileReader.readAsArrayBuffer",
+          "ok": true
+        },
+        {
+          "name": "install-local zip accepts an inline Blob-like bytes source",
+          "ok": true
+        },
+        {
+          "name": "install-local rejects an unsupported local package type with GM-4150",
+          "ok": true
+        },
+        {
+          "name": "install-local still sends HTML as text/html (no regression)",
+          "ok": true
+        },
+        {
+          "name": "readFileBytes normalizes ArrayBuffer/views and surfaces reader failures",
+          "ok": true
+        },
+        {
+          "name": "file picker accepts both carriers by extension and MIME",
+          "ok": true
+        },
+        {
+          "name": "format is decided by file name extension first (host filename rule)",
+          "ok": true
+        },
+        {
+          "name": "MIME type is a fallback only when the name has no known extension",
+          "ok": true
+        },
+        {
+          "name": "selection validation rejects unsupported and oversized files",
+          "ok": true
+        },
+        {
+          "name": "package file names parse to id/version/format for the confirmation dialog",
+          "ok": true
+        },
+        {
+          "name": "overwrite target only names installed, non-builtin games",
+          "ok": true
+        },
+        {
+          "name": "install dispatches queued then installed and returns the payload",
+          "ok": true
+        },
+        {
+          "name": "installs are serialized globally: the second request waits for the first",
+          "ok": true
+        },
+        {
+          "name": "a duplicate request for the same game shares the pending promise",
+          "ok": true
+        },
+        {
+          "name": "busy errors (GM-4091 / GM-4097) retry without surfacing a failure",
+          "ok": true
+        },
+        {
+          "name": "permanent failures keep the stage, failure bucket and reason key",
+          "ok": true
+        },
+        {
+          "name": "cancel aborts the running request and reports cancellation",
+          "ok": true
+        },
+        {
+          "name": "uninstall clears the row job and passes deleteData through",
+          "ok": true
+        },
+        {
+          "name": "local installs use the raw-file API and mark the job installed",
+          "ok": true
+        },
+        {
+          "name": "local zip installs pass format and raw bytes through unchanged",
+          "ok": true
+        },
+        {
+          "name": "missing Host API degrades to a failed job instead of throwing",
+          "ok": true
+        },
+        {
+          "name": "stage hint switches to downloading while the request is in flight",
+          "ok": true
+        },
+        {
+          "name": "initial state includes the V1 market, detail, UI, install, dialog and toast slices",
+          "ok": true
+        },
+        {
+          "name": "detail navigation loads, stores scores and returns to the source list with focus",
+          "ok": true
+        },
+        {
+          "name": "detail close returns to Market with a card focus intent",
+          "ok": true
+        },
+        {
+          "name": "tabs reset detail state; detail is not reachable through a raw page action",
+          "ok": true
+        },
+        {
+          "name": "query, category and search state validate their inputs",
+          "ok": true
+        },
+        {
+          "name": "scroll positions are stored per page and validated",
+          "ok": true
+        },
+        {
+          "name": "dialogs cover uninstall confirmation, data deletion and focus return",
+          "ok": true
+        },
+        {
+          "name": "toasts deduplicate by id, cap at three and dismiss by id",
+          "ok": true
+        },
+        {
+          "name": "install jobs track stages, percentages, failures and clearing",
+          "ok": true
+        },
+        {
+          "name": "market payloads carry offline and registry state",
+          "ok": true
+        },
+        {
+          "name": "focus intents are set, consumed and never duplicated by invalid data",
+          "ok": true
+        },
+        {
+          "name": "reduce stays pure for invalid and unchanged actions",
+          "ok": true
+        },
+        {
+          "name": "loadCatalog normalizes games and records refresh time, registry and health",
+          "ok": true
+        },
+        {
+          "name": "seed Registry snapshots are usable, not offline",
+          "ok": true
+        },
+        {
+          "name": "the catalog follows nextCursor pages until the list is complete",
+          "ok": true
+        },
+        {
+          "name": "an offline registry marks the catalog offline but keeps the data",
+          "ok": true
+        },
+        {
+          "name": "when /games fails, /installed is used as the offline catalog",
+          "ok": true
+        },
+        {
+          "name": "when both catalog routes fail the error is kept and cached games survive",
+          "ok": true
+        },
+        {
+          "name": "openDetail loads the V1 payload, scores and can be closed",
+          "ok": true
+        },
+        {
+          "name": "loadDetail accepts a bare V0 game record and reports detail failures",
+          "ok": true
+        },
+        {
+          "name": "startInstall refreshes the catalog, clears the job and raises the install toast",
+          "ok": true
+        },
+        {
+          "name": "update installs use the update toast and pass the version",
+          "ok": true
+        },
+        {
+          "name": "cancelled and failed installs do not show a success toast",
+          "ok": true
+        },
+        {
+          "name": "uninstall keeps saves by default and deletes data only when confirmed",
+          "ok": true
+        },
+        {
+          "name": "uninstalling from the detail page returns to the market",
+          "ok": true
+        },
+        {
+          "name": "local installs toast the game name and clear both job keys",
+          "ok": true
+        },
+        {
+          "name": "local zip installs forward format and raw bytes to the manager",
+          "ok": true
+        },
+        {
+          "name": "local html installs keep the default html-v1 format when none is given",
+          "ok": true
+        },
+        {
+          "name": "the install-local confirmation passes the selected format to the manager",
+          "ok": true
+        },
+        {
+          "name": "without an explicit format a .dshgame.zip name is detected as asset-zip-v2",
+          "ok": true
+        },
+        {
+          "name": "the Market panel confirm action uses the dialog format helper (source guard)",
+          "ok": true
+        },
+        {
+          "name": "dialog format travels through the real install manager to an application/zip upload",
+          "ok": true
+        },
+        {
+          "name": "local install failures surface the mapped GM message",
+          "ok": true
+        },
+        {
+          "name": "registry refresh handles success, throttling and offline failures",
+          "ok": true
+        },
+        {
+          "name": "toast helpers and search actions dispatch the expected state",
+          "ok": true
+        },
+        {
+          "name": "normalizeInspection accepts the frozen §8 shape and never invents fields",
+          "ok": true
+        },
+        {
+          "name": "normalizeInspection tolerates a never-checked Host (200 envelope, empty state)",
+          "ok": true
+        },
+        {
+          "name": "invalid inspection payloads normalize to null instead of guessing",
+          "ok": true
+        },
+        {
+          "name": "observation normalization drops numeric progress and keeps only the union fields",
+          "ok": true
+        },
+        {
+          "name": "unknown observation states are rejected (UI only renders contract states)",
+          "ok": true
+        },
+        {
+          "name": "active/terminal state lists match the contract state machine",
+          "ok": true
+        },
+        {
+          "name": "applied and installing and activating are never rendered as success",
+          "ok": true
+        },
+        {
+          "name": "only updated is the success terminal state",
+          "ok": true
+        },
+        {
+          "name": "pending-restart says installed-but-effective-after-restart, not updated",
+          "ok": true
+        },
+        {
+          "name": "recovery actions are explicit per branch",
+          "ok": true
+        },
+        {
+          "name": "too-late keeps observing and never claims cancellation",
+          "ok": true
+        },
+        {
+          "name": "cancel is offered only while inspecting/installing",
+          "ok": true
+        },
+        {
+          "name": "coordination state surfaces pending and failed counts",
+          "ok": true
+        },
+        {
+          "name": "target comparison only claims up-to-date when version+commit match",
+          "ok": true
+        },
+        {
+          "name": "blocked reasons follow the frozen capability reason enum (fail closed)",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView exposes discovery/target/identity for the section",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView hides the UI for an unsupported (old) Host",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView keeps the cached target while offline and never claims success",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView renders the host operation and applied stays non-success",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView shows a local starting state before the first observation",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView computes the refresh throttle window from nextCheckAt",
+          "ok": true
+        },
+        {
+          "name": "deriveUpdateView surfaces begin/refresh action errors and coordination state",
+          "ok": true
+        },
+        {
+          "name": "client identity normalization never fabricates a version",
+          "ok": true
+        },
+        {
+          "name": "inspection anomaly (same version different commit) is preserved for the UI",
+          "ok": true
+        },
+        {
+          "name": "inspect GETs the platform-update route and unwraps the envelope",
+          "ok": true
+        },
+        {
+          "name": "refresh POSTs an empty JSON body",
+          "ok": true
+        },
+        {
+          "name": "begin sends only the verified target id and rejects a missing id locally",
+          "ok": true
+        },
+        {
+          "name": "observe passes the operation id as a query parameter",
+          "ok": true
+        },
+        {
+          "name": "cancel posts the operation id and preserves the cancel status union",
+          "ok": true
+        },
+        {
+          "name": "coordinate posts the window payload verbatim (no invented fields)",
+          "ok": true
+        },
+        {
+          "name": "client-report posts the embedded build identity fields",
+          "ok": true
+        },
+        {
+          "name": "error envelopes become GameMarketApiError with the GM code and retryable flag",
+          "ok": true
+        },
+        {
+          "name": "an old Host without the route surfaces as GM-4004 with the HTTP status (UI hides itself)",
+          "ok": true
+        },
+        {
+          "name": "query builder keeps only defined values",
+          "ok": true
+        },
+        {
+          "name": "build identity helpers validate semver and full commits only",
+          "ok": true
+        },
+        {
+          "name": "the unbundled source parses as \"not embedded\" instead of claiming a version",
+          "ok": true
+        },
+        {
+          "name": "release.json validation is strict (schema/version/commit)",
+          "ok": true
+        },
+        {
+          "name": "page identity issues 32-hex tokens and keeps windowId across a reload",
+          "ok": true
+        },
+        {
+          "name": "page identity degrades safely without storage or crypto",
+          "ok": true
+        },
+        {
+          "name": "build-client embeds the identity from a release.json and stays byte deterministic",
+          "ok": true
+        },
+        {
+          "name": "a stale release.json (previous version) warns but embeds no buildCommit",
+          "ok": true
+        },
+        {
+          "name": "build-client fails loudly on an unreadable/invalid release.json",
+          "ok": true
+        },
+        {
+          "name": "default build embeds the identity of the current tree (or null without release.json)",
+          "ok": true
+        },
+        {
+          "name": "start reports this build identity (never the Host version) and loads the inspection",
+          "ok": true
+        },
+        {
+          "name": "an active persisted operation is observed at ~1s and only updated is success",
+          "ok": true
+        },
+        {
+          "name": "observation reaches updated terminal state and stops polling",
+          "ok": true
+        },
+        {
+          "name": "repeated begin calls never start a second install and reuse the operation id",
+          "ok": true
+        },
+        {
+          "name": "begin rejects a forged target id without calling the Host",
+          "ok": true
+        },
+        {
+          "name": "coordination reports saved:true only for a clean platform pause",
+          "ok": true
+        },
+        {
+          "name": "a save failure is reported saved:false and visibly blocks the update",
+          "ok": true
+        },
+        {
+          "name": "an unresponsive instance is reported paused:false and saved:false",
+          "ok": true
+        },
+        {
+          "name": "an idle window reports idle with an empty instance list",
+          "ok": true
+        },
+        {
+          "name": "coordination happens once per operation per page life (multi-window safe)",
+          "ok": true
+        },
+        {
+          "name": "page refresh resumes the persisted operation and reports identity again",
+          "ok": true
+        },
+        {
+          "name": "an old Host without the routes marks the UI unsupported and stops polling",
+          "ok": true
+        },
+        {
+          "name": "cancel too-late does not claim cancellation and keeps observing",
+          "ok": true
+        },
+        {
+          "name": "refresh keeps the inspection and surfaces throttling without an error",
+          "ok": true
+        },
+        {
+          "name": "client identity is re-reported periodically while an update is running",
+          "ok": true
+        },
+        {
+          "name": "runtime registry entries are collected without clearing live registrations",
+          "ok": true
+        },
+        {
+          "name": "zh confirmation copy states all-sessions/restart and exact version+commit",
+          "ok": true
+        },
+        {
+          "name": "en confirmation copy states all-sessions/restart and exact version+commit",
+          "ok": true
+        },
+        {
+          "name": "confirmation copy adds the no-HMR restart note only when applicable",
+          "ok": true
+        },
+        {
+          "name": "confirmation copy never invents a target version or commit",
+          "ok": true
+        },
+        {
+          "name": "channel labels are localized and unknown channels stay verbatim",
+          "ok": true
+        },
+        {
+          "name": "shortCommit keeps the full value for titles/data attributes",
+          "ok": true
+        },
+        {
+          "name": "discovery copy maps update-available / up-to-date / no-target / unknown",
+          "ok": true
+        },
+        {
+          "name": "offline/stale/invalid discovery never claims up to date and keeps last success",
+          "ok": true
+        },
+        {
+          "name": "never-checked discovery is explicit instead of pretending up to date",
+          "ok": true
+        },
+        {
+          "name": "missing inspection with an error maps to an actionable error copy",
+          "ok": true
+        }
+      ],
+      "scratchLog": "/tmp/dsh-v15/m3/logs/suite-client.log",
+      "stdoutBytes": 20328,
+      "stderrBytes": 0
+    },
+    {
+      "id": "release-tools",
+      "command": "node --test tests/v1.5-release-tools.test.js",
+      "exitCode": 0,
+      "elapsedMs": 42193,
+      "counts": {
+        "tests": 37,
+        "suites": 0,
+        "pass": 37,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "tests": [
+        {
+          "name": "prepare dry-run validates everything and writes nothing",
+          "ok": true
+        },
+        {
+          "name": "prepare human dry-run output states it writes nothing",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects a dirty worktree",
+          "ok": true
+        },
+        {
+          "name": "prepare refuses to bump the version itself (P must be pre-bumped)",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects a non-official origin remote",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects an invalid engines declaration",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects a files whitelist that would not ship the release identity",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects a client bundle that does not embed the release identity",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects a non-deterministic build",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects a failed build",
+          "ok": true
+        },
+        {
+          "name": "prepare rejects missing artifacts",
+          "ok": true
+        },
+        {
+          "name": "prepare --write creates the release commit R with identity + artifacts",
+          "ok": true
+        },
+        {
+          "name": "prepare --write is refused twice on the same release commit",
+          "ok": true
+        },
+        {
+          "name": "release commit content is deterministic across repeated runs",
+          "ok": true
+        },
+        {
+          "name": "prepare overwrites a stale release identity inherited from the previous release",
+          "ok": true
+        },
+        {
+          "name": "promote dry-run emits an exact DSH plugin-market-index format 1 document",
+          "ok": true
+        },
+        {
+          "name": "promote human dry-run prints the index and writes nothing",
+          "ok": true
+        },
+        {
+          "name": "promote rejects branches, tags, short SHAs and non-existent commits",
+          "ok": true
+        },
+        {
+          "name": "promote rejects a non-official origin remote",
+          "ok": true
+        },
+        {
+          "name": "promote rejects an unreachable (dangling) commit",
+          "ok": true
+        },
+        {
+          "name": "promote rejects a release commit whose release.json version was tampered with",
+          "ok": true
+        },
+        {
+          "name": "promote rejects an artifact digest mismatch",
+          "ok": true
+        },
+        {
+          "name": "promote stable rejects prerelease versions; test channel accepts them",
+          "ok": true
+        },
+        {
+          "name": "promote rejects an invalid channel/target combination",
+          "ok": true
+        },
+        {
+          "name": "promote refuses an index introduced inside a release-style commit (no self-reference)",
+          "ok": true
+        },
+        {
+          "name": "index self-reference detector identifies an index pinning the target commit",
+          "ok": true
+        },
+        {
+          "name": "promote --write requires an explicit --out path (never a default production write)",
+          "ok": true
+        },
+        {
+          "name": "promote --write writes only the explicit working-tree index and never commits",
+          "ok": true
+        },
+        {
+          "name": "promote --write refuses the production index path without explicit acknowledgement",
+          "ok": true
+        },
+        {
+          "name": "promote refuses an --out path that is part of the release commit",
+          "ok": true
+        },
+        {
+          "name": "promote refuses to replace a published version with a different commit",
+          "ok": true
+        },
+        {
+          "name": "promote refuses to publish an older version than the trusted index",
+          "ok": true
+        },
+        {
+          "name": "promote validates the release from git objects, not from the working tree",
+          "ok": true
+        },
+        {
+          "name": "release:verify rejects a wrong index pin",
+          "ok": true
+        },
+        {
+          "name": "format-1 validator rejects malformed / unsafe index documents",
+          "ok": true
+        },
+        {
+          "name": "release identity validator enforces the frozen schema",
+          "ok": true
+        },
+        {
+          "name": "release tooling never runs push/tag/fetch (git shim audit, dry-run + write)",
+          "ok": true
+        }
+      ],
+      "scratchLog": "/tmp/dsh-v15/m3/logs/suite-release-tools.log",
+      "stdoutBytes": 3112,
+      "stderrBytes": 0
+    }
+  ],
+  "head": "61c890eba46ab85c9df7b3e6aacc50602d5686a1",
+  "branch": "feat/v1.5-platform-update",
+  "environment": {
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "repoRoot": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update"
+  },
+  "rawEvidenceRoot": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/docs/verification/v1.5/raw/m3",
+  "failedRequired": []
+}
