@@ -340,7 +340,16 @@ async function body() {
   run.transport.control.setFixtureBody(buildIndexBody({ versions: [{ version: byKey.FINAL.version, commit: byKey.FINAL.commit }] }));
   const refresh = await refreshDiscoveryThroughUi(cdp, { maxWaitMs: 150000 });
   recordAction('refresh-discovery-to-final', refresh);
-  run.report.add('discovery-refresh-clicked-after-throttle', refresh.clicked === true, { waitedMs: refresh.waitedMs });
+  evidence.refreshStep = refresh;
+  if (refresh.mode === 'ui') {
+    run.report.add('discovery-refresh-through-ui', refresh.clicked === true, refresh);
+  } else if (refresh.mode === 'api-fallback-after-ui-defect') {
+    run.report.add('discovery-refresh-through-ui', false, { mode: refresh.mode, defect: refresh.defect, note: 'recorded client UI defect; refresh route called as a test control instead' });
+    run.report.add('client-refresh-ui-defect-recorded', refresh.defect?.hostCanRefresh === true && refresh.defect?.buttonDisabled === true, refresh.defect);
+    run.report.add('discovery-refresh-test-control-succeeded', refresh.response?.status === 200 && refresh.response?.envelopeOk === true, refresh.response);
+  } else {
+    run.report.add('discovery-refresh-through-ui', false, refresh);
+  }
   const finalDiscovered = await waitForDiscoveredTarget(cdp, byKey.FINAL.version, { timeoutMs: 120000 });
   run.report.add('discovery-target-updated-to-R_final', finalDiscovered.ok === true && finalDiscovered.target?.commit === byKey.FINAL.commit, finalDiscovered.ok ? finalDiscovered.target : finalDiscovered.last?.target ?? null);
 
@@ -396,6 +405,7 @@ try {
       transitions: evidence.transitions,
       dialogs: evidence.dialogs,
       uiActions: evidence.uiActions,
+      refreshStep: evidence.refreshStep ?? null,
       identity: evidence.identity,
       dataPreservation: evidence.dataPreservation,
       screenshots: evidence.screenshots,

@@ -122,6 +122,70 @@ export function prepareTargetRepo({ final, commits = [], workDir = '/tmp/dsh-v15
   return { dir: workDir, fetchResults, git: gitRunner };
 }
 
+/**
+ * Shared bootstrap for V1/V2 scenarios: transport fixture (fixed official URL),
+ * fresh isolated profile, real exact-commit install of the base release R_A via
+ * the probe operator's real pluginManager, and the frozen routes up.
+ *
+ * Returns everything a runner must track for cleanup. No page is opened here.
+ */
+export async function bootstrapInstalledProfile({
+  targetA,
+  fixtureTargetVersion,
+  fixtureTargetCommit,
+  namePrefix,
+  runTag,
+  hmr = true,
+} = {}) {
+  const env = makeScenarioEnvironment(runTag);
+  const transport = await startTransport(env);
+  transport.control.setFixtureBody(buildIndexBody({ versions: [{ version: fixtureTargetVersion, commit: fixtureTargetCommit }] }));
+  const name = `${namePrefix}-${runTag}`;
+  const home = await makeIsolatedHome(name, { port: await freePort() });
+  if (!hmr) writeNoHmrPatch(home);
+  const context = { name, home, transport, host: null, probe: null, boot: null, hostPort: null, bootIndex: 1 };
+  const booted = await bootProbeHost({
+    name,
+    home,
+    runDir: path.join(RUNS_ROOT, runTag, 'boot1'),
+    bootTag: `${name}-boot1`,
+    port: await freePort(),
+    env: transport.envForHost({ marker: runTag }),
+    pluginMode: 'none',
+    logName: `${name}-boot1`,
+  });
+  context.host = booted.host;
+  context.probe = booted.probe;
+  context.boot = booted.boot;
+  context.hostPort = booted.host.port;
+  const install = await context.probe.send({
+    id: 'install-base-a',
+    action: 'install',
+    spec: targetA.spec,
+    requestId: `m3-${name}-base`,
+    enabled: true,
+  }, { timeoutMs: 420000 });
+  const result = install.result ?? null;
+  let applied = null;
+  if (hmr) applied = await waitForHostVersion(context.probe, targetA.version, { timeoutMs: 240000 });
+  const routeReady = await waitForRoute(context, { timeoutMs: 90000 });
+  return { env, tls: env.tls, tlsDir: env.tlsDir, transport, home, name, context, booted, install: result, applied, routeReady };
+}
+
+/**
+ * Wait for the discovery cache to be able to refresh. Optional cache seed
+ * manipulation is purposely NOT used here: product state is not edited.
+ */
+export async function discoveryCanRefresh(context, { timeoutMs = 90000 } = {}) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    const inspect = (await probeInspect(context)).body;
+    if (inspect?.discovery?.canRefresh === true) return { ok: true, waitedMs: Date.now() - started, inspect };
+    await sleep(1000);
+  }
+  return { ok: false, waitedMs: Date.now() - started };
+}
+
 /** Read a commit's `platform-updates/release.json` (read-only git). */
 export function readReleaseIdentity(commit, { git = null } = {}) {
   const runner = git ?? ((args) => {
@@ -510,6 +574,19 @@ export async function healthFromPage(cdp) {
   return { status: response.status, data: body && body.ok === true ? body.data : null };
 }
 
+/** Same-origin POST from the page (test control / negative-control calls only). */
+export async function pagePostJson(cdp, requestPath, body = {}) {
+  return cdp.eval(
+    `fetch(${JSON.stringify(requestPath)}, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(${JSON.stringify(body)}) })` +
+    `.then(async (response) => ({ status: response.status, body: await response.text() })).catch((error) => ({ error: String(error) }))`
+  );
+}
+
+/** Same-origin GET already exists as pageFetchJson in lib.mjs; re-wrap for symmetry. */
+export async function pageGetJson(cdp, requestPath) {
+  return pageFetchJson(cdp, requestPath);
+}
+
 /** Poll the operation state through the Host route (authoritative state machine). */
 export async function waitForOperation(cdp, desiredStates, { timeoutMs = 180000, intervalMs = 500, onTransition = null } = {}) {
   const transitions = [];
@@ -577,23 +654,62 @@ export async function waitForDiscoveredTarget(cdp, version, { timeoutMs = 90000 
 }
 
 /**
- * Refresh discovery through the real UI refresh button. Waits for the throttle
- * to expire (button disabled) up to `maxWaitMs` before clicking; records it.
+ * Refresh discovery through the real UI refresh button.
+ *
+ * KNOWN CLIENT DEFECT (observed 2026-10-20, V1 HMR run): after any successful
+ * discovery check the Host reports `discovery.canRefresh:true` (manual throttle
+ * 60s has elapsed) but also sets `discovery.nextCheckAt` to the NEXT AUTOMATIC
+ * check (~6h). The Client (`update-state.js`) derives its refresh countdown from
+ * `nextCheckAt`, so the UI refresh button stays disabled for ~6h and the user
+ * cannot force a re-check. The Host route itself returns `throttled:true/false`
+ * correctly.
+ *
+ * Verification behaviour (recorded, not hidden): if the button is disabled while
+ * `canRefresh === true`, record the defect and fall back to a page-side POST of
+ * the same frozen refresh route as a TEST CONTROL (discovery switch only; the
+ * update action itself stays UI-driven). The caller records which mode ran.
  */
-export async function refreshDiscoveryThroughUi(cdp, { maxWaitMs = 90000 } = {}) {
+export async function refreshDiscoveryThroughUi(cdp, { maxWaitMs = 90000, allowApiFallback = true } = {}) {
   const started = Date.now();
-  let waitedMs = 0;
   let lastUi = null;
   while (Date.now() - started < maxWaitMs) {
     lastUi = await readUpdateUi(cdp);
     const refreshButton = lastUi.actionButtons.find((button) => button.action === 'refresh-update');
-    if (refreshButton === undefined) return { clicked: false, reason: 'refresh-button-absent', waitedMs, ui: lastUi };
-    if (refreshButton.disabled !== true) break;
+    if (refreshButton === undefined) return { clicked: false, mode: 'absent', reason: 'refresh-button-absent', waitedMs: Date.now() - started, ui: lastUi };
+    if (refreshButton.disabled !== true) {
+      const click = await clickAction(cdp, 'refresh-update', 'refresh-update');
+      return { clicked: click.clicked === true, mode: 'ui', click, waitedMs: Date.now() - started, ui: lastUi };
+    }
+    if (allowApiFallback) {
+      const inspect = await inspectFromPage(cdp);
+      const canRefresh = inspect.data?.discovery?.canRefresh === true;
+      if (canRefresh) {
+        const response = await pagePostJson(cdp, `${PLATFORM_UPDATE_PATH}/refresh`, {});
+        let envelope = null;
+        try {
+          envelope = JSON.parse(response.body);
+        } catch { /* not json */ }
+        return {
+          clicked: false,
+          mode: 'api-fallback-after-ui-defect',
+          waitedMs: Date.now() - started,
+          ui: lastUi,
+          defect: {
+            observedAt: new Date().toISOString(),
+            buttonDisabled: true,
+            hostCanRefresh: true,
+            nextCheckAt: inspect.data?.discovery?.nextCheckAt ?? null,
+            discoveryState: inspect.data?.discovery?.state ?? null,
+            note: 'client refresh countdown uses discovery.nextCheckAt (next automatic check ~6h) although canRefresh is true (manual throttle 60s elapsed); UI cannot force a re-check',
+          },
+          response: { status: response.status, envelopeOk: envelope?.ok ?? null, refreshed: envelope?.data?.refreshed ?? null, throttled: envelope?.data?.throttled ?? null },
+        };
+      }
+    }
     await sleep(1000);
-    waitedMs = Date.now() - started;
+    if (Date.now() - started > maxWaitMs) break;
   }
-  const click = await clickAction(cdp, 'refresh-update', 'refresh-update');
-  return { clicked: click.clicked === true, click, waitedMs, ui: lastUi };
+  return { clicked: false, mode: 'timeout', waitedMs: Date.now() - started, ui: lastUi };
 }
 
 // ---------------------------------------------------------------------------
