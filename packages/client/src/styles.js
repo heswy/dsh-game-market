@@ -1154,6 +1154,31 @@ export const CSS = `
 }
 .dgm-dialog-title { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
 .dgm-dialog-body { margin: 0; color: var(--dgm-fg-secondary); font-size: 13px; line-height: 1.55; }
+.dgm-dialog-meta {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  font-size: 13px;
+}
+
+.dgm-dialog-meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dgm-dialog-meta-row dt {
+  opacity: 0.7;
+}
+
+.dgm-dialog-meta-row dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
 .dgm-dialog-note { margin: 0; color: var(--dgm-fg-tertiary); font-size: 12px; }
 .dgm-dialog-warning { margin: 0; color: var(--dgm-danger); font-size: 12px; font-weight: 600; }
 .dgm-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }

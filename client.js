@@ -48,14 +48,14 @@ window.__ModuleLoader__.load({
       'market.seed': '正在显示随包游戏，官方目录暂不可用。',
       'market.seed.retry': '重试',
       'market.localInstall.title': '从本地安装游戏？',
-      'market.localInstall.body': '选择一个自包含的 .html 游戏包。本地文件不经过商店校验，请只安装你信任的来源。',
+      'market.localInstall.body': '选择一个自包含的 .html 游戏包，或一个 .dshgame.zip 资源包。本地文件不经过商店校验，请只安装你信任的来源。',
       'market.localInstall.warning': '本地安装不会校验文件来源。',
       'market.localInstall.tryAgain': '选择其他文件',
       'market.localInstall.confirm': '继续安装',
       'market.localInstall.reading': '正在读取文件…',
       'market.localInstall.done': '《{gameName}》已从本地安装',
       'market.localInstall.failed': '本地安装失败',
-      'market.localInstall.unsupported': '这个文件不是受支持的 .html 游戏包',
+      'market.localInstall.unsupported': '这个文件不是受支持的 .html 或 .dshgame.zip 游戏包',
       'market.localInstall.tooLarge': '文件超过 20 MB，无法安装',
       'market.localInstall.fileLabel': '所选文件：{fileName}',
 
@@ -262,6 +262,11 @@ window.__ModuleLoader__.load({
       'dialog.installLocal.title': '从本地安装《{fileName}》？',
       'dialog.installLocal.body': '本地文件不经过商店校验，请确认来源可信。安装后可以随时卸载，存档会保留。',
       'dialog.installLocal.confirm': '安装',
+      'dialog.installLocal.fileSize': '文件大小',
+      'dialog.installLocal.format': '包格式',
+      'dialog.installLocal.formatHtml': 'HTML 单文件包',
+      'dialog.installLocal.formatZip': '资源包（.dshgame.zip）',
+      'dialog.installLocal.overwrite': '将覆盖《{gameName}》当前安装的 {currentVersion}；实际安装版本以包内声明为准。',
       'dialog.pending': '处理中…',
 
       'menu.a11y': '更多操作',
@@ -398,6 +403,7 @@ window.__ModuleLoader__.load({
       'runtime.stage.a11y': '游戏区域',
       'runtime.loading': '正在加载《{gameName}》',
       'runtime.loading.slow': '加载时间有点久',
+      'runtime.loading.credential': '启动凭证已使用，正在用资源凭证刷新…',
       'runtime.loading.wait': '继续等待',
       'runtime.loading.back': '返回市场',
       'runtime.action.back': '返回市场',
@@ -438,6 +444,12 @@ window.__ModuleLoader__.load({
       'runtime.error.noRuntime.body': '当前安装还没有包含 Game Runtime。可以返回市场，或稍后重试。',
       'runtime.error.generic': '出了点问题',
       'runtime.error.generic.body': '可以重试，或返回市场。',
+      'runtime.error.entryConsumed': '启动凭证已使用，正在刷新',
+      'runtime.error.entryConsumed.body': '正在改用实例资源凭证重新加载，请稍候。',
+      'runtime.error.credentialExpired': '游戏启动已过期',
+      'runtime.error.credentialExpired.body': '请重新进入游戏；存档会保留。',
+      'runtime.error.resourceScope': '游戏资源不在允许范围内',
+      'runtime.error.resourceScope.body': '该资源不属于当前游戏，已阻止加载。',
       'runtime.error.newGame': '开始新游戏',
       'runtime.error.reload': '重新加载',
       'runtime.error.retry': '重试',
@@ -497,14 +509,14 @@ window.__ModuleLoader__.load({
       'market.seed': 'Showing bundled games; the official catalog is unavailable.',
       'market.seed.retry': 'Retry',
       'market.localInstall.title': 'Install a game from this device?',
-      'market.localInstall.body': 'Choose a self-contained .html game package. Local files are not verified by the store, so only install sources you trust.',
+      'market.localInstall.body': 'Choose a self-contained .html game package or a .dshgame.zip asset package. Local files are not verified by the store, so only install sources you trust.',
       'market.localInstall.warning': 'Local installs do not verify where the file came from.',
       'market.localInstall.tryAgain': 'Choose another file',
       'market.localInstall.confirm': 'Install anyway',
       'market.localInstall.reading': 'Reading file…',
       'market.localInstall.done': '{gameName} installed from this device',
       'market.localInstall.failed': 'Local install failed',
-      'market.localInstall.unsupported': 'This file is not a supported .html game package',
+      'market.localInstall.unsupported': 'This file is not a supported .html or .dshgame.zip game package',
       'market.localInstall.tooLarge': 'This file is larger than 20 MB and cannot be installed',
       'market.localInstall.fileLabel': 'Selected file: {fileName}',
 
@@ -711,6 +723,11 @@ window.__ModuleLoader__.load({
       'dialog.installLocal.title': 'Install {fileName} from this device?',
       'dialog.installLocal.body': 'Local files are not verified by the store. Only install files you trust. You can uninstall at any time and saves are kept.',
       'dialog.installLocal.confirm': 'Install',
+      'dialog.installLocal.fileSize': 'File size',
+      'dialog.installLocal.format': 'Package format',
+      'dialog.installLocal.formatHtml': 'Single-file HTML package',
+      'dialog.installLocal.formatZip': 'Asset package (.dshgame.zip)',
+      'dialog.installLocal.overwrite': 'This replaces the installed {currentVersion} of {gameName}; the package manifest decides the new version.',
       'dialog.pending': 'Working…',
 
       'menu.a11y': 'More actions',
@@ -847,6 +864,7 @@ window.__ModuleLoader__.load({
       'runtime.stage.a11y': 'Game area',
       'runtime.loading': 'Loading {gameName}',
       'runtime.loading.slow': 'This is taking a while',
+      'runtime.loading.credential': 'Launch credential already used — refreshing with the resource credential…',
       'runtime.loading.wait': 'Keep waiting',
       'runtime.loading.back': 'Back to market',
       'runtime.action.back': 'Back to market',
@@ -887,6 +905,12 @@ window.__ModuleLoader__.load({
       'runtime.error.noRuntime.body': 'This install does not include the Game Runtime yet. Go back to the market or try again later.',
       'runtime.error.generic': 'Something went wrong',
       'runtime.error.generic.body': 'Retry, or go back to the market.',
+      'runtime.error.entryConsumed': 'Launch credential already used — refreshing',
+      'runtime.error.entryConsumed.body': 'Reloading with this game instance\'s resource credential.',
+      'runtime.error.credentialExpired': 'Game launch expired',
+      'runtime.error.credentialExpired.body': 'Enter the game again; your save is kept.',
+      'runtime.error.resourceScope': 'Game asset is outside the allowed scope',
+      'runtime.error.resourceScope.body': 'That asset does not belong to this game, so it was blocked.',
       'runtime.error.newGame': 'Start new game',
       'runtime.error.reload': 'Reload',
       'runtime.error.retry': 'Retry',
@@ -1072,6 +1096,38 @@ window.__ModuleLoader__.load({
       iconBytes: 256 * 1024,
       /** Max preview image bytes served to Market UI. */
       previewBytes: 2 * 1024 * 1024,
+      /**
+       * V1.5 `asset-zip-v2` archive limits (docs/V1.5-CONTRACTS.md §3).
+       *
+       * A separate namespace on purpose: the V1 single-file limits above keep
+       * their exact semantics, and the two can be tuned independently later.
+       * Rule 0 of §3: the descriptor is ONE central-directory entry, so the total
+       * entry budget is 512 and `files[]` (which excludes the descriptor) is 511.
+       */
+      zip: Object.freeze({
+        /** Outer ZIP bytes; also the standard per-package size ceiling. */
+        zipOuterBytes: 20 * 1024 * 1024,
+        /** Sum of every extracted entry, measured, never trusting the central directory. */
+        zipUnpackedBytes: 100 * 1024 * 1024,
+        /** Total central-directory entries INCLUDING `dsh-package.json`. */
+        zipEntries: 512,
+        /** One extracted entry. */
+        zipEntryBytes: 20 * 1024 * 1024,
+        /** One compressed entry. */
+        zipEntryCompressedBytes: 20 * 1024 * 1024,
+        /** Whole-archive compression ratio ceiling (`unpacked / outer`). */
+        zipTotalRatio: 100,
+        /** Per-entry compression ratio ceiling. */
+        zipEntryRatio: 100,
+        /** Max path length in Unicode code points. */
+        zipPathChars: 240,
+        /** Max path depth in `/`-separated segments (file name counts as one). */
+        zipPathDepth: 12,
+        /** `dsh-package.json` bytes. */
+        descriptorBytes: 256 * 1024,
+        /** Streaming read chunk; no entry is ever buffered whole. */
+        zipChunkBytes: 64 * 1024,
+      }),
     });
 
     const TIMING = Object.freeze({
@@ -1113,6 +1169,16 @@ window.__ModuleLoader__.load({
       /** How long a /entry launcher binding stays valid (TBD-10). */
       entryBindingTtlMs: 10 * 60 * 1000,
       runtimeRenewMs: 60 * 1000,
+      /**
+       * V1.5: instance-bound resource credential lifetime. A sliding window, exactly
+       * the entry-binding TTL, renewed by `POST /runtime-renew` (contract §7.2).
+       */
+      resourceCredentialTtlMs: 10 * 60 * 1000,
+      /** V1.5: whole-archive extraction wall-clock budget (contract §3). */
+      zipExtractMs: 60000,
+      /** V1.5: HMR capability probe cadence and deadline (contract §9.2). */
+      hmrProbeIntervalMs: 250,
+      hmrProbeTimeoutMs: 15000,
       /** UI animation durations (ms). */
       motion: Object.freeze({
         panel: 240,
@@ -1202,7 +1268,53 @@ window.__ModuleLoader__.load({
      */
     const DEFAULT_OFFICIAL_REGISTRY_URL = 'https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json';
 
-    return { BUNDLE_ID, CLIENT_MODULE_ID, MAIN_PANEL_KEY, API_BASE, LOG_PREFIX, RUNTIME_VERSION, SDK_VERSION, PROTOCOL_VERSION, LEGACY_V0_VERSION, LIMITS, TIMING, AGENT_STATES, AGENT_SOURCES, AGENT_PRIORITY, AGENT_LABELS_ZH, AGENT_LABEL_KEYS, GAME_ID_PATTERN, PLAY_SESSION_ID_PATTERN, INSTANCE_ID_PATTERN, NONCE_PATTERN, DSH_SESSION_ID_PATTERN, LAUNCH_MODES, PAUSE_REASONS, SAVE_REASONS, SESSION_OUTCOMES, BUILTIN_GAMES, AGENT_ACK_MAX_AGE_MS, DEFAULT_OFFICIAL_REGISTRY_URL };
+    /**
+     * V1.5 package formats (docs/V1.5-CONTRACTS.md §1).
+     *
+     * `html-v1` keeps every V1 rule; `asset-zip-v2` adds an outer ZIP with a
+     * `dsh-package.json` descriptor and a per-file manifest. A missing `format`
+     * always means `html-v1` (V1 indexes and old install records).
+     */
+    const PACKAGE_FORMATS = Object.freeze(['html-v1', 'asset-zip-v2']);
+    const DEFAULT_PACKAGE_FORMAT = 'html-v1';
+    const ASSET_ZIP_V2 = 'asset-zip-v2';
+
+    /** `<id>-<version>.dshgame.zip` — the double extension is deliberate (§1.2). */
+    const PACKAGE_ZIP_EXTENSION = '.dshgame.zip';
+
+    /** Root descriptor of an `asset-zip-v2` archive; never listed in its own `files[]`. */
+    const DESCRIPTOR_FILE = 'dsh-package.json';
+    /** The one authoritative game manifest inside a ZIP package. */
+    const ZIP_GAME_MANIFEST_FILE = 'game.json';
+
+    /** Registry v2 lives next to v1 in the same content repository (§5.2). */
+    const REGISTRY_V2_FILE = 'v2/games.json';
+    const REGISTRY_V2_VERSION = 2;
+    /** V2 cache file + schema, deliberately different from the v1 pair (§5.3). */
+    const REGISTRY_CACHE_V2_FILE = 'registry-cache-v2.json';
+    const REGISTRY_CACHE_V2_SCHEMA_VERSION = 2;
+
+    /** Instance resource origin path prefix: `/res/<instanceId>/<resourceToken>/<path>` (§7.1). */
+    const RESOURCE_ORIGIN_PATH = '/res';
+
+    /**
+     * Platform-served wrapper document on the resource origin (§7.5.1).
+     *
+     * The wrapper is static platform HTML with `frame-src`/`child-src` limited to
+     * the resource origin, so a game document cannot navigate itself out of the
+     * package. It embeds the game in a child iframe addressed by `?src=<url>` and
+     * relays bridge messages point-to-point (see runtime/bridge docs).
+     */
+    const RESOURCE_WRAPPER_PATH = '/wrapper';
+    const RESOURCE_WRAPPER_QUERY = 'src';
+
+    /** Default v2 registry: same content repository, `v2/` sub-directory (§5.2). */
+    const DEFAULT_OFFICIAL_REGISTRY_V2_URL = DEFAULT_OFFICIAL_REGISTRY_URL.replace(
+      /\/games\.json$/,
+      `/${REGISTRY_V2_FILE}`,
+    );
+
+    return { BUNDLE_ID, CLIENT_MODULE_ID, MAIN_PANEL_KEY, API_BASE, LOG_PREFIX, RUNTIME_VERSION, SDK_VERSION, PROTOCOL_VERSION, LEGACY_V0_VERSION, LIMITS, TIMING, AGENT_STATES, AGENT_SOURCES, AGENT_PRIORITY, AGENT_LABELS_ZH, AGENT_LABEL_KEYS, GAME_ID_PATTERN, PLAY_SESSION_ID_PATTERN, INSTANCE_ID_PATTERN, NONCE_PATTERN, DSH_SESSION_ID_PATTERN, LAUNCH_MODES, PAUSE_REASONS, SAVE_REASONS, SESSION_OUTCOMES, BUILTIN_GAMES, AGENT_ACK_MAX_AGE_MS, DEFAULT_OFFICIAL_REGISTRY_URL, PACKAGE_FORMATS, DEFAULT_PACKAGE_FORMAT, ASSET_ZIP_V2, PACKAGE_ZIP_EXTENSION, DESCRIPTOR_FILE, ZIP_GAME_MANIFEST_FILE, REGISTRY_V2_FILE, REGISTRY_V2_VERSION, REGISTRY_CACHE_V2_FILE, REGISTRY_CACHE_V2_SCHEMA_VERSION, RESOURCE_ORIGIN_PATH, RESOURCE_WRAPPER_PATH, RESOURCE_WRAPPER_QUERY, DEFAULT_OFFICIAL_REGISTRY_V2_URL };
     })();
 
     // module: packages/client/src/constants.js
@@ -1775,6 +1887,12 @@ window.__ModuleLoader__.load({
               busy: false,
               fileName: typeof action.fileName === 'string' ? action.fileName : null,
               file: action.file || null,
+              fileSize: typeof action.fileSize === 'number' && Number.isFinite(action.fileSize) ? action.fileSize : null,
+              fileSizeLabel: typeof action.fileSizeLabel === 'string' ? action.fileSizeLabel : null,
+              format:
+                action.format === 'html-v1' || action.format === 'asset-zip-v2' ? action.format : null,
+              formatLabel: typeof action.formatLabel === 'string' ? action.formatLabel : null,
+              overwrite: action.overwrite && typeof action.overwrite === 'object' ? action.overwrite : null,
               returnFocus: action.returnFocus && typeof action.returnFocus === 'object' ? action.returnFocus : null,
             },
           };
@@ -1924,6 +2042,16 @@ window.__ModuleLoader__.load({
           return {
             ...state,
             runtime: { ...state.runtime, launchInfo: action.launchInfo || null, state: 'loading' },
+          };
+        }
+
+        case 'runtime-launch-refresh': {
+          const patch = action.patch;
+          if (!patch || typeof patch !== 'object') return state;
+          if (!state.runtime.launchInfo) return state;
+          return {
+            ...state,
+            runtime: { ...state.runtime, launchInfo: { ...state.runtime.launchInfo, ...patch } },
           };
         }
 
@@ -2160,6 +2288,11 @@ window.__ModuleLoader__.load({
       return { type: 'runtime-launch-info', launchInfo: launchInfo };
     }
 
+    /** Merge refreshed launch metadata (e.g. a renewed resourceTtlMs) in place. */
+    function runtimeLaunchInfoRefreshed(patch) {
+      return { type: 'runtime-launch-refresh', patch: patch };
+    }
+
     function runtimePatched(patch) {
       return { type: 'runtime-patch', patch: patch };
     }
@@ -2275,7 +2408,7 @@ window.__ModuleLoader__.load({
       return state && state.dialog ? state.dialog : null;
     }
 
-    return { createInitialState, selectGameEntry, reduce, pageChanged, sessionBound, agentSnapshotReceived, agentFresh, agentPollFailed, pausedGameRecorded, pausedGameCleared, turnIgnored, completedAcknowledged, marketLoading, marketReady, marketFailed, marketInvalidated, marketOffline, detailOpened, detailReady, detailFailed, detailScores, detailClosed, queryDraftChanged, queryApplied, categoryChanged, searchOpenChanged, filtersCleared, lightboxChanged, scrollSaved, dialogOpened, dialogDeleteDataChanged, dialogConfirmAgain, dialogBusyChanged, dialogClosed, toastPushed, toastDismissed, installStageChanged, installPercentChanged, installCleared, focusSet, focusConsumed, healthReady, runtimeStarted, runtimeLaunchInfo, runtimePatched, runtimeFailed, runtimeExited, runtimeRetried, runtimeReset, leaveCompleted, surfaceChanged, createStore, store, selectGame, selectResumableGames, selectInstalledGames, selectInstallJob, selectDialog };
+    return { createInitialState, selectGameEntry, reduce, pageChanged, sessionBound, agentSnapshotReceived, agentFresh, agentPollFailed, pausedGameRecorded, pausedGameCleared, turnIgnored, completedAcknowledged, marketLoading, marketReady, marketFailed, marketInvalidated, marketOffline, detailOpened, detailReady, detailFailed, detailScores, detailClosed, queryDraftChanged, queryApplied, categoryChanged, searchOpenChanged, filtersCleared, lightboxChanged, scrollSaved, dialogOpened, dialogDeleteDataChanged, dialogConfirmAgain, dialogBusyChanged, dialogClosed, toastPushed, toastDismissed, installStageChanged, installPercentChanged, installCleared, focusSet, focusConsumed, healthReady, runtimeStarted, runtimeLaunchInfo, runtimeLaunchInfoRefreshed, runtimePatched, runtimeFailed, runtimeExited, runtimeRetried, runtimeReset, leaveCompleted, surfaceChanged, createStore, store, selectGame, selectResumableGames, selectInstalledGames, selectInstallJob, selectDialog };
     })();
 
     // module: packages/client/src/diagnostics.js
@@ -2468,6 +2601,31 @@ window.__ModuleLoader__.load({
       INSTALL_DOWNLOAD_TIMEOUT: 'GM-5035',
       INSTALL_IO: 'GM-5036',
       INSTALL_CORRUPT: 'GM-5037',
+      // V1.5 package / archive / catalog / inline semantics (V1.5-CONTRACTS §8.1)
+      ZIP_INVALID: 'GM-4270',
+      ZIP_UNSUPPORTED: 'GM-4271',
+      ZIP_LIMIT: 'GM-4272',
+      ZIP_PATH_INVALID: 'GM-4273',
+      ZIP_PATH_CONFLICT: 'GM-4274',
+      ZIP_HEADER_MISMATCH: 'GM-4275',
+      ZIP_CRC_MISMATCH: 'GM-4276',
+      DESCRIPTOR_INVALID: 'GM-4277',
+      DESCRIPTOR_MISMATCH: 'GM-4278',
+      MANIFEST_CONFLICT: 'GM-4279',
+      ASSET_TYPE_UNSUPPORTED: 'GM-4280',
+      CATALOG_IMMUTABLE: 'GM-4281',
+      FORMAT_POLICY: 'GM-4282',
+      ASSET_INLINE_FORBIDDEN: 'GM-4283',
+      // V1.5 resource credentials (§7.2)
+      RESOURCE_CREDENTIAL_INVALID: 'GM-4010',
+      RESOURCE_CREDENTIAL_EXPIRED: 'GM-4011',
+      ENTRY_CREDENTIAL_CONSUMED: 'GM-4012',
+      ENTRY_LAUNCH_CONSUMED: 'GM-4013',
+      RESOURCE_SCOPE_DENIED: 'GM-4039',
+      // V1.5 platform update adapter (§9; adapter is ours, not a DSH API)
+      UPDATE_TARGET_INVALID: 'GM-4090',
+      UPDATE_ADAPTER_UNAVAILABLE: 'GM-5038',
+      UPDATE_OBSERVE_TIMEOUT: 'GM-5040',
     });
 
     const DEFAULT_MESSAGES = Object.freeze({
@@ -2553,6 +2711,31 @@ window.__ModuleLoader__.load({
       [GM.INSTALL_DOWNLOAD_TIMEOUT]: 'Package download timed out',
       [GM.INSTALL_IO]: 'Install write failed',
       [GM.INSTALL_CORRUPT]: 'Installed package is incomplete',
+      // V1.5 archive / descriptor / catalog
+      [GM.ZIP_INVALID]: 'Package archive is not a valid ZIP',
+      [GM.ZIP_UNSUPPORTED]: 'Package archive uses an unsupported ZIP feature',
+      [GM.ZIP_LIMIT]: 'Package archive exceeds an extraction limit',
+      [GM.ZIP_PATH_INVALID]: 'Package archive contains an invalid path',
+      [GM.ZIP_PATH_CONFLICT]: 'Package archive contains conflicting paths',
+      [GM.ZIP_HEADER_MISMATCH]: 'Package archive headers are inconsistent',
+      [GM.ZIP_CRC_MISMATCH]: 'Package archive entry failed its CRC check',
+      [GM.DESCRIPTOR_INVALID]: 'Package descriptor is missing or invalid',
+      [GM.DESCRIPTOR_MISMATCH]: 'Package file manifest does not match the archive',
+      [GM.MANIFEST_CONFLICT]: 'Package declares more than one authoritative manifest',
+      [GM.ASSET_TYPE_UNSUPPORTED]: 'Package contains an unsupported or unsafe asset',
+      [GM.CATALOG_IMMUTABLE]: 'Published package bytes cannot change for this version',
+      [GM.FORMAT_POLICY]: 'Package format change requires a new game version',
+      [GM.ASSET_INLINE_FORBIDDEN]: 'Resource packages cannot use inline scripts, styles, handlers or javascript: URLs',
+      // V1.5 resource credentials
+      [GM.RESOURCE_CREDENTIAL_INVALID]: 'Resource credential is invalid',
+      [GM.RESOURCE_CREDENTIAL_EXPIRED]: 'Resource credential has expired',
+      [GM.ENTRY_CREDENTIAL_CONSUMED]: 'Credential was used in the wrong place',
+      [GM.ENTRY_LAUNCH_CONSUMED]: 'Launch credential has already been used',
+      [GM.RESOURCE_SCOPE_DENIED]: 'Resource does not belong to this instance',
+      // V1.5 update adapter
+      [GM.UPDATE_TARGET_INVALID]: 'Update target is not acceptable to the plugin manager',
+      [GM.UPDATE_ADAPTER_UNAVAILABLE]: 'Plugin update capability is unavailable',
+      [GM.UPDATE_OBSERVE_TIMEOUT]: 'Plugin update state could not be confirmed in time',
     });
 
     /** HTTP status for a GM code (PRD §8.5 mapping). */
@@ -2560,6 +2743,13 @@ window.__ModuleLoader__.load({
       const num = Number(String(gmCode).slice(3));
       if (!Number.isFinite(num)) return 500;
       if (gmCode === GM.INTERNAL) return 500;
+      // V1.5 archive/descriptor/catalog/inline semantics (GM-4270..GM-4289) are 422.
+      // Without this explicit window the numeric derivation below would yield 427.
+      if (num >= 4270 && num <= 4289) return 422;
+      // V1.5 resource credentials: S-A1 measured 403 for an expired/released
+      // instance and 410 for a replayed launch URL. The numeric rule would give 401.
+      if (gmCode === GM.RESOURCE_CREDENTIAL_EXPIRED) return 403;
+      if (gmCode === GM.ENTRY_LAUNCH_CONSUMED) return 410;
       // Package/manifest semantics (GM-422x–424x) are 422, size/quota (413x–414x) are 413.
       if (num >= 4220 && num <= 4249) return 422;
       if (num >= 4130 && num <= 4149) return 413;
@@ -2628,6 +2818,34 @@ window.__ModuleLoader__.load({
       E_STORE_PATH_ESCAPE: GM.STORE_PATH_ESCAPE,
       E_COMPAT_SDK: GM.SDK_INCOMPATIBLE,
       E_COMPAT_RUNTIME: GM.RUNTIME_INCOMPATIBLE,
+      // V1.5 archive / descriptor / catalog / inline (V1.5-CONTRACTS §8.2)
+      E_ZIP_STRUCTURE: GM.ZIP_INVALID,
+      E_ZIP_UNSUPPORTED_FEATURE: GM.ZIP_UNSUPPORTED,
+      E_ZIP_LIMIT_EXCEEDED: GM.ZIP_LIMIT,
+      E_ZIP_PATH_INVALID: GM.ZIP_PATH_INVALID,
+      E_ZIP_PATH_CONFLICT: GM.ZIP_PATH_CONFLICT,
+      E_ZIP_HEADER_MISMATCH: GM.ZIP_HEADER_MISMATCH,
+      E_ZIP_CRC_MISMATCH: GM.ZIP_CRC_MISMATCH,
+      E_DESCRIPTOR_INVALID: GM.DESCRIPTOR_INVALID,
+      E_DESCRIPTOR_MISSING: GM.DESCRIPTOR_INVALID,
+      E_DESCRIPTOR_MISMATCH: GM.DESCRIPTOR_MISMATCH,
+      E_MANIFEST_CONFLICT: GM.MANIFEST_CONFLICT,
+      E_ASSET_TYPE_UNSUPPORTED: GM.ASSET_TYPE_UNSUPPORTED,
+      E_CATALOG_IMMUTABLE: GM.CATALOG_IMMUTABLE,
+      E_FORMAT_POLICY: GM.FORMAT_POLICY,
+      E_ASSET_INLINE_FORBIDDEN: GM.ASSET_INLINE_FORBIDDEN,
+      // V1.5 resource credentials (§7.2)
+      E_RESOURCE_CREDENTIAL_INVALID: GM.RESOURCE_CREDENTIAL_INVALID,
+      E_RESOURCE_CREDENTIAL_EXPIRED: GM.RESOURCE_CREDENTIAL_EXPIRED,
+      E_ENTRY_CREDENTIAL_CONSUMED: GM.ENTRY_CREDENTIAL_CONSUMED,
+      E_ENTRY_LAUNCH_CONSUMED: GM.ENTRY_LAUNCH_CONSUMED,
+      E_RESOURCE_SCOPE_DENIED: GM.RESOURCE_SCOPE_DENIED,
+      // V1.5 registry v2: a bad v2 index means the catalog is unavailable.
+      E_REGISTRY_V2_INVALID: GM.REGISTRY_UNAVAILABLE,
+      // V1.5 update adapter (§9)
+      E_UPDATE_TARGET_INVALID: GM.UPDATE_TARGET_INVALID,
+      E_UPDATE_ADAPTER_UNAVAILABLE: GM.UPDATE_ADAPTER_UNAVAILABLE,
+      E_UPDATE_OBSERVE_TIMEOUT: GM.UPDATE_OBSERVE_TIMEOUT,
     });
 
     /** Translate an internal `E_*` code to its public `GM-*` code (fallback: GM-5000). */
@@ -2936,6 +3154,121 @@ window.__ModuleLoader__.load({
     return { GameMarketApiError, randomOperationId, createApiClient };
     })();
 
+    // module: packages/client/src/local-install.js
+    __mods["packages/client/src/local-install.js"] = (function () {
+    const GAME_ID_PATTERN = __mods["packages/shared/src/constants.js"].GAME_ID_PATTERN;
+    const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+    /**
+     * Local package selection policy (V1.5-CONTRACTS §1.8).
+     *
+     * Local install accepts two carriers with different transports:
+     *   - `html-v1`        — `<id>-<version>.html`, uploaded as `text/html` text;
+     *   - `asset-zip-v2`   — `<id>-<version>.dshgame.zip`, uploaded as raw
+     *                        `application/zip` bytes (never text-decoded).
+     *
+     * The format is decided from the file name first (that is what the Host
+     * re-validates) and from the declared MIME type only as a fallback. Pure helpers
+     * so the picker policy is unit-testable without a React render.
+     */
+
+    /** Same 20 MiB ceiling for both carriers (contract §1.8 / §3). */
+    const MAX_LOCAL_INSTALL_BYTES = LIMITS.packageBytes || 20 * 1024 * 1024;
+
+    /** File picker filter: HTML + ZIP, by extension and MIME. */
+    const LOCAL_INSTALL_ACCEPT = '.html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed';
+
+    const LOCAL_PACKAGE_FORMATS = Object.freeze(['html-v1', 'asset-zip-v2']);
+
+    const HTML_EXTENSION_RE = /\.html?$/i;
+    const ZIP_EXTENSION_RE = /\.dshgame\.zip$/i;
+    const ZIP_MIME_TYPES = Object.freeze(['application/zip', 'application/x-zip-compressed']);
+
+    function mimeOf(value) {
+      if (typeof value !== 'string') return '';
+      const [mediaType] = value.split(';');
+      return mediaType ? mediaType.trim().toLowerCase() : '';
+    }
+
+    /**
+     * Decide the package format for a picked local file.
+     * @param {{fileName?: string, type?: string}} input
+     * @returns {'html-v1'|'asset-zip-v2'|null}
+     */
+    function detectLocalInstallFormat(input) {
+      const source = input && typeof input === 'object' ? input : {};
+      const fileName = typeof source.fileName === 'string' ? source.fileName : '';
+      const mime = mimeOf(source.type);
+      // Extension wins: the Host's filename rule is authoritative, and a browser
+      // may report an empty/unknown MIME for a `.dshgame.zip` file.
+      if (ZIP_EXTENSION_RE.test(fileName)) return 'asset-zip-v2';
+      if (HTML_EXTENSION_RE.test(fileName)) return 'html-v1';
+      if (ZIP_MIME_TYPES.includes(mime)) return 'asset-zip-v2';
+      if (mime === 'text/html') return 'html-v1';
+      return null;
+    }
+
+    /**
+     * Parse `<id>-<version>.html` / `<id>-<version>.dshgame.zip` so the confirmation
+     * dialog can name the installation record that will be replaced. Returns `null`
+     * for arbitrary local file names (the manifest is only read by the Host).
+     * @returns {{gameId:string, version:string, format:string}|null}
+     */
+    function parseLocalPackageFileName(fileName) {
+      if (typeof fileName !== 'string' || fileName.length === 0 || fileName.length > 255) return null;
+      const match = /^(.+)-((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)\.(html|dshgame\.zip)$/i.exec(
+        fileName
+      );
+      if (!match) return null;
+      const gameId = match[1];
+      if (!GAME_ID_PATTERN.test(gameId)) return null;
+      return {
+        gameId,
+        version: match[2],
+        format: /dshgame\.zip$/i.test(match[3]) ? 'asset-zip-v2' : 'html-v1',
+      };
+    }
+
+    /**
+     * Validate a picked file before the confirmation dialog.
+     * @returns {{ok:true, format:string} | {ok:false, reason:'unsupported'|'tooLarge'}}
+     */
+    function validateLocalInstallSelection(input) {
+      const source = input && typeof input === 'object' ? input : {};
+      const format = detectLocalInstallFormat({ fileName: source.fileName, type: source.type });
+      if (!format) return { ok: false, reason: 'unsupported' };
+      if (typeof source.size === 'number' && Number.isFinite(source.size) && source.size > MAX_LOCAL_INSTALL_BYTES) {
+        return { ok: false, reason: 'tooLarge' };
+      }
+      return { ok: true, format };
+    }
+
+    /**
+     * Match a package file name against the currently installed (non-builtin)
+     * games, so the confirmation can say which version will be replaced.
+     * @returns {{gameId:string, gameName:string, currentVersion:string, version:string}|null}
+     */
+    function findLocalOverwriteTarget(games, fileName) {
+      const parsed = parseLocalPackageFileName(fileName);
+      if (!parsed) return null;
+      const list = Array.isArray(games) ? games : [];
+      for (const game of list) {
+        if (!game || game.id !== parsed.gameId) continue;
+        if (game.builtin === true) return null;
+        if (game.installed === false) return null;
+        if (typeof game.version !== 'string' || game.version.length === 0) return null;
+        return {
+          gameId: parsed.gameId,
+          gameName: typeof game.name === 'string' && game.name.length > 0 ? game.name : parsed.gameId,
+          currentVersion: game.version,
+          version: parsed.version,
+        };
+      }
+      return null;
+    }
+
+    return { MAX_LOCAL_INSTALL_BYTES, LOCAL_INSTALL_ACCEPT, LOCAL_PACKAGE_FORMATS, detectLocalInstallFormat, parseLocalPackageFileName, validateLocalInstallSelection, findLocalOverwriteTarget };
+    })();
+
     // module: packages/client/src/api-v1.js
     __mods["packages/client/src/api-v1.js"] = (function () {
     const API_BASE = __mods["packages/shared/src/constants.js"].API_BASE;
@@ -2943,6 +3276,7 @@ window.__ModuleLoader__.load({
     const GameMarketApiError = __mods["packages/shared/src/api-client.js"].GameMarketApiError;
     const randomOperationId = __mods["packages/shared/src/api-client.js"].randomOperationId;
     const GM = __mods["packages/shared/src/errors.js"].GM;
+    const detectLocalInstallFormat = __mods["packages/client/src/local-install.js"].detectLocalInstallFormat;
     /**
      * V1 Host API client for the Market surfaces (PRD 8.5, V1-CONTRACTS 7).
      *
@@ -3036,6 +3370,72 @@ window.__ModuleLoader__.load({
     }
 
     /**
+     * Read a local file as raw bytes (`ArrayBuffer`) without any text codec.
+     * Uses `File.arrayBuffer()` when present and falls back to
+     * `FileReader.readAsArrayBuffer` (the browser path in DSH).
+     * @returns {Promise<ArrayBuffer>}
+     */
+    function readFileBytes(file, options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      if (!file || typeof file !== 'object') {
+        return Promise.reject(new Error('No file selected'));
+      }
+      function normalizeBytes(value) {
+        if (value instanceof ArrayBuffer) return value;
+        if (ArrayBuffer.isView(value)) {
+          return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
+        }
+        throw new Error('File did not provide raw bytes');
+      }
+      if (typeof file.arrayBuffer === 'function') {
+        return Promise.resolve(file.arrayBuffer()).then(normalizeBytes);
+      }
+      const Reader = opts.FileReader || (typeof globalThis.FileReader === 'function' ? globalThis.FileReader : null);
+      if (!Reader) return Promise.reject(new Error('FileReader is unavailable'));
+      return new Promise(function read(resolve, reject) {
+        let reader = null;
+        try {
+          reader = new Reader();
+        } catch (error) {
+          reject(error);
+          return;
+        }
+        reader.onload = function loaded() {
+          try {
+            resolve(normalizeBytes(reader.result));
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = function failed() {
+          reject(reader.error || new Error('Could not read the file'));
+        };
+        reader.onabort = function aborted() {
+          reject(new Error('File read aborted'));
+        };
+        try {
+          reader.readAsArrayBuffer(file);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }
+
+    /** Resolve the raw ZIP bytes for a local install without any text decoding. */
+    function readLocalZipBytes(body) {
+      const direct = body.bytes;
+      if (direct !== undefined && direct !== null) {
+        if (direct instanceof ArrayBuffer) return Promise.resolve(direct);
+        if (ArrayBuffer.isView(direct)) {
+          return Promise.resolve(direct.buffer.slice(direct.byteOffset, direct.byteOffset + direct.byteLength));
+        }
+        if (typeof direct.arrayBuffer === 'function') return Promise.resolve(direct.arrayBuffer());
+        return Promise.reject(asApiError(GM.INVALID_PARAM, 'Local package bytes must be an ArrayBuffer or Blob'));
+      }
+      return readFileBytes(body.file, { FileReader: body.FileReader });
+    }
+
+    /**
      * @param {{base?: string, fetchImpl?: Function, timeouts?: object}} [options]
      */
     function createMarketApi(options) {
@@ -3050,9 +3450,9 @@ window.__ModuleLoader__.load({
         const method = cfg.method || 'GET';
         const timeoutMs = typeof cfg.timeoutMs === 'number' ? cfg.timeoutMs : timeouts[name] || JSON_TIMEOUT_FALLBACK;
         const url = base + '/' + name + buildQuery(cfg.query);
-        const json = cfg.body !== undefined && cfg.contentType !== 'text/html; charset=utf-8';
-        const body = cfg.body === undefined ? undefined : json ? JSON.stringify(cfg.body) : cfg.body;
-        if (json && body !== undefined && new TextEncoder().encode(body).length > LIMITS.jsonBodyBytes) {
+        const jsonBody = cfg.body !== undefined && (cfg.contentType === undefined || cfg.contentType === 'application/json');
+        const body = cfg.body === undefined ? undefined : jsonBody ? JSON.stringify(cfg.body) : cfg.body;
+        if (jsonBody && body !== undefined && new TextEncoder().encode(body).length > LIMITS.jsonBodyBytes) {
           throw asApiError(GM.INVALID_PARAM, 'Request body is too large');
         }
         const headers = {};
@@ -3160,6 +3560,43 @@ window.__ModuleLoader__.load({
         },
         installLocal: function installLocal(input) {
           const body = input && typeof input === 'object' ? input : {};
+          const operationId = body.operationId || randomOperationId();
+          const detectedFormat = detectLocalInstallFormat({
+            fileName: body.fileName || (body.file && body.file.name) || '',
+            type: body.file && body.file.type,
+          });
+          const format =
+            body.format === 'asset-zip-v2' || body.format === 'html-v1'
+              ? body.format
+              : detectedFormat ||
+                (typeof body.text === 'string'
+                  ? 'html-v1'
+                  : body.bytes !== undefined && body.bytes !== null
+                    ? 'asset-zip-v2'
+                    : null);
+          if (format === null) {
+            return Promise.reject(asApiError(GM.UNSUPPORTED_MEDIA_TYPE, 'Unsupported local package type'));
+          }
+          if (format === 'asset-zip-v2') {
+            // Raw bytes only: text()/readAsText would UTF-8 decode and corrupt the
+            // archive (Codex CR7-03: a 2384 B ZIP became 2474 B).
+            return readLocalZipBytes(body).then(function postZip(bytes) {
+              if (!(bytes instanceof ArrayBuffer)) {
+                throw asApiError(GM.INVALID_PARAM, 'Local package bytes must be raw bytes');
+              }
+              if (bytes.byteLength > LIMITS.packageBytes) {
+                throw asApiError(GM.PACKAGE_TOO_LARGE, 'Local package is too large', { retryable: false });
+              }
+              return request('install-local', {
+                method: 'POST',
+                query: { operationId: operationId },
+                body: bytes,
+                contentType: 'application/zip',
+                timeoutMs: timeouts['install-local'],
+                signal: body.signal,
+              });
+            });
+          }
           const textPromise =
             typeof body.text === 'string'
               ? Promise.resolve(body.text)
@@ -3167,7 +3604,7 @@ window.__ModuleLoader__.load({
           return textPromise.then(function post(text) {
             return request('install-local', {
               method: 'POST',
-              query: { operationId: body.operationId || randomOperationId() },
+              query: { operationId: operationId },
               body: text,
               contentType: 'text/html; charset=utf-8',
               timeoutMs: timeouts['install-local'],
@@ -3213,7 +3650,7 @@ window.__ModuleLoader__.load({
       return buildQuery(query);
     }
 
-    return { V1_TIMEOUTS, readFileText, createMarketApi, buildRequestQuery };
+    return { V1_TIMEOUTS, readFileText, readFileBytes, createMarketApi, buildRequestQuery };
     })();
 
     // module: packages/client/src/api.js
@@ -3338,6 +3775,14 @@ window.__ModuleLoader__.load({
           return 'runtime.error.saveCorrupt';
         case GM.NO_RUNTIME:
           return 'runtime.error.noRuntime';
+        case GM.ENTRY_LAUNCH_CONSUMED:
+          return 'runtime.error.entryConsumed';
+        case GM.RESOURCE_CREDENTIAL_INVALID:
+        case GM.RESOURCE_CREDENTIAL_EXPIRED:
+        case GM.ENTRY_CREDENTIAL_CONSUMED:
+          return 'runtime.error.credentialExpired';
+        case GM.RESOURCE_SCOPE_DENIED:
+          return 'runtime.error.resourceScope';
         default:
           return 'runtime.error.generic';
       }
@@ -3362,6 +3807,14 @@ window.__ModuleLoader__.load({
           return 'runtime.error.saveCorrupt.body';
         case GM.NO_RUNTIME:
           return 'runtime.error.noRuntime.body';
+        case GM.ENTRY_LAUNCH_CONSUMED:
+          return 'runtime.error.entryConsumed.body';
+        case GM.RESOURCE_CREDENTIAL_INVALID:
+        case GM.RESOURCE_CREDENTIAL_EXPIRED:
+        case GM.ENTRY_CREDENTIAL_CONSUMED:
+          return 'runtime.error.credentialExpired.body';
+        case GM.RESOURCE_SCOPE_DENIED:
+          return 'runtime.error.resourceScope.body';
         case GM.RUNTIME_INCOMPATIBLE:
         case GM.SDK_INCOMPATIBLE:
           return null;
@@ -5125,6 +5578,9 @@ window.__ModuleLoader__.load({
             call: function call(signal) {
               return api.installLocal({
                 file: request.file,
+                fileName: request.fileName,
+                format: request.format,
+                bytes: request.bytes,
                 text: request.text,
                 FileReader: request.FileReader,
                 operationId: operationId,
@@ -5219,6 +5675,7 @@ window.__ModuleLoader__.load({
     const isOfflineError = __mods["packages/client/src/errors-text.js"].isOfflineError;
     const getMarketApi = __mods["packages/client/src/api.js"].getMarketApi;
     const getInstallManager = __mods["packages/client/src/install-manager.js"].getInstallManager;
+    const detectLocalInstallFormat = __mods["packages/client/src/local-install.js"].detectLocalInstallFormat;
     const reportDiagnostic = __mods["packages/client/src/diagnostics.js"].reportDiagnostic;
     /**
      * Coordinated client actions (API + store + navigation-free).
@@ -5574,15 +6031,71 @@ window.__ModuleLoader__.load({
       return manager.cancel(gameId) === true;
     }
 
-    /** Local `.html` install after the explicit confirmation dialog. */
+    /**
+     * Build the install-local action payload from the confirmation dialog state.
+     * The dialog keeps the format decided at file-selection time; passing it on is
+     * what makes the real UI click path upload ZIP bytes with `application/zip`
+     * instead of falling back to the HTML text path (CR7-03 follow-up).
+     *
+     * @param {object} dialog store dialog state
+     * @returns {{file: object|null, fileName: string|null, format: string|null, bytes: unknown}}
+     */
+    function localInstallOptionsFromDialog(dialog) {
+      const source = dialog && typeof dialog === 'object' ? dialog : {};
+      return {
+        file: source.file || null,
+        fileName: typeof source.fileName === 'string' ? source.fileName : null,
+        format:
+          source.format === 'asset-zip-v2' || source.format === 'html-v1' ? source.format : null,
+        bytes: source.bytes,
+      };
+    }
+
+    /**
+     * Local package install (`html-v1` text or `asset-zip-v2` raw bytes) after the
+     * explicit confirmation dialog. Contract §1.8.
+     */
     async function installLocalGame(options) {
       const opts = options && typeof options === 'object' ? options : {};
       const target = opts.store;
       if (!target || !opts.file) return { ok: false, error: uiError(GM.UNSUPPORTED_MEDIA_TYPE) };
       const manager = opts.manager || getInstallManager();
       const api = opts.api || getMarketApi();
-      const fallbackName = typeof opts.fileName === 'string' && opts.fileName.length > 0 ? opts.fileName : 'game.html';
-      const result = await manager.installLocal({ file: opts.file, fileName: fallbackName });
+      const requestedName =
+        typeof opts.fileName === 'string' && opts.fileName.length > 0
+          ? opts.fileName
+          : opts.file && typeof opts.file.name === 'string' && opts.file.name.length > 0
+            ? opts.file.name
+            : '';
+      // Explicit format wins; otherwise recover it from the package file name so a
+      // `.dshgame.zip` never degrades to the html-v1 text path. `html-v1` is the
+      // last resort for legacy callers that only pass text.
+      const detectedFormat = detectLocalInstallFormat({
+        fileName: requestedName,
+        type: opts.file && opts.file.type,
+      });
+      const fileFormat =
+        opts.format === 'asset-zip-v2' || opts.format === 'html-v1'
+          ? opts.format
+          : detectedFormat ||
+            (typeof opts.text === 'string'
+              ? 'html-v1'
+              : opts.bytes !== undefined && opts.bytes !== null
+                ? 'asset-zip-v2'
+                : null);
+      if (fileFormat === null) return { ok: false, error: uiError(GM.UNSUPPORTED_MEDIA_TYPE) };
+      const fallbackName =
+        requestedName.length > 0
+          ? requestedName
+          : fileFormat === 'asset-zip-v2'
+            ? 'game.dshgame.zip'
+            : 'game.html';
+      const result = await manager.installLocal({
+        file: opts.file,
+        fileName: fallbackName,
+        format: fileFormat,
+        bytes: opts.bytes,
+      });
       if (result.ok) {
         const refreshed = await loadCatalog({ store: target, api: api, now: opts.now });
         const gameId = result.data && typeof result.data.gameId === 'string' ? result.data.gameId : null;
@@ -5706,13 +6219,13 @@ window.__ModuleLoader__.load({
       return page === PAGES.MARKET || page === PAGES.MY_GAMES;
     }
 
-    return { loadCatalog, refreshMarket, openDetail, loadDetail, closeDetail, applySearchQuery, pushToast, dismissToast, pushErrorToast, launchModeFor, beginGame, finishLeave, recordPausedGame, acknowledgeCompleted, invalidateMarket, gameNameFromState, startInstall, cancelInstall, installLocalGame, uninstallGame, refreshRegistryAction, applyRuntimeEvent, isPanelPage };
+    return { loadCatalog, refreshMarket, openDetail, loadDetail, closeDetail, applySearchQuery, pushToast, dismissToast, pushErrorToast, launchModeFor, beginGame, finishLeave, recordPausedGame, acknowledgeCompleted, invalidateMarket, gameNameFromState, startInstall, cancelInstall, localInstallOptionsFromDialog, installLocalGame, uninstallGame, refreshRegistryAction, applyRuntimeEvent, isPanelPage };
     })();
 
     // module: packages/client/src/icons.js
     __mods["packages/client/src/icons.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     /** Inline SVG icons. Every glyph follows `currentColor` and carries no text. */
 
     const h = React.createElement;
@@ -5974,8 +6487,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/styles.js
     __mods["packages/client/src/styles.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     /** Theme-token CSS for every plugin surface. Rendered inside the components. */
 
     const h = React.createElement;
@@ -7131,6 +7644,31 @@ window.__ModuleLoader__.load({
     }
     .dgm-dialog-title { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
     .dgm-dialog-body { margin: 0; color: var(--dgm-fg-secondary); font-size: 13px; line-height: 1.55; }
+    .dgm-dialog-meta {
+      display: grid;
+      gap: 4px;
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: color-mix(in srgb, currentColor 6%, transparent);
+      font-size: 13px;
+    }
+
+    .dgm-dialog-meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .dgm-dialog-meta-row dt {
+      opacity: 0.7;
+    }
+
+    .dgm-dialog-meta-row dd {
+      margin: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
     .dgm-dialog-note { margin: 0; color: var(--dgm-fg-tertiary); font-size: 12px; }
     .dgm-dialog-warning { margin: 0; color: var(--dgm-danger); font-size: 12px; font-weight: 600; }
     .dgm-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
@@ -8038,8 +8576,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/hooks.js
     __mods["packages/client/src/hooks.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const store = __mods["packages/client/src/store.js"].store;
     const selectCurrentSessionId = __mods["packages/client/src/binding.js"].selectCurrentSessionId;
     const selectSessionStatus = __mods["packages/client/src/binding.js"].selectSessionStatus;
@@ -8339,46 +8877,1049 @@ window.__ModuleLoader__.load({
     return { isTypingTarget, isImeComposing, isSearchShortcut, nextGridIndex, nextChipIndex, nextMenuIndex, trapTabIndex, resolveEscapeAction, isMenuOpenKey, isActivationKey, countColumns };
     })();
 
-    // module: packages/client/src/runtime-utils.js
-    __mods["packages/client/src/runtime-utils.js"] = (function () {
+    // module: packages/shared/src/package-v2.js
+    __mods["packages/shared/src/package-v2.js"] = (function () {
+    const DESCRIPTOR_FILE = __mods["packages/shared/src/constants.js"].DESCRIPTOR_FILE;
+    const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+    const PACKAGE_FORMATS = __mods["packages/shared/src/constants.js"].PACKAGE_FORMATS;
+    const ZIP_GAME_MANIFEST_FILE = __mods["packages/shared/src/constants.js"].ZIP_GAME_MANIFEST_FILE;
+    /**
+     * V1.5 `asset-zip-v2` package policy (docs/V1.5-CONTRACTS.md §1, §3, §4).
+     *
+     * Pure JS: no Node built-ins, no browser globals, no third-party imports — the
+     * Host, the CLI, the content-repository tooling and the tests all share these
+     * rules, and the same module is bundled for the browser side.
+     *
+     * Everything here is *policy*: given already-decoded strings and numbers it
+     * decides what is acceptable. Byte-level work (ZIP container parsing, CRC,
+     * streaming counters, local-header comparison) lives in
+     * `packages/host/src/zip.js` because it needs Node built-ins.
+     *
+     * All failures carry an internal `E_*` code; the Host translates to `GM-*`
+     * through `errors.js#INTERNAL_TO_GM` at the boundary (D-030).
+     */
+
+
+    const ZIP_LIMITS = LIMITS.zip;
+
+    // ---------------------------------------------------------------------------
+    // Path rules (contract §4.2 / §4.3)
+    // ---------------------------------------------------------------------------
+
+    /** Windows device names are rejected on every segment: they alias on Windows. */
+    const WINDOWS_RESERVED = new Set([
+      'con', 'prn', 'aux', 'nul',
+      ...Array.from({ length: 9 }, (_, i) => `com${i + 1}`),
+      ...Array.from({ length: 9 }, (_, i) => `lpt${i + 1}`),
+    ]);
+
+    const CONTROL_CHARS = /[\u0000-\u001F\u007F]/;
+    const DRIVE_LETTER = /^[A-Za-z]:/;
+
+    /** Compare two strings by Unicode code point (equivalently by UTF-8 byte order). */
+    function codePointCompare(a, b) {
+      const left = Array.from(a);
+      const right = Array.from(b);
+      const max = Math.min(left.length, right.length);
+      for (let i = 0; i < max; i += 1) {
+        const diff = left[i].codePointAt(0) - right[i].codePointAt(0);
+        if (diff !== 0) return diff;
+      }
+      return left.length - right.length;
+    }
+
+    function fail(code, details) {
+      return { ok: false, code, ...(details === undefined ? {} : { details }) };
+    }
+
+    /**
+     * Normalize and validate one archive entry path (contract §4.2 steps 2–9).
+     *
+     * The caller MUST have already decoded the raw bytes as strict UTF-8; this
+     * function only sees text. It never returns a path that could escape a
+     * directory: the result has no `..`, no leading `/`, no backslash, no empty
+     * segment and no trailing space/dot segment.
+     *
+     * @param {unknown} rawPath Entry name as text.
+     * @returns {{ok:true, value:string} | {ok:false, code:string, details?:object}}
+     */
+    function normalizeZipPath(rawPath) {
+      if (typeof rawPath !== 'string') return fail('E_ZIP_PATH_INVALID', { field: 'path' });
+      if (rawPath.length === 0) return fail('E_ZIP_PATH_INVALID', { field: 'path' });
+      if (CONTROL_CHARS.test(rawPath)) return fail('E_ZIP_PATH_INVALID', { field: 'path' });
+      // ZIP uses `/`. A backslash is the usual Windows traversal carrier.
+      if (rawPath.includes('\\')) return fail('E_ZIP_PATH_INVALID', { field: 'path' });
+      if (rawPath.startsWith('/')) return fail('E_ZIP_PATH_INVALID', { field: 'path' });
+      if (DRIVE_LETTER.test(rawPath)) return fail('E_ZIP_PATH_INVALID', { field: 'path' });
+
+      const segments = rawPath.split('/');
+      for (const segment of segments) {
+        if (segment === '') return fail('E_ZIP_PATH_INVALID', { field: 'path' });
+        if (segment === '.' || segment === '..') return fail('E_ZIP_PATH_INVALID', { field: 'path' });
+        // Windows silently strips a trailing space/dot, which can turn two distinct
+        // entries into one file on disk.
+        if (/[ .]$/.test(segment)) return fail('E_ZIP_PATH_INVALID', { field: 'path' });
+        const stem = segment.split('.')[0].toLowerCase();
+        if (WINDOWS_RESERVED.has(stem)) return fail('E_ZIP_PATH_INVALID', { field: 'path' });
+      }
+
+      const normalized = segments.join('/');
+      // Second line of defence (§4.2 step 7): never trust the loop above alone.
+      if (normalized.startsWith('/') || normalized.split('/').includes('..')) {
+        return fail('E_ZIP_PATH_INVALID', { field: 'path' });
+      }
+
+      const chars = Array.from(normalized).length;
+      if (chars > ZIP_LIMITS.zipPathChars) {
+        return fail('E_ZIP_LIMIT_EXCEEDED', { kind: 'zipPathChars', limit: ZIP_LIMITS.zipPathChars, actual: chars });
+      }
+      if (segments.length > ZIP_LIMITS.zipPathDepth) {
+        return fail('E_ZIP_LIMIT_EXCEEDED', { kind: 'zipPathDepth', limit: ZIP_LIMITS.zipPathDepth, actual: segments.length });
+      }
+      return { ok: true, value: normalized };
+    }
+
+    /** Allowed static asset extensions per contract §4.6. */
+    const TYPE_BY_EXTENSION = Object.freeze({
+      '.html': 'document',
+      '.js': 'script',
+      '.mjs': 'script',
+      '.css': 'style',
+      '.png': 'image',
+      '.webp': 'image',
+      '.jpeg': 'image',
+      '.jpg': 'image',
+      '.gif': 'image',
+      '.svg': 'image',
+      '.ogg': 'audio',
+      '.mp3': 'audio',
+      '.wav': 'audio',
+      '.m4a': 'audio',
+      '.woff2': 'font',
+      '.woff': 'font',
+      '.json': 'data',
+      '.txt': 'data',
+      '.csv': 'data',
+    });
+
+    /** Extensions an `asset-zip-v2` entry may have (§4.6). */
+    const ALLOWED_ZIP_EXTENSIONS = Object.freeze(Object.keys(TYPE_BY_EXTENSION));
+
+    /**
+     * Check that a normalized path uses an allowed static-asset type (§4.6).
+     *
+     * The descriptor and `game.json` are handled explicitly: they are valid archive
+     * entries but are never served as resources (§7.3).
+     *
+     * @param {string} normalizedPath Result of {@link normalizeZipPath}.
+     * @returns {{ok:true, kind:string} | {ok:false, code:string, details?:object}}
+     */
+    function checkZipEntryType(normalizedPath) {
+      if (typeof normalizedPath !== 'string' || normalizedPath.length === 0) {
+        return fail('E_ASSET_TYPE_UNSUPPORTED', { field: 'path' });
+      }
+      if (normalizedPath === DESCRIPTOR_FILE) return { ok: true, kind: 'descriptor' };
+      if (normalizedPath === ZIP_GAME_MANIFEST_FILE) return { ok: true, kind: 'manifest' };
+      const lower = normalizedPath.toLowerCase();
+      const dot = lower.lastIndexOf('.');
+      if (dot <= lower.lastIndexOf('/')) {
+        return fail('E_ASSET_TYPE_UNSUPPORTED', { path: normalizedPath });
+      }
+      const kind = TYPE_BY_EXTENSION[lower.slice(dot)];
+      if (kind === undefined) return fail('E_ASSET_TYPE_UNSUPPORTED', { path: normalizedPath });
+      return { ok: true, kind };
+    }
+
+    /** True when the path is the root descriptor or the root manifest. */
+    function isReservedPackageFile(normalizedPath) {
+      return normalizedPath === DESCRIPTOR_FILE || normalizedPath === ZIP_GAME_MANIFEST_FILE;
+    }
+
+    /**
+     * Combined entry-path check: normalize, reject reserved names, then type-check.
+     *
+     * This is the single call an archive reader should make per central-directory
+     * entry; {@link normalizeZipPath} and {@link checkZipEntryType} stay public so
+     * URL construction and tests can reuse the pieces independently.
+     *
+     * @param {unknown} rawPath Entry name as decoded text.
+     * @returns {{ok:true, value:string, kind:string} | {ok:false, code:string, details?:object}}
+     */
+    function checkZipEntryPath(rawPath) {
+      const normalized = normalizeZipPath(rawPath);
+      if (!normalized.ok) return normalized;
+      const path = normalized.value;
+      // A descriptor anywhere but the archive root is a second authoritative
+      // manifest attempt (§4.3), not a normal entry.
+      if (path !== DESCRIPTOR_FILE && path.endsWith(`/${DESCRIPTOR_FILE}`)) {
+        return fail('E_DESCRIPTOR_INVALID', { path });
+      }
+      const type = checkZipEntryType(path);
+      if (!type.ok) return type;
+      return { ok: true, value: path, kind: type.kind };
+    }
+
+    // ---------------------------------------------------------------------------
+    // Descriptor (§1.4)
+    // ---------------------------------------------------------------------------
+
+    const SHA256_HEX = /^[a-f0-9]{64}$/;
+
+    function isPlainObject(value) {
+      return typeof value === 'object' && value !== null && !Array.isArray(value);
+    }
+
+    function unknownDescriptorFields(descriptor) {
+      const known = new Set(['formatVersion', 'entry', 'gameManifest', 'files']);
+      const warnings = [];
+      for (const key of Object.keys(descriptor)) {
+        if (known.has(key) || key.startsWith('x-')) continue;
+        warnings.push({ code: 'W_DESCRIPTOR_UNKNOWN_FIELD', field: key });
+      }
+      return warnings;
+    }
+
+    /**
+     * Validate a parsed `dsh-package.json` (contract §1.4).
+     *
+     * @param {unknown} input Parsed JSON value.
+     * @returns {{ok:true, value:{formatVersion:2, entry:string, gameManifest:string, files:Array<{path:string,size:number,sha256:string}>}, warnings:Array<object>}
+     *          | {ok:false, code:string, details?:object}}
+     */
+    function validateDescriptor(input) {
+      if (!isPlainObject(input)) return fail('E_DESCRIPTOR_INVALID', { field: 'descriptor' });
+      if (input.formatVersion !== 2) return fail('E_DESCRIPTOR_INVALID', { field: 'formatVersion' });
+
+      const warnings = unknownDescriptorFields(input);
+
+      const entry = input.entry;
+      if (typeof entry !== 'string' || entry.length === 0) {
+        return fail('E_DESCRIPTOR_INVALID', { field: 'entry' });
+      }
+      const entryPath = normalizeZipPath(entry);
+      if (!entryPath.ok) return fail('E_DESCRIPTOR_INVALID', { field: 'entry' });
+      if (!entryPath.value.toLowerCase().endsWith('.html')) {
+        return fail('E_DESCRIPTOR_INVALID', { field: 'entry' });
+      }
+
+      if (input.gameManifest !== ZIP_GAME_MANIFEST_FILE) {
+        return fail('E_DESCRIPTOR_INVALID', { field: 'gameManifest' });
+      }
+
+      const files = input.files;
+      if (!Array.isArray(files) || files.length === 0) {
+        return fail('E_DESCRIPTOR_INVALID', { field: 'files' });
+      }
+      // Rule 0 (§3): the descriptor occupies one of the 512 central-directory slots.
+      if (files.length > ZIP_LIMITS.zipEntries - 1) {
+        return fail('E_ZIP_LIMIT_EXCEEDED', {
+          kind: 'zipEntries',
+          limit: ZIP_LIMITS.zipEntries,
+          actual: files.length + 1,
+        });
+      }
+
+      const seen = new Set();
+      let previous = null;
+      const normalizedFiles = [];
+      for (let index = 0; index < files.length; index += 1) {
+        const item = files[index];
+        if (!isPlainObject(item)) return fail('E_DESCRIPTOR_INVALID', { field: `files[${index}]` });
+
+        const pathResult = normalizeZipPath(item.path);
+        if (!pathResult.ok) return fail('E_ZIP_PATH_INVALID', { path: String(item.path) });
+        const path = pathResult.value;
+        if (path === DESCRIPTOR_FILE) {
+          // The descriptor must never list itself: a self-reference cannot be verified.
+          return fail('E_DESCRIPTOR_INVALID', { field: `files[${index}].path` });
+        }
+        if (seen.has(path)) return fail('E_ZIP_PATH_CONFLICT', { path });
+        seen.add(path);
+
+        if (typeof item.size !== 'number' || !Number.isSafeInteger(item.size) || item.size < 0) {
+          return fail('E_DESCRIPTOR_INVALID', { field: `files[${index}].size` });
+        }
+        if (typeof item.sha256 !== 'string' || !SHA256_HEX.test(item.sha256)) {
+          return fail('E_DESCRIPTOR_INVALID', { field: `files[${index}].sha256` });
+        }
+        // §1.4: files[] is sorted by path in UTF-8 byte order (== code point order).
+        if (previous !== null && codePointCompare(previous, path) >= 0) {
+          return fail('E_DESCRIPTOR_INVALID', { field: `files[${index}].path` });
+        }
+        previous = path;
+        normalizedFiles.push({ path, size: item.size, sha256: item.sha256 });
+      }
+
+      if (!seen.has(entryPath.value)) return fail('E_DESCRIPTOR_INVALID', { field: 'entry' });
+      if (!seen.has(ZIP_GAME_MANIFEST_FILE)) return fail('E_DESCRIPTOR_INVALID', { field: 'gameManifest' });
+
+      const entryType = checkZipEntryType(entryPath.value);
+      if (!entryType.ok || entryType.kind !== 'document') {
+        return fail('E_DESCRIPTOR_INVALID', { field: 'entry' });
+      }
+
+      return {
+        ok: true,
+        value: {
+          formatVersion: 2,
+          entry: entryPath.value,
+          gameManifest: ZIP_GAME_MANIFEST_FILE,
+          files: normalizedFiles,
+        },
+        warnings,
+      };
+    }
+
+    /**
+     * Canonical serialization of the file manifest (contract §1.5 item 5).
+     * Key order is fixed, so two equal manifests always hash identically.
+     */
+    function canonicalFileManifest(files) {
+      return JSON.stringify(files.map((file) => ({ path: file.path, size: file.size, sha256: file.sha256 })));
+    }
+
+    /**
+     * `fileManifestDigest` (contract §1.5 item 5).
+     *
+     * The canonical form is hashed with an injected SHA-256 implementation: this
+     * module stays free of Node built-ins so the browser bundle can import it, and
+     * we avoid shipping a second cryptographic implementation. Host, CLI and tests
+     * pass `node:crypto`-backed `(text) => hex`.
+     *
+     * @param {Array<{path:string,size:number,sha256:string}>} files Descriptor files.
+     * @param {(text:string) => string} sha256Hex SHA-256 of the UTF-8 text, lowercase hex.
+     * @returns {string} 64 lowercase hex characters.
+     */
+    function fileManifestDigest(files, sha256Hex) {
+      if (!Array.isArray(files)) throw new TypeError('fileManifestDigest: files must be an array');
+      if (typeof sha256Hex !== 'function') {
+        throw new TypeError('fileManifestDigest: a sha256Hex(text) function is required');
+      }
+      const digest = sha256Hex(canonicalFileManifest(files));
+      if (typeof digest !== 'string' || !SHA256_HEX.test(digest)) {
+        throw new TypeError('fileManifestDigest: sha256Hex must return 64 lowercase hex characters');
+      }
+      return digest;
+    }
+
+    // ---------------------------------------------------------------------------
+    // Manifest / entry set consistency (§1.5, §1.6)
+    // ---------------------------------------------------------------------------
+
+    /**
+     * Compare the descriptor file manifest against the archive's real entry set.
+     *
+     * The caller passes paths that have already been normalized and (if needed)
+     * checked for conflicts; this function only compares sets and sizes.
+     *
+     * @param {Array<{path:string,size:number}>} files Descriptor files.
+     * @param {Array<{path:string,size:number}>} entries Real archive entries (descriptor excluded).
+     * @returns {{ok:true} | {ok:false, code:string, details?:object}}
+     */
+    function compareFileManifest(files, entries) {
+      const expected = new Map(files.map((file) => [file.path, file.size]));
+      const actual = new Map(entries.map((entry) => [entry.path, entry.size]));
+      for (const [path, size] of expected) {
+        if (!actual.has(path)) return fail('E_DESCRIPTOR_MISMATCH', { path, reason: 'missing' });
+        if (size !== actual.get(path)) return fail('E_DESCRIPTOR_MISMATCH', { path, reason: 'size' });
+      }
+      for (const path of actual.keys()) {
+        if (!expected.has(path)) return fail('E_DESCRIPTOR_MISMATCH', { path, reason: 'extra' });
+      }
+      return { ok: true };
+    }
+
+    /**
+     * Reject descriptor-shaped names outside the archive root (contract §4.3).
+     *
+     * @param {string[]} normalizedPaths Every entry path in the archive.
+     * @returns {{ok:true} | {ok:false, code:string, details?:object}}
+     */
+    function checkReservedNames(normalizedPaths) {
+      for (const path of normalizedPaths) {
+        if (path === DESCRIPTOR_FILE) continue;
+        if (path.endsWith(`/${DESCRIPTOR_FILE}`) || path.toLowerCase() === DESCRIPTOR_FILE) {
+          return fail('E_DESCRIPTOR_INVALID', { path });
+        }
+      }
+      return { ok: true };
+    }
+
+    /**
+     * Detect duplicate / case-folded / NFC-folded / directory-vs-file conflicts
+     * (contract §4.3). Must run before anything is written to disk.
+     *
+     * @param {string[]} normalizedPaths Normalized entry paths.
+     * @returns {{ok:true} | {ok:false, code:string, details?:object}}
+     */
+    function checkPathConflicts(normalizedPaths) {
+      const exact = new Set();
+      const folded = new Map();
+      for (const path of normalizedPaths) {
+        if (exact.has(path)) return fail('E_ZIP_PATH_CONFLICT', { path, reason: 'duplicate' });
+        exact.add(path);
+
+        const key = path.normalize('NFC').toLowerCase();
+        const previous = folded.get(key);
+        if (previous !== undefined && previous !== path) {
+          return fail('E_ZIP_PATH_CONFLICT', { path, reason: 'folded' });
+        }
+        folded.set(key, path);
+      }
+
+      // `a` as a file and `a/b` as a file cannot coexist.
+      for (const path of exact) {
+        const segments = path.split('/');
+        for (let i = 1; i < segments.length; i += 1) {
+          const prefix = segments.slice(0, i).join('/');
+          if (exact.has(prefix)) return fail('E_ZIP_PATH_CONFLICT', { path, reason: 'file-directory' });
+        }
+      }
+      return { ok: true };
+    }
+
+    // ---------------------------------------------------------------------------
+    // Static content scanning (§4.7 — defence in depth, NOT a security proof)
+    // ---------------------------------------------------------------------------
+
+    /**
+     * Markup patterns that must never appear in a package.
+     *
+     * The runtime CSP is the actual network/host boundary (contract §4.7 and
+     * §7.5); these checks exist so an author gets an early, precise error and so
+     * obviously-hostile packages never reach a version directory.
+     */
+    const FORBIDDEN_MARKUP = Object.freeze([
+      { code: 'base', pattern: /<\s*base[\s>]/i },
+      { code: 'iframe', pattern: /<\s*iframe[\s>]/i },
+      { code: 'external-url', pattern: /\b(?:src|href)\s*=\s*["']?\s*(?:https?:)?\/\//i },
+      { code: 'external-import', pattern: /@import\s+(?:url\()?["']?\s*(?:https?:)?\/\//i },
+      { code: 'eval', pattern: /\beval\s*\(/ },
+      { code: 'new-function', pattern: /\bnew\s+Function\s*\(/ },
+      { code: 'service-worker', pattern: /\bserviceWorker\b/ },
+      { code: 'window-open', pattern: /\bwindow\s*\.\s*open\s*\(/ },
+    ]);
+
+    const INLINE_FORBIDDEN = Object.freeze([
+      { code: 'inline-script', pattern: /<\s*script\b(?![^>]*\bsrc\s*=)[^>]*>/i },
+      { code: 'inline-style', pattern: /<\s*style\b[^>]*>/i },
+      { code: 'inline-handler', pattern: /\son[a-z]+\s*=/i },
+      { code: 'javascript-url', pattern: /\bjavascript\s*:/i },
+    ]);
+
+    /**
+     * Scan one HTML document for forbidden constructs (contract §4.7).
+     *
+     * @param {string} html Document text.
+     * @param {{inlineForbidden?: boolean}} options `inlineForbidden` is true for
+     *   `asset-zip-v2` (decision D-C) and false for `html-v1` (unchanged V1 rules).
+     * @returns {{ok:true} | {ok:false, code:string, details?:object}}
+     */
+    function checkHtmlContent(html, { inlineForbidden = false } = {}) {
+      if (typeof html !== 'string') return fail('E_ASSET_TYPE_UNSUPPORTED', { field: 'html' });
+      for (const rule of FORBIDDEN_MARKUP) {
+        if (rule.pattern.test(html)) return fail('E_ASSET_TYPE_UNSUPPORTED', { rule: rule.code });
+      }
+      if (inlineForbidden) {
+        for (const rule of INLINE_FORBIDDEN) {
+          if (rule.pattern.test(html)) return fail('E_ASSET_INLINE_FORBIDDEN', { rule: rule.code });
+        }
+      }
+      return { ok: true };
+    }
+
+    /** URLs that reference a scheme or an authority are rejected in package CSS. */
+    const CSS_EXTERNAL = /\b(?:@import\s+(?:url\()?["']?\s*(?:https?:)?\/\/|url\(\s*["']?\s*(?:https?:)?\/\/)/i;
+
+    /**
+     * Scan one CSS file for external references (contract §4.6/§4.7).
+     *
+     * @param {string} css Stylesheet text.
+     * @returns {{ok:true} | {ok:false, code:string, details?:object}}
+     */
+    function checkCssContent(css) {
+      if (typeof css !== 'string') return fail('E_ASSET_TYPE_UNSUPPORTED', { field: 'css' });
+      if (CSS_EXTERNAL.test(css)) return fail('E_ASSET_TYPE_UNSUPPORTED', { rule: 'external-css-url' });
+      return { ok: true };
+    }
+
+    /**
+     * Reject a second authoritative manifest declaration anywhere in the package
+     * (contract §1.6). An inline `&lt;script id="dsh-game-manifest">` is the V1
+     * declaration, and a ZIP package must not carry a second one.
+     *
+     * @param {string} html Any HTML document from the package.
+     * @returns {{ok:true} | {ok:false, code:string, details?:object}}
+     */
+    function checkManifestConflict(html) {
+      if (typeof html !== 'string') return { ok: true };
+      if (/type\s*=\s*["']application\/json["']\s+id\s*=\s*["']dsh-game-manifest["']/i.test(html)) {
+        return fail('E_MANIFEST_CONFLICT', { rule: 'inline-manifest' });
+      }
+      if (/id\s*=\s*["']dsh-game-manifest["']/i.test(html)) {
+        return fail('E_MANIFEST_CONFLICT', { rule: 'inline-manifest' });
+      }
+      return { ok: true };
+    }
+
+    // ---------------------------------------------------------------------------
+    // Misc
+    // ---------------------------------------------------------------------------
+
+    /** True when `format` is one of the frozen V1.5 package formats. */
+    function isPackageFormat(value) {
+      return typeof value === 'string' && PACKAGE_FORMATS.includes(value);
+    }
+
+    /** Normalize a possibly-missing format; V1 records default to `html-v1` (§6.2). */
+    function normalizePackageFormat(value) {
+      return isPackageFormat(value) ? value : 'html-v1';
+    }
+
+    /** Package file name for a `format`: HTML keeps V1's, ZIP gets `.dshgame.zip`. */
+    function packageFileNameForFormat(id, version, format) {
+      return format === 'asset-zip-v2' ? `${id}-${version}.dshgame.zip` : `${id}-${version}.html`;
+    }
+
+    return { codePointCompare, normalizeZipPath, ALLOWED_ZIP_EXTENSIONS, checkZipEntryType, isReservedPackageFile, checkZipEntryPath, validateDescriptor, canonicalFileManifest, fileManifestDigest, compareFileManifest, checkReservedNames, checkPathConflicts, checkHtmlContent, checkCssContent, checkManifestConflict, isPackageFormat, normalizePackageFormat, packageFileNameForFormat };
+    })();
+
+    // module: packages/shared/src/resources.js
+    __mods["packages/shared/src/resources.js"] = (function () {
     const INSTANCE_ID_PATTERN = __mods["packages/shared/src/constants.js"].INSTANCE_ID_PATTERN;
-    const NONCE_PATTERN = __mods["packages/shared/src/constants.js"].NONCE_PATTERN;
-    const TIMING = __mods["packages/shared/src/constants.js"].TIMING;
+    const RESOURCE_ORIGIN_PATH = __mods["packages/shared/src/constants.js"].RESOURCE_ORIGIN_PATH;
+    const normalizeZipPath = __mods["packages/shared/src/package-v2.js"].normalizeZipPath;
+    /**
+     * V1.5 instance-bound resource URLs (docs/V1.5-CONTRACTS.md §7.1–§7.6).
+     *
+     * Pure JS: shared by Host (URL construction + request admission), Runtime and
+     * Client (validating `LaunchInfo` URLs), and the SDK (`assetUrl`). The actual
+     * serving and credential lifetime live in the Host; this module only defines
+     * the address shape so both sides cannot drift.
+     *
+     * Address shape:
+     *   http://127.0.0.1:<port>/res/<instanceId>/<resourceToken>/<relativePath>
+     *
+     * The path prefix is what lets a package's own relative URLs (`./scripts/main.js`,
+     * `../assets/coin.png`) resolve naturally without a `<base>` element or rewriting
+     * the author's HTML (contract §7.1).
+     */
+
+
+    /** Resource credentials are opaque, URL-safe, 32 lowercase hex characters. */
+    const RESOURCE_TOKEN_PATTERN = Object.freeze(/^[a-f0-9]{32}$/);
+
+    /** Paths that are valid archive entries but must never be served (§7.3). */
+    const NON_SERVABLE = new Set(['dsh-package.json', 'game.json']);
+
+    function fail(code, details) {
+      return { ok: false, code, ...(details === undefined ? {} : { details }) };
+    }
+
+    /**
+     * A resource origin must be an absolute `http://` loopback URL with no path,
+     * credentials, query or fragment. Anything else is rejected: the runtime builds
+     * URLs from it and MUST NOT be redirectable to another host.
+     *
+     * @param {unknown} value Candidate origin.
+     * @returns {{ok:true, value:string} | {ok:false, code:string, details?:object}}
+     */
+    function normalizeResourceOrigin(value) {
+      if (typeof value !== 'string' || value.length === 0) return fail('E_RESOURCE_SCOPE_DENIED');
+      if (value.length > 200) return fail('E_RESOURCE_SCOPE_DENIED');
+      let url;
+      try {
+        url = new URL(value);
+      } catch {
+        return fail('E_RESOURCE_SCOPE_DENIED');
+      }
+      if (url.protocol !== 'http:') return fail('E_RESOURCE_SCOPE_DENIED');
+      if (url.username !== '' || url.password !== '') return fail('E_RESOURCE_SCOPE_DENIED');
+      if (url.search !== '' || url.hash !== '') return fail('E_RESOURCE_SCOPE_DENIED');
+      if (url.pathname !== '/' && url.pathname !== '') return fail('E_RESOURCE_SCOPE_DENIED');
+      const host = url.hostname;
+      const isLoopback = host === '127.0.0.1' || host === '[::1]' || host === '::1';
+      if (!isLoopback) return fail('E_RESOURCE_SCOPE_DENIED');
+      return { ok: true, value: `http://${url.host}` };
+    }
+
+    /** True when `value` is an absolute http(s) URL (no other scheme accepted). */
+    function isAbsoluteHttpUrl(value) {
+      if (typeof value !== 'string' || value.length === 0 || value.length > 2048) return false;
+      try {
+        const url = new URL(value);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    }
+
+    /**
+     * Resource base for one instance: `<origin>/res/<instanceId>/<token>`.
+     *
+     * @param {{resourceOrigin:string, instanceId:string, resourceToken:string}} input
+     * @returns {{ok:true, value:string} | {ok:false, code:string, details?:object}}
+     */
+    function buildResourceBase({ resourceOrigin, instanceId, resourceToken }) {
+      const origin = normalizeResourceOrigin(resourceOrigin);
+      if (!origin.ok) return origin;
+      if (typeof instanceId !== 'string' || !INSTANCE_ID_PATTERN.test(instanceId)) {
+        return fail('E_RESOURCE_SCOPE_DENIED');
+      }
+      if (typeof resourceToken !== 'string' || !RESOURCE_TOKEN_PATTERN.test(resourceToken)) {
+        return fail('E_RESOURCE_CREDENTIAL_INVALID');
+      }
+      return { ok: true, value: `${origin.value}${RESOURCE_ORIGIN_PATH}/${instanceId}/${resourceToken}` };
+    }
+
+    /** Decode one URL path segment, mapping malformed percent-encoding to `null`. */
+    function decodeSegment(segment) {
+      try {
+        return decodeURIComponent(segment);
+      } catch {
+        return null;
+      }
+    }
+
+    /**
+     * Parse a resource request pathname into its three parts (§7.3).
+     *
+     * Admission order matches the contract: prefix, then instance id shape, then
+     * token shape, then a path that is already normalized and cannot escape. The
+     * *authorization* decisions (does this token match a live instance, is the path
+     * in the installed manifest) belong to the Host.
+     *
+     * @param {string} pathname Request pathname, e.g. `/res/<id>/<token>/scripts/main.js`.
+     * @returns {{ok:true, value:{instanceId:string, resourceToken:string, relativePath:string}}
+     *          | {ok:false, code:string, details?:object}}
+     */
+    function validateAssetRequest(pathname) {
+      if (typeof pathname !== 'string' || pathname.length === 0) return fail('E_RESOURCE_CREDENTIAL_INVALID');
+      if (!pathname.startsWith(`${RESOURCE_ORIGIN_PATH}/`)) return fail('E_RESOURCE_CREDENTIAL_INVALID');
+
+      const rest = pathname.slice(RESOURCE_ORIGIN_PATH.length + 1);
+      const slash = rest.indexOf('/');
+      if (slash <= 0) return fail('E_RESOURCE_CREDENTIAL_INVALID');
+      const rawInstance = rest.slice(0, slash);
+      const afterInstance = rest.slice(slash + 1);
+      const slash2 = afterInstance.indexOf('/');
+      if (slash2 <= 0) return fail('E_RESOURCE_CREDENTIAL_INVALID');
+      const rawToken = afterInstance.slice(0, slash2);
+      const rawPath = afterInstance.slice(slash2 + 1);
+
+      const instanceId = decodeSegment(rawInstance);
+      if (instanceId === null || !INSTANCE_ID_PATTERN.test(instanceId)) {
+        return fail('E_RESOURCE_CREDENTIAL_INVALID');
+      }
+      const resourceToken = decodeSegment(rawToken);
+      if (resourceToken === null || !RESOURCE_TOKEN_PATTERN.test(resourceToken)) {
+        return fail('E_RESOURCE_CREDENTIAL_INVALID');
+      }
+      if (rawPath === '' || rawPath.endsWith('/')) return fail('E_RESOURCE_SCOPE_DENIED');
+
+      // Reject percent-encoded separators before decoding: `%2f` (or `%5c`) inside a
+      // path segment is a classic way to smuggle a second path component past a
+      // checker that decodes first and validates later (contract §7.3).
+      if (/%2f|%5c/i.test(rawPath)) return fail('E_RESOURCE_SCOPE_DENIED');
+
+      // Decode before policy checks so `%2e%2e` cannot slip through as a literal.
+      const decodedPath = decodeSegment(rawPath);
+      if (decodedPath === null) return fail('E_RESOURCE_SCOPE_DENIED');
+      const normalized = normalizeZipPath(decodedPath);
+      if (!normalized.ok) return fail('E_RESOURCE_SCOPE_DENIED');
+      if (NON_SERVABLE.has(normalized.value)) return fail('E_RESOURCE_SCOPE_DENIED');
+
+      return {
+        ok: true,
+        value: { instanceId, resourceToken, relativePath: normalized.value },
+      };
+    }
+
+    /** Extract just the resource token from a resource pathname, or `null`. */
+    function resourceCredentialOf(pathname) {
+      const parsed = validateAssetRequest(pathname);
+      return parsed.ok ? parsed.value.resourceToken : null;
+    }
+
+    /** True when a relative path is safe to append under a resource base. */
+    function isResourcePathSafe(relativePath) {
+      return typeof relativePath === 'string' && normalizeZipPath(relativePath).ok;
+    }
+
+    /**
+     * Build a resource URL for an SDK/author call (§1.10).
+     *
+     * Resolved with URL semantics so callers may write the same spellings that work
+     * in a browser (`./levels/x.json`, `levels/x.json`); the result is then pinned
+     * to `<base>/` so a `..` cannot escape the instance prefix.
+     *
+     * @param {string} resourceBase `<origin>/res/<instanceId>/<token>`.
+     * @param {string} relativePath Package-relative path.
+     * @returns {{ok:true, value:string} | {ok:false, code:string, details?:object}}
+     */
+    function assetUrl(resourceBase, relativePath) {
+      if (typeof resourceBase !== 'string' || resourceBase.length === 0) {
+        return fail('E_RESOURCE_SCOPE_DENIED');
+      }
+      if (typeof relativePath !== 'string' || relativePath.length === 0) {
+        return fail('E_RESOURCE_SCOPE_DENIED');
+      }
+      if (relativePath.includes('\\') || relativePath.includes('\u0000')) {
+        return fail('E_RESOURCE_SCOPE_DENIED');
+      }
+      const base = resourceBase.endsWith('/') ? resourceBase.slice(0, -1) : resourceBase;
+      let baseUrl;
+      try {
+        baseUrl = new URL(base);
+      } catch {
+        return fail('E_RESOURCE_SCOPE_DENIED');
+      }
+      const prefix = `${baseUrl.pathname}/`;
+      if (!prefix.endsWith('/') || baseUrl.pathname.split('/').filter(Boolean).length !== 3) {
+        return fail('E_RESOURCE_SCOPE_DENIED');
+      }
+      const segments = baseUrl.pathname.split('/').filter(Boolean);
+      if (`/${segments[0]}` !== RESOURCE_ORIGIN_PATH) return fail('E_RESOURCE_SCOPE_DENIED');
+      if (!INSTANCE_ID_PATTERN.test(segments[1]) || !RESOURCE_TOKEN_PATTERN.test(segments[2])) {
+        return fail('E_RESOURCE_SCOPE_DENIED');
+      }
+
+      let resolved;
+      try {
+        resolved = new URL(relativePath, `${base}/`);
+      } catch {
+        return fail('E_RESOURCE_SCOPE_DENIED');
+      }
+      if (resolved.origin !== baseUrl.origin) return fail('E_RESOURCE_SCOPE_DENIED');
+      if (!resolved.pathname.startsWith(prefix)) return fail('E_RESOURCE_SCOPE_DENIED');
+      const rest = resolved.pathname.slice(prefix.length);
+      if (rest === '' || resolved.pathname.endsWith('/')) return fail('E_RESOURCE_SCOPE_DENIED');
+      const normalized = normalizeZipPath(decodeSegment(rest) ?? '\u0000');
+      if (!normalized.ok) return fail('E_RESOURCE_SCOPE_DENIED');
+      if (NON_SERVABLE.has(normalized.value)) return fail('E_RESOURCE_SCOPE_DENIED');
+      return { ok: true, value: `${base}/${normalized.value}` };
+    }
+
+    /**
+     * Compare two URLs' origins, used by Runtime/Client to confirm a wrapper or
+     * resource URL belongs to the advertised resource origin.
+     */
+    function sharesOrigin(candidate, origin) {
+      if (!isAbsoluteHttpUrl(candidate) || typeof origin !== 'string') return false;
+      try {
+        return new URL(candidate).origin === new URL(origin).origin;
+      } catch {
+        return false;
+      }
+    }
+
+    return { RESOURCE_TOKEN_PATTERN, normalizeResourceOrigin, isAbsoluteHttpUrl, buildResourceBase, validateAssetRequest, resourceCredentialOf, isResourcePathSafe, assetUrl, sharesOrigin };
+    })();
+
+    // module: packages/runtime/src/launch-url.js
+    __mods["packages/runtime/src/launch-url.js"] = (function () {
     const GM = __mods["packages/shared/src/errors.js"].GM;
-    const makeGameError = __mods["packages/shared/src/errors.js"].makeGameError;
+    const RESOURCE_WRAPPER_PATH = __mods["packages/shared/src/constants.js"].RESOURCE_WRAPPER_PATH;
+    const RESOURCE_WRAPPER_QUERY = __mods["packages/shared/src/constants.js"].RESOURCE_WRAPPER_QUERY;
+    const isAbsoluteHttpUrl = __mods["packages/shared/src/resources.js"].isAbsoluteHttpUrl;
+    const normalizeOrigin = __mods["packages/shared/src/resources.js"].normalizeResourceOrigin;
+    const sharesOrigin = __mods["packages/shared/src/resources.js"].sharesOrigin;
     /**
-     * Client-side guards around Runtime launch data and loading deadlines.
-     * The Runtime owns the iframe, but the Client still refuses obviously unsafe
-     * entry URLs or incomplete launch descriptors before rendering anything.
+     * Instance-resource URL helpers (V1.5-CONTRACTS §7.2, §7.5.1, §7.6).
+     *
+     * Two credentials exist per Runtime instance:
+     *   1. the one-shot launch URL (`LaunchInfo.entryUrl`) — first navigation only;
+     *   2. the instance-bound resource credential (`LaunchInfo.entryResourceUrl`,
+     *      prefixed by `LaunchInfo.resourceBase`) — every reload/retry/iframe rebuild.
+     *
+     * Path normalization, origin validation and `assetUrl` live in
+     * `packages/shared/src/resources.js` (single source of truth, M1 Lead-owned).
+     * This module only adds the wrapper-navigation rules layered on top of it, and
+     * stays pure (no DOM) so the Runtime, the Client guard and tests share it.
      */
 
-    const ENTRY_PATH = 'api/game-market/entry';
 
-    /**
-     * Entry URLs must stay a same-origin relative API path. Schemes, protocol
-     * relative hosts, backslashes, encoded separators and traversal are rejected.
-     */
-    function isSafeEntryUrl(value) {
+    const DRIVE_RE = /^[A-Za-z]:/;
+    const CONTROL_RE = /[\u0000-\u001F\u007F]/;
+    const ENCODED_TRAVERSAL_RE = /%(?:2e|2f|5c|00)/i;
+
+    /** Legacy `/api/game-market/entry?...` relative URL (V0/V1 Host). */
+    function isSafeLegacyEntryUrl(value) {
       if (typeof value !== 'string') return false;
       if (value.length === 0 || value.length > 4096) return false;
-      if (/[\u0000-\u001f\u007f\\]/.test(value)) return false;
+      if (CONTROL_RE.test(value) || value.includes('\\')) return false;
       if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(value)) return false;
       if (value.charAt(0) === '/' && value.charAt(1) === '/') return false;
       if (value.indexOf('#') !== -1 || value.indexOf('..') !== -1) return false;
-
       const lower = value.toLowerCase();
-      if (lower.indexOf('%2e') !== -1 || lower.indexOf('%2f') !== -1 || lower.indexOf('%5c') !== -1) return false;
-
+      if (ENCODED_TRAVERSAL_RE.test(lower)) return false;
       let path = value;
       while (path.charAt(0) === '/') path = path.slice(1);
       if (path.startsWith('//')) return false;
       const queryIndex = path.indexOf('?');
       const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex);
-      return pathname === ENTRY_PATH;
+      return pathname === 'api/game-market/entry';
+    }
+
+    /**
+     * Entry URL is either the legacy same-origin API path (html-v1) or an absolute
+     * loopback resource-origin URL (asset-zip-v2). Neither may be a
+     * `javascript:`/`data:`/external URL or carry traversal.
+     */
+    function isSafeEntryUrl(value) {
+      if (isSafeLegacyEntryUrl(value)) return true;
+      if (!isAbsoluteHttpUrl(value)) return false;
+      try {
+        const url = new URL(value);
+        if (url.pathname === '' || url.pathname === '/' || url.hash !== '') return false;
+        if (url.pathname.includes('..')) return false;
+        if (CONTROL_RE.test(value) || value.includes('\\')) return false;
+        if (ENCODED_TRAVERSAL_RE.test(value)) return false;
+        return true;
+      } catch (_error) {
+        return false;
+      }
+    }
+
+    /** Normalize a resource origin (`http://127.0.0.1:<port>`); null when invalid. */
+    function resourceOriginOf(value) {
+      const normalized = normalizeOrigin(value);
+      return normalized.ok ? normalized.value : null;
+    }
+
+    /** True when `value` is an instance resource prefix `/res/<instance>/<token>`. */
+    function isResourceBase(value) {
+      if (!isAbsoluteHttpUrl(value)) return false;
+      try {
+        const url = new URL(value);
+        if (url.search || url.hash) return false;
+        if (!/^\/res\/[a-f0-9]{32}\/[a-f0-9]{32}\/?$/.test(url.pathname)) return false;
+        return normalizeOrigin(url.origin).ok;
+      } catch (_error) {
+        return false;
+      }
+    }
+
+    /** True when `value` is an entry URL under the given resource base. */
+    function isEntryResourceUrl(value, resourceBase) {
+      if (!isAbsoluteHttpUrl(value) || typeof resourceBase !== 'string') return false;
+      if (!sharesOrigin(value, resourceBase)) return false;
+      let url;
+      let base;
+      try {
+        url = new URL(value);
+        base = new URL(resourceBase);
+      } catch (_error) {
+        return false;
+      }
+      if (url.hash) return false;
+      const basePath = base.pathname.replace(/\/+$/, '');
+      if (!url.pathname.startsWith(`${basePath}/`)) return false;
+      if (url.pathname.includes('..')) return false;
+      return true;
+    }
+
+    /**
+     * Append the launch identity query to a game-document URL. The one-shot launch
+     * URL already carries it; resource-credential reload URLs must gain it because
+     * the game SDK reads `instance`/`nonce` from `location.search`.
+     */
+    function withLaunchQuery(gameUrl, instanceId, nonce) {
+      if (!isAbsoluteHttpUrl(gameUrl)) return gameUrl;
+      let url;
+      try {
+        url = new URL(gameUrl);
+      } catch (_error) {
+        return gameUrl;
+      }
+      let changed = false;
+      if (typeof instanceId === 'string' && instanceId && url.searchParams.get('instance') !== instanceId) {
+        url.searchParams.set('instance', instanceId);
+        changed = true;
+      }
+      if (typeof nonce === 'string' && nonce && url.searchParams.get('nonce') !== nonce) {
+        url.searchParams.set('nonce', nonce);
+        changed = true;
+      }
+      return changed ? url.toString() : gameUrl;
+    }
+
+    /**
+     * Build the wrapper document URL for one navigation.
+     *
+     * The wrapper is a platform-served trusted static document on the resource
+     * origin (no game bytes, no credential carrier). The Runtime embeds it without
+     * a `sandbox` attribute — a sandboxed ancestor is opaque-origin and would make
+     * the nested game document fail its `frame-ancestors` ancestor-chain check
+     * (Lead decision 2026-10-20, browser-probed). The wrapper itself creates the
+     * sandboxed game iframe. The game-document URL travels in the `?src=` parameter
+     * and the wrapper relays bridge traffic point-to-point (contract §7.5.1: the
+     * wrapper carries no capability). The Runtime always writes `src` itself, so a
+     * Host that hands back a stale/foreign `src` cannot redirect this instance.
+     *
+     * @param {{resourceOrigin:string, wrapperUrl?:string|null}} launchInfo
+     * @param {string} gameUrl exact game-document URL to embed
+     * @param {'launch'|'resource'} mode which optional wrapper field to prefer
+     * @returns {string|null} absolute wrapper URL, or null when the LaunchInfo is inconsistent
+     */
+    function buildWrapperFrameUrl(launchInfo, gameUrl, mode) {
+      if (!launchInfo || typeof launchInfo !== 'object' || typeof gameUrl !== 'string' || gameUrl.length === 0) {
+        return null;
+      }
+      const origin = resourceOriginOf(launchInfo.resourceOrigin);
+      if (!origin) return null;
+      const explicit =
+        mode === 'resource'
+          ? typeof launchInfo.wrapperResourceUrl === 'string' && launchInfo.wrapperResourceUrl.length > 0
+            ? launchInfo.wrapperResourceUrl
+            : null
+          : typeof launchInfo.wrapperUrl === 'string' && launchInfo.wrapperUrl.length > 0
+            ? launchInfo.wrapperUrl
+            : null;
+      let wrapper;
+      if (explicit !== null) {
+        // Fail closed: a provided wrapper URL that is not an absolute URL on the
+        // advertised resource origin is a contract violation, not something to fix
+        // up silently.
+        if (!isAbsoluteHttpUrl(explicit) || !sharesOrigin(explicit, origin)) return null;
+        try {
+          wrapper = new URL(explicit);
+        } catch (_error) {
+          return null;
+        }
+      } else {
+        wrapper = new URL(`${origin}${RESOURCE_WRAPPER_PATH}`);
+      }
+      wrapper.searchParams.set(RESOURCE_WRAPPER_QUERY, gameUrl);
+      return wrapper.toString();
+    }
+
+    function resourceScopeError(message) {
+      return { code: GM.RESOURCE_SCOPE_DENIED, message: message || 'Resource path is outside this instance' };
+    }
+
+    return { isSafeLegacyEntryUrl, isSafeEntryUrl, resourceOriginOf, isResourceBase, isEntryResourceUrl, withLaunchQuery, buildWrapperFrameUrl, resourceScopeError };
+    })();
+
+    // module: packages/client/src/runtime-utils.js
+    __mods["packages/client/src/runtime-utils.js"] = (function () {
+    const INSTANCE_ID_PATTERN = __mods["packages/shared/src/constants.js"].INSTANCE_ID_PATTERN;
+    const NONCE_PATTERN = __mods["packages/shared/src/constants.js"].NONCE_PATTERN;
+    const PACKAGE_FORMATS = __mods["packages/shared/src/constants.js"].PACKAGE_FORMATS;
+    const TIMING = __mods["packages/shared/src/constants.js"].TIMING;
+    const GM = __mods["packages/shared/src/errors.js"].GM;
+    const makeGameError = __mods["packages/shared/src/errors.js"].makeGameError;
+    const normalizeZipPath = __mods["packages/shared/src/package-v2.js"].normalizeZipPath;
+    const isAbsoluteHttpUrl = __mods["packages/shared/src/resources.js"].isAbsoluteHttpUrl;
+    const normalizeResourceOrigin = __mods["packages/shared/src/resources.js"].normalizeResourceOrigin;
+    const sharesOrigin = __mods["packages/shared/src/resources.js"].sharesOrigin;
+    const isEntryResourceUrl = __mods["packages/runtime/src/launch-url.js"].isEntryResourceUrl;
+    const isResourceBase = __mods["packages/runtime/src/launch-url.js"].isResourceBase;
+    const isSafeEntryUrlImpl = __mods["packages/runtime/src/launch-url.js"].isSafeEntryUrl;
+    /**
+     * Client-side guards around Runtime launch data and loading deadlines.
+     * The Runtime owns the iframe, but the Client still refuses obviously unsafe
+     * entry URLs or incomplete launch descriptors before rendering anything.
+     *
+     * V1.5: `LaunchInfo` may additionally carry the instance resource fields
+     * (contract §7.6). They are validated here so a malformed Host response fails
+     * with a precise GM code before any iframe is created.
+     */
+
+    /**
+     * Entry URLs must stay a same-origin relative API path (html-v1) or an absolute
+     * http(s) URL on the instance resource origin (asset-zip-v2). Schemes,
+     * protocol-relative hosts, backslashes, encoded separators and traversal are
+     * rejected.
+     */
+    function isSafeEntryUrl(value) {
+      if (!isSafeEntryUrlImpl(value)) return false;
+      // Absolute entry URLs must point at a loopback resource origin; the legacy
+      // relative `/api/game-market/entry` form has no origin at all.
+      if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(value)) {
+        try {
+          if (!normalizeResourceOrigin(new URL(value).origin).ok) return false;
+        } catch (_error) {
+          return false;
+        }
+      }
+      return true;
     }
 
     function launchError(code, retryable) {
       return { ok: false, error: makeGameError(code, null, { retryable: retryable === true }) };
+    }
+
+    function validViewport(viewport) {
+      return Boolean(
+        viewport &&
+          typeof viewport === 'object' &&
+          typeof viewport.width === 'number' &&
+          viewport.width > 0 &&
+          typeof viewport.height === 'number' &&
+          viewport.height > 0
+      );
+    }
+
+    /**
+     * Validate the V1.5 instance-resource extension. Missing fields keep the V1
+     * html-v1 launch working unchanged; a partial or contradictory set fails
+     * closed (an asset-zip-v2 package without a resource credential can never load
+     * its own files).
+     *
+     * @returns {{ok:true} | {ok:false, error: object}}
+     */
+    function validateLaunchResources(info) {
+      const hasAny =
+        info.resourceOrigin !== undefined ||
+        info.resourceBase !== undefined ||
+        info.entryResourceUrl !== undefined ||
+        info.resourceTtlMs !== undefined ||
+        info.package !== undefined ||
+        info.wrapperUrl !== undefined ||
+        info.wrapperResourceUrl !== undefined;
+      if (!hasAny) return { ok: true };
+
+      const pkg = info.package;
+      if (!pkg || typeof pkg !== 'object' || Array.isArray(pkg)) return launchError(GM.INVALID_PARAM, false);
+      if (!PACKAGE_FORMATS.includes(pkg.format)) return launchError(GM.INVALID_PARAM, false);
+      const entryPath = normalizeZipPath(pkg.entry);
+      if (!entryPath.ok) return launchError(GM.INVALID_PARAM, false);
+      if (pkg.filesDigest !== null && (typeof pkg.filesDigest !== 'string' || !/^[a-f0-9]{64}$/.test(pkg.filesDigest))) {
+        return launchError(GM.INVALID_PARAM, false);
+      }
+
+      if (typeof info.resourceOrigin !== 'string' || !normalizeResourceOrigin(info.resourceOrigin).ok) {
+        return launchError(GM.INVALID_PARAM, false);
+      }
+      if (typeof info.resourceBase !== 'string' || !isResourceBase(info.resourceBase)) {
+        return launchError(GM.INVALID_PARAM, false);
+      }
+      if (!sharesOrigin(info.resourceBase, info.resourceOrigin)) return launchError(GM.INVALID_PARAM, false);
+      if (typeof info.entryResourceUrl !== 'string' || !isEntryResourceUrl(info.entryResourceUrl, info.resourceBase)) {
+        return launchError(GM.INVALID_PARAM, false);
+      }
+      if (
+        info.resourceTtlMs !== undefined &&
+        (typeof info.resourceTtlMs !== 'number' || !Number.isFinite(info.resourceTtlMs) || info.resourceTtlMs <= 0)
+      ) {
+        return launchError(GM.INVALID_PARAM, false);
+      }
+      for (const field of ['wrapperUrl', 'wrapperResourceUrl']) {
+        const value = info[field];
+        if (value === undefined || value === null) continue;
+        if (typeof value !== 'string' || !isAbsoluteHttpUrl(value) || !sharesOrigin(value, info.resourceOrigin)) {
+          return launchError(GM.INVALID_PARAM, false);
+        }
+      }
+      if (pkg.format === 'asset-zip-v2') {
+        // The wrapped game document must live on the advertised resource origin.
+        if (typeof info.entryUrl !== 'string' || !isAbsoluteHttpUrl(info.entryUrl)) {
+          return launchError(GM.ASSET_INTEGRITY, false);
+        }
+        if (!sharesOrigin(info.entryUrl, info.resourceOrigin)) return launchError(GM.ASSET_INTEGRITY, false);
+      }
+      return { ok: true };
     }
 
     /**
@@ -8386,7 +9927,7 @@ window.__ModuleLoader__.load({
      * Returns `{ok:true, info}` or `{ok:false, error}` (GM code only).
      */
     function validateLaunchInfo(info) {
-      if (!info || typeof info !== 'object') return launchError(GM.INVALID_PARAM, false);
+      if (!info || typeof info !== 'object' || Array.isArray(info)) return launchError(GM.INVALID_PARAM, false);
       if (!isSafeEntryUrl(info.entryUrl)) return launchError(GM.ASSET_INTEGRITY, false);
       if (typeof info.instanceId !== 'string' || !INSTANCE_ID_PATTERN.test(info.instanceId)) {
         return launchError(GM.INVALID_PARAM, false);
@@ -8397,18 +9938,56 @@ window.__ModuleLoader__.load({
       if (info.mode !== undefined && info.mode !== 'start' && info.mode !== 'resume-paused') {
         return launchError(GM.INVALID_PARAM, false);
       }
-      if (info.viewport !== undefined && info.viewport !== null) {
-        const viewport = info.viewport;
-        const valid =
-          viewport &&
-          typeof viewport === 'object' &&
-          typeof viewport.width === 'number' &&
-          viewport.width > 0 &&
-          typeof viewport.height === 'number' &&
-          viewport.height > 0;
-        if (!valid) return launchError(GM.INVALID_PARAM, false);
+      if (info.viewport !== undefined && info.viewport !== null && !validViewport(info.viewport)) {
+        return launchError(GM.INVALID_PARAM, false);
       }
+      const resources = validateLaunchResources(info);
+      if (!resources.ok) return resources;
       return { ok: true, info: info };
+    }
+
+    /**
+     * True when this launch can be reloaded in place with its instance resource
+     * credential (V1.5). Legacy V1 html-v1 launches must ask the Host for a fresh
+     * one-shot launch instead of replaying the consumed URL.
+     */
+    function canReloadRuntime(launchInfo) {
+      return Boolean(
+        launchInfo &&
+          typeof launchInfo === 'object' &&
+          typeof launchInfo.entryResourceUrl === 'string' &&
+          launchInfo.entryResourceUrl.length > 0 &&
+          typeof launchInfo.instanceId === 'string' &&
+          launchInfo.instanceId.length > 0
+      );
+    }
+
+    /** Runtime failures that a resource-credential reload can plausibly fix. */
+    const RELOADABLE_RUNTIME_ERRORS = Object.freeze([
+      GM.LOAD_TIMEOUT,
+      GM.HANDSHAKE_TIMEOUT,
+      GM.ENTRY_LAUNCH_CONSUMED,
+    ]);
+
+    function shouldReloadRuntime(error, launchInfo) {
+      if (!canReloadRuntime(launchInfo)) return false;
+      if (!error || typeof error !== 'object') return false;
+      return RELOADABLE_RUNTIME_ERRORS.includes(error.code);
+    }
+
+    /** Renew failures that mean the Host instance/credential is gone for good. */
+    const TERMINAL_RESOURCE_ERRORS = Object.freeze([
+      GM.RESOURCE_CREDENTIAL_INVALID,
+      GM.RESOURCE_CREDENTIAL_EXPIRED,
+      GM.ENTRY_CREDENTIAL_CONSUMED,
+      GM.ENTRY_LAUNCH_CONSUMED,
+      GM.RESOURCE_SCOPE_DENIED,
+      GM.GAME_NOT_FOUND,
+    ]);
+
+    function isTerminalResourceError(error) {
+      if (!error || typeof error !== 'object') return false;
+      return TERMINAL_RESOURCE_ERRORS.includes(error.code);
     }
 
     /** Loading deadline phases used by the Runtime view (PRD 9.6.5). */
@@ -8438,7 +10017,7 @@ window.__ModuleLoader__.load({
       return state === 'playing' || state === 'paused' || state === 'saving';
     }
 
-    return { isSafeEntryUrl, validateLaunchInfo, deriveLoadPhase, isRuntimeLoadingState, hasRuntimeInstanceId, shouldReleaseRuntimeInstance, isRuntimeInteractiveState };
+    return { isSafeEntryUrl, validateLaunchInfo, canReloadRuntime, shouldReloadRuntime, isTerminalResourceError, deriveLoadPhase, isRuntimeLoadingState, hasRuntimeInstanceId, shouldReleaseRuntimeInstance, isRuntimeInteractiveState };
     })();
 
     // module: packages/shared/src/protocol.js
@@ -9625,6 +11204,7 @@ window.__ModuleLoader__.load({
     const INSTANCE_ID_PATTERN = __mods["packages/shared/src/constants.js"].INSTANCE_ID_PATTERN;
     const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
     const NONCE_PATTERN = __mods["packages/shared/src/constants.js"].NONCE_PATTERN;
+    const PACKAGE_FORMATS = __mods["packages/shared/src/constants.js"].PACKAGE_FORMATS;
     const RUNTIME_VERSION = __mods["packages/shared/src/constants.js"].RUNTIME_VERSION;
     const SDK_VERSION = __mods["packages/shared/src/constants.js"].SDK_VERSION;
     const TIMING = __mods["packages/shared/src/constants.js"].TIMING;
@@ -9632,25 +11212,55 @@ window.__ModuleLoader__.load({
     const defaultMessageFor = __mods["packages/shared/src/errors.js"].defaultMessageFor;
     const isGmCode = __mods["packages/shared/src/errors.js"].isGmCode;
     const makeGameError = __mods["packages/shared/src/errors.js"].makeGameError;
+    const normalizeZipPath = __mods["packages/shared/src/package-v2.js"].normalizeZipPath;
     const BRIDGE_VERSION = __mods["packages/shared/src/protocol.js"].BRIDGE_VERSION;
     const EVENTS = __mods["packages/shared/src/protocol.js"].EVENTS;
     const METHODS = __mods["packages/shared/src/protocol.js"].METHODS;
     const isPlainObject = __mods["packages/shared/src/protocol.js"].isPlainObject;
+    const isAbsoluteHttpUrl = __mods["packages/shared/src/resources.js"].isAbsoluteHttpUrl;
+    const normalizeResourceOrigin = __mods["packages/shared/src/resources.js"].normalizeResourceOrigin;
+    const sharesOrigin = __mods["packages/shared/src/resources.js"].sharesOrigin;
     const createRuntimeBridge = __mods["packages/runtime/src/bridge.js"].createRuntimeBridge;
+    const buildWrapperFrameUrl = __mods["packages/runtime/src/launch-url.js"].buildWrapperFrameUrl;
+    const isEntryResourceUrl = __mods["packages/runtime/src/launch-url.js"].isEntryResourceUrl;
+    const isResourceBase = __mods["packages/runtime/src/launch-url.js"].isResourceBase;
+    const isSafeEntryUrl = __mods["packages/runtime/src/launch-url.js"].isSafeEntryUrl;
+    const withLaunchQuery = __mods["packages/runtime/src/launch-url.js"].withLaunchQuery;
     const createRequestService = __mods["packages/runtime/src/requests.js"].createRequestService;
     const createSaveScheduler = __mods["packages/runtime/src/scheduler.js"].createSaveScheduler;
     const createStateMachine = __mods["packages/runtime/src/state-machine.js"].createStateMachine;
     /**
-     * Game Runtime controller (PRD §8.4 / §9.6).
+     * Game Runtime controller (PRD §8.4 / §9.6; V1.5 resource-wrapper §7.5.1).
      *
-     * Owns the single sandbox iframe, the bridge, the autosave scheduler and the
-     * page state machine. The DOM layer is deliberately thin: tests inject a fake
-     * `window` / `document` / clock into this same controller.
+     * Owns the game iframe — and, for V1.5 asset-zip-v2 packages, the trusted
+     * platform wrapper iframe that hosts it — plus the bridge, the autosave
+     * scheduler and the page state machine. The DOM layer is deliberately thin:
+     * tests inject a fake `window` / `document` / clock into this same controller.
      *
      * Security invariants:
-     *   - exactly one iframe, `sandbox="allow-scripts"` (never allow-same-origin);
+     *   - one game iframe. V1 html-v1: the Runtime's single iframe is
+     *     `sandbox="allow-scripts"` (never allow-same-origin). V1.5 asset-zip-v2:
+     *     the Runtime's outer iframe is the **trusted platform wrapper** on the
+     *     resource origin and is deliberately NOT sandboxed (a sandboxed,
+     *     opaque-origin ancestor can never satisfy the game document's
+     *     `frame-ancestors` ancestor-chain check — measured, Lead decision
+     *     2026-10-20); the wrapper itself creates the **sandboxed opaque game
+     *     iframe**. `allow-same-origin` is never granted anywhere;
      *   - no game data is placed in host DOM attributes;
-     *   - the game never receives DSH objects, paths or credentials.
+     *   - the game never receives DSH objects, paths or credentials;
+     *   - V1.5: the iframe points at the platform-served **wrapper** on the
+     *     resource origin, which embeds the sandboxed game document. The wrapper
+     *     relays `postMessage` traffic point-to-point, so the only window allowed
+     *     to speak the bridge protocol is the wrapper iframe's own window proxy.
+     *   - If the wrapper URL is missing/foreign (origin mismatch) the Runtime fails
+     *     closed with a real error; it never falls back to embedding the game
+     *     document directly, because that would drop the navigation boundary.
+     *
+     * Credential model (contract §7.2): the first navigation uses the one-shot
+     * `entryUrl`; every later navigation (reload/retry/iframe rebuild) uses the
+     * instance-bound `entryResourceUrl`. A consumed launch URL is remembered at
+     * module scope so a Client retry that reuses the same LaunchInfo cannot replay
+     * it (the Host would answer 410 GM-4013 and the frame would stay blank).
      */
 
 
@@ -9663,6 +11273,26 @@ window.__ModuleLoader__.load({
     const VIEWPORT_THROTTLE_MS = 200;
     const PING_TIMEOUT_MS = 2000;
     const MAX_PING_MISSES = 3;
+    const MAX_CONSUMED_LAUNCH_URLS = 64;
+
+    /**
+     * One-shot entry URLs already fetched anywhere in this page lifetime. A Client
+     * retry may hand the Runtime the same LaunchInfo again; navigating the launch
+     * URL a second time would be a 410 replay, so the credential must be known
+     * consumed before the retry even starts.
+     */
+    const consumedLaunchUrls = new Set();
+
+    function rememberConsumedLaunchUrl(entryUrl) {
+      if (typeof entryUrl !== 'string' || entryUrl.length === 0) return;
+      consumedLaunchUrls.add(entryUrl);
+      while (consumedLaunchUrls.size > MAX_CONSUMED_LAUNCH_URLS) {
+        const oldest = consumedLaunchUrls.values().next().value;
+        if (oldest === undefined) break;
+        consumedLaunchUrls.delete(oldest);
+      }
+    }
+
 
     function noop() {}
 
@@ -9698,6 +11328,91 @@ window.__ModuleLoader__.load({
       return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : fallback;
     }
 
+    function normalizeResourceFields(info) {
+      const hasAny =
+        info.resourceOrigin !== undefined ||
+        info.resourceBase !== undefined ||
+        info.entryResourceUrl !== undefined ||
+        info.resourceTtlMs !== undefined ||
+        info.package !== undefined ||
+        info.wrapperUrl !== undefined ||
+        info.wrapperResourceUrl !== undefined;
+      if (!hasAny) {
+        return {
+          useWrapper: false,
+          resourceOrigin: null,
+          resourceBase: null,
+          resourceTtlMs: null,
+          entryResourceUrl: null,
+          packageFormat: null,
+          packageEntry: null,
+          filesDigest: null,
+          wrapperUrl: null,
+          wrapperResourceUrl: null,
+        };
+      }
+      // Contract §7.6: the V1.5 fields are issued together. A partial set means the
+      // Host and Runtime disagree; fail closed instead of silently dropping the
+      // resource credential (a ZIP game would then load without its resources).
+      const origin = normalizeResourceOrigin(info.resourceOrigin);
+      if (!origin.ok) {
+        throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo.resourceOrigin must be an absolute http loopback origin');
+      }
+      if (typeof info.resourceBase !== 'string' || !isResourceBase(info.resourceBase)) {
+        throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo.resourceBase must be an instance /res/ prefix');
+      }
+      if (typeof info.entryResourceUrl !== 'string' || !isEntryResourceUrl(info.entryResourceUrl, info.resourceBase)) {
+        throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo.entryResourceUrl must live under resourceBase');
+      }
+      if (
+        info.resourceTtlMs !== undefined &&
+        (typeof info.resourceTtlMs !== 'number' || !Number.isFinite(info.resourceTtlMs) || info.resourceTtlMs <= 0)
+      ) {
+        throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo.resourceTtlMs must be a positive number');
+      }
+      const pkg = info.package;
+      if (!isPlainObject(pkg)) {
+        throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo.package must be an object');
+      }
+      if (!PACKAGE_FORMATS.includes(pkg.format)) {
+        throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo.package.format is not supported');
+      }
+      const entryPath = normalizeZipPath(pkg.entry);
+      if (!entryPath.ok) {
+        throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo.package.entry must be a normalized relative path');
+      }
+      if (pkg.filesDigest !== null && (typeof pkg.filesDigest !== 'string' || !/^[a-f0-9]{64}$/.test(pkg.filesDigest))) {
+        throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo.package.filesDigest must be null or 64 lowercase hex');
+      }
+      // Optional wrapper URLs (Lead decision 2026-10-20): the Host may pre-build
+      // them; the Runtime still overwrites `?src=` (see buildWrapperFrameUrl).
+      const wrapperUrl = normalizeWrapperField(info.wrapperUrl, origin.value, 'wrapperUrl');
+      const wrapperResourceUrl = normalizeWrapperField(info.wrapperResourceUrl, origin.value, 'wrapperResourceUrl');
+      // html-v1 keeps the V1 direct `/api/.../entry` navigation; only
+      // asset-zip-v2 needs the wrapper (Lead decision, M1 scope).
+      const useWrapper = pkg.format === 'asset-zip-v2';
+      return {
+        useWrapper,
+        resourceOrigin: origin.value,
+        resourceBase: info.resourceBase,
+        resourceTtlMs: info.resourceTtlMs === undefined ? null : info.resourceTtlMs,
+        entryResourceUrl: info.entryResourceUrl,
+        packageFormat: pkg.format,
+        packageEntry: entryPath.value,
+        filesDigest: pkg.filesDigest === undefined ? null : pkg.filesDigest,
+        wrapperUrl,
+        wrapperResourceUrl,
+      };
+    }
+
+    function normalizeWrapperField(value, resourceOrigin, field) {
+      if (value === undefined || value === null) return null;
+      if (typeof value !== 'string' || !isAbsoluteHttpUrl(value) || !sharesOrigin(value, resourceOrigin)) {
+        throw makeGameError(GM.INVALID_PARAM, `LaunchInfo.${field} must be an absolute URL on the resource origin`);
+      }
+      return value;
+    }
+
     function normalizeLaunchInfo(info) {
       if (!isPlainObject(info)) throw makeGameError(GM.INVALID_PARAM, 'launch requires a LaunchInfo object');
       if (typeof info.entryUrl !== 'string' || info.entryUrl.length === 0) {
@@ -9719,6 +11434,15 @@ window.__ModuleLoader__.load({
         query.get('version') ||
         query.get('gameVersion') ||
         '0.0.0';
+      const resources = normalizeResourceFields(info);
+      if (resources.useWrapper) {
+        // Inside the wrapper the game URL must be an absolute resource-origin URL:
+        // a same-origin relative path would resolve against the wrapper origin, and
+        // a foreign URL would let the Host redirect the instance elsewhere.
+        if (!isSafeEntryUrl(info.entryUrl) || !isAbsoluteHttpUrl(info.entryUrl) || !sharesOrigin(info.entryUrl, resources.resourceOrigin)) {
+          throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo.entryUrl must be an absolute resource-origin URL for asset-zip-v2');
+        }
+      }
       return {
         gameId,
         gameVersion,
@@ -9731,6 +11455,7 @@ window.__ModuleLoader__.load({
         viewport: info.viewport && typeof info.viewport === 'object' ? info.viewport : { width: 960, height: 540, fit: 'contain' },
         runtimeVersion: typeof info.runtimeVersion === 'string' ? info.runtimeVersion : RUNTIME_VERSION,
         sdkVersion: typeof info.sdkVersion === 'string' ? info.sdkVersion : SDK_VERSION,
+        ...resources,
       };
     }
 
@@ -9773,6 +11498,8 @@ window.__ModuleLoader__.load({
       let environment = normalizeEnvironment(options.environment);
       let launchInfo = null;
       let iframe = null;
+      /** Set the moment the element is created; teardown uses it as a fallback. */
+      let createdFrame = null;
       let iframeWindow = null;
       let iframeLoaded = false;
       let bridge = null;
@@ -9782,6 +11509,17 @@ window.__ModuleLoader__.load({
       let generation = 0;
       let viewport = { width: 0, height: 0, dpr: 1 };
       let agentSnapshot = null;
+      /** V1.5 credential/navigation state. */
+      let expectedFrameLoads = 0;
+      let navigationUsesLaunchCredential = false;
+      let capabilitiesRevoked = false;
+      /**
+       * True only while we are inserting the iframe into the DOM. Chrome may fire a
+       * synchronous `load` for the iframe's initial empty document at insertion
+       * time; that is not a navigation and MUST NOT be counted as one (it released
+       * live instances in the M1 A02 browser probe, Lead 2026-10-20).
+       */
+      let insertingFrame = false;
 
       let handshakeTimer = null;
       let loadSlowTimer = null;
@@ -9883,6 +11621,11 @@ window.__ModuleLoader__.load({
             scoreMetaBytes: launchInfo.limits.scoreMetaBytes,
           },
           viewport: { width: viewport.width, height: viewport.height, dpr: viewport.dpr },
+          // V1.5 (contract §1.10/§7.6): the SDK builds game.runtime.asseturl () from
+          // this instance prefix. `null` on legacy/html-v1 Hosts keeps old games
+          // byte-compatible; old SDKs ignore unknown init fields.
+          resourceBase: launchInfo.resourceBase,
+          packageFormat: launchInfo.packageFormat,
         };
       }
 
@@ -9898,6 +11641,8 @@ window.__ModuleLoader__.load({
           reducedMotion: environment.reducedMotion,
           capabilities: launchInfo.capabilities.slice(),
           viewport: { width: viewport.width, height: viewport.height, dpr: viewport.dpr },
+          resourceBase: launchInfo.resourceBase,
+          packageFormat: launchInfo.packageFormat,
           ready: true,
         };
       }
@@ -9909,6 +11654,9 @@ window.__ModuleLoader__.load({
 
       function handleHello() {
         if (!bridge) return;
+        // The game document was fetched and its SDK is running: the one-shot launch
+        // credential (if this navigation used it) is now consumed for good.
+        markGameDocumentLoaded();
         bridge.markInitialized();
         bridge.sendEvent(EVENTS.INIT, buildInitData());
         if (agentSnapshot) bridge.sendEvent(EVENTS.AGENT_STATUS, agentSnapshot);
@@ -9923,6 +11671,7 @@ window.__ModuleLoader__.load({
         }
         if (bridge.isReadyAcknowledged()) return buildRuntimeInfo();
         handshakeTimer = clearTimer(handshakeTimer);
+        markGameDocumentLoaded();
         bridge.markReady();
         enterState('ready');
         if (iframeLoaded) startPing();
@@ -10009,6 +11758,62 @@ window.__ModuleLoader__.load({
         if (machine.get() !== 'error' && machine.get() !== 'exited') enterState('error');
       }
 
+      /**
+       * Security teardown (contract §7.5.1 depth defense): after an unexpected
+       * navigation or a dead heartbeat the Runtime stops the bridge (no more SDK
+       * calls), releases the Host instance (the resource credential can no longer
+       * be renewed or used) and surfaces a real error.
+       */
+      function revokeCapabilities(code, message) {
+        if (destroyed || capabilitiesRevoked) return;
+        capabilitiesRevoked = true;
+        stopPing();
+        if (bridge) {
+          try {
+            bridge.destroy();
+          } catch (_error) {
+            // already destroyed
+          }
+          bridge = null;
+        }
+        requests = null;
+        if (launchInfo && api && typeof api.releaseRuntime === 'function') {
+          try {
+            Promise.resolve(api.releaseRuntime({ gameId: launchInfo.gameId, instanceId: launchInfo.instanceId })).catch(
+              noop
+            );
+          } catch (_error) {
+            // Release is best-effort; the Host TTL still reclaims the instance.
+          }
+        }
+        fail(code, message, false);
+        // Tear the sandbox down like V1 did for fatal protocol violations: after a
+        // capability revocation there is nothing left to talk to.
+        cleanupDom();
+      }
+
+      function startHandshakeTimer() {
+        handshakeTimer = clearTimer(handshakeTimer);
+        handshakeTimer = timers.setTimeout(function handshakeTimeout() {
+          handshakeTimer = null;
+          if (!bridge || bridge.isReadyAcknowledged() || destroyed) return;
+          // A wrapper navigation with the one-shot launch URL that never handshakes
+          // is the observable symptom of a replayed/consumed launch credential
+          // (Host answers 410 GM-4013 and the nested frame stays blank). Show the
+          // real error, then retry with the instance resource credential instead of
+          // leaving a silent blank frame.
+          if (recoverWithResourceCredential('handshake-timeout')) return;
+          if (launchInfo && launchInfo.useWrapper && launchInfo.entryResourceUrl) {
+            // A wrapped instance that still cannot reach the game after the
+            // resource-credential fallback is a load failure (retryable with the
+            // resource URL); the Client shows this error instead of a blank frame.
+            fail(GM.LOAD_TIMEOUT, 'Game failed to load in time', true);
+            return;
+          }
+          fail(GM.HANDSHAKE_TIMEOUT, 'Game handshake timed out');
+        }, TIMING.handshakeTimeoutMs);
+      }
+
       function startLoadTimers() {
         if (iframeLoaded) return;
         loadSlowTimer = timers.setTimeout(function slowLoad() {
@@ -10019,15 +11824,134 @@ window.__ModuleLoader__.load({
         loadErrorTimer = timers.setTimeout(function abortedLoad() {
           loadErrorTimer = null;
           if (destroyed || iframeLoaded) return;
+          if (recoverWithResourceCredential('load-timeout')) return;
           fail(GM.LOAD_TIMEOUT, 'Game failed to load in time', true);
         }, TIMING.loadErrorMs);
       }
 
-      function onIframeLoad() {
+      /**
+       * The game document was fetched and is executing. In wrapper mode the
+       * iframe's `load` event only proves the wrapper document loaded, so the SDK
+       * handshake is the first trustworthy signal for the nested game document.
+       */
+      function markGameDocumentLoaded() {
+        if (!launchInfo || !launchInfo.useWrapper) return; // legacy: iframe load = entry load
+        if (iframeLoaded) return;
         iframeLoaded = true;
         loadSlowTimer = clearTimer(loadSlowTimer);
         loadErrorTimer = clearTimer(loadErrorTimer);
-        if (bridge && bridge.isReadyAcknowledged()) startPing();
+        if (navigationUsesLaunchCredential) rememberConsumedLaunchUrl(launchInfo.entryUrl);
+        navigationUsesLaunchCredential = false;
+      }
+
+      /**
+       * Decide where the next navigation must go (contract §7.2). The first
+       * navigation carries the one-shot launch credential; every later one uses the
+       * instance resource credential. Returns `null` when no credential is usable.
+       *
+       * Plan first, apply later: `createIframe()` needs the initial `src` BEFORE
+       * inserting the frame so Chrome never starts an interim about:blank
+       * navigation (Lead P0, 2026-10-20).
+       */
+      function planGameDocumentNavigation(mode) {
+        if (!launchInfo) return null;
+        let gameUrl;
+        let wrapperMode = 'launch';
+        const launchConsumedAlready = launchInfo.useWrapper && consumedLaunchUrls.has(launchInfo.entryUrl);
+        if (mode === 'initial' && !launchConsumedAlready) {
+          gameUrl = withLaunchQuery(launchInfo.entryUrl, launchInfo.instanceId, launchInfo.nonce);
+          navigationUsesLaunchCredential = true;
+        } else if (launchInfo.entryResourceUrl) {
+          gameUrl = withLaunchQuery(launchInfo.entryResourceUrl, launchInfo.instanceId, launchInfo.nonce);
+          navigationUsesLaunchCredential = false;
+          wrapperMode = 'resource';
+          // The launch credential is spent after the first reachable navigation,
+          // even when this Runtime instance never fetched it itself.
+          rememberConsumedLaunchUrl(launchInfo.entryUrl);
+        } else {
+          return null;
+        }
+        const frameUrl = launchInfo.useWrapper ? buildWrapperFrameUrl(launchInfo, gameUrl, wrapperMode) : gameUrl;
+        if (!frameUrl) return null;
+        return { frameUrl, wrapperMode };
+      }
+
+      /** Apply a planned navigation to the existing iframe. */
+      function applyGameDocumentNavigation(plan) {
+        // Every navigation we perform is expected to produce exactly one `load`.
+        // Extra `load` events are non-ours navigations and end the instance.
+        expectedFrameLoads += 1;
+        if (!iframe) return;
+        iframeLoaded = false;
+        iframe.setAttribute('src', plan.frameUrl);
+      }
+
+      /**
+       * One-shot navigation helper for reload/retry paths (the iframe already
+       * exists): plan + apply, or `null` when no usable credential exists.
+       */
+      function navigateToGameDocument(mode) {
+        const plan = planGameDocumentNavigation(mode);
+        if (!plan) return null;
+        applyGameDocumentNavigation(plan);
+        return plan.frameUrl;
+      }
+
+      function canRecoverWithResourceCredential() {
+        return Boolean(
+          !destroyed &&
+            !capabilitiesRevoked &&
+            launchInfo &&
+            launchInfo.entryResourceUrl &&
+            navigationUsesLaunchCredential
+        );
+      }
+
+      function recoverWithResourceCredential(reason) {
+        if (!canRecoverWithResourceCredential()) return false;
+        emitError(
+          GM.ENTRY_LAUNCH_CONSUMED,
+          'The one-shot launch credential was already used; reloading with the instance resource URL',
+          true
+        );
+        resetForNavigation();
+        const frameUrl = navigateToGameDocument('reload');
+        if (!frameUrl) {
+          fail(GM.ENTRY_LAUNCH_CONSUMED, 'No instance resource credential is available', true);
+          return true;
+        }
+        startHandshakeTimer();
+        startLoadTimers();
+        emit({ type: 'navigation', mode: 'resource-credential', reason: reason });
+        return true;
+      }
+
+      /** Prepare the same iframe for another navigation without a fresh launch. */
+      function resetForNavigation() {
+        handshakeTimer = clearTimer(handshakeTimer);
+        loadSlowTimer = clearTimer(loadSlowTimer);
+        loadErrorTimer = clearTimer(loadErrorTimer);
+        readyFinalizeTimer = clearTimer(readyFinalizeTimer);
+        stopPing();
+        pausePromise = null;
+        hiddenPausePromise = null;
+        hiddenPaused = false;
+        iframeLoaded = false;
+        if (scheduler) scheduler.stop();
+        generation += 1;
+        if (bridge) {
+          try {
+            bridge.destroy();
+          } catch (_error) {
+            // already destroyed
+          }
+        }
+        bridge = createControllerBridge();
+        machine.reset('loading');
+        emit({ type: 'state', state: 'loading' });
+      }
+
+      function focusFrame() {
         if (iframe && typeof iframe.focus === 'function') {
           try {
             iframe.focus();
@@ -10035,6 +11959,42 @@ window.__ModuleLoader__.load({
             // focus can fail if the element was detached
           }
         }
+      }
+
+      function onIframeLoad() {
+        if (destroyed) return;
+        // Loads that are not a navigation we initiated are not ours to judge:
+        //   - the synchronous initial empty-document load Chrome fires while the
+        //     iframe is being inserted (src not committed yet);
+        //   - a load arriving after teardown started (iframe already detached).
+        // Counting these as "unexpected navigation" released live instances in the
+        // real-path browser probe (Lead P0, 2026-10-20).
+        if (insertingFrame) return;
+        if (!iframe) return;
+        const currentSrc = typeof iframe.getAttribute === 'function' ? iframe.getAttribute('src') : null;
+        if (currentSrc === null || currentSrc === '' || currentSrc === 'about:blank') return;
+        if (expectedFrameLoads <= 0) {
+          // A real navigation we never requested: the frame document moved (evil
+          // navigation / wrapper violation). Revoke the instance and stop granting
+          // capabilities (contract §7.5.1 depth defence).
+          revokeCapabilities(GM.IFRAME_CRASHED, 'Unexpected game navigation was blocked');
+          return;
+        }
+        expectedFrameLoads -= 1;
+        if (launchInfo && launchInfo.useWrapper) {
+          // Wrapper document loaded; the nested game document is still loading, so
+          // load timers keep running until the SDK handshake arrives.
+          focusFrame();
+          return;
+        }
+        // Legacy html-v1 direct navigation: the iframe load is the entry document.
+        // No credential registry here: V0/V1 navigation semantics stay unchanged.
+        iframeLoaded = true;
+        loadSlowTimer = clearTimer(loadSlowTimer);
+        loadErrorTimer = clearTimer(loadErrorTimer);
+        navigationUsesLaunchCredential = false;
+        if (bridge && bridge.isReadyAcknowledged()) startPing();
+        focusFrame();
       }
 
       function scheduleViewport() {
@@ -10134,6 +12094,7 @@ window.__ModuleLoader__.load({
       }
 
       function cleanupDom() {
+        insertingFrame = false;
         generation += 1;
         handshakeTimer = clearTimer(handshakeTimer);
         loadSlowTimer = clearTimer(loadSlowTimer);
@@ -10166,23 +12127,25 @@ window.__ModuleLoader__.load({
         }
         resizeObserver = null;
 
-        if (iframe) {
-          if (iframeLoadHandler && typeof iframe.removeEventListener === 'function') {
-            iframe.removeEventListener('load', iframeLoadHandler);
+        const frameToRemove = iframe || createdFrame;
+        if (frameToRemove) {
+          if (iframeLoadHandler && typeof frameToRemove.removeEventListener === 'function') {
+            frameToRemove.removeEventListener('load', iframeLoadHandler);
           }
-          if (iframeErrorHandler && typeof iframe.removeEventListener === 'function') {
-            iframe.removeEventListener('error', iframeErrorHandler);
+          if (iframeErrorHandler && typeof frameToRemove.removeEventListener === 'function') {
+            frameToRemove.removeEventListener('error', iframeErrorHandler);
           }
           try {
-            if (typeof iframe.remove === 'function') iframe.remove();
-            else if (iframe.parentNode && typeof iframe.parentNode.removeChild === 'function') {
-              iframe.parentNode.removeChild(iframe);
+            if (typeof frameToRemove.remove === 'function') frameToRemove.remove();
+            else if (frameToRemove.parentNode && typeof frameToRemove.parentNode.removeChild === 'function') {
+              frameToRemove.parentNode.removeChild(frameToRemove);
             }
           } catch (_error) {
             // detached already
           }
         }
         iframe = null;
+        createdFrame = null;
         iframeWindow = null;
         iframeLoaded = false;
         iframeLoadHandler = null;
@@ -10195,17 +12158,43 @@ window.__ModuleLoader__.load({
         requests = null;
       }
 
-      function createIframe(info) {
+      /**
+       * Create and insert the Runtime's iframe. The navigation target is written to
+       * `src` BEFORE the element is inserted: an iframe inserted without `src`
+       * starts an initial about:blank navigation, and Chrome dispatches a `load`
+       * event for it — which the depth-defence path must not mistake for an
+       * unexpected game navigation (Lead P0, 2026-10-20).
+       *
+       * @param {object} info normalized LaunchInfo
+       * @param {string} initialFrameUrl first navigation target (wrapper or entry)
+       */
+      function createIframe(info, initialFrameUrl) {
         if (!doc || typeof doc.createElement !== 'function') {
           throw new Error('Game Runtime needs a document to create the iframe');
         }
+        if (typeof initialFrameUrl !== 'string' || initialFrameUrl.length === 0) {
+          throw new Error('Game Runtime needs a navigation target before creating the iframe');
+        }
         const frame = doc.createElement('iframe');
-        frame.setAttribute('sandbox', 'allow-scripts');
-        frame.setAttribute('allow', 'autoplay');
-        frame.setAttribute('referrerpolicy', 'no-referrer');
+        if (info.useWrapper) {
+          // Trusted platform wrapper document (resource origin, platform-served,
+          // no game bytes/credentials). It MUST stay un-sandboxed: a sandboxed
+          // ancestor has an opaque origin, and Chromium's frame-ancestors check on
+          // the nested game document matches against every ancestor — an opaque
+          // ancestor matches no host-source, so the game would be blocked before
+          // any CSS/JS loaded (M1 browser probe, Lead decision 2026-10-20).
+          // The wrapper hosts the sandboxed game iframe; the game never gains
+          // allow-same-origin, so the sandbox isolation is unchanged.
+          frame.setAttribute('allow', 'autoplay');
+          frame.setAttribute('referrerpolicy', 'no-referrer');
+        } else {
+          // V1 html-v1 single-layer sandbox (unchanged).
+          frame.setAttribute('sandbox', 'allow-scripts');
+          frame.setAttribute('allow', 'autoplay');
+          frame.setAttribute('referrerpolicy', 'no-referrer');
+        }
         frame.setAttribute('loading', 'eager');
         frame.setAttribute('title', `Game: ${info.gameId}`);
-        frame.setAttribute('src', info.entryUrl);
         if (frame.style) {
           frame.style.width = '100%';
           frame.style.height = '100%';
@@ -10221,8 +12210,23 @@ window.__ModuleLoader__.load({
           frame.addEventListener('load', iframeLoadHandler);
           frame.addEventListener('error', iframeErrorHandler);
         }
-        container.appendChild(frame);
+        // One expected load for this navigation, and the navigation target exists
+        // before insertion so no about:blank document is loaded.
+        expectedFrameLoads += 1;
+        frame.setAttribute('src', initialFrameUrl);
+        // Expose the element to the load handler and to teardown BEFORE it can fire
+        // any event, so a failure during insertion can always remove it (no leak).
         iframe = frame;
+        createdFrame = frame;
+        insertingFrame = true;
+        try {
+          container.appendChild(frame);
+        } catch (error) {
+          insertingFrame = false;
+          iframe = null;
+          throw error;
+        }
+        insertingFrame = false;
         iframeWindow = frame.contentWindow || null;
       }
 
@@ -10233,6 +12237,9 @@ window.__ModuleLoader__.load({
         machine.reset('idle');
         launchInfo = normalized;
         pausePromise = null;
+        expectedFrameLoads = 0;
+        navigationUsesLaunchCredential = false;
+        capabilitiesRevoked = false;
 
         requests = createRequestService({
           api,
@@ -10264,25 +12271,19 @@ window.__ModuleLoader__.load({
           },
         });
 
-        bridge = createRuntimeBridge({
-          instanceId: normalized.instanceId,
-          nonce: normalized.nonce,
-          isTrustedSource: function isTrustedSource(source) {
-            return Boolean(iframeWindow && source === iframeWindow);
-          },
-          send: sendToGame,
-          onRequest: handleBridgeRequest,
-          onHello: handleHello,
-          onFatal: function onFatal(error) {
-            fail(error.code, error.message, error.retryable);
-            if (error.code === GM.MESSAGE_INVALID) cleanupDom();
-          },
-          timers,
-          now,
-        });
+        bridge = createControllerBridge();
+
+        const initialPlan = planGameDocumentNavigation('initial');
+        if (!initialPlan) {
+          cleanupDom();
+          const code = launchInfo.entryUrl && consumedLaunchUrls.has(launchInfo.entryUrl)
+            ? GM.ENTRY_LAUNCH_CONSUMED
+            : GM.INVALID_PARAM;
+          throw makeGameError(code, 'LaunchInfo has no navigable entry URL');
+        }
 
         try {
-          createIframe(normalized);
+          createIframe(normalized, initialPlan.frameUrl);
         } catch (error) {
           cleanupDom();
           throw error;
@@ -10298,12 +12299,91 @@ window.__ModuleLoader__.load({
         observeViewport();
         enterState('loading');
         emit({ type: 'save-status', status: 'idle', at: null });
-        handshakeTimer = timers.setTimeout(function handshakeTimeout() {
-          handshakeTimer = null;
-          if (!bridge || bridge.isReadyAcknowledged() || destroyed) return;
-          fail(GM.HANDSHAKE_TIMEOUT, 'Game handshake timed out');
-        }, TIMING.handshakeTimeoutMs);
+        startHandshakeTimer();
         startLoadTimers();
+      }
+
+      /**
+       * Build the trusted-side bridge for the current launch. `isTrustedSource` is
+       * the heart of the V1.5 wrapper model:
+       *
+       *   - the game runs in a sandboxed nested iframe created by the trusted
+       *     platform wrapper (the Runtime's outer iframe);
+       *   - the wrapper relays messages point-to-point, so every game message
+       *     reaches this window with `event.source === wrapper iframe window`;
+       *   - we accept that window proxy ONLY (an opaque-origin WindowProxy is a
+       *     capability-like reference we created ourselves: no other tab/window,
+       *     no message relayed from a different frame, and no direct `window.top`
+       *     post from the nested game can match it);
+       *   - instance identity is bound twice: the hello must carry this instance's
+       *     `instanceId` + `nonce`, and the game was launched with that nonce in
+       *     its URL; responses must match request ids this Runtime generated.
+       *
+       * `targetOrigin: '*'` is unavoidable (sandboxed documents have an opaque
+       * origin, serialized as "null"), but it is not a broadcast: postMessage is
+       * addressed to one WindowProxy (the wrapper we created), and it only relaxes
+       * the *recipient origin* check. Incoming messages never trust `event.origin`.
+       */
+      function createControllerBridge() {
+        return createRuntimeBridge({
+          instanceId: launchInfo.instanceId,
+          nonce: launchInfo.nonce,
+          isTrustedSource: function isTrustedSource(source) {
+            return Boolean(iframeWindow && source === iframeWindow);
+          },
+          send: sendToGame,
+          onRequest: handleBridgeRequest,
+          onHello: handleHello,
+          onFatal: function onFatal(error) {
+            if (error.code === GM.MESSAGE_INVALID) {
+              // Message-flood / structural attack: stop granting capabilities.
+              revokeCapabilities(error.code, error.message);
+              return;
+            }
+            fail(error.code, error.message, error.retryable);
+          },
+          timers,
+          now,
+        });
+      }
+
+      /**
+       * Reload/retry the current instance with the resource-credential URL
+       * (contract §7.2 reload state machine). Never navigates the launch URL again.
+       * @returns {Promise<{ok: boolean, error?: object}>}
+       */
+      function reload() {
+        if (destroyed) {
+          return Promise.reject(makeGameError(GM.NO_RUNTIME, 'Game Runtime was destroyed'));
+        }
+        if (!launchInfo) {
+          return Promise.reject(makeGameError(GM.NOT_READY, 'Game Runtime is not launched'));
+        }
+        if (capabilitiesRevoked) {
+          return Promise.reject(makeGameError(GM.NO_RUNTIME, 'Game Runtime capabilities were revoked'));
+        }
+        if (!launchInfo.entryResourceUrl) {
+          // A legacy V1 Host has no instance resource credential; the Client must
+          // request a fresh launch instead of replaying the one-shot URL.
+          const error = makeGameError(GM.ENTRY_LAUNCH_CONSUMED, 'No instance resource credential is available', {
+            retryable: true,
+          });
+          fail(error.code, error.message, true);
+          return Promise.resolve({ ok: false, error: error });
+        }
+        resetForNavigation();
+        const frameUrl = navigateToGameDocument('reload');
+        if (!frameUrl) {
+          const error = makeGameError(GM.ENTRY_LAUNCH_CONSUMED, 'No instance resource credential is available', {
+            retryable: true,
+          });
+          fail(error.code, error.message, true);
+          return Promise.resolve({ ok: false, error: error });
+        }
+        startHandshakeTimer();
+        startLoadTimers();
+        emit({ type: 'navigation', mode: 'resource-credential', reason: 'reload' });
+        return Promise.resolve({ ok: true });
       }
 
       function destroy() {
@@ -10360,6 +12440,7 @@ window.__ModuleLoader__.load({
 
       return Object.freeze({
         launch,
+        reload,
         pause,
         resume,
         destroy,
@@ -10521,6 +12602,24 @@ window.__ModuleLoader__.load({
       }
     }
 
+    /**
+     * Reload the current instance with its resource credential (V1.5 contract §7.2).
+     * Returns whether the controller accepted the reload; failures surface through
+     * the controller's own events/state machine.
+     */
+    function reloadRuntime(controller) {
+      if (!controller || typeof controller.reload !== 'function') return false;
+      try {
+        const result = controller.reload();
+        if (result && typeof result.then === 'function') {
+          result.then(undefined, function ignore() {});
+        }
+        return true;
+      } catch (_error) {
+        return false;
+      }
+    }
+
     /** Destroy the catalogued controller exactly once, swallowing teardown errors. */
     function destroyRuntime(controller) {
       if (!controller || typeof controller.destroy !== 'function') return false;
@@ -10554,7 +12653,7 @@ window.__ModuleLoader__.load({
       }
     }
 
-    return { isRuntimeController, safeCreateRuntime, createRuntimeController, pauseRuntime, pauseRuntimeBounded, resumeRuntime, destroyRuntime, forwardAgentState, updateRuntimeEnvironment };
+    return { isRuntimeController, safeCreateRuntime, createRuntimeController, pauseRuntime, pauseRuntimeBounded, resumeRuntime, reloadRuntime, destroyRuntime, forwardAgentState, updateRuntimeEnvironment };
     })();
 
     // module: packages/client/src/presence.js
@@ -10658,8 +12757,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/whale.js
     __mods["packages/client/src/components/whale.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const WhaleIcon = __mods["packages/client/src/icons.js"].WhaleIcon;
     const PRESENCE = __mods["packages/client/src/presence.js"].PRESENCE;
     const presenceActionKey = __mods["packages/client/src/presence.js"].presenceActionKey;
@@ -10789,8 +12888,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/runtime.js
     __mods["packages/client/src/components/runtime.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const TIMING = __mods["packages/shared/src/constants.js"].TIMING;
     const GM = __mods["packages/shared/src/errors.js"].GM;
     const store = __mods["packages/client/src/store.js"].store;
@@ -10799,6 +12898,7 @@ window.__ModuleLoader__.load({
     const runtimeFailed = __mods["packages/client/src/store.js"].runtimeFailed;
     const runtimeRetried = __mods["packages/client/src/store.js"].runtimeRetried;
     const runtimeLaunchInfo = __mods["packages/client/src/store.js"].runtimeLaunchInfo;
+    const runtimeLaunchInfoRefreshed = __mods["packages/client/src/store.js"].runtimeLaunchInfoRefreshed;
     const surfaceChanged = __mods["packages/client/src/store.js"].surfaceChanged;
     const leaveCompleted = __mods["packages/client/src/store.js"].leaveCompleted;
     const applyRuntimeEvent = __mods["packages/client/src/actions.js"].applyRuntimeEvent;
@@ -10809,12 +12909,15 @@ window.__ModuleLoader__.load({
     const getApiClient = __mods["packages/client/src/api.js"].getApiClient;
     const MAIN_PANEL_KEY = __mods["packages/client/src/constants.js"].MAIN_PANEL_KEY;
     const isRuntimeLoadingState = __mods["packages/client/src/runtime-utils.js"].isRuntimeLoadingState;
+    const isTerminalResourceError = __mods["packages/client/src/runtime-utils.js"].isTerminalResourceError;
+    const shouldReloadRuntime = __mods["packages/client/src/runtime-utils.js"].shouldReloadRuntime;
     const shouldReleaseRuntimeInstance = __mods["packages/client/src/runtime-utils.js"].shouldReleaseRuntimeInstance;
     const validateLaunchInfo = __mods["packages/client/src/runtime-utils.js"].validateLaunchInfo;
     const createRuntimeController = __mods["packages/client/src/runtime-adapter.js"].createRuntimeController;
     const destroyRuntime = __mods["packages/client/src/runtime-adapter.js"].destroyRuntime;
     const forwardAgentState = __mods["packages/client/src/runtime-adapter.js"].forwardAgentState;
     const pauseRuntimeBounded = __mods["packages/client/src/runtime-adapter.js"].pauseRuntimeBounded;
+    const reloadRuntime = __mods["packages/client/src/runtime-adapter.js"].reloadRuntime;
     const resumeRuntime = __mods["packages/client/src/runtime-adapter.js"].resumeRuntime;
     const normalizeUiError = __mods["packages/client/src/ui-errors.js"].normalizeUiError;
     const runtimeErrorBodyKey = __mods["packages/client/src/ui-errors.js"].runtimeErrorBodyKey;
@@ -11012,6 +13115,9 @@ window.__ModuleLoader__.load({
       const [resumeConfirmed, setResumeConfirmed] = React.useState(false);
       const [saveFailure, setSaveFailure] = React.useState(null);
       const [exitedReason, setExitedReason] = React.useState(null);
+      // V1.5: the Runtime had to fall back from the one-shot launch credential to
+      // the instance resource credential; say so instead of showing a blank frame.
+      const [credentialRefresh, setCredentialRefresh] = React.useState(false);
       const pausePrimaryRef = React.useRef(null);
 
       const gameId = runtime.gameId;
@@ -11031,6 +13137,7 @@ window.__ModuleLoader__.load({
           setSlow(false);
           setResumeConfirmed(false);
           setSaveFailure(null);
+          setCredentialRefresh(false);
           setBusy(false);
           leavingRef.current = false;
 
@@ -11049,6 +13156,14 @@ window.__ModuleLoader__.load({
               setExitedReason(typeof event.reason === 'string' ? event.reason : 'exited');
               applyRuntimeEvent(store, event);
               return;
+            }
+            if (event.type === 'navigation' && event.mode === 'resource-credential') {
+              setCredentialRefresh(true);
+              store.dispatch(runtimePatched({ error: null }));
+              return;
+            }
+            if (event.type === 'state' && (event.state === 'playing' || event.state === 'ready' || event.state === 'paused')) {
+              setCredentialRefresh(false);
             }
             applyRuntimeEvent(store, event);
           }
@@ -11225,22 +13340,40 @@ window.__ModuleLoader__.load({
 
       // Keep the live instance from expiring while the game stays open. A crash or
       // closed window simply stops renewing, so the Host TTL still reclaims it.
+      // V1.5 (contract §7.2/§7.6): a renewed instance returns its new resourceTtlMs;
+      // a terminal renew failure means the Host credential is gone (release/TTL or
+      // another window), so the Runtime must stop using the old credential.
       React.useEffect(
         function renewRuntimeInstance() {
           const info = runtime.launchInfo;
-          if (!info || typeof info.instanceId !== 'string' || info.instanceId.length === 0) return;
+          if (!info || typeof info.instanceId !== 'string' || info.instanceId.length === 0) return undefined;
+          if (runtime.state === 'error' || runtime.state === 'exited') return undefined;
           const api = getApiClient();
-          if (!api || typeof api.renewRuntime !== 'function') return;
+          if (!api || typeof api.renewRuntime !== 'function') return undefined;
+          let cancelled = false;
           const timer = setInterval(function renew() {
-            Promise.resolve(api.renewRuntime({ gameId: runtime.gameId, instanceId: info.instanceId })).catch(
-              function ignore() {}
+            Promise.resolve(api.renewRuntime({ gameId: runtime.gameId, instanceId: info.instanceId })).then(
+              function onRenewed(result) {
+                if (cancelled) return;
+                if (result && typeof result.resourceTtlMs === 'number') {
+                  store.dispatch(runtimeLaunchInfoRefreshed({ resourceTtlMs: result.resourceTtlMs }));
+                }
+              },
+              function onRenewFailed(error) {
+                if (cancelled || !isTerminalResourceError(error)) return;
+                store.dispatch(runtimeFailed(uiError(error.code, { retryable: true })));
+                const controller = controllerRef.current;
+                controllerRef.current = null;
+                destroyRuntime(controller);
+              }
             );
           }, TIMING.runtimeRenewMs);
           return function stopRenew() {
+            cancelled = true;
             clearInterval(timer);
           };
         },
-        [runtime.launchInfo, runtime.gameId]
+        [runtime.launchInfo, runtime.gameId, runtime.state]
       );
 
       const isResumeMode = runtime.mode === 'resume-paused' && !resumeConfirmed && !autoResuming;
@@ -11371,6 +13504,14 @@ window.__ModuleLoader__.load({
       }
 
       function retryRuntime() {
+        // Prefer an in-place reload with the instance resource credential
+        // (contract §7.2): the launch URL is one-shot and must never be replayed.
+        if (runtime.launchInfo && shouldReloadRuntime(runtime.error, runtime.launchInfo)) {
+          if (reloadRuntime(controllerRef.current)) {
+            store.dispatch(runtimePatched({ state: 'loading', error: null, saveStatus: 'idle' }));
+            return;
+          }
+        }
         leavingRef.current = true;
         store.dispatch(runtimeRetried());
       }
@@ -11430,9 +13571,11 @@ window.__ModuleLoader__.load({
                   { className: 'dgm-runtime-loading', role: 'status' },
                   h('span', { className: 'dgm-spinner', 'aria-hidden': 'true' }),
                   h('p', { className: 'dgm-runtime-loading-title' }, t('runtime.loading', { gameName: gameName })),
-                  slow
-                    ? h('p', { className: 'dgm-runtime-loading-body' }, t('runtime.loading.slow'))
-                    : null,
+                  credentialRefresh
+                    ? h('p', { className: 'dgm-runtime-loading-body' }, t('runtime.loading.credential'))
+                    : slow
+                      ? h('p', { className: 'dgm-runtime-loading-body' }, t('runtime.loading.slow'))
+                      : null,
                   slow
                     ? h(
                         'div',
@@ -11658,8 +13801,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/state-views.js
     __mods["packages/client/src/components/state-views.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const CloseIcon = __mods["packages/client/src/icons.js"].CloseIcon;
     const GamepadIcon = __mods["packages/client/src/icons.js"].GamepadIcon;
     const RefreshIcon = __mods["packages/client/src/icons.js"].RefreshIcon;
@@ -11823,8 +13966,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/game-artwork.js
     __mods["packages/client/src/components/game-artwork.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     /** First-party cover illustrations. Inline vectors stay sharp and work offline. */
     const h = React.createElement;
     const IDS = ['2048', 'snake', 'breakout', 'jump'];
@@ -11891,8 +14034,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/cover.js
     __mods["packages/client/src/components/cover.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const coverTone = __mods["packages/client/src/catalog.js"].coverTone;
     const initialFor = __mods["packages/client/src/catalog.js"].initialFor;
     const GamepadIcon = __mods["packages/client/src/icons.js"].GamepadIcon;
@@ -12007,8 +14150,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/game-card.js
     __mods["packages/client/src/components/game-card.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const authorName = __mods["packages/client/src/catalog.js"].authorName;
     const categoryLabel = __mods["packages/client/src/catalog.js"].categoryLabel;
     const hasUpdate = __mods["packages/client/src/catalog.js"].hasUpdate;
@@ -12124,8 +14267,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/filter-chips.js
     __mods["packages/client/src/components/filter-chips.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const CATEGORY_FILTERS = __mods["packages/client/src/constants.js"].CATEGORY_FILTERS;
     const categoryLabelKey = __mods["packages/client/src/catalog.js"].categoryLabelKey;
     const nextChipIndex = __mods["packages/client/src/keyboard.js"].nextChipIndex;
@@ -12199,8 +14342,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/market-home.js
     __mods["packages/client/src/components/market-home.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const authorName = __mods["packages/client/src/catalog.js"].authorName;
     const categoryLabel = __mods["packages/client/src/catalog.js"].categoryLabel;
     const coverTone = __mods["packages/client/src/catalog.js"].coverTone;
@@ -12605,8 +14748,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/my-games.js
     __mods["packages/client/src/components/my-games.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const hasUpdate = __mods["packages/client/src/catalog.js"].hasUpdate;
     const isBuiltin = __mods["packages/client/src/catalog.js"].isBuiltin;
     const progressSummary = __mods["packages/client/src/catalog.js"].progressSummary;
@@ -13116,8 +15259,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/detail.js
     __mods["packages/client/src/components/detail.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const authorName = __mods["packages/client/src/catalog.js"].authorName;
     const categoryLabel = __mods["packages/client/src/catalog.js"].categoryLabel;
     const detailActionReasonKey = __mods["packages/client/src/catalog.js"].detailActionReasonKey;
@@ -13660,8 +15803,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/dialogs.js
     __mods["packages/client/src/components/dialogs.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const CloseIcon = __mods["packages/client/src/icons.js"].CloseIcon;
     const ChevronLeftIcon = __mods["packages/client/src/icons.js"].ChevronLeftIcon;
     const ChevronRightIcon = __mods["packages/client/src/icons.js"].ChevronRightIcon;
@@ -13805,6 +15948,39 @@ window.__ModuleLoader__.load({
           h('h2', { className: 'dgm-dialog-title', id: 'dgm-dialog-title' }, title),
           h('p', { className: 'dgm-dialog-body', id: 'dgm-dialog-body' }, body),
           noteKey ? h('p', { className: 'dgm-dialog-note' }, t(noteKey)) : null,
+          dialog.kind === 'install-local'
+            ? h(
+                'dl',
+                { className: 'dgm-dialog-meta' },
+                dialog.fileSizeLabel
+                  ? h(
+                      'div',
+                      { className: 'dgm-dialog-meta-row' },
+                      h('dt', null, t('dialog.installLocal.fileSize')),
+                      h('dd', null, dialog.fileSizeLabel)
+                    )
+                  : null,
+                dialog.formatLabel
+                  ? h(
+                      'div',
+                      { className: 'dgm-dialog-meta-row' },
+                      h('dt', null, t('dialog.installLocal.format')),
+                      h('dd', null, dialog.formatLabel)
+                    )
+                  : null
+              )
+            : null,
+          dialog.kind === 'install-local' && dialog.overwrite
+            ? h(
+                'p',
+                { className: 'dgm-dialog-note' },
+                t('dialog.installLocal.overwrite', {
+                  gameName: dialog.overwrite.gameName || dialog.overwrite.gameId || '',
+                  currentVersion: dialog.overwrite.currentVersion || '',
+                  version: dialog.overwrite.version || '',
+                })
+              )
+            : null,
           dialog.kind === 'install-local' ? h('p', { className: 'dgm-dialog-warning' }, t('market.localInstall.warning')) : null,
           showCheckbox
             ? h(
@@ -13998,8 +16174,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/toast.js
     __mods["packages/client/src/components/toast.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const CloseIcon = __mods["packages/client/src/icons.js"].CloseIcon;
     const PlayIcon = __mods["packages/client/src/icons.js"].PlayIcon;
     const TOAST_MS = __mods["packages/client/src/constants.js"].TOAST_MS;
@@ -14083,8 +16259,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/menu.js
     __mods["packages/client/src/components/menu.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     /** Small anchored popover menu for the detail header (PRD 9.4.4 / 9.10). */
 
     const h = React.createElement;
@@ -14251,8 +16427,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/search-box.js
     __mods["packages/client/src/components/search-box.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const SEARCH_DEBOUNCE_MS = __mods["packages/client/src/constants.js"].SEARCH_DEBOUNCE_MS;
     const createQueryDebouncer = __mods["packages/client/src/debounce.js"].createQueryDebouncer;
     const CloseIcon = __mods["packages/client/src/icons.js"].CloseIcon;
@@ -14385,8 +16561,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/panel.js
     __mods["packages/client/src/components/panel.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const store = __mods["packages/client/src/store.js"].store;
     const pageChanged = __mods["packages/client/src/store.js"].pageChanged;
     const sessionBound = __mods["packages/client/src/store.js"].sessionBound;
@@ -14420,6 +16596,7 @@ window.__ModuleLoader__.load({
     const launchModeFor = __mods["packages/client/src/actions.js"].launchModeFor;
     const loadCatalog = __mods["packages/client/src/actions.js"].loadCatalog;
     const loadDetail = __mods["packages/client/src/actions.js"].loadDetail;
+    const localInstallOptionsFromDialog = __mods["packages/client/src/actions.js"].localInstallOptionsFromDialog;
     const openDetail = __mods["packages/client/src/actions.js"].openDetail;
     const pushToast = __mods["packages/client/src/actions.js"].pushToast;
     const refreshRegistryAction = __mods["packages/client/src/actions.js"].refreshRegistryAction;
@@ -14429,6 +16606,10 @@ window.__ModuleLoader__.load({
     const getMarketApi = __mods["packages/client/src/api.js"].getMarketApi;
     const makeT = __mods["packages/client/src/locale.js"].makeT;
     const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
+    const formatBytes = __mods["packages/client/src/format.js"].formatBytes;
+    const LOCAL_INSTALL_ACCEPT = __mods["packages/client/src/local-install.js"].LOCAL_INSTALL_ACCEPT;
+    const findLocalOverwriteTarget = __mods["packages/client/src/local-install.js"].findLocalOverwriteTarget;
+    const validateLocalInstallSelection = __mods["packages/client/src/local-install.js"].validateLocalInstallSelection;
     const BackIcon = __mods["packages/client/src/icons.js"].BackIcon;
     const MoreIcon = __mods["packages/client/src/icons.js"].MoreIcon;
     const RefreshIcon = __mods["packages/client/src/icons.js"].RefreshIcon;
@@ -14456,7 +16637,6 @@ window.__ModuleLoader__.load({
     /** Game Market main panel: header, Market / My Games / Detail, and the Runtime switch. */
 
     const h = React.createElement;
-    const MAX_LOCAL_BYTES = 20 * 1024 * 1024;
 
     function pageScrollKey(page) {
       return page === PAGES.MY_GAMES ? 'my-games' : 'market';
@@ -14806,11 +16986,12 @@ window.__ModuleLoader__.load({
         if (!dialog) return;
         if (dialog.kind === 'install-local') {
           store.dispatch(dialogBusyChanged(true));
+          // `dialog.format` is decided at file-selection time; dropping it here made
+          // the real click path upload a ZIP as text/html (CR7-03 follow-up).
           await installLocalGame({
             store: store,
             api: api,
-            file: dialog.file,
-            fileName: dialog.fileName,
+            ...localInstallOptionsFromDialog(dialog),
           });
           store.dispatch(dialogBusyChanged(false));
           store.dispatch(dialogClosed());
@@ -14846,18 +17027,29 @@ window.__ModuleLoader__.load({
         if (!file) return;
         const name = typeof file.name === 'string' && file.name.length > 0 ? file.name : 'game.html';
         const type = typeof file.type === 'string' ? file.type : '';
-        if (!/\.html?$/i.test(name) && type !== 'text/html') {
-          pushToast(store, { kind: 'error', textKey: 'market.localInstall.unsupported' });
+        // .html (text/html) and .dshgame.zip (application/zip) are both accepted;
+        // the format is decided by file name/extension, never by sniffing content.
+        const selection = validateLocalInstallSelection({ fileName: name, type: type, size: file.size });
+        if (!selection.ok) {
+          pushToast(store, {
+            kind: 'error',
+            textKey: selection.reason === 'tooLarge' ? 'market.localInstall.tooLarge' : 'market.localInstall.unsupported',
+          });
           return;
         }
-        if (typeof file.size === 'number' && file.size > MAX_LOCAL_BYTES) {
-          pushToast(store, { kind: 'error', textKey: 'market.localInstall.tooLarge' });
-          return;
-        }
+        const overwrite = findLocalOverwriteTarget(state.market.games, name);
         store.dispatch(
           dialogOpened('install-local', null, {
             fileName: name,
             file: file,
+            fileSize: typeof file.size === 'number' ? file.size : null,
+            fileSizeLabel:
+              typeof file.size === 'number' && file.size > 0 ? formatBytes(file.size, locale) : null,
+            format: selection.format,
+            formatLabel: t(
+              selection.format === 'asset-zip-v2' ? 'dialog.installLocal.formatZip' : 'dialog.installLocal.formatHtml'
+            ),
+            overwrite: overwrite,
             returnFocus: { kind: 'local-install' },
           })
         );
@@ -15109,7 +17301,7 @@ window.__ModuleLoader__.load({
         h('input', {
           type: 'file',
           className: 'dgm-sr-only',
-          accept: '.html,text/html',
+          accept: LOCAL_INSTALL_ACCEPT,
           tabIndex: -1,
           ref: fileInputRef,
           onChange: handleFileSelected,
@@ -15314,8 +17506,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/game-entry-view.js
     __mods["packages/client/src/components/game-entry-view.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const makeT = __mods["packages/client/src/locale.js"].makeT;
     const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
     const openGameMarket = __mods["packages/client/src/navigation.js"].openGameMarket;
@@ -15377,8 +17569,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/sidebar-icon.js
     __mods["packages/client/src/components/sidebar-icon.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const store = __mods["packages/client/src/store.js"].store;
     const sessionBound = __mods["packages/client/src/store.js"].sessionBound;
     const GameMarketIcon = __mods["packages/client/src/icons.js"].GameMarketIcon;
@@ -15435,8 +17627,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/components/game-tab-label.js
     __mods["packages/client/src/components/game-tab-label.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const store = __mods["packages/client/src/store.js"].store;
     const deriveTabStatus = __mods["packages/client/src/chip-state.js"].deriveTabStatus;
     const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
@@ -15528,8 +17720,8 @@ window.__ModuleLoader__.load({
 
     // module: packages/client/src/main.js
     __mods["packages/client/src/main.js"] = (function () {
-    const __react = require('react');
-    const React = __react;
+    const __external_0 = require("react");
+    const React = __external_0;
     const NS = __mods["packages/client/src/locale.js"].NS;
     const ZH = __mods["packages/client/src/locale.js"].ZH;
     const EN = __mods["packages/client/src/locale.js"].EN;

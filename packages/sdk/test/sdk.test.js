@@ -680,3 +680,90 @@ test('the package exports a lazy game singleton', async () => {
   assert.equal(game.runtime.capabilities.length, 0);
   assert.equal(game.runtime.runtimeVersion, null);
 });
+
+// ---------------------------------------------------------------------------
+// V1.5 instance resource URLs (contract §1.10 / §7.6)
+// ---------------------------------------------------------------------------
+
+const RESOURCE_BASE = `http://127.0.0.1:58302/res/${'a'.repeat(32)}/${'c'.repeat(32)}`;
+
+test('runtime.assetUrl builds absolute instance resource URLs from init.resourceBase', async function () {
+  const harness = createHarness();
+  await harness.handshake({ resourceBase: RESOURCE_BASE, packageFormat: 'asset-zip-v2' });
+  assert.equal(harness.game.runtime.resourceBase, RESOURCE_BASE);
+  assert.equal(harness.game.runtime.packageFormat, 'asset-zip-v2');
+  assert.equal(
+    harness.game.runtime.assetUrl('levels/level-01.json'),
+    `${RESOURCE_BASE}/levels/level-01.json`
+  );
+  // Same resource base is also accepted via the ready result (older Runtime
+  // builds only send it there).
+  assert.equal(harness.game.runtime.assetUrl('./assets/ship.webp'), `${RESOURCE_BASE}/assets/ship.webp`);
+});
+
+test('runtime.assetUrl rejects paths outside the instance package with GM-4039', async function () {
+  const harness = createHarness();
+  await harness.handshake({ resourceBase: RESOURCE_BASE, packageFormat: 'asset-zip-v2' });
+  for (const bad of ['../secret.txt', '/etc/passwd', 'a/../../b.txt', 'game.json', '', 42, null]) {
+    assert.throws(
+      function call() {
+        harness.game.runtime.assetUrl(bad);
+      },
+      function matches(error) {
+        assert.equal(isGameError(error), true);
+        assert.equal(error.code, GM.RESOURCE_SCOPE_DENIED);
+        return true;
+      }
+    );
+  }
+});
+
+test('runtime.assetUrl returns GM-4043 for html-v1 packages (no resource route binding)', async function () {
+  const harness = createHarness();
+  await harness.handshake({ resourceBase: RESOURCE_BASE, packageFormat: 'html-v1' });
+  assert.throws(
+    function call() {
+      harness.game.runtime.assetUrl('assets/ship.webp');
+    },
+    function matches(error) {
+      assert.equal(isGameError(error), true);
+      assert.equal(error.code, GM.ASSET_NOT_FOUND);
+      return true;
+    }
+  );
+});
+
+test('runtime.assetUrl returns GM-4043 on a legacy Runtime that sends no resource fields', async function () {
+  const harness = createHarness();
+  await harness.handshake();
+  assert.equal(harness.game.runtime.resourceBase, null);
+  assert.equal(harness.game.runtime.packageFormat, null);
+  assert.throws(
+    function call() {
+      harness.game.runtime.assetUrl('assets/ship.webp');
+    },
+    function matches(error) {
+      assert.equal(isGameError(error), true);
+      assert.equal(error.code, GM.ASSET_NOT_FOUND);
+      return true;
+    }
+  );
+});
+
+test('runtime.assetUrl picks up a resource base sent only in the ready result', async function () {
+  const harness = createHarness();
+  const readyPromise = harness.game.ready();
+  harness.deliver({ v: 1, kind: 'evt', event: EVENTS.INIT, data: makeInit() });
+  const readyRequest = harness.requests(METHODS.READY)[0];
+  assert.ok(readyRequest);
+  harness.deliver({
+    v: 1,
+    id: readyRequest.id,
+    kind: 'res',
+    ok: true,
+    result: makeRuntimeInfo({ resourceBase: RESOURCE_BASE, packageFormat: 'asset-zip-v2' }),
+  });
+  await readyPromise;
+  assert.equal(harness.game.runtime.resourceBase, RESOURCE_BASE);
+  assert.equal(harness.game.runtime.assetUrl('levels/a.json'), `${RESOURCE_BASE}/levels/a.json`);
+});

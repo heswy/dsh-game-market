@@ -30,8 +30,14 @@ export async function main(argv = process.argv.slice(2)) {
   }
   const ok = result.ok && (!history || history.ok);
   const errors = [...result.errors, ...(history ? history.errors : [])];
-  if (json) console.log(JSON.stringify({ ok, count: result.index ? result.index.games.length : 0, history: history ? { ok: history.ok, baseCount: history.baseCount, candidateCount: history.candidateCount } : null, errors }, null, 2));
-  else if (ok) console.log(`[registry] OK games=${result.index.games.length}${history ? ' history=ok' : ''}`);
+  if (json) console.log(JSON.stringify({
+    ok,
+    count: result.index ? result.index.games.length : 0,
+    countV2: result.indexV2 ? result.indexV2.games.length : 0,
+    history: history ? { ok: history.ok, baseCount: history.baseCount, candidateCount: history.candidateCount } : null,
+    errors,
+  }, null, 2));
+  else if (ok) console.log(`[registry] OK v1=${result.index.games.length} v2=${result.indexV2.games.length}${history ? ' history=ok' : ''}`);
   else {
     console.error('[registry] FAILED');
     for (const error of errors) console.error(`  - ${error.code} ${error.field || ''}: ${error.message}`);

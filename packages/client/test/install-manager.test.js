@@ -210,6 +210,32 @@ test('local installs use the raw-file API and mark the job installed', async fun
   assert.equal(store.getState().installJobs.mine.stage, 'installed');
 });
 
+test('local zip installs pass format and raw bytes through unchanged', async function () {
+  let received = null;
+  const api = baseApi({
+    installLocal: async function installLocal(input) {
+      received = input;
+      return { gameId: 'orbit-courier', version: '1.0.0', source: 'local', format: 'asset-zip-v2' };
+    },
+  });
+  const { store, manager } = makeManager(api);
+  const bytes = new ArrayBuffer(8);
+  new Uint8Array(bytes).set([0x50, 0x4b, 0x03, 0x04, 0xff, 0x00, 0x80, 0xc3]);
+  const file = { name: 'orbit-courier-1.0.0.dshgame.zip', size: bytes.byteLength };
+  const result = await manager.installLocal({
+    gameId: 'orbit-courier',
+    file: file,
+    fileName: 'orbit-courier-1.0.0.dshgame.zip',
+    format: 'asset-zip-v2',
+    bytes: bytes,
+  });
+  assert.equal(result.ok, true);
+  assert.equal(received.format, 'asset-zip-v2');
+  assert.equal(received.bytes, bytes, 'the raw ArrayBuffer is forwarded by identity');
+  assert.equal(received.fileName, 'orbit-courier-1.0.0.dshgame.zip');
+  assert.equal(store.getState().installJobs['orbit-courier'].stage, 'installed');
+});
+
 test('missing Host API degrades to a failed job instead of throwing', async function () {
   const { store, manager } = makeManager(null, { getApi: function noApi() { return null; } });
   const result = await manager.install('jump');

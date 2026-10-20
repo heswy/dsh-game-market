@@ -9,8 +9,18 @@ import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+import {
+  ASSET_ZIP_V2,
+  PACKAGE_FORMATS,
+} from '../../../packages/shared/src/constants.js';
+import { packageFileNameForFormat } from '../../../packages/shared/src/package-v2.js';
+import {
+  CATALOG_V2_SCHEMA_VERSION,
+  upgradeCatalogV1ToV2,
+} from '../../../packages/shared/src/catalog-v2.js';
 import { compareVersions } from '../../../packages/host/src/semver.js';
 import {
+  REGISTRY_V2_FILE,
   buildRegistry,
   catalogEntryFromSubmissionSafe,
   readJson,
@@ -51,10 +61,10 @@ function releaseUrl(repo, tag, name) {
   return `https://github.com/${repo}/releases/download/${encodeURIComponent(tag)}/${encodeURIComponent(name)}`;
 }
 
-function buildAssetPlan(repo, submission, tag, hashes) {
+function buildAssetPlan(repo, submission, tag, hashes, format = 'html-v1') {
   const id = submission.game.id;
   const version = submission.game.version;
-  const packageName = `${id}-${version}.html`;
+  const packageName = packageFileNameForFormat(id, version, format);
   const shaName = `${packageName}.sha256`;
   const coverName = `cover-${version}.${extensionForType(submission.media.cover.type)}`;
   const screenshotNames = submission.media.screenshots.map((shot, index) => `screenshot-${index + 1}-${version}.${extensionForType(shot.type)}`);
@@ -82,8 +92,88 @@ function planFiles(id, version) {
     owner: `owners/${id}.json`,
     review: `reviews/${id}/${version}.json`,
     registry: 'registry/games.json',
+    registryV2: REGISTRY_V2_FILE,
   };
 }
+
+/**
+ * Package format of a submission.
+ *
+ * V1 submissions have no `format` field and end in `.html`; V1.5 ZIP
+ * submissions must declare `package.format` (or use the `.dshgame.zip` suffix).
+ * The two are cross-checked so a package cannot be mislabelled: §1.2/§5.4
+ * (GM-4282 `E_FORMAT_POLICY`).
+ */
+function submissionFormat(submission) {
+  const pkg = submission && submission.package;
+  const declared = pkg && pkg.format;
+  if (declared !== undefined && declared !== null) {
+    if (!PACKAGE_FORMATS.includes(declared)) {
+      return { ok: false, format: null, message: `unsupported package.format: ${String(declared)}` };
+    }
+  }
+  const url = pkg && typeof pkg.url === 'string' ? pkg.url.split('?')[0] : '';
+  const inferred = url.endsWith('.dshgame.zip') ? ASSET_ZIP_V2 : url.endsWith('.html') ? 'html-v1' : null;
+  if (declared !== undefined && declared !== null && inferred !== null && declared !== inferred) {
+    return { ok: false, format: null, message: `package.format ${declared} does not match the package URL` };
+  }
+  const format = declared !== undefined && declared !== null ? declared : inferred;
+  if (!format) return { ok: false, format: null, message: 'package.format or a matching package URL is required' };
+  const expectedFileName = packageFileNameForFormat(submission.game.id, submission.game.version, format);
+  if (!url.endsWith(`/${expectedFileName}`)) {
+    return { ok: false, format, message: `package URL file name must be ${expectedFileName}` };
+  }
+  return { ok: true, format, message: 'ok' };
+}
+
+/**
+ * The shared V1.2 submission validator only knows `.html` package URLs. For a
+ * ZIP submission we validate every other field with the same validator against
+ * an html-named URL view; the real URL/format consistency is checked above
+ * with the V1.5 rules (`E_FORMAT_POLICY`). This keeps one validator dialect
+ * without weakening anything else in the submission.
+ */
+function submissionValidationView(submission, format) {
+  if (format !== ASSET_ZIP_V2 || !submission || !submission.package) return submission;
+  const url = typeof submission.package.url === 'string' ? submission.package.url : '';
+  if (!url.endsWith('.dshgame.zip')) return submission;
+  return {
+    ...submission,
+    package: { ...submission.package, url: `${url.slice(0, -'.dshgame.zip'.length)}.html` },
+  };
+}
+
+/** Every published release of a catalog (V1.2 single release or V1.5 releases[]). */
+function catalogReleases(entry) {
+  if (!entry) return [];
+  if (Array.isArray(entry.releases)) return entry.releases;
+  if (!entry.release || !entry.game) return [];
+  return [{
+    version: entry.game.version,
+    format: 'html-v1',
+    tag: entry.release.tag,
+    package: { url: entry.release.packageUrl, sha256: entry.release.packageSha256, size: entry.release.packageSize },
+    releasedAt: entry.release.releasedAt,
+  }];
+}
+
+function latestCatalogRelease(entry) {
+  let newest = null;
+  for (const release of catalogReleases(entry)) {
+    if (!newest || compareVersions(release.version, newest.version) > 0) newest = release;
+  }
+  return newest;
+}
+
+function findCatalogRelease(entry, version) {
+  return catalogReleases(entry).find((release) => release.version === version) || null;
+}
+
+/** True when the catalog already generated a V1.5 (append-only releases) record. */
+function isCatalogV2(entry) {
+  return Boolean(entry) && entry.schemaVersion === CATALOG_V2_SCHEMA_VERSION;
+}
+
 
 async function loadExistingCatalog(root) {
   const result = await buildRegistry(root, { check: true });
@@ -110,7 +200,104 @@ async function downloadSubmissionAssets(submission, http) {
   return { packageBytes: packageResult.bytes, packageManifest, coverBytes: coverResult.bytes, screenshotBytes: screenshots.map((item) => item.bytes) };
 }
 
-function buildPlan({ repo, submission, review, assets, existingEntry, baseBranch }) {
+function buildCatalogV2FromPlan({ submission, review, release, format, existingEntry, existingReviewText, nowIso }) {
+  const game = submission.game;
+  const reviewText = `${JSON.stringify(review, null, 2)}\n`;
+  const reviewDigest = sha256(Buffer.from(reviewText, 'utf8'));
+  const newRelease = {
+    version: game.version,
+    format,
+    tag: release.tag,
+    package: {
+      url: release.packageUrl,
+      sha256: submission.package.sha256,
+      size: submission.package.size,
+      ...(format === ASSET_ZIP_V2 && typeof submission.package.filesDigest === 'string'
+        ? { filesDigest: submission.package.filesDigest }
+        : {}),
+    },
+    media: {
+      cover: {
+        url: release.cover.url,
+        sha256: submission.media.cover.sha256,
+        size: submission.media.cover.size,
+        type: submission.media.cover.type,
+      },
+      screenshots: release.screenshots.map((shot, index) => ({
+        url: shot.url,
+        sha256: submission.media.screenshots[index].sha256,
+        size: submission.media.screenshots[index].size,
+        type: submission.media.screenshots[index].type,
+      })),
+    },
+    sourceCommit: submission.author.sourceCommit,
+    reviewSha256: reviewDigest,
+    releasedAt: release.releasedAt,
+  };
+
+  let priorReleases = [];
+  let owner = { login: submission.author.login, githubUserId: submission.author.githubUserId };
+  let createdAt = release.releasedAt;
+  let withdrawnAt = null;
+  if (existingEntry) {
+    if (isCatalogV2(existingEntry)) {
+      priorReleases = existingEntry.releases.map((item) => JSON.parse(JSON.stringify(item)));
+      owner = existingEntry.owner ? { ...existingEntry.owner } : owner;
+      createdAt = existingEntry.createdAt || createdAt;
+      withdrawnAt = existingEntry.withdrawnAt ?? null;
+    } else {
+      const upgraded = upgradeCatalogV1ToV2(existingEntry);
+      if (upgraded) {
+        const existingReviewDigest = typeof existingReviewText === 'string'
+          ? sha256(Buffer.from(existingReviewText, 'utf8'))
+          : null;
+        priorReleases = upgraded.releases.map((item) => ({
+          ...item,
+          package: { ...item.package },
+          media: {
+            cover: existingEntry.release && existingEntry.release.cover ? { ...existingEntry.release.cover } : item.media.cover,
+            screenshots: Array.isArray(existingEntry.release && existingEntry.release.screenshots)
+              ? existingEntry.release.screenshots.map((shot) => ({ ...shot }))
+              : item.media.screenshots,
+          },
+          sourceCommit: existingEntry.source && /^[a-f0-9]{7,40}$/.test(String(existingEntry.source.commit))
+            ? existingEntry.source.commit
+            : item.sourceCommit,
+          reviewSha256: existingReviewDigest || item.reviewSha256,
+        }));
+      }
+      createdAt = existingEntry.publishedAt || createdAt;
+    }
+  }
+
+  return {
+    schemaVersion: CATALOG_V2_SCHEMA_VERSION,
+    gameId: game.id,
+    owner,
+    game: {
+      id: game.id,
+      name: game.name,
+      version: game.version,
+      description: game.description,
+      author: { name: submission.author.login },
+      categories: game.categories.slice(),
+      tags: Array.isArray(game.tags) ? game.tags.slice() : [],
+      capabilities: game.capabilities.slice(),
+      sdkVersion: game.sdkVersion,
+      runtimeVersion: game.runtimeVersion,
+      ...(game.preferredTheme ? { preferredTheme: game.preferredTheme } : {}),
+      ...(game.homepage ? { homepage: game.homepage } : {}),
+      ...(game.repository ? { repository: game.repository } : {}),
+      ...(game.license ? { license: game.license } : {}),
+    },
+    releases: [...priorReleases, newRelease],
+    withdrawnAt,
+    createdAt,
+    updatedAt: nowIso,
+  };
+}
+
+function buildPlan({ repo, submission, review, assets, existingEntry, existingReviewText, baseBranch, format = 'html-v1', catalogSchema = 1 }) {
   const id = submission.game.id;
   const version = submission.game.version;
   const tag = `${id}-v${version}`;
@@ -120,7 +307,7 @@ function buildPlan({ repo, submission, review, assets, existingEntry, baseBranch
     screenshots: submission.media.screenshots.map((shot) => shot.sha256),
     sourceCommit: review.sourceCommit,
   };
-  const assetPlan = buildAssetPlan(repo, submission, tag, hashes);
+  const assetPlan = buildAssetPlan(repo, submission, tag, hashes, format);
   const nowIso = new Date().toISOString();
   const release = {
     tag,
@@ -134,7 +321,9 @@ function buildPlan({ repo, submission, review, assets, existingEntry, baseBranch
     ...(review.source && review.source.prUrl ? { prUrl: review.source.prUrl } : {}),
     updatedAt: nowIso,
   };
-  const catalogEntry = catalogEntryFromSubmissionSafe({ submission, review, release });
+  const catalogEntry = catalogSchema === 2
+    ? buildCatalogV2FromPlan({ submission, review, release, format, existingEntry, existingReviewText, nowIso })
+    : catalogEntryFromSubmissionSafe({ submission, review, release });
   assert(catalogEntry, 'E_PUBLISH_INTERNAL', 'could not build the catalog entry');
   return {
     repo,
@@ -313,9 +502,16 @@ export async function preparePublish(options) {
   const submission = await readJson(options.submissionPath);
   const review = await readJson(options.reviewPath);
   const { validateSubmission, validateReview } = await import('../../../packages/shared/src/community.js');
-  const submissionResult = validateSubmission(submission);
+  // V1.5: package format is explicit and must match the package URL/file name
+  // (§1.2). A mismatch is a format policy violation (GM-4282), rejected in the
+  // dry-run before anything is downloaded or mutated.
+  const submissionFormatResult = submissionFormat(submission);
+  if (!submissionFormatResult.ok) throw cleanError('E_FORMAT_POLICY', submissionFormatResult.message);
+  const format = submissionFormatResult.format;
+  const validationSubmission = submissionValidationView(submission, format);
+  const submissionResult = validateSubmission(validationSubmission);
   if (!submissionResult.ok) throw cleanError('E_PUBLISH_SUBMISSION', 'submission failed validation', submissionResult.errors);
-  const reviewResult = validateReview(review, { submission });
+  const reviewResult = validateReview(review, { submission: validationSubmission });
   if (!reviewResult.ok) throw cleanError('E_PUBLISH_REVIEW', 'review failed validation/binding', reviewResult.errors);
 
   const registryDir = path.resolve(options.registryDir);
@@ -350,36 +546,76 @@ export async function preparePublish(options) {
   } catch (error) {
     if (!error || error.code !== 'ENOENT') throw error;
   }
+  const existingLatest = latestCatalogRelease(existingSource);
   if (existingSource) {
-    const cmp = compareVersions(version, existingSource.game.version);
-    const sameBytes = existingSource.release.packageSha256 === submission.package.sha256 && existingSource.release.packageSize === submission.package.size;
+    assert(existingLatest, 'E_PUBLISH_REGISTRY_INVALID', 'existing catalog entry has no release');
+    const cmp = compareVersions(version, existingLatest.version);
+    const sameVersionRelease = findCatalogRelease(existingSource, version);
+    const sameBytes = Boolean(sameVersionRelease)
+      && sameVersionRelease.package.sha256 === submission.package.sha256
+      && sameVersionRelease.package.size === submission.package.size;
+    // §5.4.2: a published format cannot be replaced at the same game version
+    // (GM-4282). Checked before the generic same-version immutability error so
+    // the maintainer gets the actionable message.
+    if (sameVersionRelease && sameVersionRelease.format && sameVersionRelease.format !== format) {
+      throw cleanError(
+        'E_FORMAT_POLICY',
+        `package format ${format} cannot replace ${sameVersionRelease.format} at version ${version}; bump the game version`,
+      );
+    }
     if (cmp === 0 && sameBytes) {
       // Idempotent replay is allowed regardless of submissionType.
     } else {
       assert(submission.submissionType === 'update', 'E_PUBLISH_VERSION_CONFLICT', 'existing game requires an update submission');
-      assert(cmp >= 0, 'E_PUBLISH_VERSION_CONFLICT', `new version ${version} must be greater than current ${existingSource.game.version}`);
+      assert(cmp >= 0, 'E_PUBLISH_VERSION_CONFLICT', `new version ${version} must be greater than current ${existingLatest.version}`);
       assert(cmp !== 0, 'E_PUBLISH_VERSION_IMMUTABLE', 'same version with different bytes is not allowed; bump the version');
     }
+    // Version rollback (also across generations) is rejected here; the CI
+    // history check repeats it against the trusted base.
+    assert(cmp >= 0, 'E_PUBLISH_VERSION_CONFLICT', `new version ${version} must be greater than current ${existingLatest.version}`);
   } else {
     assert(submission.submissionType === 'new', 'E_PUBLISH_VERSION_CONFLICT', 'update submission requires an existing catalog entry');
   }
+  // V1.5 catalogs are append-only `releases[]` records. ZIP submissions and
+  // updates of an existing V1.5 catalog always write the V1.5 shape; a new HTML
+  // game keeps the legacy V1.2 shape so existing content repositories and their
+  // tests stay byte-compatible.
+  const catalogSchema = options.catalogSchema === 2 || isCatalogV2(existingSource) || format === ASSET_ZIP_V2 ? 2 : 1;
 
-  const assets = await downloadSubmissionAssets(submission, options.http || {});
-  const plan = buildPlan({ repo, submission, review, assets, existingEntry, baseBranch });
-  const intendedBranch = `catalog/${safeBranchPart(id)}-v${safeBranchPart(version)}-${submission.package.sha256.slice(0, 8)}`;
   const reviewPath = path.join(registryDir, 'reviews', id, `${version}.json`);
   let existingReview = null;
-  try { existingReview = await readJson(reviewPath); } catch (_error) { /* missing is expected */ }
+  let existingReviewText = null;
+  try {
+    existingReviewText = await fs.readFile(reviewPath, 'utf8');
+    existingReview = JSON.parse(existingReviewText);
+  } catch (_error) {
+    existingReview = null;
+  }
   if (existingReview) {
     assert(JSON.stringify(existingReview) === JSON.stringify(review), 'E_PUBLISH_REVIEW_IMMUTABLE', 'review record already exists with different content');
   }
+
+  const assets = await downloadSubmissionAssets(submission, options.http || {});
+  const plan = buildPlan({
+    repo,
+    submission,
+    review,
+    assets,
+    existingEntry,
+    existingReviewText,
+    baseBranch,
+    format,
+    catalogSchema,
+  });
+  const intendedBranch = `catalog/${safeBranchPart(id)}-v${safeBranchPart(version)}-${submission.package.sha256.slice(0, 8)}`;
 
   const mutations = [];
   const currentBranch = git.currentBranch();
   const cleanWorktree = git.hasCleanWorktree();
   const resumingBranch = currentBranch === intendedBranch && cleanWorktree;
   const onPublishedBase = currentBranch === baseBranch && cleanWorktree;
-  if (existingSource && existingSource.release.packageSha256 === submission.package.sha256 && (!options.execute || onPublishedBase)) {
+  const publishedRelease = existingSource ? findCatalogRelease(existingSource, version) : null;
+  if (publishedRelease && publishedRelease.package.sha256 === submission.package.sha256 && publishedRelease.package.size === submission.package.size && (!options.execute || onPublishedBase)) {
     return {
       ok: true,
       mode: options.execute ? 'execute' : 'dry-run',
@@ -452,7 +688,7 @@ export async function preparePublish(options) {
   let branchCreated = false;
   let branchSwitched = false;
   let previousBranch = currentBranch;
-  const trackedPaths = [files.catalog, ...(ownerText ? [files.owner] : []), files.review, files.registry];
+  const trackedPaths = [files.catalog, ...(ownerText ? [files.owner] : []), files.review, files.registry, files.registryV2];
   async function rollbackLocal(branch) {
     const problems = [];
     try {
@@ -481,7 +717,7 @@ export async function preparePublish(options) {
   try {
     await stageCandidate({ registryDir, files, review, catalogText, ownerText, transactionDir, historyBaseDir });
     const draft = await uploadRelease({ github, plan, assets, http: options.http || {}, transactionDir });
-    const touched = [files.review, files.catalog, ...(ownerText ? [files.owner] : []), files.registry].map((relative) => path.join(registryDir, relative));
+    const touched = [files.review, files.catalog, ...(ownerText ? [files.owner] : []), files.registry, files.registryV2].map((relative) => path.join(registryDir, relative));
     snapshots = await Promise.all(touched.map(async (file) => [file, await snapshotFile(file)]));
     await writeAtomic(path.join(registryDir, files.review), `${JSON.stringify(review, null, 2)}\n`);
     await writeAtomic(path.join(registryDir, files.catalog), catalogText);
@@ -519,7 +755,8 @@ export async function preparePublish(options) {
         `- Screenshots: ${submission.media.screenshots.map((shot) => `\`${shot.sha256}\``).join(', ')}`,
         `- Review: ${review.reviewer.login} at ${review.reviewedAt}`,
         `- Release: ${plan.tag}`,
-        `- Files: ${[files.catalog, ...(ownerText ? [files.owner] : []), files.review, files.registry].join(', ')}`,
+        `- Format: \`${format}\``,
+        `- Files: ${[files.catalog, ...(ownerText ? [files.owner] : []), files.review, files.registry, files.registryV2].join(', ')}`,
         '',
         'Generated by `scripts/registry/prepare.mjs --execute`; merge only after `validate-catalog` passes.',
       ].join('\n');
@@ -537,7 +774,7 @@ export async function preparePublish(options) {
       branch,
       reusedRelease: draft.reused === true,
       mutations,
-      files: [files.catalog, ...(ownerText ? [files.owner] : []), files.review, files.registry],
+      files: [files.catalog, ...(ownerText ? [files.owner] : []), files.review, files.registry, files.registryV2],
     };
   } catch (error) {
     // Before a commit exists, restore files *and* the git index/branch so the

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createMarketApi, readFileText, buildRequestQuery } from '../src/api-v1.js';
+import { createHash } from 'node:crypto';
+import { createMarketApi, readFileBytes, readFileText, buildRequestQuery } from '../src/api-v1.js';
 import { GameMarketApiError } from '../../shared/src/api-client.js';
 
 function envelope(data) {
@@ -237,4 +238,169 @@ test('request timeouts are reported as timed out transport errors', async functi
 test('query builder drops empty values', function () {
   assert.equal(buildRequestQuery({ a: 1, b: null, c: '', d: 'x' }), '?a=1&d=x');
   assert.equal(buildRequestQuery({}), '');
+});
+
+
+// ---------------------------------------------------------------------------
+// Local asset-zip-v2 install: raw bytes, application/zip (CR7-03)
+// ---------------------------------------------------------------------------
+
+/**
+ * 2384-byte ZIP-shaped sample with high bytes and invalid-UTF-8 sequences.
+ * Any text()/readAsText() round-trip corrupts it (Codex measured 2384 -> 2474).
+ */
+function makeZipSample() {
+  const size = 2384;
+  const bytes = new Uint8Array(size);
+  for (let index = 0; index < size; index += 1) bytes[index] = (index * 37 + 0x5a) & 0xff;
+  bytes.set([0x50, 0x4b, 0x03, 0x04], 0);
+  bytes.set([0xff, 0xfe, 0x80, 0xc3, 0x28, 0x00, 0xf0, 0x9f, 0x92, 0xa9, 0x7f, 0xed, 0xa0, 0x80], 32);
+  return bytes.buffer;
+}
+
+function sha256Of(buffer) {
+  return createHash('sha256').update(Buffer.from(new Uint8Array(buffer))).digest('hex');
+}
+
+function assertSameBytes(actual, expected) {
+  assert.ok(actual instanceof ArrayBuffer, 'uploaded body must be an ArrayBuffer, not text');
+  assert.equal(typeof actual, 'object');
+  assert.equal(actual.byteLength, expected.byteLength);
+  assert.equal(
+    sha256Of(actual),
+    sha256Of(expected),
+    'source and uploaded bytes must have the same sha256'
+  );
+  assert.deepEqual(Buffer.from(new Uint8Array(actual)), Buffer.from(new Uint8Array(expected)));
+}
+
+test('install-local zip uploads the exact raw bytes with Content-Type application/zip', async function () {
+  const calls = [];
+  const api = createMarketApi({
+    fetchImpl: captureFetch(okResponse({ gameId: 'orbit-courier', version: '1.0.0', source: 'local' }), calls),
+  });
+  const source = makeZipSample();
+  const sourceSha256 = sha256Of(source);
+  const result = await api.installLocal({
+    fileName: 'orbit-courier-1.0.0.dshgame.zip',
+    format: 'asset-zip-v2',
+    bytes: source,
+    operationId: 'op-zip',
+  });
+  assert.equal(result.source, 'local');
+
+  assert.equal(calls.length, 1);
+  const init = calls[0].init;
+  const url = new URL(calls[0].url, 'http://x/');
+  assert.equal(url.pathname, '/api/game-market/install-local');
+  assert.equal(url.searchParams.get('operationId'), 'op-zip');
+  assert.equal(init.method, 'POST');
+  assert.equal(init.headers['content-type'], 'application/zip');
+  assert.notEqual(typeof init.body, 'string', 'no text encoding may be involved');
+  assertSameBytes(init.body, source);
+  // Evidence for the report: the uploaded byte length is the true source size
+  // (the browser derives Content-Length from this ArrayBuffer body).
+  assert.equal(init.body.byteLength, 2384);
+  assert.equal(sha256Of(init.body), sourceSha256);
+});
+
+test('install-local zip reads a File via arrayBuffer() and never calls text()', async function () {
+  const calls = [];
+  const api = createMarketApi({
+    fetchImpl: captureFetch(okResponse({ gameId: 'orbit-courier', version: '1.0.0' }), calls),
+  });
+  const source = makeZipSample();
+  let textCalls = 0;
+  const file = {
+    name: 'orbit-courier-1.0.0.dshgame.zip',
+    type: 'application/zip',
+    size: source.byteLength,
+    arrayBuffer: async function arrayBuffer() {
+      return source;
+    },
+    text: async function text() {
+      textCalls += 1;
+      return '\ufffd'.repeat(2474);
+    },
+  };
+  await api.installLocal({ file: file, operationId: 'op-zip-file' });
+  assert.equal(textCalls, 0, 'zip path must not use text()');
+  assert.equal(calls[0].init.headers['content-type'], 'application/zip');
+  assertSameBytes(calls[0].init.body, source);
+});
+
+test('install-local zip falls back to FileReader.readAsArrayBuffer', async function () {
+  const calls = [];
+  const api = createMarketApi({ fetchImpl: captureFetch(okResponse({ gameId: 'orbit-courier' }), calls) });
+  const source = makeZipSample();
+  class FakeReader {
+    readAsArrayBuffer(file) {
+      this.result = file.rawBytes;
+      if (this.onload) this.onload();
+    }
+  }
+  const file = { name: 'orbit-courier-1.0.0.dshgame.zip', type: 'application/zip', rawBytes: source };
+  await api.installLocal({ file: file, FileReader: FakeReader, operationId: 'op-zip-reader' });
+  assert.equal(calls[0].init.headers['content-type'], 'application/zip');
+  assertSameBytes(calls[0].init.body, source);
+});
+
+test('install-local zip accepts an inline Blob-like bytes source', async function () {
+  const calls = [];
+  const api = createMarketApi({ fetchImpl: captureFetch(okResponse({ gameId: 'orbit-courier' }), calls) });
+  const source = makeZipSample();
+  await api.installLocal({
+    fileName: 'orbit-courier-1.0.0.dshgame.zip',
+    bytes: { arrayBuffer: async function arrayBuffer() { return source; } },
+    operationId: 'op-zip-blob',
+  });
+  assertSameBytes(calls[0].init.body, source);
+});
+
+test('install-local rejects an unsupported local package type with GM-4150', async function () {
+  const calls = [];
+  const api = createMarketApi({ fetchImpl: captureFetch(okResponse({ gameId: 'x' }), calls) });
+  await assert.rejects(
+    function upload() {
+      return api.installLocal({ fileName: 'notes.txt', file: { name: 'notes.txt', type: 'text/plain' } });
+    },
+    function check(error) {
+      assert.ok(error instanceof GameMarketApiError);
+      assert.equal(error.code, 'GM-4150');
+      return true;
+    }
+  );
+  assert.equal(calls.length, 0);
+});
+
+test('install-local still sends HTML as text/html (no regression)', async function () {
+  const calls = [];
+  const api = createMarketApi({ fetchImpl: captureFetch(okResponse({ gameId: 'mine' }), calls) });
+  const text = '<!doctype html><html><body>ok</body></html>';
+  await api.installLocal({ text: text, operationId: 'op-html' });
+  assert.equal(calls[0].init.headers['content-type'], 'text/html; charset=utf-8');
+  assert.equal(calls[0].init.body, text);
+  assert.equal(typeof calls[0].init.body, 'string');
+});
+
+test('readFileBytes normalizes ArrayBuffer/views and surfaces reader failures', async function () {
+  const buffer = makeZipSample();
+  assertSameBytes(await readFileBytes({ arrayBuffer: async function arrayBuffer() { return buffer; } }), buffer);
+  assertSameBytes(
+    await readFileBytes({ arrayBuffer: async function arrayBuffer() { return new Uint8Array(buffer); } }),
+    buffer
+  );
+  await assert.rejects(function noReader() { return readFileBytes({ name: 'x.zip' }, { FileReader: null }); }, /FileReader/);
+  class BrokenReader {
+    readAsArrayBuffer() {
+      this.error = new Error('disk');
+      if (this.onerror) this.onerror();
+    }
+  }
+  await assert.rejects(
+    function broken() {
+      return readFileBytes({ name: 'x.zip' }, { FileReader: BrokenReader });
+    },
+    /disk/
+  );
 });

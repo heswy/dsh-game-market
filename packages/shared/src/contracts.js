@@ -242,10 +242,18 @@ export const HOST_PLUGIN_EXPORTS = Object.freeze({
  * @property {() => {state:string, gameId:string|null}} getState
  * @property {(snapshot: AgentSnapshot|null) => void} handleAgentState
  * @property {(info: {theme:string, reducedMotion:boolean}) => void} updateEnvironment
+ * @property {(() => Promise<void>)} [reload] V1.5: reload the game document using the
+ *   instance resource credential (never a consumed one-shot launch URL). Optional so a
+ *   V1 Runtime stays compatible.
  *
  * Runtime states: 'idle' | 'loading' | 'ready' | 'playing' | 'paused' | 'saving' | 'error' | 'exited'
  * Rules:
- *   - `launch` creates exactly one iframe, sandbox="allow-scripts", no allow-same-origin.
+ *   - `launch` creates exactly one outer iframe. V1.5 splits the sandbox in two: for
+ *     `asset-zip-v2` the outer iframe is the platform wrapper document and MUST NOT carry
+ *     `sandbox` (a sandboxed ancestor is an opaque origin, which can never satisfy the game
+ *     document's `frame-ancestors`); the wrapper creates the game iframe with
+ *     sandbox="allow-scripts" and never allow-same-origin. For `html-v1` the single iframe
+ *     keeps sandbox="allow-scripts". See docs/V1.5-CONTRACTS.md §7.5.2.
  *   - `resume-paused` mode: after `ready` + load, emit state 'paused' and wait for
  *     the user to confirm in the Client overlay before calling resume().
  *   - Autosave: every TIMING.autosaveMs while playing; pause/hidden/leave paths

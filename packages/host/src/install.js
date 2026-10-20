@@ -15,7 +15,15 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-import { LIMITS, RUNTIME_VERSION, TIMING } from '../../shared/src/constants.js';
+import {
+  ASSET_ZIP_V2,
+  DEFAULT_PACKAGE_FORMAT,
+  DESCRIPTOR_FILE,
+  LIMITS,
+  PACKAGE_ZIP_EXTENSION,
+  RUNTIME_VERSION,
+  TIMING,
+} from '../../shared/src/constants.js';
 import { GM, gmForInternal } from '../../shared/src/errors.js';
 import {
   ENTRY_FILE,
@@ -29,6 +37,7 @@ import {
   installationPackagePath,
 } from '../../shared/src/installation.js';
 import { validatePackageHtml } from '../../shared/src/manifest.js';
+import { isPackageFormat, normalizePackageFormat, packageFileNameForFormat } from '../../shared/src/package-v2.js';
 import { allowedHostSet, validatePackageUrl } from '../../shared/src/registry.js';
 import { downloadToFile } from './download.js';
 import { hostError } from './errors.js';
@@ -37,6 +46,13 @@ import { createJobId, randomHex, sha256Hex } from './ids.js';
 import { installationView } from './installations.js';
 import { checkCompatibility, compatibilityFor, compareVersions, parseVersion } from './semver.js';
 import { isInside, isPlainObject, validateGameId, validateOperationId } from './validation.js';
+import {
+  assertZipMagic,
+  extractPackageArchive,
+  sealPackageDirectory,
+  unsealPackageDirectory,
+  verifyPackageDirectory,
+} from './zip.js';
 
 const OPERATION_TTL_MS = 10 * 60 * 1000;
 const OPERATION_LIMIT = 200;
@@ -46,6 +62,95 @@ const PACKAGE_TIMEOUTS = Object.freeze({
   idleMs: TIMING.downloadIdleMs,
   totalMs: TIMING.downloadTotalMs,
 });
+
+/** Staged outer ZIP file name inside `staging/<jobId>/` (kept out of `packages/`). */
+const ZIP_STAGED_FILE = `package${PACKAGE_ZIP_EXTENSION}`;
+/** Raw upload content types accepted by the local install entry (§1.8). */
+const LOCAL_ZIP_CONTENT_TYPES = Object.freeze(['application/zip', 'application/x-zip-compressed']);
+
+function formatOf(record) {
+  return record && record.format === ASSET_ZIP_V2 ? ASSET_ZIP_V2 : DEFAULT_PACKAGE_FORMAT;
+}
+
+function outerLimitForFormat(format) {
+  return format === ASSET_ZIP_V2 ? LIMITS.zip.zipOuterBytes : LIMITS.packageBytes;
+}
+
+function assertKnownFormat(format) {
+  if (isPackageFormat(format)) return;
+  throw hostError(GM.FORMAT_POLICY, 'Package format is not supported', { retryable: false });
+}
+
+/**
+ * §5.4 item 2: a format change requires a new game version. The same id+version
+ * may never switch between `html-v1` and `asset-zip-v2`.
+ */
+function assertFormatPolicy(installed, version, format) {
+  if (!installed || installed.version !== version) return;
+  if (normalizePackageFormat(installed.format) !== format) {
+    throw hostError(GM.FORMAT_POLICY, 'Package format cannot change without a new game version', {
+      retryable: false,
+    });
+  }
+}
+
+/** §1.1 step 4 / §1.8: ZIP magic, used to reject content-type spoofing. */
+function looksLikeZip(bytes) {
+  if (!bytes || bytes.length < 4) return false;
+  if (bytes[0] !== 0x50 || bytes[1] !== 0x4b) return false;
+  return (bytes[2] === 0x03 && bytes[3] === 0x04) || (bytes[2] === 0x05 && bytes[3] === 0x06);
+}
+
+/** Media type of a raw upload request (lowercase, parameters stripped). */
+function mediaTypeOf(request) {
+  const contentType = request.headers.get('content-type') || '';
+  return contentType.split(';', 1)[0].trim().toLowerCase();
+}
+
+/**
+ * §1.2/§5.2 ZIP package URL admission.
+ *
+ * `shared/registry.js#validatePackageUrl` is the V1 HTML validator (its last
+ * path segment rule hard-codes `<id>-<version>.html`). The contract keeps the
+ * same admission rules for ZIP (https, no credentials, allowlist / same host,
+ * exact last segment `<id>-<version>.dshgame.zip`) so we mirror them here
+ * without changing the shared V1 validator's semantics.
+ */
+const RELATIVE_ZIP_URL = /^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))(?!.*\\)[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/;
+
+function validateZipPackageUrl(value, options = {}) {
+  const { id, version, sourceType = 'https', sourceUrl, allowedHosts } = options;
+  const expectedFile = packageFileNameForFormat(id, version, ASSET_ZIP_V2);
+  if (typeof value !== 'string' || value.length === 0 || value.length > 1000) {
+    return { ok: false, url: null, message: 'package.url must be a non-empty string' };
+  }
+  if (sourceType === 'file') {
+    if (!RELATIVE_ZIP_URL.test(value)) {
+      return { ok: false, url: null, message: 'file registry packages must use a safe relative path' };
+    }
+    if (value.split('/').pop() !== expectedFile) {
+      return { ok: false, url: null, message: `package file name must be ${expectedFile}` };
+    }
+    return { ok: true, url: value, message: 'ok' };
+  }
+  let absolute;
+  try {
+    absolute = new URL(value, sourceUrl || undefined);
+  } catch (_error) {
+    return { ok: false, url: null, message: 'package.url is not a valid URL' };
+  }
+  if (absolute.protocol !== 'https:') return { ok: false, url: null, message: 'package.url must use https' };
+  if (absolute.username || absolute.password) {
+    return { ok: false, url: null, message: 'package.url must not contain credentials' };
+  }
+  if (absolute.pathname.split('/').pop() !== expectedFile) {
+    return { ok: false, url: null, message: `package file name must be ${expectedFile}` };
+  }
+  if (!allowedHostSet({ allowedHosts, sourceUrl }).has(absolute.hostname.toLowerCase())) {
+    return { ok: false, url: null, message: `package host is not allowed: ${absolute.hostname}` };
+  }
+  return { ok: true, url: absolute.toString(), message: 'ok' };
+}
 
 function sleepDefault(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -78,6 +183,28 @@ function fsIoError(error, message) {
   }
   if (error && error.code === GM.STORE_PATH_ESCAPE) return error;
   return hostError(GM.INSTALL_IO, message || 'Install write failed', { retryable: true });
+}
+
+/** A record the startup recovery marked unusable (§6.5): Play disabled, reinstall needed. */
+function isBrokenRecord(record) {
+  return Boolean(record && record.compatibility && record.compatibility.status === 'broken');
+}
+
+/**
+ * §3 staging disk budget: `zipOuterBytes + zipUnpackedBytes` (≤ 120 MiB).
+ * Best effort — platforms without `statfs` keep the ENOSPC error path.
+ */
+async function assertStagingCapacity(directory, requiredBytes) {
+  let stats;
+  try {
+    stats = await fs.statfs(directory);
+  } catch (_error) {
+    return;
+  }
+  const available = Number(stats.bavail) * Number(stats.bsize);
+  if (!Number.isFinite(available) || available <= 0) return;
+  if (available >= requiredBytes) return;
+  throw hostError(GM.INSTALL_DISK_FULL, 'Not enough disk space for this install', { retryable: true });
 }
 
 function timestampSlug() {
@@ -207,6 +334,33 @@ export function createInstallService({
   }
 
   /**
+   * A record marked `broken` by startup recovery must be reinstallable (§6.5):
+   * move the unusable version directory to trash first so the fresh install can
+   * take its place instead of tripping over the conflict check.
+   */
+  async function prepareBrokenReinstall(id, installed, targetVersion) {
+    if (!isBrokenRecord(installed) || installed.version !== targetVersion) return;
+    await moveVersionDirectoryToTrash(storage.filePath(PACKAGES_DIR, id, installed.version), id);
+  }
+
+  /** Whether a version directory still holds its format-specific marker file. */
+  async function versionArtifactExists(id, version, format) {
+    const marker = format === ASSET_ZIP_V2 ? DESCRIPTOR_FILE : ENTRY_FILE;
+    return pathExists(storage.filePath(PACKAGES_DIR, id, version, marker));
+  }
+
+  /** §6.2 `previousFormat`: from the record, else probed from the version directory. */
+  async function previousFormatFor(id, installed) {
+    if (!installed) return null;
+    if (installed.format === ASSET_ZIP_V2 || installed.format === DEFAULT_PACKAGE_FORMAT) {
+      return normalizePackageFormat(installed.format);
+    }
+    const directory = storage.filePath(PACKAGES_DIR, id, installed.version);
+    if (await pathExists(path.join(directory, DESCRIPTOR_FILE))) return ASSET_ZIP_V2;
+    return DEFAULT_PACKAGE_FORMAT;
+  }
+
+  /**
    * "Running" means a live Runtime instance, not an unfinished Play Session: an
    * unfinished session is what enables Continue and may stay open for days, so
    * it must not block update/uninstall (user-reported 2026-10-18). The Client
@@ -241,18 +395,21 @@ export function createInstallService({
     return entry;
   }
 
-  async function resolvePackageTarget(entry) {
+  async function resolvePackageTarget(entry, format = DEFAULT_PACKAGE_FORMAT) {
     const source = registry.source || null;
     if (!source) {
       throw hostError(GM.INSTALL_URL_REJECTED, 'No registry source is configured', { retryable: false });
     }
-    const result = validatePackageUrl(entry.package.url, {
+    const urlOptions = {
       id: entry.id,
       version: entry.version,
       sourceType: source.kind,
       sourceUrl: registry.sourceUrl,
       allowedHosts: registry.allowedHosts,
-    });
+    };
+    const result = format === ASSET_ZIP_V2
+      ? validateZipPackageUrl(entry.package.url, urlOptions)
+      : validatePackageUrl(entry.package.url, urlOptions);
     if (!result.ok) {
       throw hostError(GM.INSTALL_URL_REJECTED, 'Package URL is not allowed', {
         retryable: false,
@@ -298,12 +455,12 @@ export function createInstallService({
     return { kind: 'https', url: result.url };
   }
 
-  async function fetchPackageInto(target, partPath, entry) {
+  async function fetchPackageInto(target, partPath, entry, { maxOuterBytes = LIMITS.packageBytes } = {}) {
     if (target.kind === 'file') {
-      if (target.size > LIMITS.packageBytes) {
+      if (target.size > maxOuterBytes) {
         throw hostError(GM.PACKAGE_TOO_LARGE, 'Game package exceeds the size limit', {
           retryable: false,
-          details: { limitBytes: LIMITS.packageBytes },
+          details: { limitBytes: maxOuterBytes },
         });
       }
       if (target.size !== entry.package.size) {
@@ -350,7 +507,7 @@ export function createInstallService({
         sleep,
         resolveHost,
         devMode,
-        maxBytes: LIMITS.packageBytes,
+        maxBytes: maxOuterBytes,
         connectMs: PACKAGE_TIMEOUTS.connectMs,
         idleMs: PACKAGE_TIMEOUTS.idleMs,
         totalMs: PACKAGE_TIMEOUTS.totalMs,
@@ -429,10 +586,114 @@ export function createInstallService({
     return { manifest, bytes, warnings: validation.warnings };
   }
 
+  /**
+   * `asset-zip-v2` verification + extraction (§4.1 steps 1–10).
+   *
+   * The outer ZIP has already been size/sha256 checked by the download step;
+   * `zip.js` owns everything else (magic, EOCD, per-entry policy, conflicts,
+   * descriptor, measured extraction, local-header comparison, game.json,
+   * content scans). The extraction target stays inside `staging/<jobId>/` and
+   * is only promoted after every check passed (§6.3 step 10).
+   */
+  async function extractStagedZip(stagedPath, treePath, { expected, registryFilesDigest = null }) {
+    await assertZipMagic(stagedPath);
+    const extraction = await extractPackageArchive({
+      zipPath: stagedPath,
+      outDir: treePath,
+      expected,
+      now: () => now().getTime(),
+    });
+    if (typeof registryFilesDigest === 'string' && registryFilesDigest !== extraction.fileManifestDigest) {
+      throw hostError(GM.DESCRIPTOR_MISMATCH, 'Package file manifest does not match the registry digest', {
+        retryable: false,
+      });
+    }
+    checkCompatibility(extraction.manifest);
+    return extraction;
+  }
+
+  /**
+   * Atomically promote an extracted tree to `packages/<id>/<version>/`
+   * (§6.1 item 4: directory first, then the record). The tree is sealed
+   * read-only afterwards (§6.1 item 1, best effort).
+   * (§6.1 item 4: directory first, then the record).
+   *
+   * CR7-02: a retained **previous** version directory (current + 1 rollback
+   * window) may be the exact package being installed again (rollback or an
+   * idempotent reinstall). In that case the directory is *reused* — never
+   * renamed over, re-extracted or re-sealed — but only after its measured
+   * content equals the freshly verified target:
+   *   - the descriptor must be valid and its `fileManifestDigest` must equal the
+   *     digest of the package we just extracted;
+   *   - every listed file is re-hashed (`verifyContents: true`), so a single
+   *     tampered resource byte is detected even though the manifest digest
+   *     itself would not change.
+   * Anything else (missing/corrupt/format-mismatched/hash-mismatched) remains a
+   * `GM-4094` conflict: same id+version may never silently change bytes.
+   */
+  async function placePackageTree({ id, version, treePath, entry, fileManifestDigest }) {
+    const idDirectory = storage.filePath(PACKAGES_DIR, id);
+    const targetDirectory = path.join(idDirectory, version);
+    if (await pathExists(targetDirectory)) {
+      const hasDescriptor = await pathExists(path.join(targetDirectory, DESCRIPTOR_FILE));
+      if (!hasDescriptor) {
+        // A directory without a descriptor is either html-v1 (format mismatch)
+        // or corrupt: neither may be reused as an `asset-zip-v2` version.
+        throw hostError(GM.INSTALL_VERSION_CONFLICT, 'Installed version has a different or invalid package format', {
+          retryable: false,
+        });
+      }
+      const verification = await verifyPackageDirectory({
+        directory: targetDirectory,
+        record: { fileManifestDigest, entry },
+        verifyContents: true,
+      });
+      if (!verification.ok) {
+        throw hostError(GM.INSTALL_VERSION_CONFLICT, 'Installed version contents differ from this install', {
+          retryable: false,
+        });
+      }
+      return {
+        directory: targetDirectory,
+        entryPath: path.join(targetDirectory, entry),
+        created: false,
+        replaced: false,
+        reused: true,
+      };
+    }
+    try {
+      await fs.mkdir(idDirectory, { recursive: true, mode: 0o755 });
+      await fs.rename(treePath, targetDirectory);
+      await syncDirectory(idDirectory);
+    } catch (error) {
+      throw fsIoError(error, 'Could not place the installed package');
+    }
+    const sealed = await sealPackageDirectory(targetDirectory);
+    if (!sealed.ok) {
+      logger?.warn?.('[game-market/host] package-seal-failed', `gameId=${id}`, `failures=${sealed.failures}`);
+    }
+    return {
+      directory: targetDirectory,
+      entryPath: path.join(targetDirectory, entry),
+      created: true,
+      replaced: false,
+      reused: false,
+    };
+  }
+
   async function placePackage({ id, version, stagedPath, sha256, sizeBytes }) {
     const targetDirectory = storage.filePath(PACKAGES_DIR, id, version);
     const entryPath = path.join(targetDirectory, ENTRY_FILE);
     const directoryExisted = await pathExists(targetDirectory);
+    if (directoryExisted && (await pathExists(path.join(targetDirectory, DESCRIPTOR_FILE)))) {
+      // An `asset-zip-v2` tree cannot be reused as an html-v1 version (and the
+      // reverse is handled in placePackageTree). Format policy for a *recorded*
+      // version is enforced by assertFormatPolicy (GM-4282); a directory holding
+      // the other format is a conflict.
+      throw hostError(GM.INSTALL_VERSION_CONFLICT, 'Installed version has a different package format', {
+        retryable: false,
+      });
+    }
     if (await pathExists(entryPath)) {
       let stats;
       try {
@@ -443,9 +704,15 @@ export function createInstallService({
       if (!stats || stats.isSymbolicLink() || !stats.isFile()) {
         throw hostError(GM.STORE_PATH_ESCAPE, 'Package entry is not a regular file', { retryable: false });
       }
+      // CR7-02 boundary: the record's sha256 may be null (local html-v1
+      // installs keep a non-trust-anchor digest), so compare the bytes we hold
+      // against the bytes already on disk — always possible for html-v1.
       const existing = await hashFile(entryPath);
-      if (existing === sha256) return { entryPath, created: false, replaced: false };
-      throw hostError(GM.INSTALL_VERSION_CONFLICT, 'Installed version conflicts with this install', {
+      const sameSize = !Number.isFinite(sizeBytes) || stats.size === sizeBytes;
+      if (typeof sha256 === 'string' && existing === sha256 && sameSize) {
+        return { entryPath, created: false, replaced: false, reused: true };
+      }
+      throw hostError(GM.INSTALL_VERSION_CONFLICT, 'Installed version contents differ from this install', {
         retryable: false,
       });
     }
@@ -488,6 +755,17 @@ export function createInstallService({
     return target;
   }
 
+  /**
+   * Remove an installed version tree. Trees are sealed read-only while live
+   * (§6.1 item 1), so restore owner write permission before the recursive
+   * delete; the move itself only needs write access to the parent.
+   */
+  async function moveVersionDirectoryToTrash(targetPath, id) {
+    if (!(await pathExists(targetPath))) return null;
+    await unsealPackageDirectory(targetPath);
+    return moveToTrash(targetPath, id);
+  }
+
   async function pruneVersions(id, currentVersion, previousVersion) {
     const idDirectory = storage.filePath(PACKAGES_DIR, id);
     let entries;
@@ -500,7 +778,7 @@ export function createInstallService({
     for (const item of entries) {
       if (!item.isDirectory() || keep.has(item.name)) continue;
       if (parseVersion(item.name) === null) continue;
-      await moveToTrash(path.join(idDirectory, item.name), id).catch((error) => {
+      await moveVersionDirectoryToTrash(path.join(idDirectory, item.name), id).catch((error) => {
         logger?.warn?.('[game-market/host] version-prune-failed', `gameId=${id}`, `code=${error?.code || 'E_UNKNOWN'}`);
       });
     }
@@ -544,12 +822,24 @@ export function createInstallService({
     installed,
     iconPath,
     compatibility,
+    format = DEFAULT_PACKAGE_FORMAT,
+    entry = ENTRY_FILE,
+    fileManifestDigest = null,
+    fileCount = null,
+    unpackedBytes = null,
+    previousFormat = null,
   }) {
     const stamp = now().toISOString();
     return {
       id,
       version,
       source,
+      format,
+      entry,
+      fileManifestDigest,
+      fileCount,
+      unpackedBytes,
+      previousFormat,
       packagePath: installationPackagePath(id, version),
       sha256,
       sizeBytes,
@@ -576,8 +866,8 @@ export function createInstallService({
     if (!installed || installed.version === targetVersion) {
       return installed && typeof installed.previousVersion === 'string' ? installed.previousVersion : null;
     }
-    const previousDirectory = storage.filePath(PACKAGES_DIR, id, installed.version);
-    if (!(await pathExists(path.join(previousDirectory, ENTRY_FILE)))) return null;
+    const installedFormat = formatOf(installed);
+    if (!(await versionArtifactExists(id, installed.version, installedFormat))) return null;
     return installed.version;
   }
 
@@ -594,6 +884,80 @@ export function createInstallService({
     };
   }
 
+  /**
+   * Shared tail of every install path: persist the installation record, clean up
+   * the promoted tree if the record cannot be written, prune old versions and
+   * report the job (§6.3 steps 10–12).
+   */
+  async function finaliseInstall({
+    jobId,
+    id,
+    version,
+    source,
+    format,
+    entry,
+    sha256,
+    sizeBytes,
+    previousVersion,
+    manifest,
+    installed,
+    placed,
+    iconFromRegistry = true,
+    fileManifestDigest = null,
+    fileCount = null,
+    unpackedBytes = null,
+  }) {
+    const warnings = await saveWarnings(id, manifest, installed);
+    const previousFormat = await previousFormatFor(id, installed);
+    const iconPath = iconFromRegistry
+      ? await registry.previewRelativePath(id, version, 'icon').catch(() => null)
+      : null;
+    const record = buildRecord({
+      id,
+      version,
+      source,
+      format,
+      entry,
+      sha256,
+      sizeBytes,
+      previousVersion,
+      previousFormat,
+      manifest,
+      installed,
+      iconPath,
+      compatibility: compatibilityFor(manifest, now().toISOString()),
+      fileManifestDigest,
+      fileCount,
+      unpackedBytes,
+    });
+    try {
+      await installations.put(record);
+    } catch (error) {
+      // CR7-02: only a directory THIS attempt created may be cleaned up. A
+      // `reused` directory is an earlier install's retained rollback version —
+      // deleting it on a record-write failure would destroy user data (and the
+      // still-current record may point at it).
+      if (placed && placed.created === true && placed.reused !== true) {
+        const cleanupDirectory =
+          placed.directory || (placed.entryPath ? path.dirname(placed.entryPath) : null);
+        if (cleanupDirectory) {
+          await moveVersionDirectoryToTrash(cleanupDirectory, id).catch(() => undefined);
+        }
+      }
+      throw error;
+    }
+    await pruneVersions(id, version, previousVersion);
+    recordJob(jobId, 'installed', { gameId: id, version, format, source });
+    logger?.info?.(
+      '[game-market/host] installed',
+      `gameId=${id}`,
+      `version=${version}`,
+      `source=${source}`,
+      `format=${format}`
+    );
+    return installedResult(record, { changed: true, warnings, source });
+  }
+
   async function installRegistryLocked({ gameId, requestedVersion }) {
     const jobId = createJobId();
     const jobDirectory = storage.filePath(STAGING_DIR, jobId);
@@ -601,6 +965,11 @@ export function createInstallService({
     let placed = null;
     try {
       const rawEntry = await registry.resolveForInstall(gameId);
+      // §1.1 step 1: the index declares the format; a missing value means V1 HTML.
+      const format = rawEntry.package && rawEntry.package.format !== undefined
+        ? rawEntry.package.format
+        : DEFAULT_PACKAGE_FORMAT;
+      assertKnownFormat(format);
       const entry = await registryEntry(rawEntry);
       const targetVersion = entry.version;
       const installed = await installations.get(gameId);
@@ -613,7 +982,11 @@ export function createInstallService({
           retryable: false,
         });
       }
-      if (installed && installed.version === targetVersion) {
+      // A broken record (startup recovery, §6.5) is always reinstalled instead of
+      // being reported as a no-op.
+      if (installed && installed.version === targetVersion && !isBrokenRecord(installed)) {
+        // §5.4 item 2: a format change requires a new game version.
+        assertFormatPolicy(installed, targetVersion, format);
         if (typeof installed.sha256 === 'string' && installed.sha256 === entry.package.sha256) {
           return installedResult(installed, { changed: false, source: 'registry' });
         }
@@ -636,31 +1009,94 @@ export function createInstallService({
           retryable: false,
         });
       }
+      if (format === ASSET_ZIP_V2) {
+        // §1.2: the URL's last path segment must be the format-specific name.
+        const expectedName = packageFileNameForFormat(entry.id, entry.version, format);
+        if (!String(entry.package.url).endsWith(`/${expectedName}`)) {
+          throw hostError(GM.FORMAT_POLICY, 'Package file name does not match the package format', {
+            retryable: false,
+          });
+        }
+      }
 
-      const target = await resolvePackageTarget(entry);
-      recordJob(jobId, 'downloading', { gameId, version: targetVersion });
+      const target = await resolvePackageTarget(entry, format);
+      recordJob(jobId, 'downloading', { gameId, version: targetVersion, format });
       try {
         await fs.mkdir(jobDirectory, { recursive: true, mode: 0o700 });
       } catch (error) {
         throw fsIoError(error, 'Could not create the install staging directory');
       }
+      const previousVersion = await previousVersionFor(gameId, installed, targetVersion);
+
+      if (format === ASSET_ZIP_V2) {
+        const partPath = path.join(jobDirectory, `${ZIP_STAGED_FILE}.part`);
+        const stagedPath = path.join(jobDirectory, ZIP_STAGED_FILE);
+        const fetched = await fetchPackageInto(target, partPath, entry, {
+          maxOuterBytes: outerLimitForFormat(format),
+        });
+        try {
+          await fs.rename(partPath, stagedPath);
+        } catch (error) {
+          throw fsIoError(error, 'Could not finalise the downloaded package');
+        }
+        recordJob(jobId, 'verifying', { gameId, version: targetVersion, format });
+        await assertStagingCapacity(
+          jobDirectory,
+          fetched.bytes + LIMITS.zip.zipUnpackedBytes
+        );
+        const treePath = path.join(jobDirectory, 'tree');
+        const extraction = await extractStagedZip(stagedPath, treePath, {
+          expected: { id: entry.id, version: entry.version },
+          registryFilesDigest:
+            typeof rawEntry.package.filesDigest === 'string' ? rawEntry.package.filesDigest : null,
+        });
+        recordJob(jobId, 'installing', { gameId, version: targetVersion, format });
+        await prepareBrokenReinstall(gameId, installed, targetVersion);
+        placed = await placePackageTree({
+          id: gameId,
+          version: targetVersion,
+          treePath,
+          entry: extraction.entry,
+          fileManifestDigest: extraction.fileManifestDigest,
+        });
+        return await finaliseInstall({
+          jobId,
+          id: gameId,
+          version: targetVersion,
+          source: 'registry',
+          format,
+          entry: extraction.entry,
+          sha256: fetched.sha256,
+          sizeBytes: fetched.bytes,
+          previousVersion,
+          manifest: extraction.manifest,
+          installed,
+          placed,
+          fileManifestDigest: extraction.fileManifestDigest,
+          fileCount: extraction.fileCount,
+          unpackedBytes: extraction.unpackedBytes,
+        });
+      }
+
       const partPath = path.join(jobDirectory, 'package.html.part');
-      const stagedPath = path.join(jobDirectory, 'entry.html');
-      const fetched = await fetchPackageInto(target, partPath, entry);
+      const stagedPath = path.join(jobDirectory, ENTRY_FILE);
+      const fetched = await fetchPackageInto(target, partPath, entry, {
+        maxOuterBytes: outerLimitForFormat(DEFAULT_PACKAGE_FORMAT),
+      });
       try {
         await fs.rename(partPath, stagedPath);
       } catch (error) {
         throw fsIoError(error, 'Could not finalise the downloaded package');
       }
 
-      recordJob(jobId, 'verifying', { gameId, version: targetVersion });
+      recordJob(jobId, 'verifying', { gameId, version: targetVersion, format });
       const { manifest } = await validateStagedPackage(stagedPath, {
         expectedId: entry.id,
         expectedVersion: entry.version,
       });
 
-      recordJob(jobId, 'installing', { gameId, version: targetVersion });
-      const previousVersion = await previousVersionFor(gameId, installed, targetVersion);
+      recordJob(jobId, 'installing', { gameId, version: targetVersion, format });
+      await prepareBrokenReinstall(gameId, installed, targetVersion);
       placed = await placePackage({
         id: gameId,
         version: targetVersion,
@@ -668,32 +1104,20 @@ export function createInstallService({
         sha256: fetched.sha256,
         sizeBytes: fetched.bytes,
       });
-      const warnings = await saveWarnings(gameId, manifest, installed);
-      const iconPath = await registry.previewRelativePath(gameId, targetVersion, 'icon').catch(() => null);
-      const record = buildRecord({
+      return await finaliseInstall({
+        jobId,
         id: gameId,
         version: targetVersion,
         source: 'registry',
+        format,
+        entry: ENTRY_FILE,
         sha256: fetched.sha256,
         sizeBytes: fetched.bytes,
         previousVersion,
         manifest,
         installed,
-        iconPath,
-        compatibility: compatibilityFor(manifest, now().toISOString()),
+        placed,
       });
-      try {
-        await installations.put(record);
-      } catch (error) {
-        if (placed.created) {
-          await moveToTrash(placed.entryPath ? path.dirname(placed.entryPath) : null, gameId).catch(() => undefined);
-        }
-        throw error;
-      }
-      await pruneVersions(gameId, targetVersion, previousVersion);
-      recordJob(jobId, 'installed', { gameId, version: targetVersion });
-      logger?.info?.('[game-market/host] installed', `gameId=${gameId}`, `version=${targetVersion}`, `source=registry`);
-      return installedResult(record, { changed: true, warnings, source: 'registry' });
     } catch (error) {
       recordJob(jobId, 'failed', { gameId, code: error?.code || 'E_UNKNOWN' });
       throw error;
@@ -702,19 +1126,24 @@ export function createInstallService({
     }
   }
 
-  async function readHtmlBody(request) {
-    const contentType = request.headers.get('content-type') || '';
-    const mediaType = contentType.split(';', 1)[0].trim().toLowerCase();
-    if (mediaType !== 'text/html') {
-      throw hostError(GM.UNSUPPORTED_MEDIA_TYPE, 'Expected text/html', { retryable: false });
+  /**
+   * Read a raw upload body with a Content-Length pre-check and a streamed
+   * ceiling (§1.8 / §3 rule 4: reject before/while receiving, never after).
+   */
+  async function readRequestBody(request, { allowedMediaTypes, limitBytes }) {
+    const mediaType = mediaTypeOf(request);
+    if (!allowedMediaTypes.includes(mediaType)) {
+      throw hostError(GM.UNSUPPORTED_MEDIA_TYPE, `Expected ${allowedMediaTypes.join(' or ')}`, {
+        retryable: false,
+      });
     }
     const declared = request.headers.get('content-length');
     if (declared !== null && declared !== '') {
       const value = Number(declared);
-      if (Number.isFinite(value) && value > LIMITS.packageBytes) {
+      if (Number.isFinite(value) && value > limitBytes) {
         throw hostError(GM.PACKAGE_TOO_LARGE, 'Game package exceeds the size limit', {
           retryable: false,
-          details: { limitBytes: LIMITS.packageBytes },
+          details: { limitBytes },
         });
       }
     }
@@ -735,11 +1164,11 @@ export function createInstallService({
       const chunk = result.value;
       if (!chunk || chunk.length === 0) continue;
       bytes += chunk.length;
-      if (bytes > LIMITS.packageBytes) {
+      if (bytes > limitBytes) {
         await reader.cancel().catch(() => undefined);
         throw hostError(GM.PACKAGE_TOO_LARGE, 'Game package exceeds the size limit', {
           retryable: false,
-          details: { limitBytes: LIMITS.packageBytes },
+          details: { limitBytes },
         });
       }
       chunks.push(chunk);
@@ -750,7 +1179,7 @@ export function createInstallService({
     return Buffer.concat(chunks);
   }
 
-  async function installLocalLocked({ manifest, bytes, sha256 }) {
+  async function installLocalHtmlLocked({ manifest, bytes, sha256 }) {
     const gameId = manifest.id;
     const version = manifest.version;
     if (isBuiltinGame(gameId)) {
@@ -759,44 +1188,118 @@ export function createInstallService({
       });
     }
     const installed = await installations.get(gameId);
+    assertFormatPolicy(installed, version, DEFAULT_PACKAGE_FORMAT);
     if (installed && installed.version !== version && (await isRunning(gameId))) {
       throw hostError(GM.UPDATE_GAME_RUNNING, 'Exit the game before updating', { retryable: true });
     }
     const jobId = createJobId();
     const jobDirectory = storage.filePath(STAGING_DIR, jobId);
     let placed = null;
-    recordJob(jobId, 'installing', { gameId, version, source: 'local' });
+    recordJob(jobId, 'installing', { gameId, version, source: 'local', format: DEFAULT_PACKAGE_FORMAT });
     try {
       await fs.mkdir(jobDirectory, { recursive: true, mode: 0o700 });
-      const stagedPath = path.join(jobDirectory, 'entry.html');
+      const stagedPath = path.join(jobDirectory, ENTRY_FILE);
       await fs.writeFile(stagedPath, bytes, { mode: 0o644, flag: 'wx' });
       const previousVersion = await previousVersionFor(gameId, installed, version);
+      await prepareBrokenReinstall(gameId, installed, version);
       placed = await placePackage({ id: gameId, version, stagedPath, sha256, sizeBytes: bytes.length });
-      const warnings = await saveWarnings(gameId, manifest, installed);
-      const record = buildRecord({
+      return await finaliseInstall({
+        jobId,
         id: gameId,
         version,
         source: 'local',
+        format: DEFAULT_PACKAGE_FORMAT,
+        entry: ENTRY_FILE,
         sha256: null,
         sizeBytes: bytes.length,
         previousVersion,
         manifest,
         installed,
-        iconPath: null,
-        compatibility: compatibilityFor(manifest, now().toISOString()),
+        placed,
+        iconFromRegistry: false,
       });
-      try {
-        await installations.put(record);
-      } catch (error) {
-        if (placed.created) {
-          await moveToTrash(path.dirname(placed.entryPath), gameId).catch(() => undefined);
-        }
-        throw error;
+    } catch (error) {
+      recordJob(jobId, 'failed', { gameId, code: error?.code || 'E_UNKNOWN' });
+      throw error;
+    } finally {
+      await fs.rm(jobDirectory, { recursive: true, force: true }).catch(() => undefined);
+    }
+  }
+
+  /**
+   * Local `asset-zip-v2` upload (§1.8): separate `Content-Type`, ≤ 20 MiB,
+   * `source:'local'`, measured outer sha256 recorded for rollback/diagnostics
+   * but NEVER used as a trust anchor (the UI still has to confirm explicitly).
+   */
+  async function installLocalZipLocked({ bytes, sha256 }) {
+    // Re-installing the same outer ZIP is a no-op; the record's sha256 is the
+    // measured outer digest, so this does not depend on the file name.
+    const records = await installations.records();
+    const existing = records.find(
+      (record) => formatOf(record) === ASSET_ZIP_V2 && record.sha256 === sha256
+    );
+    if (
+      existing
+      && !isBrokenRecord(existing)
+      && (await versionArtifactExists(existing.id, existing.version, ASSET_ZIP_V2))
+    ) {
+      return installedResult(existing, { changed: false, source: 'local' });
+    }
+
+    const jobId = createJobId();
+    const jobDirectory = storage.filePath(STAGING_DIR, jobId);
+    let placed = null;
+    let gameId = null;
+    recordJob(jobId, 'installing', { source: 'local', format: ASSET_ZIP_V2 });
+    try {
+      await fs.mkdir(jobDirectory, { recursive: true, mode: 0o700 });
+      await assertStagingCapacity(jobDirectory, bytes.length + LIMITS.zip.zipUnpackedBytes);
+      const stagedPath = path.join(jobDirectory, ZIP_STAGED_FILE);
+      await fs.writeFile(stagedPath, bytes, { mode: 0o644, flag: 'wx' });
+
+      const treePath = path.join(jobDirectory, 'tree');
+      const extraction = await extractStagedZip(stagedPath, treePath, { expected: null });
+      gameId = extraction.manifest.id;
+      const version = extraction.manifest.version;
+      recordJob(jobId, 'verifying', { gameId, version, source: 'local', format: ASSET_ZIP_V2 });
+
+      if (isBuiltinGame(gameId)) {
+        throw hostError(GM.INVALID_PARAM, 'Built-in games cannot be replaced by a local package', {
+          retryable: false,
+        });
       }
-      await pruneVersions(gameId, version, previousVersion);
-      recordJob(jobId, 'installed', { gameId, version, source: 'local' });
-      logger?.info?.('[game-market/host] installed', `gameId=${gameId}`, `version=${version}`, 'source=local');
-      return installedResult(record, { changed: true, warnings, source: 'local' });
+      const installed = await installations.get(gameId);
+      assertFormatPolicy(installed, version, ASSET_ZIP_V2);
+      if (installed && installed.version !== version && (await isRunning(gameId))) {
+        throw hostError(GM.UPDATE_GAME_RUNNING, 'Exit the game before updating', { retryable: true });
+      }
+      const previousVersion = await previousVersionFor(gameId, installed, version);
+      await prepareBrokenReinstall(gameId, installed, version);
+      placed = await placePackageTree({
+        id: gameId,
+        version,
+        treePath,
+        entry: extraction.entry,
+        fileManifestDigest: extraction.fileManifestDigest,
+      });
+      return await finaliseInstall({
+        jobId,
+        id: gameId,
+        version,
+        source: 'local',
+        format: ASSET_ZIP_V2,
+        entry: extraction.entry,
+        sha256,
+        sizeBytes: bytes.length,
+        previousVersion,
+        manifest: extraction.manifest,
+        installed,
+        placed,
+        iconFromRegistry: false,
+        fileManifestDigest: extraction.fileManifestDigest,
+        fileCount: extraction.fileCount,
+        unpackedBytes: extraction.unpackedBytes,
+      });
     } catch (error) {
       recordJob(jobId, 'failed', { gameId, code: error?.code || 'E_UNKNOWN' });
       throw error;
@@ -839,10 +1342,32 @@ export function createInstallService({
     return result;
   }
 
+  /**
+   * Raw local upload entry (§1.8). `html-v1` keeps V1 behaviour; `asset-zip-v2`
+   * has its own `Content-Type` and a completely separate validation pipeline.
+   */
   async function installLocal(request, url) {
     await awaitMaintenance();
     const operationId = validateOperationId(queryValue(url, 'operationId', { required: false, maxLength: 128 }));
-    const bytes = await readHtmlBody(request);
+    const mediaType = mediaTypeOf(request);
+    if (mediaType === 'text/html') return installLocalHtml(request, operationId);
+    if (LOCAL_ZIP_CONTENT_TYPES.includes(mediaType)) return installLocalZip(request, operationId);
+    throw hostError(GM.UNSUPPORTED_MEDIA_TYPE, 'Expected text/html or application/zip', {
+      retryable: false,
+    });
+  }
+
+  async function installLocalHtml(request, operationId) {
+    const bytes = await readRequestBody(request, {
+      allowedMediaTypes: ['text/html'],
+      limitBytes: LIMITS.packageBytes,
+    });
+    // §14: the ZIP must never travel through the raw text/html upload path.
+    if (looksLikeZip(bytes)) {
+      throw hostError(GM.UNSUPPORTED_MEDIA_TYPE, 'ZIP packages must use application/zip', {
+        retryable: false,
+      });
+    }
     const text = decodePackageText(bytes);
     const validation = validatePackageHtml(text, { packageBytes: LIMITS.packageBytes });
     if (!validation.ok || !validation.manifest) throw packageValidationError(validation);
@@ -856,8 +1381,38 @@ export function createInstallService({
       async () => {
         const again = lookupOperation('install-local', operationId, params);
         if (again) return again;
-        const value = await installLocalLocked({ manifest, bytes, sha256: digest });
+        const value = await installLocalHtmlLocked({ manifest, bytes, sha256: digest });
         storeOperation('install-local', operationId, params, value);
+        return value;
+      },
+      { waitMs: installLockWaitMs, busyCode: GM.INSTALL_IN_PROGRESS }
+    );
+    return result;
+  }
+
+  async function installLocalZip(request, operationId) {
+    const bytes = await readRequestBody(request, {
+      allowedMediaTypes: LOCAL_ZIP_CONTENT_TYPES,
+      limitBytes: LIMITS.zip.zipOuterBytes,
+    });
+    // §1.8: Content-Type and magic must agree; a mismatch is a media-type error.
+    if (!looksLikeZip(bytes)) {
+      throw hostError(GM.UNSUPPORTED_MEDIA_TYPE, 'Request body is not a ZIP archive', {
+        retryable: false,
+      });
+    }
+    // Measured outer sha256: used for rollback comparison and diagnostics only,
+    // never as a trust anchor (the UI must still confirm; §1.8).
+    const digest = sha256Hex(bytes);
+    const params = JSON.stringify({ sha256: digest });
+    const cached = lookupOperation('install-local-zip', operationId, params);
+    if (cached) return cached;
+    const result = await lock.run(
+      async () => {
+        const again = lookupOperation('install-local-zip', operationId, params);
+        if (again) return again;
+        const value = await installLocalZipLocked({ bytes, sha256: digest });
+        storeOperation('install-local-zip', operationId, params, value);
         return value;
       },
       { waitMs: installLockWaitMs, busyCode: GM.INSTALL_IN_PROGRESS }
@@ -955,7 +1510,7 @@ export function createInstallService({
       dataDeleted = true;
     }
     const versionDirectory = storage.filePath(PACKAGES_DIR, gameId, record.version);
-    await moveToTrash(versionDirectory, gameId);
+    await moveVersionDirectoryToTrash(versionDirectory, gameId);
     await fs.rmdir(storage.filePath(PACKAGES_DIR, gameId)).catch(() => undefined);
     await installations.remove(gameId);
     if (entry && typeof entry.invalidateGame === 'function') entry.invalidateGame(gameId);

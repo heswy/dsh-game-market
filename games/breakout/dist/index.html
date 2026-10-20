@@ -646,6 +646,38 @@
     iconBytes: 256 * 1024,
     /** Max preview image bytes served to Market UI. */
     previewBytes: 2 * 1024 * 1024,
+    /**
+     * V1.5 `asset-zip-v2` archive limits (docs/V1.5-CONTRACTS.md §3).
+     *
+     * A separate namespace on purpose: the V1 single-file limits above keep
+     * their exact semantics, and the two can be tuned independently later.
+     * Rule 0 of §3: the descriptor is ONE central-directory entry, so the total
+     * entry budget is 512 and `files[]` (which excludes the descriptor) is 511.
+     */
+    zip: Object.freeze({
+      /** Outer ZIP bytes; also the standard per-package size ceiling. */
+      zipOuterBytes: 20 * 1024 * 1024,
+      /** Sum of every extracted entry, measured, never trusting the central directory. */
+      zipUnpackedBytes: 100 * 1024 * 1024,
+      /** Total central-directory entries INCLUDING `dsh-package.json`. */
+      zipEntries: 512,
+      /** One extracted entry. */
+      zipEntryBytes: 20 * 1024 * 1024,
+      /** One compressed entry. */
+      zipEntryCompressedBytes: 20 * 1024 * 1024,
+      /** Whole-archive compression ratio ceiling (`unpacked / outer`). */
+      zipTotalRatio: 100,
+      /** Per-entry compression ratio ceiling. */
+      zipEntryRatio: 100,
+      /** Max path length in Unicode code points. */
+      zipPathChars: 240,
+      /** Max path depth in `/`-separated segments (file name counts as one). */
+      zipPathDepth: 12,
+      /** `dsh-package.json` bytes. */
+      descriptorBytes: 256 * 1024,
+      /** Streaming read chunk; no entry is ever buffered whole. */
+      zipChunkBytes: 64 * 1024,
+    }),
   });
 
   const TIMING = Object.freeze({
@@ -687,6 +719,16 @@
     /** How long a /entry launcher binding stays valid (TBD-10). */
     entryBindingTtlMs: 10 * 60 * 1000,
     runtimeRenewMs: 60 * 1000,
+    /**
+     * V1.5: instance-bound resource credential lifetime. A sliding window, exactly
+     * the entry-binding TTL, renewed by `POST /runtime-renew` (contract §7.2).
+     */
+    resourceCredentialTtlMs: 10 * 60 * 1000,
+    /** V1.5: whole-archive extraction wall-clock budget (contract §3). */
+    zipExtractMs: 60000,
+    /** V1.5: HMR capability probe cadence and deadline (contract §9.2). */
+    hmrProbeIntervalMs: 250,
+    hmrProbeTimeoutMs: 15000,
     /** UI animation durations (ms). */
     motion: Object.freeze({
       panel: 240,
@@ -776,7 +818,53 @@
    */
   const DEFAULT_OFFICIAL_REGISTRY_URL = 'https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json';
 
-  return { BUNDLE_ID, CLIENT_MODULE_ID, MAIN_PANEL_KEY, API_BASE, LOG_PREFIX, RUNTIME_VERSION, SDK_VERSION, PROTOCOL_VERSION, LEGACY_V0_VERSION, LIMITS, TIMING, AGENT_STATES, AGENT_SOURCES, AGENT_PRIORITY, AGENT_LABELS_ZH, AGENT_LABEL_KEYS, GAME_ID_PATTERN, PLAY_SESSION_ID_PATTERN, INSTANCE_ID_PATTERN, NONCE_PATTERN, DSH_SESSION_ID_PATTERN, LAUNCH_MODES, PAUSE_REASONS, SAVE_REASONS, SESSION_OUTCOMES, BUILTIN_GAMES, AGENT_ACK_MAX_AGE_MS, DEFAULT_OFFICIAL_REGISTRY_URL };
+  /**
+   * V1.5 package formats (docs/V1.5-CONTRACTS.md §1).
+   *
+   * `html-v1` keeps every V1 rule; `asset-zip-v2` adds an outer ZIP with a
+   * `dsh-package.json` descriptor and a per-file manifest. A missing `format`
+   * always means `html-v1` (V1 indexes and old install records).
+   */
+  const PACKAGE_FORMATS = Object.freeze(['html-v1', 'asset-zip-v2']);
+  const DEFAULT_PACKAGE_FORMAT = 'html-v1';
+  const ASSET_ZIP_V2 = 'asset-zip-v2';
+
+  /** `<id>-<version>.dshgame.zip` — the double extension is deliberate (§1.2). */
+  const PACKAGE_ZIP_EXTENSION = '.dshgame.zip';
+
+  /** Root descriptor of an `asset-zip-v2` archive; never listed in its own `files[]`. */
+  const DESCRIPTOR_FILE = 'dsh-package.json';
+  /** The one authoritative game manifest inside a ZIP package. */
+  const ZIP_GAME_MANIFEST_FILE = 'game.json';
+
+  /** Registry v2 lives next to v1 in the same content repository (§5.2). */
+  const REGISTRY_V2_FILE = 'v2/games.json';
+  const REGISTRY_V2_VERSION = 2;
+  /** V2 cache file + schema, deliberately different from the v1 pair (§5.3). */
+  const REGISTRY_CACHE_V2_FILE = 'registry-cache-v2.json';
+  const REGISTRY_CACHE_V2_SCHEMA_VERSION = 2;
+
+  /** Instance resource origin path prefix: `/res/<instanceId>/<resourceToken>/<path>` (§7.1). */
+  const RESOURCE_ORIGIN_PATH = '/res';
+
+  /**
+   * Platform-served wrapper document on the resource origin (§7.5.1).
+   *
+   * The wrapper is static platform HTML with `frame-src`/`child-src` limited to
+   * the resource origin, so a game document cannot navigate itself out of the
+   * package. It embeds the game in a child iframe addressed by `?src=<url>` and
+   * relays bridge messages point-to-point (see runtime/bridge docs).
+   */
+  const RESOURCE_WRAPPER_PATH = '/wrapper';
+  const RESOURCE_WRAPPER_QUERY = 'src';
+
+  /** Default v2 registry: same content repository, `v2/` sub-directory (§5.2). */
+  const DEFAULT_OFFICIAL_REGISTRY_V2_URL = DEFAULT_OFFICIAL_REGISTRY_URL.replace(
+    /\/games\.json$/,
+    `/${REGISTRY_V2_FILE}`,
+  );
+
+  return { BUNDLE_ID, CLIENT_MODULE_ID, MAIN_PANEL_KEY, API_BASE, LOG_PREFIX, RUNTIME_VERSION, SDK_VERSION, PROTOCOL_VERSION, LEGACY_V0_VERSION, LIMITS, TIMING, AGENT_STATES, AGENT_SOURCES, AGENT_PRIORITY, AGENT_LABELS_ZH, AGENT_LABEL_KEYS, GAME_ID_PATTERN, PLAY_SESSION_ID_PATTERN, INSTANCE_ID_PATTERN, NONCE_PATTERN, DSH_SESSION_ID_PATTERN, LAUNCH_MODES, PAUSE_REASONS, SAVE_REASONS, SESSION_OUTCOMES, BUILTIN_GAMES, AGENT_ACK_MAX_AGE_MS, DEFAULT_OFFICIAL_REGISTRY_URL, PACKAGE_FORMATS, DEFAULT_PACKAGE_FORMAT, ASSET_ZIP_V2, PACKAGE_ZIP_EXTENSION, DESCRIPTOR_FILE, ZIP_GAME_MANIFEST_FILE, REGISTRY_V2_FILE, REGISTRY_V2_VERSION, REGISTRY_CACHE_V2_FILE, REGISTRY_CACHE_V2_SCHEMA_VERSION, RESOURCE_ORIGIN_PATH, RESOURCE_WRAPPER_PATH, RESOURCE_WRAPPER_QUERY, DEFAULT_OFFICIAL_REGISTRY_V2_URL };
   })();
 
   // module: packages/shared/src/errors.js
@@ -874,6 +962,31 @@
     INSTALL_DOWNLOAD_TIMEOUT: 'GM-5035',
     INSTALL_IO: 'GM-5036',
     INSTALL_CORRUPT: 'GM-5037',
+    // V1.5 package / archive / catalog / inline semantics (V1.5-CONTRACTS §8.1)
+    ZIP_INVALID: 'GM-4270',
+    ZIP_UNSUPPORTED: 'GM-4271',
+    ZIP_LIMIT: 'GM-4272',
+    ZIP_PATH_INVALID: 'GM-4273',
+    ZIP_PATH_CONFLICT: 'GM-4274',
+    ZIP_HEADER_MISMATCH: 'GM-4275',
+    ZIP_CRC_MISMATCH: 'GM-4276',
+    DESCRIPTOR_INVALID: 'GM-4277',
+    DESCRIPTOR_MISMATCH: 'GM-4278',
+    MANIFEST_CONFLICT: 'GM-4279',
+    ASSET_TYPE_UNSUPPORTED: 'GM-4280',
+    CATALOG_IMMUTABLE: 'GM-4281',
+    FORMAT_POLICY: 'GM-4282',
+    ASSET_INLINE_FORBIDDEN: 'GM-4283',
+    // V1.5 resource credentials (§7.2)
+    RESOURCE_CREDENTIAL_INVALID: 'GM-4010',
+    RESOURCE_CREDENTIAL_EXPIRED: 'GM-4011',
+    ENTRY_CREDENTIAL_CONSUMED: 'GM-4012',
+    ENTRY_LAUNCH_CONSUMED: 'GM-4013',
+    RESOURCE_SCOPE_DENIED: 'GM-4039',
+    // V1.5 platform update adapter (§9; adapter is ours, not a DSH API)
+    UPDATE_TARGET_INVALID: 'GM-4090',
+    UPDATE_ADAPTER_UNAVAILABLE: 'GM-5038',
+    UPDATE_OBSERVE_TIMEOUT: 'GM-5040',
   });
 
   const DEFAULT_MESSAGES = Object.freeze({
@@ -959,6 +1072,31 @@
     [GM.INSTALL_DOWNLOAD_TIMEOUT]: 'Package download timed out',
     [GM.INSTALL_IO]: 'Install write failed',
     [GM.INSTALL_CORRUPT]: 'Installed package is incomplete',
+    // V1.5 archive / descriptor / catalog
+    [GM.ZIP_INVALID]: 'Package archive is not a valid ZIP',
+    [GM.ZIP_UNSUPPORTED]: 'Package archive uses an unsupported ZIP feature',
+    [GM.ZIP_LIMIT]: 'Package archive exceeds an extraction limit',
+    [GM.ZIP_PATH_INVALID]: 'Package archive contains an invalid path',
+    [GM.ZIP_PATH_CONFLICT]: 'Package archive contains conflicting paths',
+    [GM.ZIP_HEADER_MISMATCH]: 'Package archive headers are inconsistent',
+    [GM.ZIP_CRC_MISMATCH]: 'Package archive entry failed its CRC check',
+    [GM.DESCRIPTOR_INVALID]: 'Package descriptor is missing or invalid',
+    [GM.DESCRIPTOR_MISMATCH]: 'Package file manifest does not match the archive',
+    [GM.MANIFEST_CONFLICT]: 'Package declares more than one authoritative manifest',
+    [GM.ASSET_TYPE_UNSUPPORTED]: 'Package contains an unsupported or unsafe asset',
+    [GM.CATALOG_IMMUTABLE]: 'Published package bytes cannot change for this version',
+    [GM.FORMAT_POLICY]: 'Package format change requires a new game version',
+    [GM.ASSET_INLINE_FORBIDDEN]: 'Resource packages cannot use inline scripts, styles, handlers or javascript: URLs',
+    // V1.5 resource credentials
+    [GM.RESOURCE_CREDENTIAL_INVALID]: 'Resource credential is invalid',
+    [GM.RESOURCE_CREDENTIAL_EXPIRED]: 'Resource credential has expired',
+    [GM.ENTRY_CREDENTIAL_CONSUMED]: 'Credential was used in the wrong place',
+    [GM.ENTRY_LAUNCH_CONSUMED]: 'Launch credential has already been used',
+    [GM.RESOURCE_SCOPE_DENIED]: 'Resource does not belong to this instance',
+    // V1.5 update adapter
+    [GM.UPDATE_TARGET_INVALID]: 'Update target is not acceptable to the plugin manager',
+    [GM.UPDATE_ADAPTER_UNAVAILABLE]: 'Plugin update capability is unavailable',
+    [GM.UPDATE_OBSERVE_TIMEOUT]: 'Plugin update state could not be confirmed in time',
   });
 
   /** HTTP status for a GM code (PRD §8.5 mapping). */
@@ -966,6 +1104,13 @@
     const num = Number(String(gmCode).slice(3));
     if (!Number.isFinite(num)) return 500;
     if (gmCode === GM.INTERNAL) return 500;
+    // V1.5 archive/descriptor/catalog/inline semantics (GM-4270..GM-4289) are 422.
+    // Without this explicit window the numeric derivation below would yield 427.
+    if (num >= 4270 && num <= 4289) return 422;
+    // V1.5 resource credentials: S-A1 measured 403 for an expired/released
+    // instance and 410 for a replayed launch URL. The numeric rule would give 401.
+    if (gmCode === GM.RESOURCE_CREDENTIAL_EXPIRED) return 403;
+    if (gmCode === GM.ENTRY_LAUNCH_CONSUMED) return 410;
     // Package/manifest semantics (GM-422x–424x) are 422, size/quota (413x–414x) are 413.
     if (num >= 4220 && num <= 4249) return 422;
     if (num >= 4130 && num <= 4149) return 413;
@@ -1034,6 +1179,34 @@
     E_STORE_PATH_ESCAPE: GM.STORE_PATH_ESCAPE,
     E_COMPAT_SDK: GM.SDK_INCOMPATIBLE,
     E_COMPAT_RUNTIME: GM.RUNTIME_INCOMPATIBLE,
+    // V1.5 archive / descriptor / catalog / inline (V1.5-CONTRACTS §8.2)
+    E_ZIP_STRUCTURE: GM.ZIP_INVALID,
+    E_ZIP_UNSUPPORTED_FEATURE: GM.ZIP_UNSUPPORTED,
+    E_ZIP_LIMIT_EXCEEDED: GM.ZIP_LIMIT,
+    E_ZIP_PATH_INVALID: GM.ZIP_PATH_INVALID,
+    E_ZIP_PATH_CONFLICT: GM.ZIP_PATH_CONFLICT,
+    E_ZIP_HEADER_MISMATCH: GM.ZIP_HEADER_MISMATCH,
+    E_ZIP_CRC_MISMATCH: GM.ZIP_CRC_MISMATCH,
+    E_DESCRIPTOR_INVALID: GM.DESCRIPTOR_INVALID,
+    E_DESCRIPTOR_MISSING: GM.DESCRIPTOR_INVALID,
+    E_DESCRIPTOR_MISMATCH: GM.DESCRIPTOR_MISMATCH,
+    E_MANIFEST_CONFLICT: GM.MANIFEST_CONFLICT,
+    E_ASSET_TYPE_UNSUPPORTED: GM.ASSET_TYPE_UNSUPPORTED,
+    E_CATALOG_IMMUTABLE: GM.CATALOG_IMMUTABLE,
+    E_FORMAT_POLICY: GM.FORMAT_POLICY,
+    E_ASSET_INLINE_FORBIDDEN: GM.ASSET_INLINE_FORBIDDEN,
+    // V1.5 resource credentials (§7.2)
+    E_RESOURCE_CREDENTIAL_INVALID: GM.RESOURCE_CREDENTIAL_INVALID,
+    E_RESOURCE_CREDENTIAL_EXPIRED: GM.RESOURCE_CREDENTIAL_EXPIRED,
+    E_ENTRY_CREDENTIAL_CONSUMED: GM.ENTRY_CREDENTIAL_CONSUMED,
+    E_ENTRY_LAUNCH_CONSUMED: GM.ENTRY_LAUNCH_CONSUMED,
+    E_RESOURCE_SCOPE_DENIED: GM.RESOURCE_SCOPE_DENIED,
+    // V1.5 registry v2: a bad v2 index means the catalog is unavailable.
+    E_REGISTRY_V2_INVALID: GM.REGISTRY_UNAVAILABLE,
+    // V1.5 update adapter (§9)
+    E_UPDATE_TARGET_INVALID: GM.UPDATE_TARGET_INVALID,
+    E_UPDATE_ADAPTER_UNAVAILABLE: GM.UPDATE_ADAPTER_UNAVAILABLE,
+    E_UPDATE_OBSERVE_TIMEOUT: GM.UPDATE_OBSERVE_TIMEOUT,
   });
 
   /** Translate an internal `E_*` code to its public `GM-*` code (fallback: GM-5000). */
@@ -1300,6 +1473,115 @@
   }
 
   return { BRIDGE_VERSION, MAX_BRIDGE_MESSAGE_BYTES, MAX_BRIDGE_DEPTH, MAX_INFLIGHT_REQUESTS, MAX_INVALID_MESSAGES_PER_10S, MAX_MESSAGES_PER_SECOND, METHODS, EVENTS, RUNTIME_TO_GAME_METHODS, GAME_TO_RUNTIME_METHODS, isPlainObject, randomHex32, createInstanceId, createNonce, jsonByteLength, byteLength, cloneJsonValue, isValidStorageKey, protocolError, createRequest, createResponse, createErrorResponse, createEvent, envelopeByteSize, validateBridgeMessage, parseLaunchQuery, createRuntimeInfo };
+  })();
+
+  // module: packages/sdk/src/asset-url.js
+  __mods["packages/sdk/src/asset-url.js"] = (function () {
+  /**
+   * SDK-side instance resource URL builder (V1.5 contract §1.10 / §7.6).
+   *
+   * Why this is a small local module instead of importing the shared
+   * `resources.js` implementation: the SDK is inlined into single-file game HTML
+   * and the package validator scans that HTML text for external references and
+   * network APIs. Inlining the full shared validator would trip those heuristics
+   * on unrelated code text and make every game fail validation. The
+   * normalization rules here are the request-side subset of contract §4.2 and
+   * MUST stay aligned with `packages/shared/src/resources.js#assetUrl`; the
+   * parity is pinned by `tests/v1.5-runtime-resources.test.js`.
+   *
+   * The base is `<origin>/res/<instanceId>/<resourceToken>`; the returned value
+   * is an absolute URL string. This module is pure string manipulation on
+   * purpose: no browser globals, no network-capable text in the inlined bundle.
+   */
+
+  const LOOPBACK_BASE_RE = /^http:\/\/(127(?:\.\d{1,3}){3}|\[::1\]):(\d{1,5})\/res\/([a-f0-9]{32})\/([a-f0-9]{32})\/?$/;
+  const CONTROL_CHARS_RE = /[\u0000-\u001F\u007F]/;
+  const DRIVE_LETTER_RE = /^[A-Za-z]:/;
+  const ENCODED_TRAVERSAL_RE = /%(?:2e|2f|5c|00)/i;
+  const WINDOWS_RESERVED = new Set([
+    'con',
+    'prn',
+    'aux',
+    'nul',
+    'com1',
+    'com2',
+    'com3',
+    'com4',
+    'com5',
+    'com6',
+    'com7',
+    'com8',
+    'com9',
+    'lpt1',
+    'lpt2',
+    'lpt3',
+    'lpt4',
+    'lpt5',
+    'lpt6',
+    'lpt7',
+    'lpt8',
+    'lpt9',
+  ]);
+  const NON_SERVABLE = new Set(['dsh-package.json', 'game.json']);
+  const MAX_PATH_CHARS = 240;
+  const MAX_PATH_DEPTH = 12;
+
+  /** Validate + canonicalize a resource base; returns the base or `null`. */
+  function normalizeResourceBase(resourceBase) {
+    if (typeof resourceBase !== 'string' || resourceBase.length === 0 || resourceBase.length > 300) return null;
+    if (CONTROL_CHARS_RE.test(resourceBase) || resourceBase.includes(' ')) return null;
+    if (!LOOPBACK_BASE_RE.test(resourceBase)) return null;
+    return resourceBase.endsWith('/') ? resourceBase.slice(0, -1) : resourceBase;
+  }
+
+  /**
+   * Normalize a package-relative path (request side of contract §4.2).
+   * Returns `null` for anything that is not a safe, in-package path.
+   */
+  function normalizeAssetPath(relativePath) {
+    if (typeof relativePath !== 'string' || relativePath.length === 0) return null;
+    if (relativePath.length > MAX_PATH_CHARS * 4) return null;
+    if (CONTROL_CHARS_RE.test(relativePath) || relativePath.includes('\\')) return null;
+    if (relativePath.includes('?') || relativePath.includes('#')) return null;
+    if (relativePath.startsWith('/') || relativePath.startsWith('//')) return null;
+    if (DRIVE_LETTER_RE.test(relativePath)) return null;
+    if (ENCODED_TRAVERSAL_RE.test(relativePath)) return null;
+
+    const segments = relativePath.split('/');
+    const stack = [];
+    for (const segment of segments) {
+      if (segment.length === 0) return null;
+      if (segment === '.') continue;
+      if (segment === '..') {
+        if (stack.length === 0) return null;
+        stack.pop();
+        continue;
+      }
+      if (/[ .]$/.test(segment)) return null;
+      const stem = segment.split('.')[0].toLowerCase();
+      if (WINDOWS_RESERVED.has(stem)) return null;
+      stack.push(segment);
+    }
+    if (stack.length === 0 || stack.length > MAX_PATH_DEPTH) return null;
+    const normalized = stack.join('/');
+    if (normalized.length > MAX_PATH_CHARS) return null;
+    if (NON_SERVABLE.has(normalized)) return null;
+    return normalized;
+  }
+
+  /**
+   * Build `${resourceBase}/${normalize(relativePath)}`.
+   * @returns {{ok:true, value:string} | {ok:false}}
+   */
+  function buildResourceHref(resourceBase, relativePath) {
+    const base = normalizeResourceBase(resourceBase);
+    if (!base) return { ok: false };
+    const normalized = normalizeAssetPath(relativePath);
+    if (!normalized) return { ok: false };
+    return { ok: true, value: `${base}/${normalized}` };
+  }
+
+  return { normalizeResourceBase, normalizeAssetPath, buildResourceHref };
   })();
 
   // module: packages/sdk/src/errors.js
@@ -2097,10 +2379,12 @@
 
   // module: packages/sdk/src/sdk.js
   __mods["packages/sdk/src/sdk.js"] = (function () {
+  const PACKAGE_FORMATS = __mods["packages/shared/src/constants.js"].PACKAGE_FORMATS;
   const PROTOCOL_VERSION = __mods["packages/shared/src/constants.js"].PROTOCOL_VERSION;
   const SDK_VERSION = __mods["packages/shared/src/constants.js"].SDK_VERSION;
   const GM = __mods["packages/shared/src/errors.js"].GM;
   const METHODS = __mods["packages/shared/src/protocol.js"].METHODS;
+  const buildResourceHref = __mods["packages/sdk/src/asset-url.js"].buildResourceHref;
   const createBridgeClient = __mods["packages/sdk/src/bridge-client.js"].createBridgeClient;
   const SDK_METHOD_TIMEOUTS = __mods["packages/sdk/src/bridge-client.js"].SDK_METHOD_TIMEOUTS;
   const GameErrorImpl = __mods["packages/sdk/src/errors.js"].GameError;
@@ -2145,11 +2429,15 @@
       capabilities: Object.freeze([]),
       launchMode: 'start',
       viewport: Object.freeze({ width: 0, height: 0, dpr: 1 }),
+      // V1.5 (contract §1.10/§7.6): instance resource prefix + package format.
+      // Both stay null on legacy Runtime builds / html-v1 packages.
+      resourceBase: null,
+      packageFormat: null,
       ready: false,
     };
   }
 
-  function createRuntimeView(state) {
+  function createRuntimeView(state, assetUrl) {
     const view = {};
     for (const key of Object.keys(state)) {
       Object.defineProperty(view, key, {
@@ -2159,6 +2447,10 @@
         },
       });
     }
+    Object.defineProperty(view, 'assetUrl', {
+      enumerable: true,
+      value: assetUrl,
+    });
     return Object.freeze(view);
   }
 
@@ -2215,13 +2507,36 @@
 
     const hub = createEventHub();
     const runtimeState = createRuntimeState();
-    const runtimeView = createRuntimeView(runtimeState);
+    const assetUrl = createAssetPathBuilder();
+    const runtimeView = createRuntimeView(runtimeState, assetUrl);
 
     let readyPromise = null;
     let backfillPromise = null;
     let queuedWrites = 0;
     let writeTail = Promise.resolve();
     const MAX_QUEUED_WRITES = 32;
+
+    /**
+     * `game.runtime.assetUrl` (contract §1.10/§7.6).
+     *
+     *   - html-v1 packages (or legacy Runtimes) have no instance resource route:
+     *     `GM-4043` (same code the asset service uses for a missing asset);
+     *   - a path that escapes the instance resource prefix is `GM-4039`;
+     *   - otherwise `${resourceBase}/${normalize(relativePath)}` using the shared
+     *     `assetUrl` implementation (single source of truth for path rules).
+     */
+    function createAssetPathBuilder() {
+      return function assetPathFor(relativePath) {
+        if (runtimeState.packageFormat === 'html-v1' || typeof runtimeState.resourceBase !== 'string') {
+          throw createGameError(GM.ASSET_NOT_FOUND, 'This game has no instance resource route (html-v1 package)');
+        }
+        const built = buildResourceHref(runtimeState.resourceBase, relativePath);
+        if (!built.ok) {
+          throw createGameError(GM.RESOURCE_SCOPE_DENIED, 'assetUrl path is outside this game package');
+        }
+        return built.value;
+      };
+    }
 
     function applyViewport(value) {
       runtimeState.viewport = normalizeViewport(value);
@@ -2239,6 +2554,20 @@
       if (Array.isArray(init.capabilities)) runtimeState.capabilities = Object.freeze(init.capabilities.slice());
       if (init.launchMode === 'start' || init.launchMode === 'resume-paused') runtimeState.launchMode = init.launchMode;
       if (init.viewport) applyViewport(init.viewport);
+      applyResourceFields(init);
+    }
+
+    /**
+     * V1.5 resource fields: the Runtime injects the instance resource prefix so
+     * ZIP games can build asset URLs. Old SDKs ignore the extra init fields and
+     * old Runtime builds simply never send them (`resourceBase` stays null).
+     */
+    function applyResourceFields(source) {
+      if (!source || typeof source !== 'object') return;
+      if (typeof source.resourceBase === 'string' && source.resourceBase.length > 0) {
+        runtimeState.resourceBase = source.resourceBase;
+      }
+      if (PACKAGE_FORMATS.includes(source.packageFormat)) runtimeState.packageFormat = source.packageFormat;
     }
 
     function applyReadyResult(result) {
@@ -2252,6 +2581,7 @@
       if (typeof result.reducedMotion === 'boolean') runtimeState.reducedMotion = result.reducedMotion;
       if (Array.isArray(result.capabilities)) runtimeState.capabilities = Object.freeze(result.capabilities.slice());
       if (result.viewport) applyViewport(result.viewport);
+      applyResourceFields(result);
       if (typeof result.protocolVersion === 'number') runtimeState.protocolVersion = result.protocolVersion;
       runtimeState.ready = true;
     }

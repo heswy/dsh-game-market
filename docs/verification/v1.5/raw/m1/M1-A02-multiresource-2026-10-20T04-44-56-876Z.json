@@ -1,0 +1,1605 @@
+{
+  "id": "M1-A02-multiresource",
+  "title": "A02: real asset-zip-v2 multi-resource load + offline play in the real DSH page",
+  "generatedAt": "2026-10-20T04:44:56.876Z",
+  "command": "node scripts/verification/v1.5/m1/m1-a02-multiresource.mjs",
+  "environment": {
+    "dsh": {
+      "dshPackage": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.2"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.2"
+      },
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.2"
+      },
+      "asarExtractedAt": "2026-10-20T02:55:54.473Z"
+    },
+    "chrome": "Google Chrome headless via CDP",
+    "ports": {
+      "bootstrap": 58280,
+      "host": 58281,
+      "static": 58331,
+      "sink": 58332,
+      "chrome": 9506
+    },
+    "staticOrigin": "http://127.0.0.1:58331",
+    "sinkOrigin": "http://127.0.0.1:58332"
+  },
+  "commands": [],
+  "startedAt": "2026-10-20T04:44:56.876Z",
+  "finishedAt": "2026-10-20T04:44:56.876Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "dsh-page-loads-and-host-api-answers",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "health": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "data": {
+              "ok": true,
+              "version": "1.2.0",
+              "hostEpoch": "he_7f42273d6c0de37e",
+              "devMode": true,
+              "storage": {
+                "ok": true,
+                "root": "/tmp/dsh-v15/home-probe-m1-a02/storages/dsh-game-market",
+                "readOnly": false
+              },
+              "uptimeMs": 3090,
+              "registry": {
+                "state": "seed",
+                "sourceUrl": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-asset-packages/registry/games.json",
+                "fetchedAt": "2026-10-20T04:44:35.264Z",
+                "truncated": false,
+                "count": 3,
+                "lastError": null,
+                "generation": null,
+                "registryVersion": 1,
+                "activeSource": "seed",
+                "fallback": true,
+                "official": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v2",
+                  "registryVersion": 2
+                },
+                "officialV2": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v2",
+                  "registryVersion": 2
+                },
+                "officialV1": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v1",
+                  "registryVersion": 1
+                },
+                "seed": {
+                  "state": "fresh",
+                  "count": 3,
+                  "sourceUrl": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-asset-packages/registry/games.json"
+                }
+              },
+              "installations": {
+                "count": 0,
+                "updateAvailable": 0
+              },
+              "sessions": {
+                "running": 0,
+                "staleRunningPreserved": true
+              },
+              "games": {
+                "builtinCount": 1,
+                "issues": []
+              }
+            },
+            "requestId": "req_99a21a5f0271ad99",
+            "serverTime": "2026-10-20T04:44:38.252Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "zip-install-through-host-api-succeeds",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "gameId": "m1-a02-multiresource",
+        "version": "1.0.0",
+        "changed": true,
+        "installation": {
+          "format": "asset-zip-v2",
+          "entry": "index.html",
+          "fileCount": 9,
+          "fileManifestDigest": "452cb8d8…<redacted-len64>",
+          "sizeBytes": 103001
+        }
+      }
+    },
+    {
+      "name": "launch-info-contract-v2-fields",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "instanceIdShape": true,
+        "nonceShape": true,
+        "resourceOrigin": "http://127.0.0.1:60688",
+        "resourceBase": "http://127.0.0.1:60688/res/<credential>/<credential>",
+        "resourceTtlMs": 600000,
+        "entryResourceUrl": "http://127.0.0.1:60688/res/<instance>/<token>/index.html",
+        "wrapperUrl": "http://127.0.0.1:60688/wrapper?src=<redacted-src>",
+        "wrapperResourceUrl": "http://127.0.0.1:60688/wrapper?src=<redacted-src>",
+        "package": {
+          "format": "asset-zip-v2",
+          "entry": "index.html",
+          "filesDigest": "452cb8d8…<redacted-len64>"
+        },
+        "entryUrlQuery": {
+          "launch": true,
+          "pathUnderRes": true
+        }
+      }
+    },
+    {
+      "name": "wrapper-document-contract",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "contentType": "text/html; charset=utf-8",
+        "csp": "default-src 'none'; frame-src http://127.0.0.1:60688; child-src http://127.0.0.1:60688; script-src 'nonce-<credential>'; style-src 'unsafe-inline'; img-src 'none'; media-src 'none'; font-src 'none'; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58281",
+        "srcIsLaunchUrl": true,
+        "srcUnderResourceBase": true,
+        "innerIframeSandbox": "allow-scripts",
+        "innerIframeHasAllowSameOrigin": false,
+        "relayScriptNonce": true,
+        "frameAncestors": "http://127.0.0.1:58281"
+      }
+    },
+    {
+      "name": "wrapper-csp-has-frame-ancestors-without-bare-wildcard",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "frameAncestors": "http://127.0.0.1:58281"
+      }
+    },
+    {
+      "name": "wrapper-csp-frame-ancestors-no-wildcard-at-all",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "frameAncestors": "http://127.0.0.1:58281",
+        "note": "Lead hard assertion 2026-10-20: no wildcard; contract §7.5.1 wants the exact DSH web origin"
+      }
+    },
+    {
+      "name": "runtime-wrapper-iframe-has-no-sandbox-attribute",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "frameInfo": {
+          "sandbox": null,
+          "allow": "autoplay",
+          "referrerpolicy": "no-referrer",
+          "src": "http://127.0.0.1:60688/wrapper?src=<redacted-src>"
+        }
+      }
+    },
+    {
+      "name": "wrapper-layer-real-origin-inner-game-sandbox",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "origin": "http://127.0.0.1:60688",
+        "windowOrigin": "http://127.0.0.1:60688",
+        "href": "http://127.0.0.1:60688/wrapper?src=<redacted-src>",
+        "gameFrames": 1,
+        "innerSandbox": "allow-scripts",
+        "innerAllow": "autoplay",
+        "innerReferrerPolicy": "no-referrer",
+        "frameId": "445AF4B124A0A2CC7F44FB4F6763A427",
+        "frameUrl": "http://127.0.0.1:60688/wrapper?src=<redacted-src>"
+      }
+    },
+    {
+      "name": "runtime-renders-game-document-in-wrapper",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sessionId": "35B8965C59CE200624C0AEB57FA6D5E3",
+        "snapshot": {
+          "origin": "null",
+          "title": "M1 Multi-Resource Probe",
+          "href": "http://127.0.0.1:60688/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+          "hasHud": true,
+          "hasBoard": true,
+          "chromeError": false,
+          "game": {
+            "phase": "playing",
+            "ticks": 122,
+            "score": 122,
+            "resources": {
+              "css": {
+                "sheets": 1,
+                "bodyBackground": "rgb(13, 17, 23)",
+                "hudColor": "rgb(255, 204, 102)",
+                "applied": true
+              },
+              "json": {
+                "status1": 200,
+                "status2": 200,
+                "levelId": "level-01",
+                "waves": 5,
+                "repeated": true
+              },
+              "assetUrl": {
+                "value": "http://127.0.0.1:60688/res/<instance>/<token>/data/level.json",
+                "status": 200,
+                "ok": true
+              },
+              "image": {
+                "complete": true,
+                "naturalWidth": 64,
+                "naturalHeight": 64,
+                "canvasOpaquePixels": 1536,
+                "canvasError": null
+              },
+              "audio": {
+                "readyState": 4,
+                "duration": 0.2,
+                "fetchedBytes": 3244,
+                "decodedDuration": 0.2,
+                "decodeError": null
+              }
+            },
+            "bridge": {
+              "ready": {
+                "ok": true,
+                "sdkVersion": "1.0.0",
+                "runtimeVersion": "1.0.0",
+                "protocolVersion": 1,
+                "capabilities": [
+                  "storage",
+                  "score"
+                ],
+                "resourceBase": "http://127.0.0.1:60688/res/<credential>/<credential>",
+                "packageFormat": "asset-zip-v2"
+              },
+              "storageSave": {
+                "ok": true,
+                "bytes": 21
+              }
+            },
+            "errors": []
+          }
+        }
+      }
+    },
+    {
+      "name": "runtime-no-unexpected-navigation-revocation",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "events": [],
+        "allEvents": [
+          {
+            "at": 1792471478395,
+            "type": "state",
+            "state": "loading",
+            "error": null
+          },
+          {
+            "at": 1792471478395,
+            "type": "save-status",
+            "error": null
+          },
+          {
+            "at": 1792471478455,
+            "type": "state",
+            "state": "ready",
+            "error": null
+          },
+          {
+            "at": 1792471478455,
+            "type": "state",
+            "state": "playing",
+            "error": null
+          },
+          {
+            "at": 1792471479044,
+            "type": "save-status",
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "game-document-renders-not-chrome-error-2",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "origin": "null",
+        "title": "M1 Multi-Resource Probe",
+        "hasHud": true,
+        "hasBoard": true,
+        "chromeError": false
+      }
+    },
+    {
+      "name": "game-esm-static-import-resolved",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "esmStaticImport": true
+      }
+    },
+    {
+      "name": "game-css-applied-computed-style",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sheets": 1,
+        "bodyBackground": "rgb(13, 17, 23)",
+        "hudColor": "rgb(255, 204, 102)",
+        "applied": true
+      }
+    },
+    {
+      "name": "game-json-fetched-twice-and-parsed",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status1": 200,
+        "status2": 200,
+        "levelId": "level-01",
+        "waves": 5,
+        "repeated": true
+      }
+    },
+    {
+      "name": "game-sdk-asset-url-works",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "value": "http://127.0.0.1:60688/res/<instance>/<token>/data/level.json",
+        "status": 200,
+        "ok": true
+      }
+    },
+    {
+      "name": "game-image-decoded-and-canvas-readable",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "complete": true,
+        "naturalWidth": 64,
+        "naturalHeight": 64,
+        "canvasOpaquePixels": 1536,
+        "canvasError": null
+      }
+    },
+    {
+      "name": "game-audio-ready-and-decodable",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "readyState": 4,
+        "duration": 0.2,
+        "fetchedBytes": 3244,
+        "decodedDuration": 0.2,
+        "decodeError": null
+      }
+    },
+    {
+      "name": "game-play-loop-advances-ticks",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ticks": 122,
+        "score": 122
+      }
+    },
+    {
+      "name": "game-storage-save-through-bridge",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ready": {
+          "ok": true,
+          "sdkVersion": "1.0.0",
+          "runtimeVersion": "1.0.0",
+          "protocolVersion": 1,
+          "capabilities": [
+            "storage",
+            "score"
+          ],
+          "resourceBase": "http://127.0.0.1:60688/res/<credential>/<credential>",
+          "packageFormat": "asset-zip-v2"
+        },
+        "storageSave": {
+          "ok": true,
+          "bytes": 21
+        }
+      }
+    },
+    {
+      "name": "game-sdk-handshake-ready",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "sdkVersion": "1.0.0",
+        "runtimeVersion": "1.0.0",
+        "protocolVersion": 1,
+        "capabilities": [
+          "storage",
+          "score"
+        ],
+        "resourceBase": "http://127.0.0.1:60688/res/<credential>/<credential>",
+        "packageFormat": "asset-zip-v2"
+      }
+    },
+    {
+      "name": "a02-round1.every-declared-resource-requested-200",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "missing": []
+      }
+    },
+    {
+      "name": "a02-round1.no-404-and-no-error-status",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "badStatuses": []
+      }
+    },
+    {
+      "name": "a02-round1.exact-mime-types",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "wrongMime": []
+      }
+    },
+    {
+      "name": "a02-round1.resource-response-headers",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "missingHeaders": []
+      }
+    },
+    {
+      "name": "a02-round1.json-level-fetched-twice",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "count": 3
+      }
+    },
+    {
+      "name": "a02-round1.entry-document-carries-csp",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "csp": [
+          "default-src 'none'; script-src http://127.0.0.1:60688; style-src http://127.0.0.1:60688; img-src http://127.0.0.1:60688 data:; media-src http://127.0.0.1:60688; font-src http://127.0.0.1:60688; connect-src http://127.0.0.1:60688; frame-src 'none'; child-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58281 http://127.0.0.1:60688"
+        ]
+      }
+    },
+    {
+      "name": "a02-round1.subresources-do-not-repeat-csp",
+      "ok": true,
+      "required": true,
+      "detail": {}
+    },
+    {
+      "name": "launch-credential-consumed-exactly-once-by-runtime",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "count": 1,
+        "statuses": [
+          200
+        ]
+      }
+    },
+    {
+      "name": "game-entry-document-200-after-runtime-load",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "indexRequests": [
+          {
+            "sessionId": null,
+            "method": "GET",
+            "url": "http://127.0.0.1:60688/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+            "resourceType": "Document",
+            "status": 200,
+            "mimeType": "text/html",
+            "failed": false,
+            "errorText": null,
+            "blockedReason": null,
+            "requestOrigin": null,
+            "credentialKind": "entry-launch",
+            "responseHeaders": {
+              "contentType": "text/html; charset=utf-8",
+              "accessControlAllowOrigin": "*",
+              "xContentTypeOptions": "nosniff",
+              "cacheControl": "no-store",
+              "referrerPolicy": "no-referrer",
+              "contentSecurityPolicy": "default-src 'none'; script-src http://127.0.0.1:60688; style-src http://127.0.0.1:60688; img-src http://127.0.0.1:60688 data:; media-src http://127.0.0.1:60688; font-src http://127.0.0.1:60688; connect-src http://127.0.0.1:60688; frame-src 'none'; child-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58281 http://127.0.0.1:60688"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "wrapper-response-has-frame-src-csp",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sessionId": null,
+        "method": "GET",
+        "url": "http://127.0.0.1:60688/wrapper?src=<redacted-src>",
+        "resourceType": "Document",
+        "status": 200,
+        "mimeType": "text/html",
+        "failed": false,
+        "errorText": null,
+        "blockedReason": null,
+        "requestOrigin": null,
+        "credentialKind": "wrapper-document",
+        "responseHeaders": {
+          "contentType": "text/html; charset=utf-8",
+          "accessControlAllowOrigin": "*",
+          "xContentTypeOptions": "nosniff",
+          "cacheControl": "no-store",
+          "referrerPolicy": "no-referrer",
+          "contentSecurityPolicy": "default-src 'none'; frame-src http://127.0.0.1:60688; child-src http://127.0.0.1:60688; script-src 'nonce-<credential>'; style-src 'unsafe-inline'; img-src 'none'; media-src 'none'; font-src 'none'; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58281"
+        },
+        "srcParam": "http://127.0.0.1:60688/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>"
+      }
+    },
+    {
+      "name": "game-origin-is-opaque",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "origin": "null"
+      }
+    },
+    {
+      "name": "no-csp-violation-logs",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "no-framing-frame-ancestors-violation",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "game-document-network-200-with-rendered-dom",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "title": "M1 Multi-Resource Probe",
+        "chromeError": false
+      }
+    },
+    {
+      "name": "launch-url-replay-is-410",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 410
+      }
+    },
+    {
+      "name": "resource-credential-entry-url-is-repeatable-200",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "descriptor-and-game-json-not-served",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "gameJson": 403,
+        "descriptor": 403,
+        "expectation": "contract §7.3: reserved paths -> GM-4039 -> HTTP 403"
+      }
+    },
+    {
+      "name": "resource-methods-and-traversal-rejected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "head": 200,
+        "post": 405,
+        "traversal": 403
+      }
+    },
+    {
+      "name": "offline-gate-reload-renders-and-plays",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reloadResult": {
+          "ok": true
+        },
+        "reloaded": {
+          "sessionId": "A1E8C848322B69165F8C9E9133DB0EF0",
+          "snapshot": {
+            "title": "M1 Multi-Resource Probe",
+            "phase": "playing",
+            "ticks": 1
+          }
+        },
+        "blockedRequests": [],
+        "continuedRequests": 10,
+        "wrapperDocsAfterReload": [
+          "http://127.0.0.1:60688/wrapper?src=<redacted-src>"
+        ],
+        "wrapperSrcFlags": [
+          {
+            "hasLaunch": false,
+            "underResourceBase": true
+          }
+        ],
+        "launchReplayedAfterReload": false,
+        "resourceRequestStatuses": [
+          {
+            "rel": null,
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "index.html",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "styles/game.css",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "dsh-sdk.js",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "scripts/main.mjs",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "assets/ship.png",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "scripts/logic.mjs",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "assets/pickup.wav",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "data/level.json",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "data/level.json",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "data/level.json",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "assets/pickup.wav",
+            "status": 200,
+            "failed": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "offline-gate-reload-loads-every-resource-from-resource-origin",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reloadResult": {
+          "ok": true
+        },
+        "reloaded": {
+          "sessionId": "A1E8C848322B69165F8C9E9133DB0EF0",
+          "snapshot": {
+            "title": "M1 Multi-Resource Probe",
+            "phase": "playing",
+            "ticks": 1
+          }
+        },
+        "blockedRequests": [],
+        "continuedRequests": 10,
+        "wrapperDocsAfterReload": [
+          "http://127.0.0.1:60688/wrapper?src=<redacted-src>"
+        ],
+        "wrapperSrcFlags": [
+          {
+            "hasLaunch": false,
+            "underResourceBase": true
+          }
+        ],
+        "launchReplayedAfterReload": false,
+        "resourceRequestStatuses": [
+          {
+            "rel": null,
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "index.html",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "styles/game.css",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "dsh-sdk.js",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "scripts/main.mjs",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "assets/ship.png",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "scripts/logic.mjs",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "assets/pickup.wav",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "data/level.json",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "data/level.json",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "data/level.json",
+            "status": 200,
+            "failed": false
+          },
+          {
+            "rel": "assets/pickup.wav",
+            "status": 200,
+            "failed": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "offline-gate-blocked-zero-non-resource-requests",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "reload-uses-resource-credential-url-not-launch-url",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "hasLaunch": false,
+          "underResourceBase": true
+        }
+      ]
+    },
+    {
+      "name": "offline-play-ticks-advance-with-network-disabled",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "beforeOffline": 1,
+        "afterOffline": 14,
+        "sessionId": "A1E8C848322B69165F8C9E9133DB0EF0"
+      }
+    }
+  ],
+  "scenarios": {
+    "install": {
+      "status": 200,
+      "gameId": "m1-a02-multiresource",
+      "version": "1.0.0",
+      "changed": true,
+      "installation": {
+        "format": "asset-zip-v2",
+        "entry": "index.html",
+        "fileCount": 9,
+        "fileManifestDigest": "452cb8d8…<redacted-len64>",
+        "sizeBytes": 103001
+      }
+    },
+    "launchInfo": {
+      "instanceIdShape": true,
+      "nonceShape": true,
+      "resourceOrigin": "http://127.0.0.1:60688",
+      "resourceBase": "http://127.0.0.1:60688/res/<credential>/<credential>",
+      "resourceTtlMs": 600000,
+      "entryResourceUrl": "http://127.0.0.1:60688/res/<instance>/<token>/index.html",
+      "wrapperUrl": "http://127.0.0.1:60688/wrapper?src=<redacted-src>",
+      "wrapperResourceUrl": "http://127.0.0.1:60688/wrapper?src=<redacted-src>",
+      "package": {
+        "format": "asset-zip-v2",
+        "entry": "index.html",
+        "filesDigest": "452cb8d8…<redacted-len64>"
+      },
+      "entryUrlQuery": {
+        "launch": true,
+        "pathUnderRes": true
+      }
+    },
+    "wrapper": {
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; frame-src http://127.0.0.1:60688; child-src http://127.0.0.1:60688; script-src 'nonce-<credential>'; style-src 'unsafe-inline'; img-src 'none'; media-src 'none'; font-src 'none'; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58281",
+      "srcIsLaunchUrl": true,
+      "srcUnderResourceBase": true,
+      "innerIframeSandbox": "allow-scripts",
+      "innerIframeHasAllowSameOrigin": false,
+      "relayScriptNonce": true,
+      "frameAncestors": "http://127.0.0.1:58281"
+    },
+    "runtime": {
+      "wrapperSessionAttached": false,
+      "frameInfo": {
+        "sandbox": null,
+        "allow": "autoplay",
+        "referrerpolicy": "no-referrer",
+        "src": "http://127.0.0.1:60688/wrapper?src=<redacted-src>"
+      },
+      "rendered": {
+        "sessionId": "35B8965C59CE200624C0AEB57FA6D5E3",
+        "snapshot": {
+          "origin": "null",
+          "title": "M1 Multi-Resource Probe",
+          "href": "http://127.0.0.1:60688/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+          "hasHud": true,
+          "hasBoard": true,
+          "chromeError": false,
+          "game": {
+            "phase": "playing",
+            "ticks": 122,
+            "score": 122,
+            "resources": {
+              "css": {
+                "sheets": 1,
+                "bodyBackground": "rgb(13, 17, 23)",
+                "hudColor": "rgb(255, 204, 102)",
+                "applied": true
+              },
+              "json": {
+                "status1": 200,
+                "status2": 200,
+                "levelId": "level-01",
+                "waves": 5,
+                "repeated": true
+              },
+              "assetUrl": {
+                "value": "http://127.0.0.1:60688/res/<instance>/<token>/data/level.json",
+                "status": 200,
+                "ok": true
+              },
+              "image": {
+                "complete": true,
+                "naturalWidth": 64,
+                "naturalHeight": 64,
+                "canvasOpaquePixels": 1536,
+                "canvasError": null
+              },
+              "audio": {
+                "readyState": 4,
+                "duration": 0.2,
+                "fetchedBytes": 3244,
+                "decodedDuration": 0.2,
+                "decodeError": null
+              }
+            },
+            "bridge": {
+              "ready": {
+                "ok": true,
+                "sdkVersion": "1.0.0",
+                "runtimeVersion": "1.0.0",
+                "protocolVersion": 1,
+                "capabilities": [
+                  "storage",
+                  "score"
+                ],
+                "resourceBase": "http://127.0.0.1:60688/res/<credential>/<credential>",
+                "packageFormat": "asset-zip-v2"
+              },
+              "storageSave": {
+                "ok": true,
+                "bytes": 21
+              }
+            },
+            "errors": []
+          }
+        }
+      },
+      "wrapperLayer": {
+        "origin": "http://127.0.0.1:60688",
+        "windowOrigin": "http://127.0.0.1:60688",
+        "href": "http://127.0.0.1:60688/wrapper?src=<redacted-src>",
+        "gameFrames": 1,
+        "innerSandbox": "allow-scripts",
+        "innerAllow": "autoplay",
+        "innerReferrerPolicy": "no-referrer",
+        "frameId": "445AF4B124A0A2CC7F44FB4F6763A427",
+        "frameUrl": "http://127.0.0.1:60688/wrapper?src=<redacted-src>"
+      },
+      "wrapperFrame": {
+        "frameFound": true,
+        "frameId": "445AF4B124A0A2CC7F44FB4F6763A427",
+        "frameUrl": "http://127.0.0.1:60688/wrapper?src=<redacted-src>",
+        "value": {
+          "href": "http://127.0.0.1:60688/wrapper?src=<redacted-src>",
+          "origin": "http://127.0.0.1:60688",
+          "windowOrigin": "http://127.0.0.1:60688"
+        }
+      },
+      "frameTree": [
+        {
+          "depth": 0,
+          "id": "8ED07FC1F8C5190BF2F28D332FAF951C",
+          "url": "http://127.0.0.1:58281/",
+          "securityOrigin": "http://127.0.0.1:58281",
+          "mimeType": "text/html"
+        },
+        {
+          "depth": 1,
+          "id": "445AF4B124A0A2CC7F44FB4F6763A427",
+          "url": "http://127.0.0.1:60688/wrapper?src=<redacted-src>",
+          "securityOrigin": "http://127.0.0.1:60688",
+          "mimeType": "text/html"
+        }
+      ]
+    },
+    "runtimeEvents": [
+      {
+        "at": 1792471478395,
+        "type": "state",
+        "state": "loading",
+        "error": null
+      },
+      {
+        "at": 1792471478395,
+        "type": "save-status",
+        "error": null
+      },
+      {
+        "at": 1792471478455,
+        "type": "state",
+        "state": "ready",
+        "error": null
+      },
+      {
+        "at": 1792471478455,
+        "type": "state",
+        "state": "playing",
+        "error": null
+      },
+      {
+        "at": 1792471479044,
+        "type": "save-status",
+        "error": null
+      }
+    ],
+    "phaseState": {
+      "phase": "playing",
+      "ticks": 122,
+      "bridge": {
+        "ready": {
+          "ok": true,
+          "sdkVersion": "1.0.0",
+          "runtimeVersion": "1.0.0",
+          "protocolVersion": 1,
+          "capabilities": [
+            "storage",
+            "score"
+          ],
+          "resourceBase": "http://127.0.0.1:60688/res/<credential>/<credential>",
+          "packageFormat": "asset-zip-v2"
+        },
+        "storageSave": {
+          "ok": true,
+          "bytes": 21
+        }
+      }
+    },
+    "gameDocument": {
+      "origin": "null",
+      "title": "M1 Multi-Resource Probe",
+      "href": "http://127.0.0.1:60688/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+      "hasHud": true,
+      "hasBoard": true,
+      "chromeError": false,
+      "game": {
+        "phase": "playing",
+        "ticks": 122,
+        "score": 122,
+        "esmStaticImport": true,
+        "resources": {
+          "css": {
+            "sheets": 1,
+            "bodyBackground": "rgb(13, 17, 23)",
+            "hudColor": "rgb(255, 204, 102)",
+            "applied": true
+          },
+          "json": {
+            "status1": 200,
+            "status2": 200,
+            "levelId": "level-01",
+            "waves": 5,
+            "repeated": true
+          },
+          "assetUrl": {
+            "value": "http://127.0.0.1:60688/res/<instance>/<token>/data/level.json",
+            "status": 200,
+            "ok": true
+          },
+          "image": {
+            "complete": true,
+            "naturalWidth": 64,
+            "naturalHeight": 64,
+            "canvasOpaquePixels": 1536,
+            "canvasError": null
+          },
+          "audio": {
+            "readyState": 4,
+            "duration": 0.2,
+            "fetchedBytes": 3244,
+            "decodedDuration": 0.2,
+            "decodeError": null
+          }
+        },
+        "bridge": {
+          "ready": {
+            "ok": true,
+            "sdkVersion": "1.0.0",
+            "runtimeVersion": "1.0.0",
+            "protocolVersion": 1,
+            "capabilities": [
+              "storage",
+              "score"
+            ],
+            "resourceBase": "http://127.0.0.1:60688/res/<credential>/<credential>",
+            "packageFormat": "asset-zip-v2"
+          },
+          "storageSave": {
+            "ok": true,
+            "bytes": 21
+          }
+        },
+        "errors": []
+      }
+    },
+    "round1": {
+      "resourceRequests": [
+        {
+          "sessionId": null,
+          "method": "GET",
+          "url": "http://127.0.0.1:60688/wrapper?src=<redacted-src>",
+          "resourceType": "Document",
+          "status": 200,
+          "mimeType": "text/html",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "requestOrigin": null,
+          "credentialKind": "wrapper-document",
+          "responseHeaders": {
+            "contentType": "text/html; charset=utf-8",
+            "accessControlAllowOrigin": "*",
+            "xContentTypeOptions": "nosniff",
+            "cacheControl": "no-store",
+            "referrerPolicy": "no-referrer",
+            "contentSecurityPolicy": "default-src 'none'; frame-src http://127.0.0.1:60688; child-src http://127.0.0.1:60688; script-src 'nonce-<credential>'; style-src 'unsafe-inline'; img-src 'none'; media-src 'none'; font-src 'none'; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58281"
+          }
+        },
+        {
+          "sessionId": null,
+          "method": "GET",
+          "url": "http://127.0.0.1:60688/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+          "resourceType": "Document",
+          "status": 200,
+          "mimeType": "text/html",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "requestOrigin": null,
+          "credentialKind": "entry-launch",
+          "responseHeaders": {
+            "contentType": "text/html; charset=utf-8",
+            "accessControlAllowOrigin": "*",
+            "xContentTypeOptions": "nosniff",
+            "cacheControl": "no-store",
+            "referrerPolicy": "no-referrer",
+            "contentSecurityPolicy": "default-src 'none'; script-src http://127.0.0.1:60688; style-src http://127.0.0.1:60688; img-src http://127.0.0.1:60688 data:; media-src http://127.0.0.1:60688; font-src http://127.0.0.1:60688; connect-src http://127.0.0.1:60688; frame-src 'none'; child-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58281 http://127.0.0.1:60688"
+          }
+        },
+        {
+          "sessionId": "35B8965C59CE200624C0AEB57FA6D5E3",
+          "method": "GET",
+          "url": "http://127.0.0.1:60688/res/<instance>/<token>/styles/game.css",
+          "resourceType": "Stylesheet",
+          "status": 200,
+          "mimeType": "text/css",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "requestOrigin": null,
+          "credentialKind": "resource",
+          "responseHeaders": {
+            "contentType": "text/css; charset=utf-8",
+            "accessControlAllowOrigin": "*",
+            "xContentTypeOptions": "nosniff",
+            "cacheControl": "no-store",
+            "referrerPolicy": "no-referrer",
+            "contentSecurityPolicy": null
+          }
+        },
+        {
+          "sessionId": "35B8965C59CE200624C0AEB57FA6D5E3",
+          "method": "GET",
+          "url": "http://127.0.0.1:60688/res/<instance>/<token>/dsh-sdk.js",
+          "resourceType": "Script",
+          "status": 200,
+          "mimeType": "text/javascript",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "requestOrigin": null,
+          "credentialKind": "resource",
+          "responseHeaders": {
+            "contentType": "text/javascript; charset=utf-8",
+            "accessControlAllowOrigin": "*",
+            "xContentTypeOptions": "nosniff",
+            "cacheControl": "no-store",
+            "referrerPolicy": "no-referrer",
+            "contentSecurityPolicy": null
+          }
+        },
+        {
+          "sessionId": "35B8965C59CE200624C0AEB57FA6D5E3",
+          "method": "GET",
+          "url": "http://127.0.0.1:60688/res/<instance>/<token>/scripts/main.mjs",
+          "resourceType": "Script",
+          "status": 200,
+          "mimeType": "text/javascript",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "requestOrigin": "null",
+          "credentialKind": "resource",
+          "responseHeaders": {
+            "contentType": "text/javascript; charset=utf-8",
+            "accessControlAllowOrigin": "*",
+            "xContentTypeOptions": "nosniff",
+            "cacheControl": "no-store",
+            "referrerPolicy": "no-referrer",
+            "contentSecurityPolicy": null
+          }
+        },
+        {
+          "sessionId": "35B8965C59CE200624C0AEB57FA6D5E3",
+          "method": "GET",
+          "url": "http://127.0.0.1:60688/res/<instance>/<token>/assets/ship.png",
+          "resourceType": "Image",
+          "status": 200,
+          "mimeType": "image/png",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "requestOrigin": "null",
+          "credentialKind": "resource",
+          "responseHeaders": {
+            "contentType": "image/png",
+            "accessControlAllowOrigin": "*",
+            "xContentTypeOptions": "nosniff",
+            "cacheControl": "no-store",
+            "referrerPolicy": "no-referrer",
+            "contentSecurityPolicy": null
+          }
+        },
+        {
+          "sessionId": "35B8965C59CE200624C0AEB57FA6D5E3",
+          "method": "GET",
+          "url": "http://127.0.0.1:60688/res/<instance>/<token>/scripts/logic.mjs",
+          "resourceType": "Script",
+          "status": 200,
+          "mimeType": "text/javascript",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "requestOrigin": "null",
+          "credentialKind": "resource",
+          "responseHeaders": {
+            "contentType": "text/javascript; charset=utf-8",
+            "accessControlAllowOrigin": "*",
+            "xContentTypeOptions": "nosniff",
+            "cacheControl": "no-store",
+            "referrerPolicy": "no-referrer",
+            "contentSecurityPolicy": null
+          }
+        },
+        {
+          "sessionId": "35B8965C59CE200624C0AEB57FA6D5E3",
+          "method": "GET",
+          "url": "http://127.0.0.1:60688/res/<instance>/<token>/assets/pickup.wav",
+          "resourceType": "Media",
+          "status": 200,
+          "mimeType": "audio/wav",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "requestOrigin": null,
+          "credentialKind": "resource",
+          "responseHeaders": {
+            "contentType": "audio/wav",
+            "accessControlAllowOrigin": "*",
+            "xContentTypeOptions": "nosniff",
+            "cacheControl": "no-store",
+            "referrerPolicy": "no-referrer",
+            "contentSecurityPolicy": null
+          }
+        },
+        {
+          "sessionId": "35B8965C59CE200624C0AEB57FA6D5E3",
+          "method": "GET",
+          "url": "http://127.0.0.1:60688/res/<instance>/<token>/data/level.json",
+          "resourceType": "Fetch",
+          "status": 200,
+          "mimeType": "application/json",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "requestOrigin": null,
+          "credentialKind": "resource",
+          "responseHeaders": {
+            "contentType": "application/json; charset=utf-8",
+            "accessControlAllowOrigin": "*",
+            "xContentTypeOptions": "nosniff",
+            "cacheControl": "no-store",
+            "referrerPolicy": "no-referrer",
+            "contentSecurityPolicy": null
+          }
+        },
+        {
+          "sessionId": "35B8965C59CE200624C0AEB57FA6D5E3",
+          "method": "GET",
+          "url": "http://127.0.0.1:60688/res/<instance>/<token>/data/level.json",
+          "resourceType": "Fetch",
+          "status": 200,
+          "mimeType": "application/json",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "requestOrigin": "null",
+          "credentialKind": "resource",
+          "responseHeaders": {
+            "contentType": "application/json; charset=utf-8",
+            "accessControlAllowOrigin": "*",
+            "xContentTypeOptions": "nosniff",
+            "cacheControl": "no-store",
+            "referrerPolicy": "no-referrer",
+            "contentSecurityPolicy": null
+          }
+        },
+        {
+          "sessionId": "35B8965C59CE200624C0AEB57FA6D5E3",
+          "method": "GET",
+          "url": "http://127.0.0.1:60688/res/<instance>/<token>/data/level.json",
+          "resourceType": "Fetch",
+          "status": 200,
+          "mimeType": "application/json",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "requestOrigin": "null",
+          "credentialKind": "resource",
+          "responseHeaders": {
+            "contentType": "application/json; charset=utf-8",
+            "accessControlAllowOrigin": "*",
+            "xContentTypeOptions": "nosniff",
+            "cacheControl": "no-store",
+            "referrerPolicy": "no-referrer",
+            "contentSecurityPolicy": null
+          }
+        },
+        {
+          "sessionId": "35B8965C59CE200624C0AEB57FA6D5E3",
+          "method": "GET",
+          "url": "http://127.0.0.1:60688/res/<instance>/<token>/assets/pickup.wav",
+          "resourceType": "Fetch",
+          "status": 200,
+          "mimeType": "audio/wav",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "requestOrigin": "null",
+          "credentialKind": "resource",
+          "responseHeaders": {
+            "contentType": "audio/wav",
+            "accessControlAllowOrigin": "*",
+            "xContentTypeOptions": "nosniff",
+            "cacheControl": "no-store",
+            "referrerPolicy": "no-referrer",
+            "contentSecurityPolicy": null
+          }
+        }
+      ],
+      "wrapperDocs": [
+        {
+          "sessionId": null,
+          "method": "GET",
+          "url": "http://127.0.0.1:60688/wrapper?src=<redacted-src>",
+          "resourceType": "Document",
+          "status": 200,
+          "mimeType": "text/html",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "requestOrigin": null,
+          "credentialKind": "wrapper-document",
+          "responseHeaders": {
+            "contentType": "text/html; charset=utf-8",
+            "accessControlAllowOrigin": "*",
+            "xContentTypeOptions": "nosniff",
+            "cacheControl": "no-store",
+            "referrerPolicy": "no-referrer",
+            "contentSecurityPolicy": "default-src 'none'; frame-src http://127.0.0.1:60688; child-src http://127.0.0.1:60688; script-src 'nonce-<credential>'; style-src 'unsafe-inline'; img-src 'none'; media-src 'none'; font-src 'none'; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58281"
+          },
+          "srcParam": "http://127.0.0.1:60688/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>"
+        }
+      ],
+      "byRel": {
+        "index.html": [
+          {
+            "status": 200,
+            "mimeType": "text/html",
+            "failed": false
+          }
+        ],
+        "styles/game.css": [
+          {
+            "status": 200,
+            "mimeType": "text/css",
+            "failed": false
+          }
+        ],
+        "dsh-sdk.js": [
+          {
+            "status": 200,
+            "mimeType": "text/javascript",
+            "failed": false
+          }
+        ],
+        "scripts/main.mjs": [
+          {
+            "status": 200,
+            "mimeType": "text/javascript",
+            "failed": false
+          }
+        ],
+        "assets/ship.png": [
+          {
+            "status": 200,
+            "mimeType": "image/png",
+            "failed": false
+          }
+        ],
+        "scripts/logic.mjs": [
+          {
+            "status": 200,
+            "mimeType": "text/javascript",
+            "failed": false
+          }
+        ],
+        "assets/pickup.wav": [
+          {
+            "status": 200,
+            "mimeType": "audio/wav",
+            "failed": false
+          },
+          {
+            "status": 200,
+            "mimeType": "audio/wav",
+            "failed": false
+          }
+        ],
+        "data/level.json": [
+          {
+            "status": 200,
+            "mimeType": "application/json",
+            "failed": false
+          },
+          {
+            "status": 200,
+            "mimeType": "application/json",
+            "failed": false
+          },
+          {
+            "status": 200,
+            "mimeType": "application/json",
+            "failed": false
+          }
+        ]
+      }
+    },
+    "credentials": {
+      "launchReplayStatus": 410,
+      "entryResourceUrlStatus": 200,
+      "gameJsonStatus": 403,
+      "descriptorStatus": 403,
+      "headSdkStatus": 200,
+      "postResourceStatus": 405,
+      "traversalStatus": 403
+    },
+    "gateReload": {
+      "reloadResult": {
+        "ok": true
+      },
+      "reloaded": {
+        "sessionId": "A1E8C848322B69165F8C9E9133DB0EF0",
+        "snapshot": {
+          "title": "M1 Multi-Resource Probe",
+          "phase": "playing",
+          "ticks": 1
+        }
+      },
+      "blockedRequests": [],
+      "continuedRequests": 10,
+      "wrapperDocsAfterReload": [
+        "http://127.0.0.1:60688/wrapper?src=<redacted-src>"
+      ],
+      "wrapperSrcFlags": [
+        {
+          "hasLaunch": false,
+          "underResourceBase": true
+        }
+      ],
+      "launchReplayedAfterReload": false,
+      "resourceRequestStatuses": [
+        {
+          "rel": null,
+          "status": 200,
+          "failed": false
+        },
+        {
+          "rel": "index.html",
+          "status": 200,
+          "failed": false
+        },
+        {
+          "rel": "styles/game.css",
+          "status": 200,
+          "failed": false
+        },
+        {
+          "rel": "dsh-sdk.js",
+          "status": 200,
+          "failed": false
+        },
+        {
+          "rel": "scripts/main.mjs",
+          "status": 200,
+          "failed": false
+        },
+        {
+          "rel": "assets/ship.png",
+          "status": 200,
+          "failed": false
+        },
+        {
+          "rel": "scripts/logic.mjs",
+          "status": 200,
+          "failed": false
+        },
+        {
+          "rel": "assets/pickup.wav",
+          "status": 200,
+          "failed": false
+        },
+        {
+          "rel": "data/level.json",
+          "status": 200,
+          "failed": false
+        },
+        {
+          "rel": "data/level.json",
+          "status": 200,
+          "failed": false
+        },
+        {
+          "rel": "data/level.json",
+          "status": 200,
+          "failed": false
+        },
+        {
+          "rel": "assets/pickup.wav",
+          "status": 200,
+          "failed": false
+        }
+      ]
+    },
+    "offlinePlay": {
+      "beforeOffline": 1,
+      "afterOffline": 14,
+      "sessionId": "A1E8C848322B69165F8C9E9133DB0EF0"
+    },
+    "screenshots": {
+      "full": "docs/verification/v1.5/raw/m1/screenshots/a02-dsh-page-full.png",
+      "runtimeContainer": "docs/verification/v1.5/raw/m1/screenshots/a02-runtime-iframe.png"
+    }
+  }
+}

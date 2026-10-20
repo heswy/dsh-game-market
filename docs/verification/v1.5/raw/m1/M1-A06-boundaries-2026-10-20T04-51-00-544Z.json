@@ -1,0 +1,2249 @@
+{
+  "id": "M1-A06-boundaries",
+  "title": "A06: external egress / Host API / bridge abuse / wrapper navigation boundaries",
+  "generatedAt": "2026-10-20T04:51:00.544Z",
+  "command": "node scripts/verification/v1.5/m1/m1-a06-boundaries.mjs",
+  "environment": {
+    "dsh": {
+      "dshPackage": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.2"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.2"
+      },
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.2"
+      },
+      "asarExtractedAt": "2026-10-20T02:55:54.473Z"
+    },
+    "chrome": "Google Chrome headless via CDP",
+    "ports": {
+      "bootstrap": 58290,
+      "host": 58291,
+      "static": 58341,
+      "sink": 58342,
+      "chrome": 9507
+    }
+  },
+  "commands": [],
+  "startedAt": "2026-10-20T04:51:00.544Z",
+  "finishedAt": "2026-10-20T04:51:00.544Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "dsh-page-loads-and-host-api-answers",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "health": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "data": {
+              "ok": true,
+              "version": "1.2.0",
+              "hostEpoch": "he_17646ce1e25038c6",
+              "devMode": true,
+              "storage": {
+                "ok": true,
+                "root": "/tmp/dsh-v15/home-probe-m1-a06/storages/dsh-game-market",
+                "readOnly": false
+              },
+              "uptimeMs": 3764,
+              "registry": {
+                "state": "seed",
+                "sourceUrl": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-asset-packages/registry/games.json",
+                "fetchedAt": "2026-10-20T04:50:21.672Z",
+                "truncated": false,
+                "count": 3,
+                "lastError": null,
+                "generation": null,
+                "registryVersion": 1,
+                "activeSource": "seed",
+                "fallback": true,
+                "official": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v2",
+                  "registryVersion": 2
+                },
+                "officialV2": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v2",
+                  "registryVersion": 2
+                },
+                "officialV1": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v1",
+                  "registryVersion": 1
+                },
+                "seed": {
+                  "state": "fresh",
+                  "count": 3,
+                  "sourceUrl": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-asset-packages/registry/games.json"
+                }
+              },
+              "installations": {
+                "count": 0,
+                "updateAvailable": 0
+              },
+              "sessions": {
+                "running": 0,
+                "staleRunningPreserved": true
+              },
+              "games": {
+                "builtinCount": 1,
+                "issues": []
+              }
+            },
+            "requestId": "req_2d9f5dc3a8949f4e",
+            "serverTime": "2026-10-20T04:50:25.338Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "host-api-positive-control-page-200",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "evil-package-installs-through-real-host-api",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "gameId": "m1-a06-boundaries",
+        "format": "asset-zip-v2",
+        "fileCount": 10
+      }
+    },
+    {
+      "name": "outer-wrapper-iframe-no-sandbox-attribute",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "frame": {
+          "sandbox": null,
+          "allow": "autoplay",
+          "referrerpolicy": "no-referrer",
+          "src": "http://127.0.0.1:62530/wrapper?src=<redacted-src>"
+        }
+      }
+    },
+    {
+      "name": "wrapper-layer-origin-and-inner-game-sandbox",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "frameFound": true,
+        "frameId": "453C4B412F05439889D79CA15E799B59",
+        "frameUrl": "http://127.0.0.1:62530/wrapper?src=<redacted-src>",
+        "value": {
+          "origin": "http://127.0.0.1:62530",
+          "windowOrigin": "http://127.0.0.1:62530",
+          "innerCount": 1,
+          "innerSandbox": "allow-scripts",
+          "innerAllow": "autoplay",
+          "innerReferrerPolicy": "no-referrer"
+        }
+      }
+    },
+    {
+      "name": "game-document-renders-not-chrome-error",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+        "snapshot": {
+          "origin": "null",
+          "title": "M1 Boundary Probe",
+          "href": "http://127.0.0.1:62530/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+          "hasHud": true,
+          "chromeError": false,
+          "evil": {
+            "phase": "boot",
+            "initEvents": 1,
+            "observed": {
+              "fetch-external": {
+                "resolved": false,
+                "error": "Failed to fetch"
+              },
+              "xhr-external": {
+                "resolved": false,
+                "error": "xhr-error"
+              },
+              "websocket-external": {
+                "opened": false,
+                "error": "ws-error"
+              },
+              "beacon-external": {
+                "queued": true
+              },
+              "fetch-host-api": {
+                "resolved": false,
+                "error": "Failed to fetch"
+              },
+              "xhr-host-api": {
+                "resolved": false,
+                "error": "xhr-error"
+              },
+              "window-open-external": {
+                "opened": false
+              },
+              "top-navigation-external": {
+                "assignment": "threw",
+                "error": "Failed to set a named property 'href' on 'Location': The current window does not have permission to navigate the target frame to 'http://127.0.0.1:58342/top-navigation'."
+              },
+              "fetch-same-origin": {
+                "resolved": true,
+                "status": 200
+              }
+            },
+            "bridgeResponses": [
+              {
+                "id": "evil-req-0",
+                "ok": false,
+                "code": "GM-4004"
+              },
+              {
+                "id": "evil-req-1",
+                "ok": false,
+                "code": "GM-4004"
+              },
+              {
+                "id": "evil-req-2",
+                "ok": false,
+                "code": "GM-4004"
+              },
+              {
+                "id": "evil-req-3",
+                "ok": false,
+                "code": "GM-4004"
+              },
+              {
+                "id": "evil-req-4",
+                "ok": false,
+                "code": "GM-4004"
+              },
+              {
+                "id": "evil-req-5",
+                "ok": false,
+                "code": "GM-4004"
+              },
+              {
+                "id": "evil-req-save",
+                "ok": true
+              }
+            ],
+            "bridgeReady": {
+              "ok": true,
+              "resourceBase": "http://127.0.0.1:62530/res/<credential>/<credential>",
+              "packageFormat": "asset-zip-v2"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "game-document-title-and-dom-present",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "origin": "null",
+        "title": "M1 Boundary Probe",
+        "href": "http://127.0.0.1:62530/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+        "hasHud": true,
+        "chromeError": false,
+        "evil": {
+          "phase": "boot",
+          "initEvents": 1,
+          "observed": {
+            "fetch-external": {
+              "resolved": false,
+              "error": "Failed to fetch"
+            },
+            "xhr-external": {
+              "resolved": false,
+              "error": "xhr-error"
+            },
+            "websocket-external": {
+              "opened": false,
+              "error": "ws-error"
+            },
+            "beacon-external": {
+              "queued": true
+            },
+            "fetch-host-api": {
+              "resolved": false,
+              "error": "Failed to fetch"
+            },
+            "xhr-host-api": {
+              "resolved": false,
+              "error": "xhr-error"
+            },
+            "window-open-external": {
+              "opened": false
+            },
+            "top-navigation-external": {
+              "assignment": "threw",
+              "error": "Failed to set a named property 'href' on 'Location': The current window does not have permission to navigate the target frame to 'http://127.0.0.1:58342/top-navigation'."
+            },
+            "fetch-same-origin": {
+              "resolved": true,
+              "status": 200
+            }
+          },
+          "bridgeResponses": [
+            {
+              "id": "evil-req-0",
+              "ok": false,
+              "code": "GM-4004"
+            },
+            {
+              "id": "evil-req-1",
+              "ok": false,
+              "code": "GM-4004"
+            },
+            {
+              "id": "evil-req-2",
+              "ok": false,
+              "code": "GM-4004"
+            },
+            {
+              "id": "evil-req-3",
+              "ok": false,
+              "code": "GM-4004"
+            },
+            {
+              "id": "evil-req-4",
+              "ok": false,
+              "code": "GM-4004"
+            },
+            {
+              "id": "evil-req-5",
+              "ok": false,
+              "code": "GM-4004"
+            },
+            {
+              "id": "evil-req-save",
+              "ok": true
+            }
+          ],
+          "bridgeReady": {
+            "ok": true,
+            "resourceBase": "http://127.0.0.1:62530/res/<credential>/<credential>",
+            "packageFormat": "asset-zip-v2"
+          }
+        }
+      }
+    },
+    {
+      "name": "evil-package-phase1-completed",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+        "kind": "game",
+        "at": 1792471827968,
+        "event": "phase1-complete",
+        "attempts": 7,
+        "bridgeResponses": 7,
+        "initEvents": 1
+      }
+    },
+    {
+      "name": "wrapper-csp-frame-src-resource-origin",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "csp": "default-src 'none'; frame-src http://127.0.0.1:62530; child-src http://127.0.0.1:62530; script-src 'nonce-<credential>'; style-src 'unsafe-inline'; img-src 'none'; media-src 'none'; font-src 'none'; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58291"
+      }
+    },
+    {
+      "name": "wrapper-csp-has-frame-ancestors",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "frameAncestors": "http://127.0.0.1:58291"
+      }
+    },
+    {
+      "name": "wrapper-csp-frame-ancestors-no-wildcard-at-all",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "frameAncestors": "http://127.0.0.1:58291"
+      }
+    },
+    {
+      "name": "egress-sink-received-zero-http-requests",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "egress-sink-received-zero-websocket-upgrades",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "egress-network-layer-blocked-before-send",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "total": 1,
+        "sent": [],
+        "blockedByCsp": 1,
+        "note": "CDP reports a request event for XHR before the CSP check; blockedReason=csp means nothing left the renderer (sink is the network-layer witness)"
+      }
+    },
+    {
+      "name": "egress-fetch-external-rejected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "resolved": false,
+        "error": "Failed to fetch"
+      }
+    },
+    {
+      "name": "egress-xhr-external-rejected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "resolved": false,
+        "error": "xhr-error"
+      }
+    },
+    {
+      "name": "egress-websocket-external-not-opened",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "opened": false,
+        "error": "ws-error"
+      }
+    },
+    {
+      "name": "egress-window-open-external-blocked",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "opened": false
+      }
+    },
+    {
+      "name": "egress-fetch-same-origin-positive-control",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "resolved": true,
+        "status": 200
+      }
+    },
+    {
+      "name": "egress-entry-launch-replay-is-410",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "resolved": true,
+        "status": 410
+      }
+    },
+    {
+      "name": "egress-top-navigation-did-not-change-page",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "after": "http://127.0.0.1:58291/",
+        "expectedPage": "http://127.0.0.1:58291/"
+      }
+    },
+    {
+      "name": "egress-top-navigation-blocked",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "assignment": "threw",
+        "error": "Failed to set a named property 'href' on 'Location': The current window does not have permission to navigate the target frame to 'http://127.0.0.1:58342/top-navigation'."
+      }
+    },
+    {
+      "name": "host-api-game-fetch-rejected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "resolved": false,
+        "error": "Failed to fetch"
+      }
+    },
+    {
+      "name": "host-api-game-xhr-rejected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "resolved": false,
+        "error": "xhr-error"
+      }
+    },
+    {
+      "name": "host-api-game-attempts-all-blocked-pre-network",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+          "method": "GET",
+          "url": "http://127.0.0.1:58291/api/game-market/save",
+          "resourceType": "XHR",
+          "status": null,
+          "mimeType": null,
+          "failed": true,
+          "errorText": "",
+          "blockedReason": "csp",
+          "credentialKind": "other",
+          "requestOrigin": null,
+          "responseHeaders": {
+            "contentType": null,
+            "accessControlAllowOrigin": null,
+            "contentSecurityPolicy": null
+          },
+          "path": "/api/game-market/save"
+        }
+      ]
+    },
+    {
+      "name": "host-api-no-dangerous-endpoint-called",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "successful": [
+          {
+            "sessionId": null,
+            "method": "POST",
+            "url": "http://127.0.0.1:58291/api/game-market/save",
+            "resourceType": "Fetch",
+            "status": 200,
+            "mimeType": "application/json",
+            "failed": false,
+            "errorText": null,
+            "blockedReason": null,
+            "credentialKind": "other",
+            "requestOrigin": null,
+            "responseHeaders": {
+              "contentType": "application/json; charset=utf-8",
+              "accessControlAllowOrigin": null,
+              "contentSecurityPolicy": null
+            },
+            "path": "/api/game-market/save"
+          }
+        ],
+        "gameSessionApi": [
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "method": "GET",
+            "url": "http://127.0.0.1:58291/api/game-market/save",
+            "resourceType": "XHR",
+            "status": null,
+            "mimeType": null,
+            "failed": true,
+            "errorText": "",
+            "blockedReason": "csp",
+            "credentialKind": "other",
+            "requestOrigin": null,
+            "responseHeaders": {
+              "contentType": null,
+              "accessControlAllowOrigin": null,
+              "contentSecurityPolicy": null
+            },
+            "path": "/api/game-market/save"
+          }
+        ]
+      }
+    },
+    {
+      "name": "host-api-read-attempt-blocked",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "sessionId": null,
+          "method": "POST",
+          "url": "http://127.0.0.1:58291/api/game-market/save",
+          "resourceType": "Fetch",
+          "status": 200,
+          "mimeType": "application/json",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "credentialKind": "other",
+          "requestOrigin": null,
+          "responseHeaders": {
+            "contentType": "application/json; charset=utf-8",
+            "accessControlAllowOrigin": null,
+            "contentSecurityPolicy": null
+          },
+          "path": "/api/game-market/save"
+        }
+      ]
+    },
+    {
+      "name": "bridge-legit-save-accepted-via-wrapper-relay",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "evil-req-save",
+        "ok": true
+      }
+    },
+    {
+      "name": "bridge-handshake-ready-positive-control",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "resourceBase": "http://127.0.0.1:62530/res/<credential>/<credential>",
+        "packageFormat": "asset-zip-v2"
+      }
+    },
+    {
+      "name": "bridge-dangerous-methods-absent-or-rejected",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "id": "evil-req-0",
+          "ok": false,
+          "code": "GM-4004"
+        },
+        {
+          "id": "evil-req-1",
+          "ok": false,
+          "code": "GM-4004"
+        },
+        {
+          "id": "evil-req-2",
+          "ok": false,
+          "code": "GM-4004"
+        },
+        {
+          "id": "evil-req-3",
+          "ok": false,
+          "code": "GM-4004"
+        },
+        {
+          "id": "evil-req-4",
+          "ok": false,
+          "code": "GM-4004"
+        },
+        {
+          "id": "evil-req-5",
+          "ok": false,
+          "code": "GM-4004"
+        }
+      ]
+    },
+    {
+      "name": "bridge-direct-to-top-spoof-produces-no-extra-init",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "initEvents": 1
+      }
+    },
+    {
+      "name": "bridge-untrusted-window-spoof-rejected-and-counted",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "fatalEvent": {
+          "at": 1792471828595,
+          "type": "error",
+          "error": {
+            "code": "GM-5004",
+            "message": "Too many invalid bridge messages",
+            "retryable": false
+          }
+        },
+        "observation": {
+          "labPresent": true,
+          "framesInContainer": 0,
+          "state": "error",
+          "events": [
+            {
+              "at": 1792471825425,
+              "type": "state",
+              "state": "loading",
+              "error": null
+            },
+            {
+              "at": 1792471825425,
+              "type": "save-status",
+              "error": null
+            },
+            {
+              "at": 1792471825456,
+              "type": "state",
+              "state": "ready",
+              "error": null
+            },
+            {
+              "at": 1792471825456,
+              "type": "state",
+              "state": "playing",
+              "error": null
+            },
+            {
+              "at": 1792471825478,
+              "type": "save-status",
+              "error": null
+            },
+            {
+              "at": 1792471828595,
+              "type": "error",
+              "error": {
+                "code": "GM-5004",
+                "message": "Too many invalid bridge messages",
+                "retryable": false
+              }
+            },
+            {
+              "at": 1792471828595,
+              "type": "state",
+              "state": "error",
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "bridge-untrusted-window-got-no-bridge-response",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sessionId": null,
+        "kind": "attacker",
+        "at": 1792471828595,
+        "posted": 60,
+        "received": 0,
+        "count": 60
+      }
+    },
+    {
+      "name": "navigation-instance2-renders-and-phases1",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "rendered": {
+          "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+          "snapshot": {
+            "origin": "null",
+            "title": "M1 Boundary Probe",
+            "href": "http://127.0.0.1:62530/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+            "hasHud": true,
+            "chromeError": false,
+            "evil": {
+              "phase": "boot",
+              "initEvents": 1,
+              "observed": {
+                "fetch-external": {
+                  "resolved": false,
+                  "error": "Failed to fetch"
+                },
+                "xhr-external": {
+                  "resolved": false,
+                  "error": "xhr-error"
+                },
+                "websocket-external": {
+                  "opened": false,
+                  "error": "ws-error"
+                },
+                "beacon-external": {
+                  "queued": true
+                },
+                "fetch-host-api": {
+                  "resolved": false,
+                  "error": "Failed to fetch"
+                },
+                "xhr-host-api": {
+                  "resolved": false,
+                  "error": "xhr-error"
+                },
+                "window-open-external": {
+                  "opened": false
+                },
+                "top-navigation-external": {
+                  "assignment": "threw",
+                  "error": "Failed to set a named property 'href' on 'Location': The current window does not have permission to navigate the target frame to 'http://127.0.0.1:58342/top-navigation'."
+                },
+                "fetch-same-origin": {
+                  "resolved": true,
+                  "status": 200
+                }
+              },
+              "bridgeResponses": [
+                {
+                  "id": "evil-req-0",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-1",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-2",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-3",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-4",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-5",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-save",
+                  "ok": true
+                }
+              ],
+              "bridgeReady": {
+                "ok": true,
+                "resourceBase": "http://127.0.0.1:62530/res/<credential>/<credential>",
+                "packageFormat": "asset-zip-v2"
+              }
+            }
+          }
+        },
+        "phase1": {
+          "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+          "kind": "game",
+          "at": 1792471827968,
+          "event": "phase1-complete",
+          "attempts": 7,
+          "bridgeResponses": 7,
+          "initEvents": 1
+        }
+      }
+    },
+    {
+      "name": "navigation-external-attempt-is-observable",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+        "kind": "game",
+        "at": 1792471829501,
+        "event": "nav-external-attempt",
+        "target": "http://127.0.0.1:58342/self-navigation"
+      }
+    },
+    {
+      "name": "navigation-wrapper-frame-src-blocked-external",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sinkRequestsAfterNav": [],
+        "externalNavNet": []
+      }
+    },
+    {
+      "name": "navigation-external-blocked-by-frame-src",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "sessionId": null,
+          "at": 1792471829510,
+          "level": "error",
+          "source": "security",
+          "text": "Framing 'http://127.0.0.1:58342/' violates the following Content Security Policy directive: \"frame-src http://127.0.0.1:62530\". The request has been blocked.\n",
+          "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+        }
+      ]
+    },
+    {
+      "name": "navigation-no-request-reached-external-origin",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "requests": [],
+        "upgrades": []
+      }
+    },
+    {
+      "name": "navigation-same-origin-positive-control-loads",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sameOriginAttempt": {
+          "sessionId": "2163EF15C4312B18F25B1EE207FA14FD",
+          "kind": "game",
+          "at": 1792471841740,
+          "event": "nav-same-origin-attempt",
+          "page": "second.html"
+        },
+        "secondPage": {
+          "sessionId": "2163EF15C4312B18F25B1EE207FA14FD",
+          "kind": "game",
+          "at": 1792471841752,
+          "event": "second-page",
+          "href": "/res/<instance>/<token>/second.html"
+        },
+        "secondPageResponse": [
+          {
+            "sessionId": "2163EF15C4312B18F25B1EE207FA14FD",
+            "method": "GET",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/second.html",
+            "resourceType": "Document",
+            "status": 200,
+            "mimeType": "text/html",
+            "failed": false,
+            "errorText": null,
+            "blockedReason": null,
+            "credentialKind": "resource:second.html",
+            "requestOrigin": null,
+            "responseHeaders": {
+              "contentType": "text/html; charset=utf-8",
+              "accessControlAllowOrigin": "*",
+              "contentSecurityPolicy": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "navigation-runtime-detects-unexpected-nested-navigation",
+      "ok": true,
+      "required": false,
+      "detail": [
+        {
+          "at": 1792471858510,
+          "type": "error",
+          "error": {
+            "code": "GM-5012",
+            "message": "Game is not responding",
+            "retryable": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "no-frame-ancestors-framing-violations",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "frame-src-blocked-external-self-navigation-observed",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "sessionId": null,
+          "at": 1792471829510,
+          "level": "error",
+          "source": "security",
+          "text": "Framing 'http://127.0.0.1:58342/' violates the following Content Security Policy directive: \"frame-src http://127.0.0.1:62530\". The request has been blocked.\n",
+          "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+        }
+      ]
+    },
+    {
+      "name": "csp-reported-blocked-egress-attempts",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "count": 41,
+        "sample": [
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "at": 1792471825460,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58342/egress/fetch' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "at": 1792471825460,
+            "level": "error",
+            "source": "javascript",
+            "text": "Fetch API cannot load http://127.0.0.1:58342/egress/fetch. Refused to connect because it violates the document's Content Security Policy.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "at": 1792471825460,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58342/egress/xhr' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "at": 1792471825461,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'ws://127.0.0.1:58342/egress/ws' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "at": 1792471825461,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58342/egress/beacon' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          }
+        ]
+      }
+    }
+  ],
+  "scenarios": {
+    "egress": {
+      "sinkRequests": [],
+      "sinkUpgrades": [],
+      "externalNetwork": [
+        {
+          "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+          "method": "GET",
+          "url": "http://127.0.0.1:58342/egress/xhr",
+          "resourceType": "XHR",
+          "status": null,
+          "mimeType": null,
+          "failed": true,
+          "errorText": "",
+          "blockedReason": "csp",
+          "credentialKind": "other",
+          "requestOrigin": null,
+          "responseHeaders": {
+            "contentType": null,
+            "accessControlAllowOrigin": null,
+            "contentSecurityPolicy": null
+          }
+        }
+      ],
+      "gameObserved": {
+        "fetch-external": {
+          "resolved": false,
+          "error": "Failed to fetch"
+        },
+        "xhr-external": {
+          "resolved": false,
+          "error": "xhr-error"
+        },
+        "websocket-external": {
+          "opened": false,
+          "error": "ws-error"
+        },
+        "beacon-external": {
+          "queued": true
+        },
+        "fetch-host-api": {
+          "resolved": false,
+          "error": "Failed to fetch"
+        },
+        "xhr-host-api": {
+          "resolved": false,
+          "error": "xhr-error"
+        },
+        "window-open-external": {
+          "opened": false
+        },
+        "top-navigation-external": {
+          "assignment": "threw",
+          "error": "Failed to set a named property 'href' on 'Location': The current window does not have permission to navigate the target frame to 'http://127.0.0.1:58342/top-navigation'."
+        },
+        "fetch-same-origin": {
+          "resolved": true,
+          "status": 200
+        },
+        "entry-launch-replay": {
+          "resolved": true,
+          "status": 410
+        }
+      },
+      "attempts": [
+        {
+          "kind": "fetch-external",
+          "target": "http://127.0.0.1:58342/egress/fetch",
+          "outcome": "rejected"
+        },
+        {
+          "kind": "beacon-external",
+          "target": "http://127.0.0.1:58342/egress/beacon",
+          "outcome": "queued:true"
+        },
+        {
+          "kind": "fetch-host-api",
+          "target": "http://127.0.0.1:58291/api/game-market/health",
+          "outcome": "rejected"
+        },
+        {
+          "kind": "window-open-external",
+          "target": "http://127.0.0.1:58342/popup",
+          "outcome": "blocked"
+        },
+        {
+          "kind": "top-navigation-external",
+          "target": "http://127.0.0.1:58342/top-navigation",
+          "outcome": "attempted"
+        },
+        {
+          "kind": "fetch-same-origin",
+          "target": "data/level.json",
+          "outcome": "resolved:200"
+        },
+        {
+          "kind": "entry-launch-replay",
+          "target": "http://127.0.0.1:62530/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+          "outcome": "resolved:410"
+        }
+      ],
+      "bridgeReady": {
+        "ok": true,
+        "resourceBase": "http://127.0.0.1:62530/res/<credential>/<credential>",
+        "packageFormat": "asset-zip-v2"
+      },
+      "pageUrlAfter": "http://127.0.0.1:58291/",
+      "apiRequestsAfterLaunch": [
+        {
+          "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+          "method": "GET",
+          "url": "http://127.0.0.1:58291/api/game-market/save",
+          "resourceType": "XHR",
+          "status": null,
+          "mimeType": null,
+          "failed": true,
+          "errorText": "",
+          "blockedReason": "csp",
+          "credentialKind": "other",
+          "requestOrigin": null,
+          "responseHeaders": {
+            "contentType": null,
+            "accessControlAllowOrigin": null,
+            "contentSecurityPolicy": null
+          },
+          "path": "/api/game-market/save"
+        },
+        {
+          "sessionId": null,
+          "method": "POST",
+          "url": "http://127.0.0.1:58291/api/game-market/save",
+          "resourceType": "Fetch",
+          "status": 200,
+          "mimeType": "application/json",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "credentialKind": "other",
+          "requestOrigin": null,
+          "responseHeaders": {
+            "contentType": "application/json; charset=utf-8",
+            "accessControlAllowOrigin": null,
+            "contentSecurityPolicy": null
+          },
+          "path": "/api/game-market/save"
+        },
+        {
+          "sessionId": null,
+          "method": "GET",
+          "url": "http://127.0.0.1:58291/api/game-market/agent-state?sessionId=session-690c5d38-2b09-44e6-b367-3301952a9a69",
+          "resourceType": "Fetch",
+          "status": 304,
+          "mimeType": "",
+          "failed": true,
+          "errorText": "net::ERR_ABORTED",
+          "blockedReason": null,
+          "credentialKind": "other",
+          "requestOrigin": null,
+          "responseHeaders": {
+            "contentType": null,
+            "accessControlAllowOrigin": null,
+            "contentSecurityPolicy": null
+          },
+          "path": "/api/game-market/agent-state"
+        },
+        {
+          "sessionId": null,
+          "method": "GET",
+          "url": "http://127.0.0.1:58291/api/game-market/agent-state?sessionId=session-690c5d38-2b09-44e6-b367-3301952a9a69",
+          "resourceType": "Fetch",
+          "status": 304,
+          "mimeType": "",
+          "failed": true,
+          "errorText": "net::ERR_ABORTED",
+          "blockedReason": null,
+          "credentialKind": "other",
+          "requestOrigin": null,
+          "responseHeaders": {
+            "contentType": null,
+            "accessControlAllowOrigin": null,
+            "contentSecurityPolicy": null
+          },
+          "path": "/api/game-market/agent-state"
+        }
+      ]
+    },
+    "bridge": {
+      "bridgeRequests": [
+        {
+          "id": "evil-req-0",
+          "method": "pluginManager/install"
+        },
+        {
+          "id": "evil-req-1",
+          "method": "update/begin"
+        },
+        {
+          "id": "evil-req-2",
+          "method": "install"
+        },
+        {
+          "id": "evil-req-3",
+          "method": "userQuestions/answer"
+        },
+        {
+          "id": "evil-req-4",
+          "method": "approval/request"
+        },
+        {
+          "id": "evil-req-5",
+          "method": "score.reset"
+        },
+        {
+          "id": "evil-req-save",
+          "method": "storage.save"
+        }
+      ],
+      "bridgeResponses": [
+        {
+          "id": "evil-req-0",
+          "ok": false,
+          "code": "GM-4004"
+        },
+        {
+          "id": "evil-req-1",
+          "ok": false,
+          "code": "GM-4004"
+        },
+        {
+          "id": "evil-req-2",
+          "ok": false,
+          "code": "GM-4004"
+        },
+        {
+          "id": "evil-req-3",
+          "ok": false,
+          "code": "GM-4004"
+        },
+        {
+          "id": "evil-req-4",
+          "ok": false,
+          "code": "GM-4004"
+        },
+        {
+          "id": "evil-req-5",
+          "ok": false,
+          "code": "GM-4004"
+        },
+        {
+          "id": "evil-req-save",
+          "ok": true
+        }
+      ],
+      "initEvents": 1,
+      "runtimeEvents": [
+        {
+          "at": 1792471825425,
+          "type": "state",
+          "state": "loading",
+          "error": null
+        },
+        {
+          "at": 1792471825425,
+          "type": "save-status",
+          "error": null
+        },
+        {
+          "at": 1792471825456,
+          "type": "state",
+          "state": "ready",
+          "error": null
+        },
+        {
+          "at": 1792471825456,
+          "type": "state",
+          "state": "playing",
+          "error": null
+        },
+        {
+          "at": 1792471825478,
+          "type": "save-status",
+          "error": null
+        }
+      ],
+      "runtimeEventCodes": [],
+      "untrustedWindowFlood": {
+        "floodStarted": 1792471828189,
+        "fatalEvent": {
+          "at": 1792471828595,
+          "type": "error",
+          "error": {
+            "code": "GM-5004",
+            "message": "Too many invalid bridge messages",
+            "retryable": false
+          }
+        },
+        "attackerLog": {
+          "sessionId": null,
+          "kind": "attacker",
+          "at": 1792471828595,
+          "posted": 60,
+          "received": 0,
+          "count": 60
+        },
+        "observation": {
+          "labPresent": true,
+          "framesInContainer": 0,
+          "state": "error",
+          "events": [
+            {
+              "at": 1792471825425,
+              "type": "state",
+              "state": "loading",
+              "error": null
+            },
+            {
+              "at": 1792471825425,
+              "type": "save-status",
+              "error": null
+            },
+            {
+              "at": 1792471825456,
+              "type": "state",
+              "state": "ready",
+              "error": null
+            },
+            {
+              "at": 1792471825456,
+              "type": "state",
+              "state": "playing",
+              "error": null
+            },
+            {
+              "at": 1792471825478,
+              "type": "save-status",
+              "error": null
+            },
+            {
+              "at": 1792471828595,
+              "type": "error",
+              "error": {
+                "code": "GM-5004",
+                "message": "Too many invalid bridge messages",
+                "retryable": false
+              }
+            },
+            {
+              "at": 1792471828595,
+              "type": "state",
+              "state": "error",
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    "navigation": {
+      "instance2": {
+        "rendered": {
+          "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+          "snapshot": {
+            "origin": "null",
+            "title": "M1 Boundary Probe",
+            "href": "http://127.0.0.1:62530/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+            "hasHud": true,
+            "chromeError": false,
+            "evil": {
+              "phase": "boot",
+              "initEvents": 1,
+              "observed": {
+                "fetch-external": {
+                  "resolved": false,
+                  "error": "Failed to fetch"
+                },
+                "xhr-external": {
+                  "resolved": false,
+                  "error": "xhr-error"
+                },
+                "websocket-external": {
+                  "opened": false,
+                  "error": "ws-error"
+                },
+                "beacon-external": {
+                  "queued": true
+                },
+                "fetch-host-api": {
+                  "resolved": false,
+                  "error": "Failed to fetch"
+                },
+                "xhr-host-api": {
+                  "resolved": false,
+                  "error": "xhr-error"
+                },
+                "window-open-external": {
+                  "opened": false
+                },
+                "top-navigation-external": {
+                  "assignment": "threw",
+                  "error": "Failed to set a named property 'href' on 'Location': The current window does not have permission to navigate the target frame to 'http://127.0.0.1:58342/top-navigation'."
+                },
+                "fetch-same-origin": {
+                  "resolved": true,
+                  "status": 200
+                }
+              },
+              "bridgeResponses": [
+                {
+                  "id": "evil-req-0",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-1",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-2",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-3",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-4",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-5",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-save",
+                  "ok": true
+                }
+              ],
+              "bridgeReady": {
+                "ok": true,
+                "resourceBase": "http://127.0.0.1:62530/res/<credential>/<credential>",
+                "packageFormat": "asset-zip-v2"
+              }
+            }
+          }
+        },
+        "phase1": {
+          "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+          "kind": "game",
+          "at": 1792471827968,
+          "event": "phase1-complete",
+          "attempts": 7,
+          "bridgeResponses": 7,
+          "initEvents": 1
+        }
+      },
+      "external": {
+        "externalAttempt": {
+          "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+          "kind": "game",
+          "at": 1792471829501,
+          "event": "nav-external-attempt",
+          "target": "http://127.0.0.1:58342/self-navigation"
+        },
+        "blockedCheck": null,
+        "sinkRequestsBeforeNav": 0,
+        "sinkRequestsAfterNav": [],
+        "externalNavNet": [],
+        "frameSrcViolations": [
+          {
+            "sessionId": null,
+            "at": 1792471829510,
+            "level": "error",
+            "source": "security",
+            "text": "Framing 'http://127.0.0.1:58342/' violates the following Content Security Policy directive: \"frame-src http://127.0.0.1:62530\". The request has been blocked.\n",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          }
+        ],
+        "runtimeEvents": [
+          {
+            "at": 1792471829232,
+            "type": "state",
+            "state": "loading",
+            "error": null
+          },
+          {
+            "at": 1792471829232,
+            "type": "save-status",
+            "error": null
+          },
+          {
+            "at": 1792471829271,
+            "type": "state",
+            "state": "ready",
+            "error": null
+          },
+          {
+            "at": 1792471829271,
+            "type": "state",
+            "state": "playing",
+            "error": null
+          },
+          {
+            "at": 1792471829297,
+            "type": "save-status",
+            "error": null
+          }
+        ],
+        "documentStillAlive": false
+      },
+      "instance3": {
+        "rendered": {
+          "sessionId": "2163EF15C4312B18F25B1EE207FA14FD",
+          "snapshot": {
+            "origin": "null",
+            "title": "M1 Boundary Probe",
+            "href": "http://127.0.0.1:62530/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+            "hasHud": true,
+            "chromeError": false,
+            "evil": {
+              "phase": "boot",
+              "initEvents": 1,
+              "observed": {
+                "fetch-external": {
+                  "resolved": false,
+                  "error": "Failed to fetch"
+                },
+                "xhr-external": {
+                  "resolved": false,
+                  "error": "xhr-error"
+                },
+                "websocket-external": {
+                  "opened": false,
+                  "error": "ws-error"
+                },
+                "beacon-external": {
+                  "queued": true
+                },
+                "fetch-host-api": {
+                  "resolved": false,
+                  "error": "Failed to fetch"
+                },
+                "xhr-host-api": {
+                  "resolved": false,
+                  "error": "xhr-error"
+                },
+                "window-open-external": {
+                  "opened": false
+                },
+                "top-navigation-external": {
+                  "assignment": "threw",
+                  "error": "Failed to set a named property 'href' on 'Location': The current window does not have permission to navigate the target frame to 'http://127.0.0.1:58342/top-navigation'."
+                },
+                "fetch-same-origin": {
+                  "resolved": true,
+                  "status": 200
+                }
+              },
+              "bridgeResponses": [
+                {
+                  "id": "evil-req-0",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-1",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-2",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-3",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-4",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-5",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-save",
+                  "ok": true
+                }
+              ],
+              "bridgeReady": {
+                "ok": true,
+                "resourceBase": "http://127.0.0.1:62530/res/<credential>/<credential>",
+                "packageFormat": "asset-zip-v2"
+              }
+            }
+          }
+        },
+        "phase1": {
+          "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+          "kind": "game",
+          "at": 1792471827968,
+          "event": "phase1-complete",
+          "attempts": 7,
+          "bridgeResponses": 7,
+          "initEvents": 1
+        }
+      },
+      "sameOrigin": {
+        "sameOriginAttempt": {
+          "sessionId": "2163EF15C4312B18F25B1EE207FA14FD",
+          "kind": "game",
+          "at": 1792471841740,
+          "event": "nav-same-origin-attempt",
+          "page": "second.html"
+        },
+        "secondPage": {
+          "sessionId": "2163EF15C4312B18F25B1EE207FA14FD",
+          "kind": "game",
+          "at": 1792471841752,
+          "event": "second-page",
+          "href": "/res/<instance>/<token>/second.html"
+        },
+        "secondPageResponse": [
+          {
+            "sessionId": "2163EF15C4312B18F25B1EE207FA14FD",
+            "method": "GET",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/second.html",
+            "resourceType": "Document",
+            "status": 200,
+            "mimeType": "text/html",
+            "failed": false,
+            "errorText": null,
+            "blockedReason": null,
+            "credentialKind": "resource:second.html",
+            "requestOrigin": null,
+            "responseHeaders": {
+              "contentType": "text/html; charset=utf-8",
+              "accessControlAllowOrigin": "*",
+              "contentSecurityPolicy": null
+            }
+          }
+        ]
+      },
+      "revocationAfterUnexpectedNestedNavigation": [
+        {
+          "at": 1792471858510,
+          "type": "error",
+          "error": {
+            "code": "GM-5012",
+            "message": "Game is not responding",
+            "retryable": false
+          }
+        }
+      ],
+      "runtimeEventsAfterHeartbeatWindow": [
+        {
+          "at": 1792471841481,
+          "type": "state",
+          "state": "loading",
+          "error": null
+        },
+        {
+          "at": 1792471841481,
+          "type": "save-status",
+          "error": null
+        },
+        {
+          "at": 1792471841503,
+          "type": "state",
+          "state": "ready",
+          "error": null
+        },
+        {
+          "at": 1792471841503,
+          "type": "state",
+          "state": "playing",
+          "error": null
+        },
+        {
+          "at": 1792471841532,
+          "type": "save-status",
+          "error": null
+        },
+        {
+          "at": 1792471858510,
+          "type": "error",
+          "error": {
+            "code": "GM-5012",
+            "message": "Game is not responding",
+            "retryable": false
+          }
+        },
+        {
+          "at": 1792471858510,
+          "type": "state",
+          "state": "error",
+          "error": null
+        }
+      ]
+    },
+    "runtime": {
+      "instance1": {
+        "derivedInfo": {
+          "resourceOrigin": "http://127.0.0.1:62530",
+          "resourceBase": "http://127.0.0.1:62530/res/<credential>/<credential>",
+          "wrapperUrl": "http://127.0.0.1:62530/wrapper?src=<redacted-src>"
+        },
+        "frame": {
+          "sandbox": null,
+          "allow": "autoplay",
+          "referrerpolicy": "no-referrer",
+          "src": "http://127.0.0.1:62530/wrapper?src=<redacted-src>"
+        },
+        "rendered": {
+          "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+          "snapshot": {
+            "origin": "null",
+            "title": "M1 Boundary Probe",
+            "href": "http://127.0.0.1:62530/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+            "hasHud": true,
+            "chromeError": false,
+            "evil": {
+              "phase": "boot",
+              "initEvents": 1,
+              "observed": {
+                "fetch-external": {
+                  "resolved": false,
+                  "error": "Failed to fetch"
+                },
+                "xhr-external": {
+                  "resolved": false,
+                  "error": "xhr-error"
+                },
+                "websocket-external": {
+                  "opened": false,
+                  "error": "ws-error"
+                },
+                "beacon-external": {
+                  "queued": true
+                },
+                "fetch-host-api": {
+                  "resolved": false,
+                  "error": "Failed to fetch"
+                },
+                "xhr-host-api": {
+                  "resolved": false,
+                  "error": "xhr-error"
+                },
+                "window-open-external": {
+                  "opened": false
+                },
+                "top-navigation-external": {
+                  "assignment": "threw",
+                  "error": "Failed to set a named property 'href' on 'Location': The current window does not have permission to navigate the target frame to 'http://127.0.0.1:58342/top-navigation'."
+                },
+                "fetch-same-origin": {
+                  "resolved": true,
+                  "status": 200
+                }
+              },
+              "bridgeResponses": [
+                {
+                  "id": "evil-req-0",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-1",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-2",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-3",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-4",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-5",
+                  "ok": false,
+                  "code": "GM-4004"
+                },
+                {
+                  "id": "evil-req-save",
+                  "ok": true
+                }
+              ],
+              "bridgeReady": {
+                "ok": true,
+                "resourceBase": "http://127.0.0.1:62530/res/<credential>/<credential>",
+                "packageFormat": "asset-zip-v2"
+              }
+            }
+          }
+        },
+        "finalState": {
+          "phase": "phase1",
+          "marker": "evil-marker",
+          "initEvents": 1,
+          "attempts": [
+            {
+              "kind": "fetch-external",
+              "target": "http://127.0.0.1:58342/egress/fetch",
+              "outcome": "rejected"
+            },
+            {
+              "kind": "beacon-external",
+              "target": "http://127.0.0.1:58342/egress/beacon",
+              "outcome": "queued:true"
+            },
+            {
+              "kind": "fetch-host-api",
+              "target": "http://127.0.0.1:58291/api/game-market/health",
+              "outcome": "rejected"
+            },
+            {
+              "kind": "window-open-external",
+              "target": "http://127.0.0.1:58342/popup",
+              "outcome": "blocked"
+            },
+            {
+              "kind": "top-navigation-external",
+              "target": "http://127.0.0.1:58342/top-navigation",
+              "outcome": "attempted"
+            },
+            {
+              "kind": "fetch-same-origin",
+              "target": "data/level.json",
+              "outcome": "resolved:200"
+            },
+            {
+              "kind": "entry-launch-replay",
+              "target": "http://127.0.0.1:62530/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+              "outcome": "resolved:410"
+            }
+          ],
+          "observed": {
+            "fetch-external": {
+              "resolved": false,
+              "error": "Failed to fetch"
+            },
+            "xhr-external": {
+              "resolved": false,
+              "error": "xhr-error"
+            },
+            "websocket-external": {
+              "opened": false,
+              "error": "ws-error"
+            },
+            "beacon-external": {
+              "queued": true
+            },
+            "fetch-host-api": {
+              "resolved": false,
+              "error": "Failed to fetch"
+            },
+            "xhr-host-api": {
+              "resolved": false,
+              "error": "xhr-error"
+            },
+            "window-open-external": {
+              "opened": false
+            },
+            "top-navigation-external": {
+              "assignment": "threw",
+              "error": "Failed to set a named property 'href' on 'Location': The current window does not have permission to navigate the target frame to 'http://127.0.0.1:58342/top-navigation'."
+            },
+            "fetch-same-origin": {
+              "resolved": true,
+              "status": 200
+            },
+            "entry-launch-replay": {
+              "resolved": true,
+              "status": 410
+            }
+          },
+          "bridgeResponses": [
+            {
+              "id": "evil-req-0",
+              "ok": false,
+              "code": "GM-4004"
+            },
+            {
+              "id": "evil-req-1",
+              "ok": false,
+              "code": "GM-4004"
+            },
+            {
+              "id": "evil-req-2",
+              "ok": false,
+              "code": "GM-4004"
+            },
+            {
+              "id": "evil-req-3",
+              "ok": false,
+              "code": "GM-4004"
+            },
+            {
+              "id": "evil-req-4",
+              "ok": false,
+              "code": "GM-4004"
+            },
+            {
+              "id": "evil-req-5",
+              "ok": false,
+              "code": "GM-4004"
+            },
+            {
+              "id": "evil-req-save",
+              "ok": true
+            }
+          ],
+          "bridgeRequests": [
+            {
+              "id": "evil-req-0",
+              "method": "pluginManager/install"
+            },
+            {
+              "id": "evil-req-1",
+              "method": "update/begin"
+            },
+            {
+              "id": "evil-req-2",
+              "method": "install"
+            },
+            {
+              "id": "evil-req-3",
+              "method": "userQuestions/answer"
+            },
+            {
+              "id": "evil-req-4",
+              "method": "approval/request"
+            },
+            {
+              "id": "evil-req-5",
+              "method": "score.reset"
+            },
+            {
+              "id": "evil-req-save",
+              "method": "storage.save"
+            }
+          ],
+          "errors": [],
+          "startedAt": 1792471825453,
+          "bridgeReady": {
+            "ok": true,
+            "resourceBase": "http://127.0.0.1:62530/res/<credential>/<credential>",
+            "packageFormat": "asset-zip-v2"
+          }
+        },
+        "phase1": {
+          "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+          "kind": "game",
+          "at": 1792471827968,
+          "event": "phase1-complete",
+          "attempts": 7,
+          "bridgeResponses": 7,
+          "initEvents": 1
+        },
+        "runtimeEvents": [
+          {
+            "at": 1792471825425,
+            "type": "state",
+            "state": "loading",
+            "error": null
+          },
+          {
+            "at": 1792471825425,
+            "type": "save-status",
+            "error": null
+          },
+          {
+            "at": 1792471825456,
+            "type": "state",
+            "state": "ready",
+            "error": null
+          },
+          {
+            "at": 1792471825456,
+            "type": "state",
+            "state": "playing",
+            "error": null
+          },
+          {
+            "at": 1792471825478,
+            "type": "save-status",
+            "error": null
+          }
+        ]
+      },
+      "wrapperLayer": {
+        "frameFound": true,
+        "frameId": "453C4B412F05439889D79CA15E799B59",
+        "frameUrl": "http://127.0.0.1:62530/wrapper?src=<redacted-src>",
+        "value": {
+          "origin": "http://127.0.0.1:62530",
+          "windowOrigin": "http://127.0.0.1:62530",
+          "innerCount": 1,
+          "innerSandbox": "allow-scripts",
+          "innerAllow": "autoplay",
+          "innerReferrerPolicy": "no-referrer"
+        }
+      },
+      "wrapperCsp": {
+        "csp": "default-src 'none'; frame-src http://127.0.0.1:62530; child-src http://127.0.0.1:62530; script-src 'nonce-<credential>'; style-src 'unsafe-inline'; img-src 'none'; media-src 'none'; font-src 'none'; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58291",
+        "frameAncestors": "http://127.0.0.1:58291",
+        "status": 200
+      },
+      "cspLogs": {
+        "framingViolations": [],
+        "frameSrcBlocks": [
+          {
+            "sessionId": null,
+            "at": 1792471829510,
+            "level": "error",
+            "source": "security",
+            "text": "Framing 'http://127.0.0.1:58342/' violates the following Content Security Policy directive: \"frame-src http://127.0.0.1:62530\". The request has been blocked.\n",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          }
+        ],
+        "otherCspReports": [
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "at": 1792471825460,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58342/egress/fetch' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "at": 1792471825460,
+            "level": "error",
+            "source": "javascript",
+            "text": "Fetch API cannot load http://127.0.0.1:58342/egress/fetch. Refused to connect because it violates the document's Content Security Policy.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "at": 1792471825460,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58342/egress/xhr' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "at": 1792471825461,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'ws://127.0.0.1:58342/egress/ws' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "at": 1792471825461,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58342/egress/beacon' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "at": 1792471825461,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58291/api/game-market/health' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "at": 1792471825461,
+            "level": "error",
+            "source": "javascript",
+            "text": "Fetch API cannot load http://127.0.0.1:58291/api/game-market/health. Refused to connect because it violates the document's Content Security Policy.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "3DBAA98C1139856EE31C30A82CCBE078",
+            "at": 1792471825461,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58291/api/game-market/save' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+            "at": 1792471829272,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58342/egress/fetch' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+            "at": 1792471829272,
+            "level": "error",
+            "source": "javascript",
+            "text": "Fetch API cannot load http://127.0.0.1:58342/egress/fetch. Refused to connect because it violates the document's Content Security Policy.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+            "at": 1792471829272,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58342/egress/xhr' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+            "at": 1792471829272,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'ws://127.0.0.1:58342/egress/ws' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+            "at": 1792471829273,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58342/egress/beacon' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+            "at": 1792471829273,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58291/api/game-market/health' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+            "at": 1792471829273,
+            "level": "error",
+            "source": "javascript",
+            "text": "Fetch API cannot load http://127.0.0.1:58291/api/game-market/health. Refused to connect because it violates the document's Content Security Policy.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+            "at": 1792471829273,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58291/api/game-market/save' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": null,
+            "at": 1792471829510,
+            "level": "error",
+            "source": "security",
+            "text": "Framing 'http://127.0.0.1:58342/' violates the following Content Security Policy directive: \"frame-src http://127.0.0.1:62530\". The request has been blocked.\n",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+            "at": 1792471829510,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58342/egress/fetch' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+            "at": 1792471829511,
+            "level": "error",
+            "source": "javascript",
+            "text": "Fetch API cannot load http://127.0.0.1:58342/egress/fetch. Refused to connect because it violates the document's Content Security Policy.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          },
+          {
+            "sessionId": "2A7C625912BCF42B28E3EB10818AA9C3",
+            "at": 1792471829511,
+            "level": "error",
+            "source": "security",
+            "text": "Connecting to 'http://127.0.0.1:58342/egress/xhr' violates the following Content Security Policy directive: \"connect-src http://127.0.0.1:62530\". The action has been blocked.",
+            "url": "http://127.0.0.1:62530/res/<instance>/<token>/scripts/main.mjs"
+          }
+        ]
+      }
+    },
+    "install": {
+      "status": 200,
+      "gameId": "m1-a06-boundaries",
+      "format": "asset-zip-v2",
+      "fileCount": 10
+    },
+    "screenshots": {
+      "full": "docs/verification/v1.5/raw/m1/screenshots/a06-dsh-page-full.png",
+      "runtimeContainer": "docs/verification/v1.5/raw/m1/screenshots/a06-runtime-iframe.png"
+    }
+  }
+}

@@ -88,6 +88,60 @@ Issue Form 与资料 PR 使用同一字段；Issue 关闭/作者 CI 通过不等
 - 客户端只看到 registry 条目，不包含 owner/review/selfTest 等运营元数据；
 - `catalog`/`registry` 必须在同一个 PR 中更新，不能等待一次可能失败的部署。
 
+#### 2.4.1 V1.5：catalog v2 与两代索引
+
+V1.5 引入 `asset-zip-v2` 资源包后，同一份源记录要投影成**两代** Registry。权威规格是
+[`V1.5-CONTRACTS.md`](./V1.5-CONTRACTS.md) §5，本节只记录与 V1 的关系，不推翻 V1 规则。
+
+**catalog 源记录升级为 `schemaVersion: 2`**（`releases[]` 追加式，不可改写）：
+
+```jsonc
+{
+  "schemaVersion": 2,
+  "gameId": "orbit-courier",
+  "owner": { "login": "author", "githubUserId": 123456 },
+  "game": { /* 展示/兼容字段，沿用 V1 */ },
+  "releases": [{
+    "version": "1.1.0",
+    "format": "html-v1" | "asset-zip-v2",     // 新增：必填
+    "tag": "orbit-courier-v1.1.0",
+    "package": {
+      "url": "https://…/orbit-courier-1.1.0.dshgame.zip",
+      "sha256": "<64 hex>",
+      "size": 123456,
+      "filesDigest": "<64 hex>"                // 可选，仅 asset-zip-v2
+    },
+    "media": { "cover": { "url": "https://…" }, "screenshots": [{ "url": "https://…" }] },
+    "sourceCommit": "<7–40 hex>",
+    "reviewSha256": "<64 hex>",
+    "releasedAt": "2026-10-05T00:00:00.000Z"
+  }],
+  "withdrawnAt": null,
+  "createdAt": "2026-10-01T00:00:00.000Z",
+  "updatedAt": "2026-10-05T00:00:00.000Z"
+}
+```
+
+**双索引生成**（同一次生成，同一个 PR）：
+
+- `registry/games.json`（`registryVersion: 1`）：只含 `format === 'html-v1'` 的 release，
+  取其中 `version` 最大者；**沿用 V1 schema，不含 `format`/`filesDigest` 字段**。
+- `registry/v2/games.json`（`registryVersion: 2`）：取 `releases` 中 `version` 最大者
+  （任意 format），**必须显式带 `package.format`**，`asset-zip-v2` 可带 `filesDigest`。
+- 找不到任何 HTML release → 该游戏**不出现在 v1 索引**（不是报错），v2 索引仍可有它。
+  这样旧客户端保留的是"上一个真实存在的 HTML 版本"，而不是一个不存在的降级产物。
+- `withdrawnAt` 非空 → 两代索引**同时移除**该游戏；`catalog`/`reviews`/已发布资产保留（审计不可改写）。
+- `generatedAt` 取所有源记录中最大的固定更新时间；同一输入两代索引字节一致。
+
+**版本与不可变性**（发布工具 dry-run 阶段即拒绝）：
+
+- 同一 `<id>/<version>` 的包字节不可变，版本号不得回退；
+- `html-v1 → asset-zip-v2` 的格式切换**必须提升版本号**（同一个版本不能有两种格式）；
+- 已发布 release 的 `package`/`media`/`reviewSha256` 不可改写，只能在 `releases[]` 追加新条目。
+
+**兼容旧内容仓库**：`schemaVersion: 1` 的 catalog 仍被读取（工具在内存中升级为
+`releases: [{ format: 'html-v1', … }]` 再走同一套投影），不要求一次性迁移。
+
 ## 3. 默认官方目录与离线兜底
 
 Host 默认源（无显式配置时）：

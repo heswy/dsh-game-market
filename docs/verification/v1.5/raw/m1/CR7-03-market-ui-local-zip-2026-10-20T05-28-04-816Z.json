@@ -1,0 +1,1465 @@
+{
+  "id": "CR7-03-market-ui-local-zip",
+  "title": "CR7-03: local .dshgame.zip install through the real Market UI click path (byte-identical upload, html-v1 control)",
+  "generatedAt": "2026-10-20T05:28:04.816Z",
+  "command": "node scripts/verification/v1.5/m1/m1-a06c-market-ui-local-zip.mjs",
+  "environment": {
+    "dsh": {
+      "dshPackage": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.2"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.2"
+      },
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.2"
+      },
+      "asarExtractedAt": "2026-10-20T02:55:54.473Z"
+    },
+    "chrome": "headless CDP",
+    "pluginRoot": "<worktree>",
+    "ports": {
+      "bootstrap": 58320,
+      "host": 58321,
+      "chrome": 9512
+    }
+  },
+  "commands": [],
+  "startedAt": "2026-10-20T05:28:04.816Z",
+  "finishedAt": "2026-10-20T05:28:04.816Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "dsh-page-loads-and-host-api-answers",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "health": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "data": {
+              "ok": true,
+              "version": "1.2.0",
+              "hostEpoch": "he_662b0d0e5e03e0a0",
+              "devMode": true,
+              "storage": {
+                "ok": true,
+                "root": "/tmp/dsh-v15/home-probe-m1-cr7c/storages/dsh-game-market",
+                "readOnly": false
+              },
+              "uptimeMs": 3882,
+              "registry": {
+                "state": "seed",
+                "sourceUrl": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-asset-packages/registry/games.json",
+                "fetchedAt": "2026-10-20T05:27:51.639Z",
+                "truncated": false,
+                "count": 3,
+                "lastError": null,
+                "generation": null,
+                "registryVersion": 1,
+                "activeSource": "seed",
+                "fallback": true,
+                "official": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v2",
+                  "registryVersion": 2
+                },
+                "officialV2": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v2",
+                  "registryVersion": 2
+                },
+                "officialV1": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v1",
+                  "registryVersion": 1
+                },
+                "seed": {
+                  "state": "fresh",
+                  "count": 3,
+                  "sourceUrl": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-asset-packages/registry/games.json"
+                }
+              },
+              "installations": {
+                "count": 0,
+                "updateAvailable": 0
+              },
+              "sessions": {
+                "running": 0,
+                "staleRunningPreserved": true
+              },
+              "games": {
+                "builtinCount": 1,
+                "issues": []
+              }
+            },
+            "requestId": "req_d6bd5160ebfb930d",
+            "serverTime": "2026-10-20T05:27:55.417Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "real-client-market-panel-opens-via-sidebar-click",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sidebar": true,
+        "market": {
+          "marketOpen": true,
+          "page": "market",
+          "gameCards": 0,
+          "uploadButton": 1,
+          "fileInputAccept": ".html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed",
+          "dialog": null,
+          "toast": null,
+          "bodyText": "新会话\n⌥\n⌘\nN\n插件\n自动化任务\n游戏市场\n工作区\n默认工作区\n新会话\n更多\nGame Market\n市场\n我的游戏\n上传游戏\n\n暂时没有可显示的游戏\n\n重试"
+        }
+      }
+    },
+    {
+      "name": "file-picker-accepts-html-and-dshgame-zip",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "accept": ".html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed"
+      }
+    },
+    {
+      "name": "zip-native-file-chooser-opened-by-upload-click",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "upload": {
+          "label": "zip-upload",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "上传游戏",
+            "className": "dgm-btn dgm-upload dgm-local-install",
+            "rect": {
+              "x": 1371,
+              "y": 27,
+              "width": 98,
+              "height": 32
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 1371,
+            "y": 27,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "chooser": {
+          "sessionId": null,
+          "at": 1792474076901,
+          "backendNodeId": 74,
+          "mode": "selectSingle",
+          "frameId": "1CF7EAA030AFB6D1B266AA94E5E3EDC2"
+        }
+      }
+    },
+    {
+      "name": "zip-native-file-chooser-received-the-file",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "files": 1,
+        "via": "DOM.setFileInputFiles",
+        "backendNodeId": 74
+      }
+    },
+    {
+      "name": "zip-confirmation-dialog-shown",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "title": "从本地安装《m1-cr7-local-zip-1.0.0.dshgame.zip》？",
+        "role": "dialog",
+        "meta": [
+          {
+            "label": "文件大小",
+            "value": "101 KB"
+          },
+          {
+            "label": "包格式",
+            "value": "资源包（.dshgame.zip）"
+          }
+        ],
+        "notes": [],
+        "warning": [
+          "本地安装不会校验文件来源。"
+        ],
+        "primaryLabel": "安装",
+        "cancelLabel": "取消",
+        "fileNameOk": true,
+        "formatLabelOk": true,
+        "sizeRow": {
+          "label": "文件大小",
+          "value": "101 KB"
+        },
+        "warningOk": true
+      }
+    },
+    {
+      "name": "zip-confirmation-dialog-shows-file-size",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "文件大小",
+        "value": "101 KB"
+      }
+    },
+    {
+      "name": "zip-confirmation-dialog-shows-package-format",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "label": "文件大小",
+          "value": "101 KB"
+        },
+        {
+          "label": "包格式",
+          "value": "资源包（.dshgame.zip）"
+        }
+      ]
+    },
+    {
+      "name": "zip-confirmation-dialog-shows-local-install-warning",
+      "ok": true,
+      "required": true,
+      "detail": [
+        "本地安装不会校验文件来源。"
+      ]
+    },
+    {
+      "name": "zip-confirmation-click-dispatched",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "zip-confirm",
+        "clicked": true,
+        "target": {
+          "tag": "BUTTON",
+          "text": "安装",
+          "className": "dgm-btn dgm-btn-primary",
+          "rect": {
+            "x": 1002,
+            "y": 521,
+            "width": 54,
+            "height": 32
+          },
+          "hitInsideTarget": true
+        },
+        "point": {
+          "x": 1002,
+          "y": 521,
+          "trusted": "Input.dispatchMouseEvent"
+        }
+      }
+    },
+    {
+      "name": "ui-sent-install-local-request",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "url": "http://127.0.0.1:58321/api/game-market/install-local?operationId=op_5e90fc71-3d36-4f79-962a-a5bec0aa9459",
+        "method": "POST",
+        "status": 200,
+        "contentType": "application/zip",
+        "contentLength": null,
+        "initiator": "script",
+        "requestHeaders": {
+          "sec-ch-ua-platform": "\"macOS\"",
+          "Referer": "http://127.0.0.1:58321/",
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\"",
+          "content-type": "application/zip",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "actualRequestHeaders": null
+      }
+    },
+    {
+      "name": "ui-upload-content-type-application-zip",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "contentType": "application/zip"
+      }
+    },
+    {
+      "name": "upload-bytes-length-matches-source-file",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "uploadLength": null,
+        "serverSize": 102997,
+        "sourceLength": 102997,
+        "note": "sha256 equality (below) is the byte-identity proof; length is a cheap cross-check"
+      }
+    },
+    {
+      "name": "zip-install-api-returned-ok",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "gameId": "m1-cr7-local-zip"
+      }
+    },
+    {
+      "name": "uploaded-zip-request-body-sha256-matches-source",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "rawBody": {
+          "sha256": "c07a9f8c…<redacted-len64>",
+          "bytes": 102997,
+          "source": "cdp-postDataEntries-base64"
+        },
+        "sourceSha256": "c07a9f8c…<redacted-len64>",
+        "sourceLength": 102997
+      }
+    },
+    {
+      "name": "uploaded-zip-bytes-byte-identical-to-source-sha256",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "serverSha256": "c07a9f8c…<redacted-len64>",
+        "sourceSha256": "c07a9f8c…<redacted-len64>"
+      }
+    },
+    {
+      "name": "zip-install-format-is-asset-zip-v2",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "format": "asset-zip-v2",
+        "entry": "index.html",
+        "fileCount": 9
+      }
+    },
+    {
+      "name": "ui-closed-dialog-after-zip-install",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "marketOpen": true,
+        "page": "market",
+        "gameCards": 0,
+        "uploadButton": 1,
+        "fileInputAccept": ".html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed",
+        "dialog": null,
+        "toast": {
+          "kind": "success",
+          "text": "《M1 Multi-Resource Probe》已从本地安装开始游戏"
+        },
+        "bodyText": "新会话\n⌥\n⌘\nN\n插件\n自动化任务\n游戏市场\n工作区\n默认工作区\n新会话\n更多\nGame Market\n市场\n我的游戏\n上传游戏\n游戏时间\n\n挑一款喜欢的，轻松玩一局。\n\n正在显示随包游戏，官方目录暂不可用。\n重试\n全部游戏\n5 款游戏\n全部\n街机\n益智\nM\n已安装\nM1 Multi-Resource Probe\n\ndsh-game-market verification · 街机\n\n已安装\nSnake\n内置\n\nDSH · 街机\n\n2\n8\n16\n32\n2048\n\nDSH Game Market · 益智\n\nBreakout\n\nDSH Game Market · 街机\n\nJump\n\nDSH · 街机\n\n《M1 Multi-Resource Probe》已从本地安装\n开始游戏"
+      }
+    },
+    {
+      "name": "ui-shows-local-install-success-toast",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "kind": "success",
+        "text": "《M1 Multi-Resource Probe》已从本地安装开始游戏"
+      }
+    },
+    {
+      "name": "ui-my-games-shows-installed-game",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "myGamesClick": {
+          "label": "my-games-tab",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "我的游戏",
+            "className": "dgm-tab",
+            "rect": {
+              "x": 431,
+              "y": 27,
+              "width": 57,
+              "height": 54
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 431,
+            "y": 27,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "bodyHasGame": true
+      }
+    },
+    {
+      "name": "installed-catalog-contains-the-game",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "item": {
+          "id": "m1-cr7-local-zip",
+          "name": "M1 Multi-Resource Probe",
+          "version": "1.0.0",
+          "description": "M1 A02 probe: independent ESM/CSS/PNG/JSON/audio through the real Host resource origin.",
+          "author": {
+            "name": "dsh-game-market verification"
+          },
+          "categories": [
+            "arcade"
+          ],
+          "tags": [],
+          "capabilities": [
+            "storage",
+            "score"
+          ],
+          "sdkVersion": "^1.0.0",
+          "runtimeVersion": "^1.0.0",
+          "icon": null,
+          "cover": null,
+          "screenshots": [],
+          "homepage": null,
+          "repository": null,
+          "license": null,
+          "changelog": null,
+          "featured": false,
+          "quickPlay": false,
+          "publishedAt": null,
+          "updatedAt": "2026-10-20T05:27:58.463Z",
+          "source": "local",
+          "dev": false,
+          "installedVersion": "1.0.0",
+          "updateAvailable": false,
+          "canContinue": false,
+          "bestScore": null,
+          "lastPlayedAt": null,
+          "compatibility": {
+            "ok": true,
+            "reason": null
+          },
+          "preferredTheme": "system",
+          "i18n": null,
+          "builtin": false,
+          "installed": true,
+          "viewport": {
+            "width": 960,
+            "height": 540,
+            "fit": "contain"
+          },
+          "entryAvailable": true,
+          "issue": null,
+          "latestVersion": null
+        }
+      }
+    },
+    {
+      "name": "installed-record-format-is-asset-zip-v2",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "format": "asset-zip-v2",
+        "sha256": "c07a9f8c…<redacted-len64>",
+        "sizeBytes": 102997
+      }
+    },
+    {
+      "name": "installed-record-sha256-matches-source",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "server": "c07a9f8c…<redacted-len64>",
+        "source": "c07a9f8c…<redacted-len64>"
+      }
+    },
+    {
+      "name": "zip-confirmation-shows-overwrite-note-when-already-installed",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "dialog": {
+          "role": "dialog",
+          "title": "从本地安装《m1-cr7-local-zip-1.0.0.dshgame.zip》？",
+          "body": "本地文件不经过商店校验，请确认来源可信。安装后可以随时卸载，存档会保留。",
+          "meta": [
+            {
+              "label": "文件大小",
+              "value": "101 KB"
+            },
+            {
+              "label": "包格式",
+              "value": "资源包（.dshgame.zip）"
+            }
+          ],
+          "notes": [
+            "将覆盖《M1 Multi-Resource Probe》当前安装的 1.0.0；实际安装版本以包内声明为准。"
+          ],
+          "warning": [
+            "本地安装不会校验文件来源。"
+          ],
+          "primaryLabel": "安装",
+          "cancelLabel": "取消"
+        },
+        "pick": {
+          "clicked": true
+        }
+      }
+    },
+    {
+      "name": "zip-overwrite-dialog-cancelled",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "cancel": {
+          "label": "zip-overwrite-cancel",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "取消",
+            "className": "dgm-btn dgm-btn-quiet",
+            "rect": {
+              "x": 940,
+              "y": 544,
+              "width": 54,
+              "height": 32
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 940,
+            "y": 544,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "closed": true
+      }
+    },
+    {
+      "name": "html-native-file-chooser-received-the-file",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "files": 1,
+        "via": "DOM.setFileInputFiles",
+        "backendNodeId": 74
+      }
+    },
+    {
+      "name": "html-confirmation-dialog-shown",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "title": "从本地安装《m1-cr7-html-control-1.0.0.html》？",
+        "role": "dialog",
+        "meta": [
+          {
+            "label": "文件大小",
+            "value": "178 KB"
+          },
+          {
+            "label": "包格式",
+            "value": "HTML 单文件包"
+          }
+        ],
+        "notes": [],
+        "warning": [
+          "本地安装不会校验文件来源。"
+        ],
+        "primaryLabel": "安装",
+        "cancelLabel": "取消",
+        "fileNameOk": true,
+        "formatLabelOk": true,
+        "sizeRow": {
+          "label": "文件大小",
+          "value": "178 KB"
+        },
+        "warningOk": true
+      }
+    },
+    {
+      "name": "html-confirmation-click-dispatched",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "html-confirm",
+        "clicked": true,
+        "target": {
+          "tag": "BUTTON",
+          "text": "安装",
+          "className": "dgm-btn dgm-btn-primary",
+          "rect": {
+            "x": 1002,
+            "y": 521,
+            "width": 54,
+            "height": 32
+          },
+          "hitInsideTarget": true
+        },
+        "point": {
+          "x": 1002,
+          "y": 521,
+          "trusted": "Input.dispatchMouseEvent"
+        }
+      }
+    },
+    {
+      "name": "html-ui-sent-install-local-request",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "url": "http://127.0.0.1:58321/api/game-market/install-local?operationId=op_1b35c80d-f1bb-4859-8d90-243e61972524",
+        "method": "POST",
+        "status": 200,
+        "contentType": "text/html; charset=utf-8",
+        "contentLength": null,
+        "initiator": "script",
+        "requestHeaders": {
+          "sec-ch-ua-platform": "\"macOS\"",
+          "Referer": "http://127.0.0.1:58321/",
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\"",
+          "content-type": "text/html; charset=utf-8",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "actualRequestHeaders": null
+      }
+    },
+    {
+      "name": "html-upload-content-type-text-html",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "contentType": "text/html; charset=utf-8"
+      }
+    },
+    {
+      "name": "html-install-api-returned-ok",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "gameId": "m1-cr7-html-control"
+      }
+    },
+    {
+      "name": "html-upload-request-body-matches-source-bytes",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "rawBody": {
+          "sha256": "f4c23305…<redacted-len64>",
+          "bytes": 182561,
+          "source": "cdp-postDataEntries-base64"
+        },
+        "sourceSha256": "f4c23305…<redacted-len64>",
+        "sourceLength": 182561
+      }
+    },
+    {
+      "name": "html-upload-bytes-size-identical-to-source",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "uploadLength": null,
+        "serverSize": 182561,
+        "sourceLength": 182561,
+        "note": "html-v1 local installs keep sha256=null by design; byte count is the cross-check"
+      }
+    },
+    {
+      "name": "html-v1-control-installs-with-format-html-v1",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "format": "html-v1",
+        "entry": "entry.html"
+      }
+    },
+    {
+      "name": "html-ui-shows-success-toast",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "kind": "success",
+        "text": "《M1 CR7 HTML Control》已从本地安装开始游戏"
+      }
+    },
+    {
+      "name": "no-direct-api-install-from-probe",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "probeInitiatedInstallApiCalls": 0,
+        "observed": [
+          {
+            "method": "POST",
+            "status": 200,
+            "contentType": null
+          },
+          {
+            "method": "POST",
+            "status": 200,
+            "contentType": null
+          }
+        ]
+      }
+    }
+  ],
+  "scenario": {
+    "pluginRoot": "<worktree>",
+    "label": null,
+    "ports": {
+      "bootstrap": 58320,
+      "host": 58321,
+      "chrome": 9512
+    },
+    "zipSource": {
+      "fileName": "m1-cr7-local-zip-1.0.0.dshgame.zip",
+      "path": "/tmp/dsh-v15/cr7-local-zip/m1-cr7-local-zip-1.0.0.dshgame.zip",
+      "size": 102997,
+      "sha256": "c07a9f8c…<redacted-len64>"
+    },
+    "htmlSource": {
+      "fileName": "m1-cr7-html-control-1.0.0.html",
+      "path": "/tmp/dsh-v15/cr7-local-zip/m1-cr7-html-control-1.0.0.html",
+      "size": 182561,
+      "sha256": "f4c23305…<redacted-len64>"
+    },
+    "dismissals": [
+      {
+        "label": "preview-continue",
+        "clicked": true,
+        "target": {
+          "tag": "BUTTON",
+          "text": "继续",
+          "className": "_button_1rv3m_2 _primary_1rv3m_36 _md_1rv3m_23 YXiQha_primary",
+          "rect": {
+            "x": 932,
+            "y": 533,
+            "width": 120,
+            "height": 36
+          },
+          "hitInsideTarget": true
+        },
+        "point": {
+          "x": 932,
+          "y": 533,
+          "trusted": "Input.dispatchMouseEvent"
+        }
+      },
+      {
+        "label": "close-modal",
+        "clicked": true,
+        "target": {
+          "tag": "BUTTON",
+          "text": "",
+          "className": "Rvc1TW_close",
+          "rect": {
+            "x": 871,
+            "y": 350,
+            "width": 28,
+            "height": 28
+          },
+          "hitInsideTarget": true
+        },
+        "point": {
+          "x": 871,
+          "y": 350,
+          "trusted": "Input.dispatchMouseEvent"
+        }
+      }
+    ],
+    "overlaysRemaining": 0,
+    "sidebarClick": {
+      "label": "sidebar-market",
+      "clicked": true,
+      "target": {
+        "tag": "BUTTON",
+        "text": "游戏市场",
+        "className": "_3WPZCG_panelRow",
+        "rect": {
+          "x": 140,
+          "y": 218,
+          "width": 252,
+          "height": 36
+        },
+        "hitInsideTarget": true
+      },
+      "point": {
+        "x": 140,
+        "y": 218,
+        "trusted": "Input.dispatchMouseEvent"
+      }
+    },
+    "market": {
+      "marketOpen": true,
+      "page": "market",
+      "gameCards": 0,
+      "uploadButton": 1,
+      "fileInputAccept": ".html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed",
+      "dialog": null,
+      "toast": null,
+      "bodyText": "新会话\n⌥\n⌘\nN\n插件\n自动化任务\n游戏市场\n工作区\n默认工作区\n新会话\n更多\nGame Market\n市场\n我的游戏\n上传游戏\n\n暂时没有可显示的游戏\n\n重试"
+    },
+    "pickerAccept": ".html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed",
+    "zip": {
+      "step": "open-market",
+      "before": {
+        "marketOpen": true,
+        "fileInputAccept": ".html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed",
+        "gameCards": 0
+      },
+      "pick": {
+        "uploadClick": {
+          "label": "zip-upload",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "上传游戏",
+            "className": "dgm-btn dgm-upload dgm-local-install",
+            "rect": {
+              "x": 1371,
+              "y": 27,
+              "width": 98,
+              "height": 32
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 1371,
+            "y": 27,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "chooser": {
+          "sessionId": null,
+          "at": 1792474076901,
+          "backendNodeId": 74,
+          "mode": "selectSingle",
+          "frameId": "1CF7EAA030AFB6D1B266AA94E5E3EDC2"
+        },
+        "fileInputSet": {
+          "files": 1,
+          "via": "DOM.setFileInputFiles",
+          "backendNodeId": 74
+        }
+      },
+      "afterPick": {
+        "marketOpen": true,
+        "page": "market",
+        "gameCards": 0,
+        "uploadButton": 1,
+        "fileInputAccept": ".html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed",
+        "dialog": {
+          "role": "dialog",
+          "title": "从本地安装《m1-cr7-local-zip-1.0.0.dshgame.zip》？",
+          "body": "本地文件不经过商店校验，请确认来源可信。安装后可以随时卸载，存档会保留。",
+          "meta": [
+            {
+              "label": "文件大小",
+              "value": "101 KB"
+            },
+            {
+              "label": "包格式",
+              "value": "资源包（.dshgame.zip）"
+            }
+          ],
+          "notes": [],
+          "warning": [
+            "本地安装不会校验文件来源。"
+          ],
+          "primaryLabel": "安装",
+          "cancelLabel": "取消"
+        },
+        "toast": null,
+        "bodyText": "新会话\n⌥\n⌘\nN\n插件\n自动化任务\n游戏市场\n工作区\n默认工作区\n新会话\n更多\nGame Market\n市场\n我的游戏\n上传游戏\n游戏时间\n\n挑一款喜欢的，轻松玩一局。\n\n正在显示随包游戏，官方目录暂不可用。\n重试\n全部游戏\n4 款游戏\n全部\n街机\n益智\n已安装\nSnake\n内置\n\nDSH · 街机\n\n2\n8\n16\n32\n2048\n\nDSH Game Market · 益智\n\nBreakout\n\nDSH Game Market · 街机\n\nJump\n\nDSH · 街机\n\n从本地安装《m1-cr7-local-zip-1.0.0.dshgame.zip》？\n\n本地文件不经过商店校验，请确认来源可信。安装后可以随时卸载，存档会保留。\n\n文件大小\n101 KB\n包格式\n资源包（.dshgame.zip）\n\n本地安装不会校验文件来源。\n\n取消\n安装"
+      },
+      "dialog": {
+        "title": "从本地安装《m1-cr7-local-zip-1.0.0.dshgame.zip》？",
+        "role": "dialog",
+        "meta": [
+          {
+            "label": "文件大小",
+            "value": "101 KB"
+          },
+          {
+            "label": "包格式",
+            "value": "资源包（.dshgame.zip）"
+          }
+        ],
+        "notes": [],
+        "warning": [
+          "本地安装不会校验文件来源。"
+        ],
+        "primaryLabel": "安装",
+        "cancelLabel": "取消",
+        "fileNameOk": true,
+        "formatLabelOk": true,
+        "sizeRow": {
+          "label": "文件大小",
+          "value": "101 KB"
+        },
+        "warningOk": true
+      },
+      "installRequest": {
+        "url": "http://127.0.0.1:58321/api/game-market/install-local?operationId=op_5e90fc71-3d36-4f79-962a-a5bec0aa9459",
+        "method": "POST",
+        "status": 200,
+        "contentType": "application/zip",
+        "contentLength": null,
+        "initiator": "script",
+        "requestHeaders": {
+          "sec-ch-ua-platform": "\"macOS\"",
+          "Referer": "http://127.0.0.1:58321/",
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\"",
+          "content-type": "application/zip",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "actualRequestHeaders": null
+      },
+      "installResponse": {
+        "ok": true,
+        "data": {
+          "gameId": "m1-cr7-local-zip",
+          "version": "1.0.0",
+          "sha256": "c07a9f8c…<redacted-len64>",
+          "installedAt": "2026-10-20T05:27:58.463Z",
+          "changed": true,
+          "source": "local",
+          "warnings": [],
+          "installation": {
+            "id": "m1-cr7-local-zip",
+            "version": "1.0.0",
+            "source": "local",
+            "packagePath": "m1-cr7-local-zip/1.0.0",
+            "sha256": "c07a9f8c…<redacted-len64>",
+            "sizeBytes": 102997,
+            "format": "asset-zip-v2",
+            "entry": "index.html",
+            "fileManifestDigest": "09d6c710…<redacted-len64>",
+            "fileCount": 9,
+            "unpackedBytes": 100512,
+            "previousVersion": null,
+            "previousFormat": null,
+            "installedAt": "2026-10-20T05:27:58.463Z",
+            "updatedAt": "2026-10-20T05:27:58.463Z",
+            "manifest": {
+              "manifestVersion": 1,
+              "id": "m1-cr7-local-zip",
+              "name": "M1 Multi-Resource Probe",
+              "version": "1.0.0",
+              "author": {
+                "name": "dsh-game-market verification"
+              },
+              "description": "M1 A02 probe: independent ESM/CSS/PNG/JSON/audio through the real Host resource origin.",
+              "categories": [
+                "arcade"
+              ],
+              "capabilities": [
+                "storage",
+                "score"
+              ],
+              "sdkVersion": "^1.0.0",
+              "runtimeVersion": "^1.0.0",
+              "score": {
+                "direction": "higher-better",
+                "min": 0,
+                "max": 1000000,
+                "integer": true
+              },
+              "save": {
+                "schemaVersion": 1
+              }
+            },
+            "compatibility": {
+              "status": "ok",
+              "sdkVersion": "1.0.0",
+              "runtimeVersion": "1.0.0",
+              "sdkRange": "^1.0.0",
+              "runtimeRange": "^1.0.0",
+              "checkedAt": "2026-10-20T05:27:58.463Z",
+              "reasons": []
+            },
+            "update": {
+              "available": false,
+              "latestVersion": "1.0.0",
+              "checkedAt": "2026-10-20T05:27:58.463Z",
+              "reason": null
+            },
+            "warnings": []
+          }
+        },
+        "requestId": "req_08875600367d01de",
+        "serverTime": "2026-10-20T05:27:58.440Z"
+      },
+      "installResponseRaw": "{\"ok\":true,\"data\":{\"gameId\":\"m1-cr7-local-zip\",\"version\":\"1.0.0\",\"sha256\":\"c07a9f8c…<redacted-len64>\",\"installedAt\":\"2026-10-20T05:27:58.463Z\",\"changed\":true,\"source\":\"local\",\"warnings\":[],\"installation\":{\"id\":\"m1-cr7-local-zip\",\"version\":\"1.0.0\",\"source\":\"local\",\"packagePath\":\"m1-cr7-local-zip/1.0.0\",\"sha256\":\"c07a9f8c…<redacted-len64>\",\"sizeBytes\":102997,\"format\":\"asset-zip-v2\",\"entry\":\"index.html\",\"fileManifestDigest\":\"09d6c710…<redacted-len64>\",\"fileCount\":9,\"unpackedBytes\":100512,\"previousVersion\":null,\"previousFormat\":null,\"installedAt\":\"2026-10-20T05:27:58.463Z\",\"updatedAt\":\"2026-10-20T05:27:58.463Z\",\"manifest\":{\"manifestVersion\":1,\"id\":\"m1-cr7-local-zip\",\"name\":\"M1 M",
+      "rawRequestBody": {
+        "sha256": "c07a9f8c…<redacted-len64>",
+        "bytes": 102997,
+        "source": "cdp-postDataEntries-base64"
+      },
+      "afterInstall": {
+        "marketOpen": true,
+        "page": "market",
+        "gameCards": 0,
+        "uploadButton": 1,
+        "fileInputAccept": ".html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed",
+        "dialog": null,
+        "toast": {
+          "kind": "success",
+          "text": "《M1 Multi-Resource Probe》已从本地安装开始游戏"
+        },
+        "bodyText": "新会话\n⌥\n⌘\nN\n插件\n自动化任务\n游戏市场\n工作区\n默认工作区\n新会话\n更多\nGame Market\n市场\n我的游戏\n上传游戏\n游戏时间\n\n挑一款喜欢的，轻松玩一局。\n\n正在显示随包游戏，官方目录暂不可用。\n重试\n全部游戏\n5 款游戏\n全部\n街机\n益智\nM\n已安装\nM1 Multi-Resource Probe\n\ndsh-game-market verification · 街机\n\n已安装\nSnake\n内置\n\nDSH · 街机\n\n2\n8\n16\n32\n2048\n\nDSH Game Market · 益智\n\nBreakout\n\nDSH Game Market · 街机\n\nJump\n\nDSH · 街机\n\n《M1 Multi-Resource Probe》已从本地安装\n开始游戏"
+      },
+      "myGamesClick": {
+        "label": "my-games-tab",
+        "clicked": true,
+        "target": {
+          "tag": "BUTTON",
+          "text": "我的游戏",
+          "className": "dgm-tab",
+          "rect": {
+            "x": 431,
+            "y": 27,
+            "width": 57,
+            "height": 54
+          },
+          "hitInsideTarget": true
+        },
+        "point": {
+          "x": 431,
+          "y": 27,
+          "trusted": "Input.dispatchMouseEvent"
+        }
+      },
+      "catalogShowsGame": true,
+      "overwriteDialog": {
+        "role": "dialog",
+        "title": "从本地安装《m1-cr7-local-zip-1.0.0.dshgame.zip》？",
+        "body": "本地文件不经过商店校验，请确认来源可信。安装后可以随时卸载，存档会保留。",
+        "meta": [
+          {
+            "label": "文件大小",
+            "value": "101 KB"
+          },
+          {
+            "label": "包格式",
+            "value": "资源包（.dshgame.zip）"
+          }
+        ],
+        "notes": [
+          "将覆盖《M1 Multi-Resource Probe》当前安装的 1.0.0；实际安装版本以包内声明为准。"
+        ],
+        "warning": [
+          "本地安装不会校验文件来源。"
+        ],
+        "primaryLabel": "安装",
+        "cancelLabel": "取消"
+      },
+      "overwriteCancel": {
+        "label": "zip-overwrite-cancel",
+        "clicked": true,
+        "target": {
+          "tag": "BUTTON",
+          "text": "取消",
+          "className": "dgm-btn dgm-btn-quiet",
+          "rect": {
+            "x": 940,
+            "y": 544,
+            "width": 54,
+            "height": 32
+          },
+          "hitInsideTarget": true
+        },
+        "point": {
+          "x": 940,
+          "y": 544,
+          "trusted": "Input.dispatchMouseEvent"
+        }
+      }
+    },
+    "installedZip": {
+      "listStatus": 200,
+      "item": {
+        "id": "m1-cr7-local-zip",
+        "name": "M1 Multi-Resource Probe",
+        "version": "1.0.0",
+        "description": "M1 A02 probe: independent ESM/CSS/PNG/JSON/audio through the real Host resource origin.",
+        "author": {
+          "name": "dsh-game-market verification"
+        },
+        "categories": [
+          "arcade"
+        ],
+        "tags": [],
+        "capabilities": [
+          "storage",
+          "score"
+        ],
+        "sdkVersion": "^1.0.0",
+        "runtimeVersion": "^1.0.0",
+        "icon": null,
+        "cover": null,
+        "screenshots": [],
+        "homepage": null,
+        "repository": null,
+        "license": null,
+        "changelog": null,
+        "featured": false,
+        "quickPlay": false,
+        "publishedAt": null,
+        "updatedAt": "2026-10-20T05:27:58.463Z",
+        "source": "local",
+        "dev": false,
+        "installedVersion": "1.0.0",
+        "updateAvailable": false,
+        "canContinue": false,
+        "bestScore": null,
+        "lastPlayedAt": null,
+        "compatibility": {
+          "ok": true,
+          "reason": null
+        },
+        "preferredTheme": "system",
+        "i18n": null,
+        "builtin": false,
+        "installed": true,
+        "viewport": {
+          "width": 960,
+          "height": 540,
+          "fit": "contain"
+        },
+        "entryAvailable": true,
+        "issue": null,
+        "latestVersion": null
+      },
+      "detail": {
+        "id": "m1-cr7-local-zip",
+        "version": "1.0.0",
+        "source": "local",
+        "packagePath": "m1-cr7-local-zip/1.0.0",
+        "sha256": "c07a9f8c…<redacted-len64>",
+        "sizeBytes": 102997,
+        "format": "asset-zip-v2",
+        "entry": "index.html",
+        "fileManifestDigest": "09d6c710…<redacted-len64>",
+        "fileCount": 9,
+        "unpackedBytes": 100512,
+        "previousVersion": null,
+        "previousFormat": null,
+        "installedAt": "2026-10-20T05:27:58.463Z",
+        "updatedAt": "2026-10-20T05:27:58.463Z",
+        "manifest": {
+          "manifestVersion": 1,
+          "id": "m1-cr7-local-zip",
+          "name": "M1 Multi-Resource Probe",
+          "version": "1.0.0",
+          "author": {
+            "name": "dsh-game-market verification"
+          },
+          "description": "M1 A02 probe: independent ESM/CSS/PNG/JSON/audio through the real Host resource origin.",
+          "categories": [
+            "arcade"
+          ],
+          "capabilities": [
+            "storage",
+            "score"
+          ],
+          "sdkVersion": "^1.0.0",
+          "runtimeVersion": "^1.0.0",
+          "score": {
+            "direction": "higher-better",
+            "min": 0,
+            "max": 1000000,
+            "integer": true
+          },
+          "save": {
+            "schemaVersion": 1
+          }
+        },
+        "compatibility": {
+          "status": "ok",
+          "sdkVersion": "1.0.0",
+          "runtimeVersion": "1.0.0",
+          "sdkRange": "^1.0.0",
+          "runtimeRange": "^1.0.0",
+          "checkedAt": "2026-10-20T05:27:58.463Z",
+          "reasons": []
+        },
+        "update": {
+          "available": false,
+          "latestVersion": "1.0.0",
+          "checkedAt": "2026-10-20T05:27:58.463Z",
+          "reason": null
+        },
+        "warnings": []
+      }
+    },
+    "html": {
+      "step": "open-market",
+      "before": {
+        "marketOpen": true,
+        "fileInputAccept": ".html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed",
+        "gameCards": 0
+      },
+      "pick": {
+        "uploadClick": {
+          "label": "html-upload",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "上传游戏",
+            "className": "dgm-btn dgm-upload dgm-local-install",
+            "rect": {
+              "x": 1371,
+              "y": 27,
+              "width": 98,
+              "height": 32
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 1371,
+            "y": 27,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "chooser": {
+          "sessionId": null,
+          "at": 1792474081107,
+          "backendNodeId": 74,
+          "mode": "selectSingle",
+          "frameId": "1CF7EAA030AFB6D1B266AA94E5E3EDC2"
+        },
+        "fileInputSet": {
+          "files": 1,
+          "via": "DOM.setFileInputFiles",
+          "backendNodeId": 74
+        }
+      },
+      "afterPick": {
+        "marketOpen": true,
+        "page": "market",
+        "gameCards": 0,
+        "uploadButton": 1,
+        "fileInputAccept": ".html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed",
+        "dialog": {
+          "role": "dialog",
+          "title": "从本地安装《m1-cr7-html-control-1.0.0.html》？",
+          "body": "本地文件不经过商店校验，请确认来源可信。安装后可以随时卸载，存档会保留。",
+          "meta": [
+            {
+              "label": "文件大小",
+              "value": "178 KB"
+            },
+            {
+              "label": "包格式",
+              "value": "HTML 单文件包"
+            }
+          ],
+          "notes": [],
+          "warning": [
+            "本地安装不会校验文件来源。"
+          ],
+          "primaryLabel": "安装",
+          "cancelLabel": "取消"
+        },
+        "toast": null,
+        "bodyText": "新会话\n⌥\n⌘\nN\n插件\n自动化任务\n游戏市场\n工作区\n默认工作区\n新会话\n更多\nGame Market\n市场\n我的游戏\n上传游戏\n游戏时间\n\n挑一款喜欢的，轻松玩一局。\n\n正在显示随包游戏，官方目录暂不可用。\n重试\n全部游戏\n5 款游戏\n全部\n街机\n益智\nM\n已安装\nM1 Multi-Resource Probe\n\ndsh-game-market verification · 街机\n\n已安装\nSnake\n内置\n\nDSH · 街机\n\n2\n8\n16\n32\n2048\n\nDSH Game Market · 益智\n\nBreakout\n\nDSH Game Market · 街机\n\nJump\n\nDSH · 街机\n\n从本地安装《m1-cr7-html-control-1.0.0.html》？\n\n本地文件不经过商店校验，请确认来源可信。安装后可以随时卸载，存档会保留。\n\n文件大小\n178 KB\n包格式\nHTML 单文件包\n\n本地安装不会校验文件来源。\n\n取消\n安装"
+      },
+      "dialog": {
+        "title": "从本地安装《m1-cr7-html-control-1.0.0.html》？",
+        "role": "dialog",
+        "meta": [
+          {
+            "label": "文件大小",
+            "value": "178 KB"
+          },
+          {
+            "label": "包格式",
+            "value": "HTML 单文件包"
+          }
+        ],
+        "notes": [],
+        "warning": [
+          "本地安装不会校验文件来源。"
+        ],
+        "primaryLabel": "安装",
+        "cancelLabel": "取消",
+        "fileNameOk": true,
+        "formatLabelOk": true,
+        "sizeRow": {
+          "label": "文件大小",
+          "value": "178 KB"
+        },
+        "warningOk": true
+      },
+      "installRequest": {
+        "url": "http://127.0.0.1:58321/api/game-market/install-local?operationId=op_1b35c80d-f1bb-4859-8d90-243e61972524",
+        "method": "POST",
+        "status": 200,
+        "contentType": "text/html; charset=utf-8",
+        "contentLength": null,
+        "initiator": "script",
+        "requestHeaders": {
+          "sec-ch-ua-platform": "\"macOS\"",
+          "Referer": "http://127.0.0.1:58321/",
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\"",
+          "content-type": "text/html; charset=utf-8",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "actualRequestHeaders": null
+      },
+      "installResponse": {
+        "ok": true,
+        "data": {
+          "gameId": "m1-cr7-html-control",
+          "version": "1.0.0",
+          "sha256": null,
+          "installedAt": "2026-10-20T05:28:02.656Z",
+          "changed": true,
+          "source": "local",
+          "warnings": [],
+          "installation": {
+            "id": "m1-cr7-html-control",
+            "version": "1.0.0",
+            "source": "local",
+            "packagePath": "m1-cr7-html-control/1.0.0",
+            "sha256": null,
+            "sizeBytes": 182561,
+            "format": "html-v1",
+            "entry": "entry.html",
+            "fileManifestDigest": null,
+            "fileCount": null,
+            "unpackedBytes": null,
+            "previousVersion": null,
+            "previousFormat": null,
+            "installedAt": "2026-10-20T05:28:02.656Z",
+            "updatedAt": "2026-10-20T05:28:02.656Z",
+            "manifest": {
+              "manifestVersion": 1,
+              "id": "m1-cr7-html-control",
+              "name": "M1 CR7 HTML Control",
+              "version": "1.0.0",
+              "author": {
+                "name": "DSH Game Market"
+              },
+              "description": "经典打砖块：移动挡板反弹球，击碎普通与坚硬砖块，闯过 5 个关卡。鼠标或键盘都能玩，支持暂停、自动保存与 Continue。",
+              "categories": [
+                "arcade"
+              ],
+              "tags": [
+                "arcade",
+                "breakout",
+                "keyboard",
+                "mouse",
+                "short-run"
+              ],
+              "capabilities": [
+                "storage",
+                "score"
+              ],
+              "sdkVersion": "^1.0.0",
+              "runtimeVersion": "^1.0.0",
+              "preferredTheme": "game-defined",
+              "viewport": {
+                "width": 960,
+                "height": 540,
+                "fit": "contain"
+              },
+              "score": {
+                "direction": "higher-better",
+                "min": 0,
+                "max": 10000000,
+                "integer": true
+              },
+              "save": {
+                "schemaVersion": 1
+              },
+              "license": "MIT"
+            },
+            "compatibility": {
+              "status": "ok",
+              "sdkVersion": "1.0.0",
+              "runtimeVersion": "1.0.0",
+              "sdkRange": "^1.0.0",
+              "runtimeRange": "^1.0.0",
+              "checkedAt": "2026-10-20T05:28:02.656Z",
+              "reasons": []
+            },
+            "update": {
+              "available": false,
+              "latestVersion": "1.0.0",
+              "checkedAt": "2026-10-20T05:28:02.656Z",
+              "reason": null
+            },
+            "warnings": []
+          }
+        },
+        "requestId": "req_b3b4541207381f2f",
+        "serverTime": "2026-10-20T05:28:02.641Z"
+      },
+      "installResponseRaw": "{\"ok\":true,\"data\":{\"gameId\":\"m1-cr7-html-control\",\"version\":\"1.0.0\",\"sha256\":null,\"installedAt\":\"2026-10-20T05:28:02.656Z\",\"changed\":true,\"source\":\"local\",\"warnings\":[],\"installation\":{\"id\":\"m1-cr7-html-control\",\"version\":\"1.0.0\",\"source\":\"local\",\"packagePath\":\"m1-cr7-html-control/1.0.0\",\"sha256\":null,\"sizeBytes\":182561,\"format\":\"html-v1\",\"entry\":\"entry.html\",\"fileManifestDigest\":null,\"fileCount\":null,\"unpackedBytes\":null,\"previousVersion\":null,\"previousFormat\":null,\"installedAt\":\"2026-10-20T05:28:02.656Z\",\"updatedAt\":\"2026-10-20T05:28:02.656Z\",\"manifest\":{\"manifestVersion\":1,\"id\":\"m1-cr7-html-control\",\"name\":\"M1 CR7 HTML Control\",\"version\":\"1.0.0\",\"author\":{\"name\":\"DSH Game Market\"},\"description\":\"经典打砖块：移动挡板反弹球，击碎普通与坚硬砖块，闯过 5 个关卡。鼠标或键盘都能玩，支持暂停、自动保存与 Continue。\",\"categories\":[\"arcade\"],\"tag",
+      "rawRequestBody": {
+        "sha256": "f4c23305…<redacted-len64>",
+        "bytes": 182561,
+        "source": "cdp-postDataEntries-base64"
+      },
+      "afterInstall": {
+        "marketOpen": true,
+        "page": "market",
+        "gameCards": 0,
+        "uploadButton": 1,
+        "fileInputAccept": ".html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed",
+        "dialog": null,
+        "toast": {
+          "kind": "success",
+          "text": "《M1 CR7 HTML Control》已从本地安装开始游戏"
+        },
+        "bodyText": "新会话\n⌥\n⌘\nN\n插件\n自动化任务\n游戏市场\n工作区\n默认工作区\n新会话\n更多\nGame Market\n市场\n我的游戏\n上传游戏\n游戏时间\n\n挑一款喜欢的，轻松玩一局。\n\n正在显示随包游戏，官方目录暂不可用。\n重试\n全部游戏\n6 款游戏\n全部\n街机\n益智\nM\n已安装\nM1 CR7 HTML Control\n\nDSH Game Market · 街机\n\nM\n已安装\nM1 Multi-Resource Probe\n\ndsh-game-market verification · 街机\n\n已安装\nSnake\n内置\n\nDSH · 街机\n\n2\n8\n16\n32\n2048\n\nDSH Game Market · 益智\n\nBreakout\n\nDSH Game Market · 街机\n\nJump\n\nDSH · 街机\n\n《M1 CR7 HTML Control》已从本地安装\n开始游戏"
+      }
+    },
+    "probeInitiatedInstallApiCalls": 0,
+    "installRequestsObserved": [
+      {
+        "method": "POST",
+        "status": 200,
+        "contentType": null
+      },
+      {
+        "method": "POST",
+        "status": 200,
+        "contentType": null
+      }
+    ],
+    "screenshots": {
+      "marketAfterInstall": "docs/verification/v1.5/raw/m1/screenshots/cr7-03-market-ui-local-zip.png"
+    }
+  }
+}

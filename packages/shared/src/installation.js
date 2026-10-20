@@ -163,3 +163,89 @@ export function versionsToPrune(versions, currentVersion, keep = KEPT_PREVIOUS_V
   const others = unique.filter((version) => version !== currentVersion);
   return others.slice(Math.max(0, keep));
 }
+
+// ---------------------------------------------------------------------------
+// V1.5 format extension (contract §6.2)
+// ---------------------------------------------------------------------------
+
+/**
+ * Optional V1.5 fields on an installation record.
+ *
+ * `schemaVersion` stays 1: these fields are additive, a V1 Host reading them
+ * simply ignores them, and a V1.5 Host normalizes their absence on read. A
+ * schema bump would require a migration step, which this does not.
+ */
+export const INSTALLATION_RECORD_V15_DEFAULTS = Object.freeze({
+  format: 'html-v1',
+  entry: ENTRY_FILE,
+  fileManifestDigest: null,
+  fileCount: null,
+  unpackedBytes: null,
+  previousFormat: null,
+});
+
+/**
+ * Normalize one installation record's V1.5 fields (§6.2).
+ *
+ * Read-time normalization keeps old stores working; the Host writes the
+ * normalized record back so a second read is a no-op. Unknown fields are
+ * preserved verbatim (V1 contract: callers own forward compatibility).
+ *
+ * @param {object} record Stored installation record.
+ * @returns {object} Record with `format`/`entry`/digest fields filled in.
+ */
+export function normalizeInstallationRecord(record) {
+  if (!isPlainObject(record)) return record;
+  const format = record.format === 'asset-zip-v2' ? 'asset-zip-v2' : 'html-v1';
+  const entry = typeof record.entry === 'string' && record.entry.length > 0 ? record.entry : ENTRY_FILE;
+  return {
+    ...record,
+    format,
+    entry,
+    fileManifestDigest: typeof record.fileManifestDigest === 'string' ? record.fileManifestDigest : null,
+    fileCount: Number.isSafeInteger(record.fileCount) ? record.fileCount : null,
+    unpackedBytes: Number.isSafeInteger(record.unpackedBytes) ? record.unpackedBytes : null,
+    previousFormat: record.previousFormat === 'html-v1' || record.previousFormat === 'asset-zip-v2'
+      ? record.previousFormat
+      : null,
+  };
+}
+
+/**
+ * Validate the optional V1.5 fields when present (contract §6.2).
+ * @returns {{ok:boolean, errors:object[]}}
+ */
+export function validateInstallationRecordV15(record) {
+  const errors = [];
+  const fail = (message, field) => errors.push({ code: 'E_INSTALL_CORRUPT', message, field });
+  if (!isPlainObject(record)) return { ok: false, errors };
+  if (record.format !== undefined && record.format !== 'html-v1' && record.format !== 'asset-zip-v2') {
+    fail('record format is invalid', 'format');
+  }
+  if (record.entry !== undefined && (typeof record.entry !== 'string' || record.entry.length === 0)) {
+    fail('record entry must be a non-empty string', 'entry');
+  }
+  if (record.fileManifestDigest !== undefined && record.fileManifestDigest !== null
+    && (typeof record.fileManifestDigest !== 'string' || !/^[a-f0-9]{64}$/.test(record.fileManifestDigest))) {
+    fail('record fileManifestDigest must be 64 lowercase hex or null', 'fileManifestDigest');
+  }
+  for (const field of ['fileCount', 'unpackedBytes']) {
+    if (record[field] !== undefined && record[field] !== null
+      && (!Number.isSafeInteger(record[field]) || record[field] < 0)) {
+      fail(`record ${field} must be a non-negative integer or null`, field);
+    }
+  }
+  if (record.previousFormat !== undefined && record.previousFormat !== null
+    && record.previousFormat !== 'html-v1' && record.previousFormat !== 'asset-zip-v2') {
+    fail('record previousFormat is invalid', 'previousFormat');
+  }
+  return { ok: errors.length === 0, errors };
+}
+
+/** Relative entry path for a record: ZIP packages carry their own entry path (§7.2). */
+export function entryStoragePathForRecord(id, version, record) {
+  const format = record && record.format === 'asset-zip-v2' ? 'asset-zip-v2' : 'html-v1';
+  if (format === 'html-v1') return entryStoragePath(id, version);
+  const entry = record && typeof record.entry === 'string' && record.entry.length > 0 ? record.entry : ENTRY_FILE;
+  return `${packageStoragePath(id, version)}/${entry}`;
+}

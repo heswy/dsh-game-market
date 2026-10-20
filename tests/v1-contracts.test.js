@@ -71,7 +71,30 @@ test('internal E_* codes translate to public GM-* codes', () => {
   assert.equal(gmForInternal('GM-4221'), 'GM-4221');
   assert.equal(gmForInternal('E_UNKNOWN_FUTURE'), GM.INTERNAL);
   // No zip/archive codes survive the single-file switch.
-  assert.equal(Object.keys(INTERNAL_TO_GM).some((code) => code.includes('ZIP')), false);
+  // V1.5 supersedes the V1 "no zip/archive at all" rule (docs/V1.5-CONTRACTS.md
+  // §0.2 marks it 废弃) and adds the asset-zip-v2 archive path. What must stay
+  // frozen is that the V1 single-file codes are neither renumbered nor removed,
+  // and that archive codes are the new ones only. Nothing above this line moved.
+  for (const [internal, gmCode] of Object.entries(INTERNAL_TO_GM)) {
+    assert.match(gmCode, /^GM-\d{4}$/, `${internal} must map to a GM code`);
+  }
+  const zipCodes = Object.keys(INTERNAL_TO_GM).filter((code) => code.includes('ZIP'));
+  assert.deepEqual(zipCodes.sort(), [
+    'E_ZIP_CRC_MISMATCH',
+    'E_ZIP_HEADER_MISMATCH',
+    'E_ZIP_LIMIT_EXCEEDED',
+    'E_ZIP_PATH_CONFLICT',
+    'E_ZIP_PATH_INVALID',
+    'E_ZIP_STRUCTURE',
+    'E_ZIP_UNSUPPORTED_FEATURE',
+  ]);
+  // The archive codes map into the V1.5 422 window, never onto a V1 code.
+  for (const code of zipCodes) {
+    assert.ok(INTERNAL_TO_GM[code].startsWith('GM-427'), `${code} must use the V1.5 archive window`);
+  }
+  // V1 single-file semantics keep their own codes.
+  assert.equal(INTERNAL_TO_GM.E_PKG_HTML_INVALID, GM.PACKAGE_INVALID);
+  assert.equal(INTERNAL_TO_GM.E_PKG_ENTRY_NOT_SELF_CONTAINED, GM.ENTRY_NOT_SELF_CONTAINED);
 });
 
 test('GM codes map to the PRD HTTP status', () => {

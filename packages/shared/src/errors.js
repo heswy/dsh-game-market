@@ -91,6 +91,31 @@ export const GM = Object.freeze({
   INSTALL_DOWNLOAD_TIMEOUT: 'GM-5035',
   INSTALL_IO: 'GM-5036',
   INSTALL_CORRUPT: 'GM-5037',
+  // V1.5 package / archive / catalog / inline semantics (V1.5-CONTRACTS §8.1)
+  ZIP_INVALID: 'GM-4270',
+  ZIP_UNSUPPORTED: 'GM-4271',
+  ZIP_LIMIT: 'GM-4272',
+  ZIP_PATH_INVALID: 'GM-4273',
+  ZIP_PATH_CONFLICT: 'GM-4274',
+  ZIP_HEADER_MISMATCH: 'GM-4275',
+  ZIP_CRC_MISMATCH: 'GM-4276',
+  DESCRIPTOR_INVALID: 'GM-4277',
+  DESCRIPTOR_MISMATCH: 'GM-4278',
+  MANIFEST_CONFLICT: 'GM-4279',
+  ASSET_TYPE_UNSUPPORTED: 'GM-4280',
+  CATALOG_IMMUTABLE: 'GM-4281',
+  FORMAT_POLICY: 'GM-4282',
+  ASSET_INLINE_FORBIDDEN: 'GM-4283',
+  // V1.5 resource credentials (§7.2)
+  RESOURCE_CREDENTIAL_INVALID: 'GM-4010',
+  RESOURCE_CREDENTIAL_EXPIRED: 'GM-4011',
+  ENTRY_CREDENTIAL_CONSUMED: 'GM-4012',
+  ENTRY_LAUNCH_CONSUMED: 'GM-4013',
+  RESOURCE_SCOPE_DENIED: 'GM-4039',
+  // V1.5 platform update adapter (§9; adapter is ours, not a DSH API)
+  UPDATE_TARGET_INVALID: 'GM-4090',
+  UPDATE_ADAPTER_UNAVAILABLE: 'GM-5038',
+  UPDATE_OBSERVE_TIMEOUT: 'GM-5040',
 });
 
 const DEFAULT_MESSAGES = Object.freeze({
@@ -176,6 +201,31 @@ const DEFAULT_MESSAGES = Object.freeze({
   [GM.INSTALL_DOWNLOAD_TIMEOUT]: 'Package download timed out',
   [GM.INSTALL_IO]: 'Install write failed',
   [GM.INSTALL_CORRUPT]: 'Installed package is incomplete',
+  // V1.5 archive / descriptor / catalog
+  [GM.ZIP_INVALID]: 'Package archive is not a valid ZIP',
+  [GM.ZIP_UNSUPPORTED]: 'Package archive uses an unsupported ZIP feature',
+  [GM.ZIP_LIMIT]: 'Package archive exceeds an extraction limit',
+  [GM.ZIP_PATH_INVALID]: 'Package archive contains an invalid path',
+  [GM.ZIP_PATH_CONFLICT]: 'Package archive contains conflicting paths',
+  [GM.ZIP_HEADER_MISMATCH]: 'Package archive headers are inconsistent',
+  [GM.ZIP_CRC_MISMATCH]: 'Package archive entry failed its CRC check',
+  [GM.DESCRIPTOR_INVALID]: 'Package descriptor is missing or invalid',
+  [GM.DESCRIPTOR_MISMATCH]: 'Package file manifest does not match the archive',
+  [GM.MANIFEST_CONFLICT]: 'Package declares more than one authoritative manifest',
+  [GM.ASSET_TYPE_UNSUPPORTED]: 'Package contains an unsupported or unsafe asset',
+  [GM.CATALOG_IMMUTABLE]: 'Published package bytes cannot change for this version',
+  [GM.FORMAT_POLICY]: 'Package format change requires a new game version',
+  [GM.ASSET_INLINE_FORBIDDEN]: 'Resource packages cannot use inline scripts, styles, handlers or javascript: URLs',
+  // V1.5 resource credentials
+  [GM.RESOURCE_CREDENTIAL_INVALID]: 'Resource credential is invalid',
+  [GM.RESOURCE_CREDENTIAL_EXPIRED]: 'Resource credential has expired',
+  [GM.ENTRY_CREDENTIAL_CONSUMED]: 'Credential was used in the wrong place',
+  [GM.ENTRY_LAUNCH_CONSUMED]: 'Launch credential has already been used',
+  [GM.RESOURCE_SCOPE_DENIED]: 'Resource does not belong to this instance',
+  // V1.5 update adapter
+  [GM.UPDATE_TARGET_INVALID]: 'Update target is not acceptable to the plugin manager',
+  [GM.UPDATE_ADAPTER_UNAVAILABLE]: 'Plugin update capability is unavailable',
+  [GM.UPDATE_OBSERVE_TIMEOUT]: 'Plugin update state could not be confirmed in time',
 });
 
 /** HTTP status for a GM code (PRD §8.5 mapping). */
@@ -183,6 +233,13 @@ export function httpStatusFor(gmCode) {
   const num = Number(String(gmCode).slice(3));
   if (!Number.isFinite(num)) return 500;
   if (gmCode === GM.INTERNAL) return 500;
+  // V1.5 archive/descriptor/catalog/inline semantics (GM-4270..GM-4289) are 422.
+  // Without this explicit window the numeric derivation below would yield 427.
+  if (num >= 4270 && num <= 4289) return 422;
+  // V1.5 resource credentials: S-A1 measured 403 for an expired/released
+  // instance and 410 for a replayed launch URL. The numeric rule would give 401.
+  if (gmCode === GM.RESOURCE_CREDENTIAL_EXPIRED) return 403;
+  if (gmCode === GM.ENTRY_LAUNCH_CONSUMED) return 410;
   // Package/manifest semantics (GM-422x–424x) are 422, size/quota (413x–414x) are 413.
   if (num >= 4220 && num <= 4249) return 422;
   if (num >= 4130 && num <= 4149) return 413;
@@ -251,6 +308,34 @@ export const INTERNAL_TO_GM = Object.freeze({
   E_STORE_PATH_ESCAPE: GM.STORE_PATH_ESCAPE,
   E_COMPAT_SDK: GM.SDK_INCOMPATIBLE,
   E_COMPAT_RUNTIME: GM.RUNTIME_INCOMPATIBLE,
+  // V1.5 archive / descriptor / catalog / inline (V1.5-CONTRACTS §8.2)
+  E_ZIP_STRUCTURE: GM.ZIP_INVALID,
+  E_ZIP_UNSUPPORTED_FEATURE: GM.ZIP_UNSUPPORTED,
+  E_ZIP_LIMIT_EXCEEDED: GM.ZIP_LIMIT,
+  E_ZIP_PATH_INVALID: GM.ZIP_PATH_INVALID,
+  E_ZIP_PATH_CONFLICT: GM.ZIP_PATH_CONFLICT,
+  E_ZIP_HEADER_MISMATCH: GM.ZIP_HEADER_MISMATCH,
+  E_ZIP_CRC_MISMATCH: GM.ZIP_CRC_MISMATCH,
+  E_DESCRIPTOR_INVALID: GM.DESCRIPTOR_INVALID,
+  E_DESCRIPTOR_MISSING: GM.DESCRIPTOR_INVALID,
+  E_DESCRIPTOR_MISMATCH: GM.DESCRIPTOR_MISMATCH,
+  E_MANIFEST_CONFLICT: GM.MANIFEST_CONFLICT,
+  E_ASSET_TYPE_UNSUPPORTED: GM.ASSET_TYPE_UNSUPPORTED,
+  E_CATALOG_IMMUTABLE: GM.CATALOG_IMMUTABLE,
+  E_FORMAT_POLICY: GM.FORMAT_POLICY,
+  E_ASSET_INLINE_FORBIDDEN: GM.ASSET_INLINE_FORBIDDEN,
+  // V1.5 resource credentials (§7.2)
+  E_RESOURCE_CREDENTIAL_INVALID: GM.RESOURCE_CREDENTIAL_INVALID,
+  E_RESOURCE_CREDENTIAL_EXPIRED: GM.RESOURCE_CREDENTIAL_EXPIRED,
+  E_ENTRY_CREDENTIAL_CONSUMED: GM.ENTRY_CREDENTIAL_CONSUMED,
+  E_ENTRY_LAUNCH_CONSUMED: GM.ENTRY_LAUNCH_CONSUMED,
+  E_RESOURCE_SCOPE_DENIED: GM.RESOURCE_SCOPE_DENIED,
+  // V1.5 registry v2: a bad v2 index means the catalog is unavailable.
+  E_REGISTRY_V2_INVALID: GM.REGISTRY_UNAVAILABLE,
+  // V1.5 update adapter (§9)
+  E_UPDATE_TARGET_INVALID: GM.UPDATE_TARGET_INVALID,
+  E_UPDATE_ADAPTER_UNAVAILABLE: GM.UPDATE_ADAPTER_UNAVAILABLE,
+  E_UPDATE_OBSERVE_TIMEOUT: GM.UPDATE_OBSERVE_TIMEOUT,
 });
 
 /** Translate an internal `E_*` code to its public `GM-*` code (fallback: GM-5000). */

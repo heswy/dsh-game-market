@@ -452,6 +452,12 @@ export function reduce(state, action) {
           busy: false,
           fileName: typeof action.fileName === 'string' ? action.fileName : null,
           file: action.file || null,
+          fileSize: typeof action.fileSize === 'number' && Number.isFinite(action.fileSize) ? action.fileSize : null,
+          fileSizeLabel: typeof action.fileSizeLabel === 'string' ? action.fileSizeLabel : null,
+          format:
+            action.format === 'html-v1' || action.format === 'asset-zip-v2' ? action.format : null,
+          formatLabel: typeof action.formatLabel === 'string' ? action.formatLabel : null,
+          overwrite: action.overwrite && typeof action.overwrite === 'object' ? action.overwrite : null,
           returnFocus: action.returnFocus && typeof action.returnFocus === 'object' ? action.returnFocus : null,
         },
       };
@@ -601,6 +607,16 @@ export function reduce(state, action) {
       return {
         ...state,
         runtime: { ...state.runtime, launchInfo: action.launchInfo || null, state: 'loading' },
+      };
+    }
+
+    case 'runtime-launch-refresh': {
+      const patch = action.patch;
+      if (!patch || typeof patch !== 'object') return state;
+      if (!state.runtime.launchInfo) return state;
+      return {
+        ...state,
+        runtime: { ...state.runtime, launchInfo: { ...state.runtime.launchInfo, ...patch } },
       };
     }
 
@@ -835,6 +851,11 @@ export function runtimeStarted(gameId, mode, sessionId, autoResume) {
 
 export function runtimeLaunchInfo(launchInfo) {
   return { type: 'runtime-launch-info', launchInfo: launchInfo };
+}
+
+/** Merge refreshed launch metadata (e.g. a renewed resourceTtlMs) in place. */
+export function runtimeLaunchInfoRefreshed(patch) {
+  return { type: 'runtime-launch-refresh', patch: patch };
 }
 
 export function runtimePatched(patch) {

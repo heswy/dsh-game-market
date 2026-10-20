@@ -212,6 +212,9 @@ export function createInstallManager(options) {
         call: function call(signal) {
           return api.installLocal({
             file: request.file,
+            fileName: request.fileName,
+            format: request.format,
+            bytes: request.bytes,
             text: request.text,
             FileReader: request.FileReader,
             operationId: operationId,

@@ -17,6 +17,7 @@ import { createPreferencesService } from './preferences.js';
 import { createGameResolver } from './resolver.js';
 import { createLayeredRegistryService } from './registry-layered.js';
 import { createRegistryService } from './registry.js';
+import { createResourceService } from './resources.js';
 import { createRouteTable } from './routes.js';
 import { createRouter } from './router.js';
 import { createSavesService } from './saves.js';
@@ -77,6 +78,19 @@ export function createHost({
   const sessions = createSessionsService({ storage, catalog: resolver, logger, now });
   const scores = createScoresService({ storage, catalog: resolver, logger, now });
   const preferences = createPreferencesService({ storage, logger });
+  // V1.5: the instance resource origin is an independent loopback server, not a
+  // DSH `/api` route (docs/V1.5-CONTRACTS.md §7.1 — the `/api` fence rejects
+  // opaque-origin subresources with 403).
+  const resources = createResourceService({
+    storage,
+    installations,
+    logger,
+    now,
+    timing: { resourceCredentialTtlMs: http.timing?.resourceCredentialTtlMs },
+    port: settings.resource?.port ?? http.resourcePort ?? 0,
+    frameAncestors: settings.security.frameAncestors,
+    dshWebOrigin: http.dshWebOrigin ?? null,
+  });
   const entry = createEntryService({
     catalog,
     devCatalog,
@@ -88,8 +102,11 @@ export function createHost({
     logger,
     now,
     timing: http.timing,
+    // V1.5: entry/launch needs the resource origin to issue instance
+    // credentials and fill the LaunchInfo resource fields (§7.2/§7.6).
+    resources,
   });
-  const maintenance = createMaintenanceService({ storage, installations, registry, lock, logger, now });
+  const maintenance = createMaintenanceService({ storage, installations, registry, lock, logger, now, resources });
   const maintenanceReady = maintenance.start();
   const install = createInstallService({
     storage,
@@ -150,6 +167,7 @@ export function createHost({
     installations,
     resolver,
     maintenance,
+    resources,
   };
   const routes = createRouteTable({ services, devMode: settings.devMode });
   const router = createRouter({ routes, logger, now });
@@ -170,5 +188,16 @@ export function createHost({
     version,
     startedAt,
     availability,
+    resources,
+    /**
+     * Release the loopback resource server. Idempotent; awaited by the plugin
+     * teardown so tests never leave a listening socket behind.
+     */
+    dispose: async () => {
+      try {
+        await maintenance.stop?.();
+      } catch (_error) { /* best effort */ }
+      await resources.close();
+    },
   };
 }

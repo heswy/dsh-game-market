@@ -28,7 +28,8 @@
     "README.md",
     "scripts/registry/**",
     "skills/**",
-    "docs/community*.md"
+    "docs/community*.md",
+    "THIRD-PARTY-NOTICES.md"
   ],
   "bin": {
     "dsh-game": "./scripts/cli/dsh-game.mjs",
@@ -66,5 +67,8 @@
       "immediately": true,
       "inject": []
     }
+  },
+  "dependencies": {
+    "yauzl": "3.4.0"
   }
 }

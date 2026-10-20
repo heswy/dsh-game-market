@@ -139,6 +139,39 @@ export function ConfirmDialog(props) {
       h('h2', { className: 'dgm-dialog-title', id: 'dgm-dialog-title' }, title),
       h('p', { className: 'dgm-dialog-body', id: 'dgm-dialog-body' }, body),
       noteKey ? h('p', { className: 'dgm-dialog-note' }, t(noteKey)) : null,
+      dialog.kind === 'install-local'
+        ? h(
+            'dl',
+            { className: 'dgm-dialog-meta' },
+            dialog.fileSizeLabel
+              ? h(
+                  'div',
+                  { className: 'dgm-dialog-meta-row' },
+                  h('dt', null, t('dialog.installLocal.fileSize')),
+                  h('dd', null, dialog.fileSizeLabel)
+                )
+              : null,
+            dialog.formatLabel
+              ? h(
+                  'div',
+                  { className: 'dgm-dialog-meta-row' },
+                  h('dt', null, t('dialog.installLocal.format')),
+                  h('dd', null, dialog.formatLabel)
+                )
+              : null
+          )
+        : null,
+      dialog.kind === 'install-local' && dialog.overwrite
+        ? h(
+            'p',
+            { className: 'dgm-dialog-note' },
+            t('dialog.installLocal.overwrite', {
+              gameName: dialog.overwrite.gameName || dialog.overwrite.gameId || '',
+              currentVersion: dialog.overwrite.currentVersion || '',
+              version: dialog.overwrite.version || '',
+            })
+          )
+        : null,
       dialog.kind === 'install-local' ? h('p', { className: 'dgm-dialog-warning' }, t('market.localInstall.warning')) : null,
       showCheckbox
         ? h(

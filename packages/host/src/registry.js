@@ -1,12 +1,17 @@
 /**
- * Static Registry client (V1-CONTRACTS §5, PRD §8.8).
+ * Static Registry client (V1-CONTRACTS §5, PRD §8.8, V1.5-CONTRACTS §5).
  *
  * Responsibilities:
  *   - resolve the configured source (https index or local file index);
  *   - single-flight refresh with ETag/If-None-Match, 6h TTL, 14d stale cap and
- *     offline fallback to `registry-cache.json`;
- *   - strict whole-index validation through `packages/shared/src/registry.js`
- *     (a single bad entry rejects the whole document and keeps the old cache);
+ *     offline fallback to the cache file;
+ *   - strict whole-index validation through `packages/shared` (a single bad
+ *     entry rejects the whole document and keeps the old cache);
+ *   - two index generations with **separate caches**: Registry v1
+ *     (`/registry/games.json`, `registry-cache.json`, schemaVersion 1) and
+ *     Registry v2 (`/registry/v2/games.json`, `registry-cache-v2.json`,
+ *     schemaVersion 2). A v1 cache is never accepted as a v2 cache and vice
+ *     versa (§5.3);
  *   - manual refresh throttling (5 min, `GM-4290`);
  *   - preview asset caching into `preview-cache/<id>/<version>/` for `/preview`.
  */
@@ -15,7 +20,14 @@ import { createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-import { API_BASE, LIMITS, TIMING } from '../../shared/src/constants.js';
+import {
+  API_BASE,
+  LIMITS,
+  REGISTRY_CACHE_V2_FILE,
+  REGISTRY_CACHE_V2_SCHEMA_VERSION,
+  REGISTRY_V2_VERSION,
+  TIMING,
+} from '../../shared/src/constants.js';
 import { GM } from '../../shared/src/errors.js';
 import { PREVIEW_CACHE_DIR, previewCachePath } from '../../shared/src/installation.js';
 import {
@@ -28,9 +40,27 @@ import {
   validateRegistry,
   validateRegistryCache,
 } from '../../shared/src/registry.js';
+import { validateRegistryCacheV2, validateRegistryV2 } from '../../shared/src/catalog-v2.js';
 import { fetchBytes } from './download.js';
 import { hostError } from './errors.js';
 import { isPlainObject } from './validation.js';
+
+export const REGISTRY_PROTOCOLS = Object.freeze(['auto', 'v1', 'v2']);
+
+/** Normalize a configured protocol; unknown values mean `auto` (detect). */
+export function normalizeRegistryProtocol(value) {
+  return REGISTRY_PROTOCOLS.includes(value) ? value : 'auto';
+}
+
+/** A Registry v1 index must never contain a ZIP package (§5.1, GM-5032). */
+export function v1IndexHasZipEntry(registry) {
+  if (!isPlainObject(registry) || !Array.isArray(registry.games)) return false;
+  return registry.games.some(
+    (game) => isPlainObject(game) &&
+      isPlainObject(game.package) &&
+      game.package.format === 'asset-zip-v2'
+  );
+}
 
 const PREVIEW_FILES = Object.freeze(['icon', 'cover']);
 const PREVIEW_SCREENSHOT_RE = /^screenshot-[1-5]$/;
@@ -125,13 +155,19 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
   const sleep = typeof http.sleep === 'function' ? http.sleep : undefined;
   const resolveHost = typeof http.resolveHost === 'function' ? http.resolveHost : undefined;
   const retries = Number.isInteger(http.retries) && http.retries >= 0 ? http.retries : 0;
-  const cacheFileName =
+  // `auto` (default for explicit sources) detects the index generation from the
+  // document itself; the layered default pins each source to one generation.
+  const protocol = normalizeRegistryProtocol(registrySettings.protocol);
+  const fixedGeneration = protocol === 'v2' ? 2 : protocol === 'v1' ? 1 : null;
+  const cacheFileOverride =
     typeof registrySettings.cacheFile === 'string' && registrySettings.cacheFile.length > 0
       ? registrySettings.cacheFile
-      : REGISTRY_CACHE_FILE;
+      : null;
   const persistCache = registrySettings.persistCache !== false;
 
   let cache = null;
+  /** 1 (v1 index/cache) | 2 (v2 index/cache) | null when nothing is loaded yet. */
+  let generation = fixedGeneration;
   let loaded = false;
   let loadPromise = null;
   let refreshPromise = null;
@@ -140,12 +176,37 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
   let lastError = null;
   let offline = false;
 
+  function cacheFileNameFor(candidateGeneration) {
+    if (cacheFileOverride) return cacheFileOverride;
+    return candidateGeneration === 2 ? REGISTRY_CACHE_V2_FILE : REGISTRY_CACHE_FILE;
+  }
+
   function cacheFilePath() {
-    return storage.filePath(cacheFileName);
+    return storage.filePath(cacheFileNameFor(generation === null ? 1 : generation));
+  }
+
+  /** Candidate cache generations, newest first. A v1 cache is never read as v2. */
+  function cacheCandidates() {
+    return fixedGeneration === null ? [2, 1] : [fixedGeneration];
   }
 
   function cacheMatchesSource(value) {
     return isPlainObject(value) && typeof value.sourceUrl === 'string' && value.sourceUrl === sourceUrl;
+  }
+
+  /** Validate one on-disk cache against its generation; null means "ignore". */
+  function acceptCacheCandidate(value, candidateGeneration) {
+    if (!cacheMatchesSource(value)) return null;
+    if (candidateGeneration === 2) {
+      const validation = validateRegistryCacheV2(value);
+      if (!validation.ok || !validation.cache) return null;
+      if (validation.cache.registryVersion !== REGISTRY_V2_VERSION) return null;
+      return validation.cache;
+    }
+    const validation = validateRegistryCache(value);
+    if (!validation.ok || !validation.cache) return null;
+    if (value.registryVersion !== undefined && value.registryVersion !== 1) return null;
+    return validation.cache;
   }
 
   function cacheAgeMs() {
@@ -183,23 +244,33 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
     if (loaded) return;
     if (!loadPromise) {
       loadPromise = (async () => {
-        try {
-          const result = await storage.readJson(cacheFilePath(), {
-            schemaVersion: REGISTRY_CACHE_SCHEMA_VERSION,
-          });
-          if (result) {
-            const validation = validateRegistryCache(result.value);
-            if (validation.ok && cacheMatchesSource(result.value)) {
-              cache = validation.cache;
-              lastError = null;
-            } else {
-              // A cache from another source is ignored (registryUrl changed).
+        for (const candidate of cacheCandidates()) {
+          try {
+            const result = await storage.readJson(storage.filePath(cacheFileNameFor(candidate)), {
+              schemaVersion:
+                candidate === 2 ? REGISTRY_CACHE_V2_SCHEMA_VERSION : REGISTRY_CACHE_SCHEMA_VERSION,
+            });
+            if (!result) continue;
+            const accepted = acceptCacheCandidate(result.value, candidate);
+            if (!accepted) {
+              // A cache from another source/generation is ignored (§5.3). The
+              // v1 cache file is never accepted as a v2 snapshot: the two files
+              // and their schemaVersions are deliberately separate.
               lastError = GM.REGISTRY_UNAVAILABLE;
+              continue;
             }
+            cache = accepted;
+            generation = candidate;
+            lastError = null;
+            break;
+          } catch (error) {
+            lastError = GM.REGISTRY_UNAVAILABLE;
+            logger?.warn?.(
+              '[game-market/host] registry-cache-unreadable',
+              `generation=${candidate}`,
+              `code=${error && error.code ? error.code : 'E_UNKNOWN'}`
+            );
           }
-        } catch (error) {
-          lastError = error && error.code === GM.SCHEMA_READ_TOO_NEW ? GM.REGISTRY_UNAVAILABLE : GM.REGISTRY_UNAVAILABLE;
-          logger?.warn?.('[game-market/host] registry-cache-unreadable', `code=${lastError}`);
         }
         loaded = true;
       })();
@@ -209,8 +280,9 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
 
   async function persist(nextCache) {
     if (!persistCache) return;
+    const target = storage.filePath(cacheFileNameFor(generation === null ? 1 : generation));
     try {
-      await storage.writeJson(cacheFilePath(), nextCache);
+      await storage.writeJson(target, nextCache);
     } catch (error) {
       // Keep the in-memory cache; the previous file stays on disk (§5.3).
       logger?.warn?.('[game-market/host] registry-cache-write-failed', `code=${error?.code || 'E_UNKNOWN'}`);
@@ -229,6 +301,63 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
       });
     }
     return registryUnavailable('Registry request failed', { reason: 'network' });
+  }
+
+  /**
+   * Validate a parsed index document and bind it to one generation.
+   *
+   * A pinned service (`protocol: 'v1'|'v2'`) only accepts its own generation;
+   * an explicit `auto` source is selected by the document's `registryVersion`.
+   * A v1 document carrying an `asset-zip-v2` entry rejects the whole document
+   * (§5.1, GM-5032): the legacy schema has no `package.format`, so this guard is
+   * the only thing standing between an old client and a ZIP download.
+   */
+  function validateIndexDocument(parsed, options) {
+    const declared = isPlainObject(parsed) ? parsed.registryVersion : undefined;
+    const detected = declared === REGISTRY_V2_VERSION ? 2 : declared === 1 ? 1 : null;
+    const target = fixedGeneration === null ? detected : fixedGeneration;
+    if (target === null || detected !== target) {
+      return { ok: false, generation: null, reason: 'version', registry: null };
+    }
+    if (target === 2) {
+      const validation = validateRegistryV2(parsed, options);
+      if (!validation.ok || !validation.registry) {
+        return { ok: false, generation: 2, reason: 'schema', registry: null, errors: validation.errors };
+      }
+      return { ok: true, generation: 2, registry: validation.registry };
+    }
+    const validation = validateRegistry(parsed, options);
+    if (!validation.ok || !validation.registry) {
+      return { ok: false, generation: 1, reason: 'schema', registry: null, errors: validation.errors };
+    }
+    if (v1IndexHasZipEntry(validation.registry)) {
+      return { ok: false, generation: 1, reason: 'format', registry: null };
+    }
+    return { ok: true, generation: 1, registry: validation.registry };
+  }
+
+  function cacheFor(validated, { fetchedAt, etag = null, lastModified = null }) {
+    if (validated.generation === 2) {
+      return {
+        schemaVersion: REGISTRY_CACHE_V2_SCHEMA_VERSION,
+        registryVersion: REGISTRY_V2_VERSION,
+        fetchedAt,
+        sourceUrl,
+        etag,
+        lastModified,
+        truncated: validated.registry.truncated === true,
+        games: validated.registry.games,
+      };
+    }
+    return {
+      schemaVersion: REGISTRY_CACHE_SCHEMA_VERSION,
+      fetchedAt,
+      sourceUrl,
+      etag,
+      lastModified,
+      truncated: validated.registry.truncated === true,
+      games: validated.registry.games,
+    };
   }
 
   async function refreshFromFile() {
@@ -255,7 +384,7 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
     if (text === null) throw rejects('Registry index is not UTF-8 without BOM', { reason: 'encoding' });
     const parsed = parseJson(text);
     if (parsed === undefined) throw rejects('Registry index is not valid JSON', { reason: 'json' });
-    const validation = validateRegistry(parsed, {
+    const validation = validateIndexDocument(parsed, {
       sourceType: 'file',
       sourceUrl: source.path,
       allowedHosts,
@@ -264,24 +393,26 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
       logger?.warn?.(
         '[game-market/host] registry-invalid',
         `entries=${Array.isArray(parsed.games) ? parsed.games.length : 0}`,
-        `errors=${validation.errors.length}`
+        `errors=${validation.errors ? validation.errors.length : 0}`,
+        `reason=${validation.reason}`
       );
-      throw rejects('Registry index failed validation', { reason: 'schema' });
+      throw rejects('Registry index failed validation', { reason: validation.reason });
     }
+    const previousGeneration = generation;
+    generation = validation.generation;
     const fetchedAt = now().toISOString();
-    const nextCache = {
-      schemaVersion: REGISTRY_CACHE_SCHEMA_VERSION,
+    const nextCache = cacheFor(validation, {
       fetchedAt,
-      sourceUrl: source.path,
       etag: null,
       lastModified: stats.mtime.toISOString(),
-      truncated: validation.registry.truncated === true,
-      games: validation.registry.games,
-    };
-    const changed = !cache || JSON.stringify(cache.games) !== JSON.stringify(nextCache.games);
+    });
+    const changed =
+      !cache ||
+      previousGeneration !== validation.generation ||
+      JSON.stringify(cache.games) !== JSON.stringify(nextCache.games);
     await persist(nextCache);
     cache = nextCache;
-    return { ...nextCache, changed };
+    return { ...nextCache, generation: validation.generation, changed };
   }
 
   async function refreshFromRemote() {
@@ -329,7 +460,7 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
     if (text === null) throw rejects('Registry index is not UTF-8 without BOM', { reason: 'encoding' });
     const parsed = parseJson(text);
     if (parsed === undefined) throw rejects('Registry index is not valid JSON', { reason: 'json' });
-    const validation = validateRegistry(parsed, {
+    const validation = validateIndexDocument(parsed, {
       sourceType: 'https',
       sourceUrl: source.url,
       allowedHosts,
@@ -338,26 +469,28 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
       logger?.warn?.(
         '[game-market/host] registry-invalid',
         `entries=${Array.isArray(parsed.games) ? parsed.games.length : 0}`,
-        `errors=${validation.errors.length}`
+        `errors=${validation.errors ? validation.errors.length : 0}`,
+        `reason=${validation.reason}`
       );
-      throw rejects('Registry index failed validation', { reason: 'schema' });
+      throw rejects('Registry index failed validation', { reason: validation.reason });
     }
+    const previousGeneration = generation;
+    generation = validation.generation;
     const fetchedAt = now().toISOString();
     const etag = response.headers.get('etag');
     const lastModified = response.headers.get('last-modified');
-    const nextCache = {
-      schemaVersion: REGISTRY_CACHE_SCHEMA_VERSION,
+    const nextCache = cacheFor(validation, {
       fetchedAt,
-      sourceUrl: source.url,
       etag: typeof etag === 'string' ? etag : null,
       lastModified: typeof lastModified === 'string' ? lastModified : null,
-      truncated: validation.registry.truncated === true,
-      games: validation.registry.games,
-    };
-    const changed = !cache || JSON.stringify(cache.games) !== JSON.stringify(nextCache.games);
+    });
+    const changed =
+      !cache ||
+      previousGeneration !== validation.generation ||
+      JSON.stringify(cache.games) !== JSON.stringify(nextCache.games);
     await persist(nextCache);
     cache = nextCache;
-    return { ...nextCache, changed };
+    return { ...nextCache, generation: validation.generation, changed };
   }
 
   async function doRefresh() {
@@ -377,6 +510,7 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
         source: sourceUrl,
         truncated: result.truncated === true,
         changed: result.changed !== false,
+        generation: result.generation === 2 ? 'v2' : 'v1',
       };
     } catch (error) {
       offline = Boolean(cache);
@@ -442,6 +576,8 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
       truncated: cache ? cache.truncated === true : false,
       count: games().length,
       lastError,
+      generation: generation === 2 ? 'v2' : generation === 1 ? 'v1' : null,
+      registryVersion: generation === 2 ? REGISTRY_V2_VERSION : generation === 1 ? 1 : null,
     };
   }
 
@@ -689,13 +825,34 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
 
   /** Test/diagnostics hook. */
   function peek() {
-    return { cache, loaded, lastError, offline, source, sourceUrl };
+    return {
+      cache,
+      loaded,
+      lastError,
+      offline,
+      source,
+      sourceUrl,
+      protocol,
+      generation: generation === 2 ? 'v2' : generation === 1 ? 'v1' : null,
+      registryVersion: generation === 2 ? REGISTRY_V2_VERSION : generation === 1 ? 1 : null,
+    };
+  }
+
+  /** Loaded/settled cache generation: `'v1' | 'v2' | null`. */
+  function generationName() {
+    return generation === 2 ? 'v2' : generation === 1 ? 'v1' : null;
+  }
+
+  /** True once the cache file was loaded (even when empty/invalid). */
+  function isLoaded() {
+    return loaded;
   }
 
   return {
     source,
     sourceUrl,
     allowedHosts,
+    protocol,
     start,
     ready,
     refresh,
@@ -712,5 +869,7 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
     prunePreviews,
     peek,
     cacheFilePath,
+    generation: generationName,
+    isLoaded,
   };
 }

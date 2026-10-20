@@ -9,9 +9,10 @@
  * lifecycle / agent / runtime. Anything else is out of scope by contract.
  */
 
-import { PROTOCOL_VERSION, SDK_VERSION } from '../../shared/src/constants.js';
+import { PACKAGE_FORMATS, PROTOCOL_VERSION, SDK_VERSION } from '../../shared/src/constants.js';
 import { GM } from '../../shared/src/errors.js';
 import { METHODS } from '../../shared/src/protocol.js';
+import { buildResourceHref } from './asset-url.js';
 import { createBridgeClient, SDK_METHOD_TIMEOUTS } from './bridge-client.js';
 import { GameError as GameErrorImpl, createGameError, isGameError as isGameErrorImpl } from './errors.js';
 import { createEventHub, isLifecycleEvent } from './event-hub.js';
@@ -37,11 +38,15 @@ function createRuntimeState() {
     capabilities: Object.freeze([]),
     launchMode: 'start',
     viewport: Object.freeze({ width: 0, height: 0, dpr: 1 }),
+    // V1.5 (contract §1.10/§7.6): instance resource prefix + package format.
+    // Both stay null on legacy Runtime builds / html-v1 packages.
+    resourceBase: null,
+    packageFormat: null,
     ready: false,
   };
 }
 
-function createRuntimeView(state) {
+function createRuntimeView(state, assetUrl) {
   const view = {};
   for (const key of Object.keys(state)) {
     Object.defineProperty(view, key, {
@@ -51,6 +56,10 @@ function createRuntimeView(state) {
       },
     });
   }
+  Object.defineProperty(view, 'assetUrl', {
+    enumerable: true,
+    value: assetUrl,
+  });
   return Object.freeze(view);
 }
 
@@ -107,13 +116,36 @@ export function createGameSDK(options = {}) {
 
   const hub = createEventHub();
   const runtimeState = createRuntimeState();
-  const runtimeView = createRuntimeView(runtimeState);
+  const assetUrl = createAssetPathBuilder();
+  const runtimeView = createRuntimeView(runtimeState, assetUrl);
 
   let readyPromise = null;
   let backfillPromise = null;
   let queuedWrites = 0;
   let writeTail = Promise.resolve();
   const MAX_QUEUED_WRITES = 32;
+
+  /**
+   * `game.runtime.assetUrl` (contract §1.10/§7.6).
+   *
+   *   - html-v1 packages (or legacy Runtimes) have no instance resource route:
+   *     `GM-4043` (same code the asset service uses for a missing asset);
+   *   - a path that escapes the instance resource prefix is `GM-4039`;
+   *   - otherwise `${resourceBase}/${normalize(relativePath)}` using the shared
+   *     `assetUrl` implementation (single source of truth for path rules).
+   */
+  function createAssetPathBuilder() {
+    return function assetPathFor(relativePath) {
+      if (runtimeState.packageFormat === 'html-v1' || typeof runtimeState.resourceBase !== 'string') {
+        throw createGameError(GM.ASSET_NOT_FOUND, 'This game has no instance resource route (html-v1 package)');
+      }
+      const built = buildResourceHref(runtimeState.resourceBase, relativePath);
+      if (!built.ok) {
+        throw createGameError(GM.RESOURCE_SCOPE_DENIED, 'assetUrl path is outside this game package');
+      }
+      return built.value;
+    };
+  }
 
   function applyViewport(value) {
     runtimeState.viewport = normalizeViewport(value);
@@ -131,6 +163,20 @@ export function createGameSDK(options = {}) {
     if (Array.isArray(init.capabilities)) runtimeState.capabilities = Object.freeze(init.capabilities.slice());
     if (init.launchMode === 'start' || init.launchMode === 'resume-paused') runtimeState.launchMode = init.launchMode;
     if (init.viewport) applyViewport(init.viewport);
+    applyResourceFields(init);
+  }
+
+  /**
+   * V1.5 resource fields: the Runtime injects the instance resource prefix so
+   * ZIP games can build asset URLs. Old SDKs ignore the extra init fields and
+   * old Runtime builds simply never send them (`resourceBase` stays null).
+   */
+  function applyResourceFields(source) {
+    if (!source || typeof source !== 'object') return;
+    if (typeof source.resourceBase === 'string' && source.resourceBase.length > 0) {
+      runtimeState.resourceBase = source.resourceBase;
+    }
+    if (PACKAGE_FORMATS.includes(source.packageFormat)) runtimeState.packageFormat = source.packageFormat;
   }
 
   function applyReadyResult(result) {
@@ -144,6 +190,7 @@ export function createGameSDK(options = {}) {
     if (typeof result.reducedMotion === 'boolean') runtimeState.reducedMotion = result.reducedMotion;
     if (Array.isArray(result.capabilities)) runtimeState.capabilities = Object.freeze(result.capabilities.slice());
     if (result.viewport) applyViewport(result.viewport);
+    applyResourceFields(result);
     if (typeof result.protocolVersion === 'number') runtimeState.protocolVersion = result.protocolVersion;
     runtimeState.ready = true;
   }

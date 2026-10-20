@@ -1,7 +1,13 @@
 # Contributing a game
 
-1. Build a single-file package `<id>-<version>.html`, a matching `.sha256`, real
-   cover (16:9 recommended) and 1–5 real screenshots.
+1. Build a package and a matching `.sha256`, plus a real cover (16:9
+   recommended) and 1–5 real screenshots. Two package formats are accepted:
+   - `html-v1`: a single self-contained `<id>-<version>.html` (V1 behaviour); or
+   - `asset-zip-v2`: a `<id>-<version>.dshgame.zip` with `dsh-package.json`,
+     root `game.json`, static assets and the SDK file (no inline scripts/styles,
+     no external URLs, no installation scripts).
+   Declare the format in the submission; changing an already published game
+   from HTML to ZIP requires a **new version** (never the same one).
 2. Self-test (ready, pause/resume, before-save, Continue, keyboard, narrow window,
    light/dark theme, full-bleed + safe areas, no external network).
 3. Open the “Submit a game” Issue Form, or a profiling PR with the same data.

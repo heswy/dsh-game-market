@@ -1,16 +1,23 @@
 /**
- * Layered Registry source (V1.2 community publishing).
+ * Layered Registry source (V1.2 community publishing + V1.5 two generations).
  *
- * Default (no explicit configuration):
- *   official HTTPS `registry/games.json`  ->  bundled file seed on cold-start
- *   network/invalid-index failure.
+ * Default (no explicit configuration), in priority order:
+ *   1. official Registry v2  `/registry/v2/games.json`  (V1.5 default, §5.2)
+ *   2. official Registry v1  `/registry/games.json`     (migration fallback while
+ *      the content repository has not regenerated the v2 projection yet)
+ *   3. bundled file seed on cold-start when neither remote is usable.
  *
- * The authoritative remote snapshot is never merged with the seed. A fresh or
- * stale remote cache keeps the remote as the only source; the bundled seed is
- * used only when the remote has no usable snapshot. Explicit `DSH_GAME_REGISTRY_URL`
- * or `config.registry.url` keeps the existing single-source behavior and is
+ * The two official generations have **separate services and separate cache
+ * files** (`registry-cache-v2.json` / `registry-cache.json`), so a v1 cache is
+ * never accepted as a v2 snapshot and vice versa (§5.3). The authoritative
+ * remote snapshot is never merged with the seed: a fresh or stale remote cache
+ * keeps the remote as the only source; the bundled seed is used only when no
+ * remote generation has a usable snapshot. Explicit `DSH_GAME_REGISTRY_URL` or
+ * `config.registry.url` keeps the existing single-source behavior and is
  * handled by `createRegistryService` directly (no fallback).
  */
+import { DEFAULT_OFFICIAL_REGISTRY_V2_URL } from '../../shared/src/constants.js';
+import { GM } from '../../shared/src/errors.js';
 import { createRegistryService } from './registry.js';
 
 function singleSettings(settings, source, extra) {
@@ -27,26 +34,51 @@ function singleSettings(settings, source, extra) {
   };
 }
 
+/** Layered default: v2 first, then the v1 index, then the bundled seed. */
 export function createLayeredRegistryService({ storage, settings, logger, now, http = {} }) {
   const registrySettings = settings.registry || {};
-  const officialSource = { kind: 'https', url: registrySettings.officialUrl, origin: new URL(registrySettings.officialUrl).origin };
+  const officialV2Url = registrySettings.officialV2Url || DEFAULT_OFFICIAL_REGISTRY_V2_URL;
+  const officialV1Url = registrySettings.officialUrl;
   const seedSource = registrySettings.seedSource;
-  const official = createRegistryService({
+
+  const officialV2 = createRegistryService({
     storage,
-    settings: singleSettings(settings, officialSource, { cacheFile: 'registry-cache.json', persistCache: true }),
+    settings: singleSettings(
+      settings,
+      { kind: 'https', url: officialV2Url, origin: new URL(officialV2Url).origin },
+      { cacheFile: undefined, persistCache: true, protocol: 'v2' }
+    ),
+    logger,
+    now,
+    http,
+  });
+  const officialV1 = createRegistryService({
+    storage,
+    settings: singleSettings(
+      settings,
+      { kind: 'https', url: officialV1Url, origin: new URL(officialV1Url).origin },
+      { cacheFile: undefined, persistCache: true, protocol: 'v1' }
+    ),
     logger,
     now,
     http,
   });
   const seed = createRegistryService({
     storage,
-    settings: singleSettings(settings, seedSource, { cacheFile: 'seed-registry-cache.json', persistCache: false }),
+    settings: singleSettings(settings, seedSource, {
+      cacheFile: 'seed-registry-cache.json',
+      persistCache: false,
+      protocol: 'v1',
+    }),
     logger,
     now,
     http: { ...http, retries: 0 },
   });
 
+  /** `'official' | 'seed'` — the public source class (V1 health shape). */
   let active = 'seed';
+  /** `'v2' | 'v1' | null` — which official generation is authoritative. */
+  let activeGeneration = null;
   let startupPromise = null;
   let seedStartPromise = null;
 
@@ -55,46 +87,67 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
     return seedStartPromise;
   }
 
+  function installedService(generation) {
+    return generation === 'v2' ? officialV2 : officialV1;
+  }
+
   function delegate() {
-    return active === 'official' ? official : seed;
+    if (active === 'official' && activeGeneration) return installedService(activeGeneration);
+    return seed;
   }
 
   /**
    * A successfully loaded official snapshot is authoritative even when it is
    * empty: an empty index is how maintainers withdraw every game. The seed is
-   * only chosen when the remote could not be loaded/validated at all.
+   * only chosen when neither remote generation could be loaded/validated at all.
+   * v2 wins over v1 when both are loaded (§5.2 default generation).
    */
-  function officialLoaded() {
-    const peeked = official.peek ? official.peek() : null;
-    if (!peeked || !peeked.loaded) return false;
-    const state = official.state();
+  function officialLoaded(service) {
+    if (!service || typeof service.isLoaded !== 'function' || !service.isLoaded()) return false;
+    const state = service.state();
     return state === 'fresh' || state === 'stale' || state === 'offline';
   }
 
   function chooseSource() {
-    if (officialLoaded()) {
+    if (officialLoaded(officialV2)) {
       active = 'official';
+      activeGeneration = 'v2';
+      return;
+    }
+    if (officialLoaded(officialV1)) {
+      active = 'official';
+      activeGeneration = 'v1';
       return;
     }
     active = 'seed';
+    activeGeneration = null;
+  }
+
+  function preferOfficial() {
+    return installedService(activeGeneration || 'v2');
   }
 
   /**
-   * Startup is local-first: load the bundled seed immediately, then refresh the
-   * official index in the background. `ready()` must not block on a hanging
-   * official network request; callers get usable seed content right away.
+   * Startup is local-first: load the bundled seed immediately, then refresh both
+   * official generations in the background. `ready()` must not block on hanging
+   * remote requests; callers get usable seed content right away. The v2 index is
+   * the default; the v1 index is only a migration fallback for content
+   * repositories that have not generated the v2 projection yet.
    */
   function start() {
     if (startupPromise) return startupPromise;
     startupPromise = (async () => {
       await seed.start().catch(() => undefined);
       chooseSource();
-      // Start the official refresh in parallel. Wait only a bounded settle
-      // window so a hanging remote never blocks list/health indefinitely; the
-      // seed is already usable while this runs.
-      const officialStart = official.start().then(() => {
+      // Both official generations are started in parallel so a hanging v2
+      // request can never delay the v1 fallback (and vice versa). Each service
+      // resolves when its own cache/refresh settles; neither throws.
+      const officialStart = Promise.all([
+        officialV2.start(),
+        officialV1.start(),
+      ]).then(() => {
         chooseSource();
-        return official.snapshot().catch(() => null);
+        return delegate().snapshot().catch(() => null);
       }).catch(() => undefined);
       let timer;
       const settle = new Promise((resolve) => { timer = setTimeout(resolve, 250); });
@@ -104,6 +157,9 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
         clearTimeout(timer);
       }
       chooseSource();
+      // A late official settle still flips the active source as soon as it
+      // lands, so callers that only awaited `ready()` observe it shortly after.
+      officialStart.then(() => chooseSource()).catch(() => undefined);
     })();
     return startupPromise;
   }
@@ -114,6 +170,7 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
 
   async function ensureActive() {
     await ready();
+    chooseSource();
     if (active === 'seed') await ensureSeedStarted();
   }
 
@@ -124,18 +181,40 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
 
   async function refresh(options = {}) {
     await ready();
+    let primaryError = null;
+    // v2 is the default generation; a network/validation failure falls through
+    // to the v1 index. Throttling is a user-facing semantic, not a source
+    // failure, so it propagates immediately instead of trying the next source.
     try {
-      const result = await official.refresh(options);
+      const result = await officialV2.refresh(options);
       active = 'official';
-      return { ...result, activeSource: 'official', fallback: false };
+      activeGeneration = 'v2';
+      return { ...result, activeSource: 'official', generation: 'v2', fallback: false };
     } catch (error) {
+      if (error && error.code === GM.RATE_LIMITED) throw error;
+      primaryError = error;
+    }
+    try {
+      const result = await officialV1.refresh(options);
+      active = 'official';
+      activeGeneration = 'v1';
+      return { ...result, activeSource: 'official', generation: 'v1', fallback: false };
+    } catch (error) {
+      if (error && error.code === GM.RATE_LIMITED) throw error;
       // Keep a usable official cache/snapshot if one exists; otherwise expose seed.
-      if (officialLoaded()) {
+      if (officialLoaded(officialV2)) {
         active = 'official';
+        activeGeneration = 'v2';
+        throw primaryError;
+      }
+      if (officialLoaded(officialV1)) {
+        active = 'official';
+        activeGeneration = 'v1';
         throw error;
       }
       await ensureSeedStarted();
       active = 'seed';
+      activeGeneration = null;
       const snap = await seed.snapshot().catch(() => null);
       if (snap && seed.games().length > 0) {
         return {
@@ -146,6 +225,7 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
           truncated: false,
           changed: false,
           activeSource: 'seed',
+          generation: 'v1',
           fallback: true,
           lastError: error && error.code ? error.code : 'GM-5032',
         };
@@ -156,19 +236,33 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
 
   async function snapshot() {
     await ready();
-    // The background official refresh may have completed after startup; prefer a
-    // valid official snapshot (including an empty one) once it is available.
-    if (officialLoaded()) active = 'official';
+    // The background official refreshes may have completed after startup; prefer
+    // a valid v2 snapshot, then a valid v1 snapshot, once they are available.
+    chooseSource();
     const base = await delegate().snapshot();
-    const officialSnap = await official.snapshot().catch(() => null);
+    const officialV2Snap = await officialV2.snapshot().catch(() => null);
+    const officialV1Snap = await officialV1.snapshot().catch(() => null);
     const seedSnap = await seed.snapshot().catch(() => null);
+    const activeOfficial =
+      active === 'official' && activeGeneration
+        ? activeGeneration === 'v2'
+          ? officialV2Snap
+          : officialV1Snap
+        : officialV2Snap || officialV1Snap;
     return {
       ...base,
       state: active === 'seed' ? 'seed' : base.state,
       activeSource: active,
       fallback: active === 'seed',
-      official: officialSnap,
-      seed: { state: seedSnap ? seedSnap.state : 'missing', count: seed.games().length, sourceUrl: seedSnap ? seedSnap.sourceUrl : null },
+      generation: active === 'seed' ? null : activeGeneration,
+      official: activeOfficial,
+      officialV2: officialV2Snap,
+      officialV1: officialV1Snap,
+      seed: {
+        state: seedSnap ? seedSnap.state : 'missing',
+        count: seed.games().length,
+        sourceUrl: seedSnap ? seedSnap.sourceUrl : null,
+      },
     };
   }
 
@@ -216,19 +310,30 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
   }
 
   async function prunePreviews(gameId, keepVersions) {
-    await official.prunePreviews(gameId, keepVersions);
+    await Promise.all([
+      officialV2.prunePreviews(gameId, keepVersions),
+      officialV1.prunePreviews(gameId, keepVersions),
+    ]);
   }
 
   function peek() {
     return {
       activeSource: active,
-      official: official.peek(),
+      generation: activeGeneration,
+      official: preferOfficial().peek(),
+      officialV2: officialV2.peek(),
+      officialV1: officialV1.peek(),
       seed: seed.peek(),
     };
   }
 
   function cacheFilePath() {
-    return official.cacheFilePath();
+    return (activeGeneration === 'v1' ? officialV1 : officialV2).cacheFilePath();
+  }
+
+  /** Loaded/settled generation of the active source: `'v1' | 'v2' | null`. */
+  function generation() {
+    return active === 'official' ? activeGeneration : null;
   }
 
   return {
@@ -252,5 +357,10 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
     prunePreviews,
     peek,
     cacheFilePath,
+    generation,
+    /** Explicitly expose both official services for diagnostics/tests. */
+    officialV2,
+    officialV1,
+    seed,
   };
 }

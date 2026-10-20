@@ -5,12 +5,12 @@
 import React from 'react';
 import { TIMING } from '../../../shared/src/constants.js';
 import { GM } from '../../../shared/src/errors.js';
-import { store, agentSnapshotReceived, runtimePatched, runtimeFailed, runtimeRetried, runtimeLaunchInfo, surfaceChanged, leaveCompleted } from '../store.js';
+import { store, agentSnapshotReceived, runtimePatched, runtimeFailed, runtimeRetried, runtimeLaunchInfo, runtimeLaunchInfoRefreshed, surfaceChanged, leaveCompleted } from '../store.js';
 import { applyRuntimeEvent, acknowledgeCompleted, finishLeave, gameNameFromState, recordPausedGame } from '../actions.js';
 import { getApiClient } from '../api.js';
 import { MAIN_PANEL_KEY } from '../constants.js';
-import { isRuntimeLoadingState, shouldReleaseRuntimeInstance, validateLaunchInfo } from '../runtime-utils.js';
-import { createRuntimeController, destroyRuntime, forwardAgentState, pauseRuntimeBounded, resumeRuntime } from '../runtime-adapter.js';
+import { isRuntimeLoadingState, isTerminalResourceError, shouldReloadRuntime, shouldReleaseRuntimeInstance, validateLaunchInfo } from '../runtime-utils.js';
+import { createRuntimeController, destroyRuntime, forwardAgentState, pauseRuntimeBounded, reloadRuntime, resumeRuntime } from '../runtime-adapter.js';
 import { normalizeUiError, runtimeErrorBodyKey, runtimeErrorRetryable, runtimeErrorTitleKey, uiError } from '../ui-errors.js';
 import { derivePresenceState } from '../presence.js';
 import { makeT, detectLocale } from '../locale.js';
@@ -195,6 +195,9 @@ export function RuntimeView(props) {
   const [resumeConfirmed, setResumeConfirmed] = React.useState(false);
   const [saveFailure, setSaveFailure] = React.useState(null);
   const [exitedReason, setExitedReason] = React.useState(null);
+  // V1.5: the Runtime had to fall back from the one-shot launch credential to
+  // the instance resource credential; say so instead of showing a blank frame.
+  const [credentialRefresh, setCredentialRefresh] = React.useState(false);
   const pausePrimaryRef = React.useRef(null);
 
   const gameId = runtime.gameId;
@@ -214,6 +217,7 @@ export function RuntimeView(props) {
       setSlow(false);
       setResumeConfirmed(false);
       setSaveFailure(null);
+      setCredentialRefresh(false);
       setBusy(false);
       leavingRef.current = false;
 
@@ -232,6 +236,14 @@ export function RuntimeView(props) {
           setExitedReason(typeof event.reason === 'string' ? event.reason : 'exited');
           applyRuntimeEvent(store, event);
           return;
+        }
+        if (event.type === 'navigation' && event.mode === 'resource-credential') {
+          setCredentialRefresh(true);
+          store.dispatch(runtimePatched({ error: null }));
+          return;
+        }
+        if (event.type === 'state' && (event.state === 'playing' || event.state === 'ready' || event.state === 'paused')) {
+          setCredentialRefresh(false);
         }
         applyRuntimeEvent(store, event);
       }
@@ -408,22 +420,40 @@ export function RuntimeView(props) {
 
   // Keep the live instance from expiring while the game stays open. A crash or
   // closed window simply stops renewing, so the Host TTL still reclaims it.
+  // V1.5 (contract §7.2/§7.6): a renewed instance returns its new resourceTtlMs;
+  // a terminal renew failure means the Host credential is gone (release/TTL or
+  // another window), so the Runtime must stop using the old credential.
   React.useEffect(
     function renewRuntimeInstance() {
       const info = runtime.launchInfo;
-      if (!info || typeof info.instanceId !== 'string' || info.instanceId.length === 0) return;
+      if (!info || typeof info.instanceId !== 'string' || info.instanceId.length === 0) return undefined;
+      if (runtime.state === 'error' || runtime.state === 'exited') return undefined;
       const api = getApiClient();
-      if (!api || typeof api.renewRuntime !== 'function') return;
+      if (!api || typeof api.renewRuntime !== 'function') return undefined;
+      let cancelled = false;
       const timer = setInterval(function renew() {
-        Promise.resolve(api.renewRuntime({ gameId: runtime.gameId, instanceId: info.instanceId })).catch(
-          function ignore() {}
+        Promise.resolve(api.renewRuntime({ gameId: runtime.gameId, instanceId: info.instanceId })).then(
+          function onRenewed(result) {
+            if (cancelled) return;
+            if (result && typeof result.resourceTtlMs === 'number') {
+              store.dispatch(runtimeLaunchInfoRefreshed({ resourceTtlMs: result.resourceTtlMs }));
+            }
+          },
+          function onRenewFailed(error) {
+            if (cancelled || !isTerminalResourceError(error)) return;
+            store.dispatch(runtimeFailed(uiError(error.code, { retryable: true })));
+            const controller = controllerRef.current;
+            controllerRef.current = null;
+            destroyRuntime(controller);
+          }
         );
       }, TIMING.runtimeRenewMs);
       return function stopRenew() {
+        cancelled = true;
         clearInterval(timer);
       };
     },
-    [runtime.launchInfo, runtime.gameId]
+    [runtime.launchInfo, runtime.gameId, runtime.state]
   );
 
   const isResumeMode = runtime.mode === 'resume-paused' && !resumeConfirmed && !autoResuming;
@@ -554,6 +584,14 @@ export function RuntimeView(props) {
   }
 
   function retryRuntime() {
+    // Prefer an in-place reload with the instance resource credential
+    // (contract §7.2): the launch URL is one-shot and must never be replayed.
+    if (runtime.launchInfo && shouldReloadRuntime(runtime.error, runtime.launchInfo)) {
+      if (reloadRuntime(controllerRef.current)) {
+        store.dispatch(runtimePatched({ state: 'loading', error: null, saveStatus: 'idle' }));
+        return;
+      }
+    }
     leavingRef.current = true;
     store.dispatch(runtimeRetried());
   }
@@ -613,9 +651,11 @@ export function RuntimeView(props) {
               { className: 'dgm-runtime-loading', role: 'status' },
               h('span', { className: 'dgm-spinner', 'aria-hidden': 'true' }),
               h('p', { className: 'dgm-runtime-loading-title' }, t('runtime.loading', { gameName: gameName })),
-              slow
-                ? h('p', { className: 'dgm-runtime-loading-body' }, t('runtime.loading.slow'))
-                : null,
+              credentialRefresh
+                ? h('p', { className: 'dgm-runtime-loading-body' }, t('runtime.loading.credential'))
+                : slow
+                  ? h('p', { className: 'dgm-runtime-loading-body' }, t('runtime.loading.slow'))
+                  : null,
               slow
                 ? h(
                     'div',

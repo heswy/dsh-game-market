@@ -1,12 +1,14 @@
 /** Game Market main panel: header, Market / My Games / Detail, and the Runtime switch. */
 import React from 'react';
-import { store, pageChanged, sessionBound, surfaceChanged, queryDraftChanged, queryApplied, categoryChanged, filtersCleared, searchOpenChanged, scrollSaved, lightboxChanged, dialogOpened, dialogDeleteDataChanged, dialogConfirmAgain, dialogBusyChanged, dialogClosed, toastDismissed, focusConsumed, } from '../store.js';
+import { store, pageChanged, sessionBound, surfaceChanged, queryDraftChanged, queryApplied, categoryChanged, filtersCleared, searchOpenChanged, scrollSaved, lightboxChanged, dialogOpened, dialogDeleteDataChanged, dialogConfirmAgain, dialogBusyChanged, dialogClosed, toastDismissed, focusConsumed } from '../store.js';
 import { PAGES, MAIN_PANEL_KEY, MAX_SCREENSHOTS } from '../constants.js';
 import { agentMatchesSession, isAgentFresh } from '../chip-state.js';
 import { isBuiltin, screenshotsFor } from '../catalog.js';
-import { acknowledgeCompleted, beginGame, cancelInstall, closeDetail, installLocalGame, launchModeFor, loadCatalog, loadDetail, openDetail, pushToast, refreshRegistryAction, startInstall, uninstallGame, } from '../actions.js';
+import { acknowledgeCompleted, beginGame, cancelInstall, closeDetail, installLocalGame, launchModeFor, loadCatalog, loadDetail, localInstallOptionsFromDialog, openDetail, pushToast, refreshRegistryAction, startInstall, uninstallGame } from '../actions.js';
 import { getApiClient, getMarketApi } from '../api.js';
 import { makeT, detectLocale } from '../locale.js';
+import { formatBytes } from '../format.js';
+import { LOCAL_INSTALL_ACCEPT, findLocalOverwriteTarget, validateLocalInstallSelection } from '../local-install.js';
 import { BackIcon, MoreIcon, RefreshIcon, UploadIcon } from '../icons.js';
 import { StyleTag } from '../styles.js';
 import { backToConversation, openGameMarket } from '../navigation.js';
@@ -22,7 +24,6 @@ import { PopoverMenu } from './menu.js';
 import { SearchBox, SearchToggle } from './search-box.js';
 
 const h = React.createElement;
-const MAX_LOCAL_BYTES = 20 * 1024 * 1024;
 
 function pageScrollKey(page) {
   return page === PAGES.MY_GAMES ? 'my-games' : 'market';
@@ -372,11 +373,12 @@ export function GameMarketPanel(props) {
     if (!dialog) return;
     if (dialog.kind === 'install-local') {
       store.dispatch(dialogBusyChanged(true));
+      // `dialog.format` is decided at file-selection time; dropping it here made
+      // the real click path upload a ZIP as text/html (CR7-03 follow-up).
       await installLocalGame({
         store: store,
         api: api,
-        file: dialog.file,
-        fileName: dialog.fileName,
+        ...localInstallOptionsFromDialog(dialog),
       });
       store.dispatch(dialogBusyChanged(false));
       store.dispatch(dialogClosed());
@@ -412,18 +414,29 @@ export function GameMarketPanel(props) {
     if (!file) return;
     const name = typeof file.name === 'string' && file.name.length > 0 ? file.name : 'game.html';
     const type = typeof file.type === 'string' ? file.type : '';
-    if (!/\.html?$/i.test(name) && type !== 'text/html') {
-      pushToast(store, { kind: 'error', textKey: 'market.localInstall.unsupported' });
+    // .html (text/html) and .dshgame.zip (application/zip) are both accepted;
+    // the format is decided by file name/extension, never by sniffing content.
+    const selection = validateLocalInstallSelection({ fileName: name, type: type, size: file.size });
+    if (!selection.ok) {
+      pushToast(store, {
+        kind: 'error',
+        textKey: selection.reason === 'tooLarge' ? 'market.localInstall.tooLarge' : 'market.localInstall.unsupported',
+      });
       return;
     }
-    if (typeof file.size === 'number' && file.size > MAX_LOCAL_BYTES) {
-      pushToast(store, { kind: 'error', textKey: 'market.localInstall.tooLarge' });
-      return;
-    }
+    const overwrite = findLocalOverwriteTarget(state.market.games, name);
     store.dispatch(
       dialogOpened('install-local', null, {
         fileName: name,
         file: file,
+        fileSize: typeof file.size === 'number' ? file.size : null,
+        fileSizeLabel:
+          typeof file.size === 'number' && file.size > 0 ? formatBytes(file.size, locale) : null,
+        format: selection.format,
+        formatLabel: t(
+          selection.format === 'asset-zip-v2' ? 'dialog.installLocal.formatZip' : 'dialog.installLocal.formatHtml'
+        ),
+        overwrite: overwrite,
         returnFocus: { kind: 'local-install' },
       })
     );
@@ -675,7 +688,7 @@ export function GameMarketPanel(props) {
     h('input', {
       type: 'file',
       className: 'dgm-sr-only',
-      accept: '.html,text/html',
+      accept: LOCAL_INSTALL_ACCEPT,
       tabIndex: -1,
       ref: fileInputRef,
       onChange: handleFileSelected,
