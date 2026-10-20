@@ -38,6 +38,14 @@ export function runtimeErrorTitleKey(code) {
       return 'runtime.error.saveCorrupt';
     case GM.NO_RUNTIME:
       return 'runtime.error.noRuntime';
+    case GM.ENTRY_LAUNCH_CONSUMED:
+      return 'runtime.error.entryConsumed';
+    case GM.RESOURCE_CREDENTIAL_INVALID:
+    case GM.RESOURCE_CREDENTIAL_EXPIRED:
+    case GM.ENTRY_CREDENTIAL_CONSUMED:
+      return 'runtime.error.credentialExpired';
+    case GM.RESOURCE_SCOPE_DENIED:
+      return 'runtime.error.resourceScope';
     default:
       return 'runtime.error.generic';
   }
@@ -62,6 +70,14 @@ export function runtimeErrorBodyKey(code) {
       return 'runtime.error.saveCorrupt.body';
     case GM.NO_RUNTIME:
       return 'runtime.error.noRuntime.body';
+    case GM.ENTRY_LAUNCH_CONSUMED:
+      return 'runtime.error.entryConsumed.body';
+    case GM.RESOURCE_CREDENTIAL_INVALID:
+    case GM.RESOURCE_CREDENTIAL_EXPIRED:
+    case GM.ENTRY_CREDENTIAL_CONSUMED:
+      return 'runtime.error.credentialExpired.body';
+    case GM.RESOURCE_SCOPE_DENIED:
+      return 'runtime.error.resourceScope.body';
     case GM.RUNTIME_INCOMPATIBLE:
     case GM.SDK_INCOMPATIBLE:
       return null;

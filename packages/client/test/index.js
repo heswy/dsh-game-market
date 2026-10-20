@@ -10,6 +10,7 @@ import './locale.test.js';
 import './runtime-utils.test.js';
 import './actions.test.js';
 import './bundle.test.js';
+import './bundle-lib.test.js';
 import './catalog.test.js';
 import './keyboard.test.js';
 import './debounce.test.js';

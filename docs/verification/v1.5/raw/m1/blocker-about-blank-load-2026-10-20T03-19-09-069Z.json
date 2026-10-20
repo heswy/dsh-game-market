@@ -1,0 +1,100 @@
+{
+  "id": "M1-blocker-about-blank-load-releases-instance",
+  "generatedAt": "2026-10-20T03:19:09.066Z",
+  "kind": "pre-fix diagnostic (reported to Lead); runtime wrapper fix landed 2026-10-20 ~11:06, this probe at ~11:15",
+  "environment": {
+    "dsh": {
+      "dshPackage": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.2"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.2"
+      },
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.2"
+      },
+      "asarExtractedAt": "2026-10-20T02:55:54.473Z"
+    },
+    "chrome": "Google Chrome headless via CDP 127.0.0.1:9506",
+    "hostOrigin": "http://127.0.0.1:58281",
+    "isolatedHome": "/tmp/dsh-v15/probe-m1-aboutblank"
+  },
+  "chain": [
+    "Runtime.createIframe() appends the outer wrapper iframe WITHOUT src and attaches the load listener before appendChild; Chrome loads about:blank and fires a load event.",
+    "At that moment expectedFrameLoads is still 0, so onIframeLoad() runs the unexpected-navigation defense: revokeCapabilities(GM-5013) -> api.releaseRuntime(...) -> Host releases the instance credential (before/while the wrapper navigation is being set up).",
+    "launch() then continues: navigateToGameDocument(initial) sets src=<redacted-src> wrapper loads; nested game document request reaches the resource origin after the instance was released -> 403 (GM-4011) -> frame becomes chrome-error://, no game resources.",
+    "So the game layer looks like \"network 200-ish but chrome-error\"; here the nested document is 403 and the wrapper document itself is 200."
+  ],
+  "trace": [
+    {
+      "at": 1792466341531,
+      "kind": "iframe-load",
+      "src": null,
+      "href": "about:blank"
+    },
+    {
+      "at": 1792466341567,
+      "kind": "iframe-load",
+      "src": "http://127.0.0.1:60277/wrapper?src=<redacted-src>",
+      "href": "<cross-origin>"
+    }
+  ],
+  "events": [
+    {
+      "at": 1792466341532,
+      "type": "error",
+      "error": {
+        "code": "GM-5013",
+        "message": "Unexpected game navigation was blocked",
+        "retryable": false
+      }
+    },
+    {
+      "at": 1792466341533,
+      "type": "state",
+      "state": "loading"
+    },
+    {
+      "at": 1792466341533,
+      "type": "save-status"
+    }
+  ],
+  "releases": [
+    {
+      "gameId": "m1-a02-multiresource",
+      "instanceId": "<credential>"
+    }
+  ],
+  "frameAttrs": {
+    "sandbox": null,
+    "src": "http://127.0.0.1:60277/wrapper?src=<redacted-src>",
+    "contentHref": "<cross-origin>"
+  },
+  "nestedEntryResourceStatusAfterRevoke": {
+    "status": 403
+  },
+  "resourceOriginRequests": [
+    {
+      "status": 200,
+      "method": "GET",
+      "type": "Document",
+      "url": "http://127.0.0.1:60277/wrapper?src=<redacted-src>",
+      "failed": false,
+      "errorText": null,
+      "sessionAttached": null
+    },
+    {
+      "status": 403,
+      "method": "GET",
+      "type": "Document",
+      "url": "http://127.0.0.1:60277/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+      "failed": false,
+      "errorText": null,
+      "sessionAttached": null
+    }
+  ],
+  "verdict": "CONFIRMED runtime bug (not probe artifact): the wrapper fix needs to ignore the initial about:blank load (assign iframe/src before appendChild, or arm expectedFrameLoads before appending, or skip load events whose target has no src)."
+}

@@ -604,6 +604,16 @@ export function reduce(state, action) {
       };
     }
 
+    case 'runtime-launch-refresh': {
+      const patch = action.patch;
+      if (!patch || typeof patch !== 'object') return state;
+      if (!state.runtime.launchInfo) return state;
+      return {
+        ...state,
+        runtime: { ...state.runtime, launchInfo: { ...state.runtime.launchInfo, ...patch } },
+      };
+    }
+
     case 'runtime-patch': {
       const patch = action.patch;
       if (!patch || typeof patch !== 'object') return state;
@@ -835,6 +845,11 @@ export function runtimeStarted(gameId, mode, sessionId, autoResume) {
 
 export function runtimeLaunchInfo(launchInfo) {
   return { type: 'runtime-launch-info', launchInfo: launchInfo };
+}
+
+/** Merge refreshed launch metadata (e.g. a renewed resourceTtlMs) in place. */
+export function runtimeLaunchInfoRefreshed(patch) {
+  return { type: 'runtime-launch-refresh', patch: patch };
 }
 
 export function runtimePatched(patch) {

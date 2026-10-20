@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "gameId": "example-game",
+  "owner": {
+    "login": "example-author",
+    "githubUserId": 123456
+  },
+  "game": {
+    "id": "example-game",
+    "name": "Example Game",
+    "version": "1.1.0",
+    "description": "Example V1.5 catalog record with an HTML release and a newer ZIP release.",
+    "author": { "name": "Example Author" },
+    "categories": ["arcade"],
+    "tags": ["example"],
+    "capabilities": ["storage", "score"],
+    "sdkVersion": "^1.0.0",
+    "runtimeVersion": "^1.0.0",
+    "license": "MIT"
+  },
+  "releases": [
+    {
+      "version": "1.0.0",
+      "format": "html-v1",
+      "tag": "example-game-v1.0.0",
+      "package": {
+        "url": "https://github.com/example-author/example-game/releases/download/example-game-v1.0.0/example-game-1.0.0.html",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+        "size": 180000
+      },
+      "media": {
+        "cover": {
+          "url": "https://github.com/example-author/example-game/releases/download/example-game-v1.0.0/cover-1.0.0.png",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000002",
+          "size": 50000,
+          "type": "png"
+        },
+        "screenshots": [
+          {
+            "url": "https://github.com/example-author/example-game/releases/download/example-game-v1.0.0/screenshot-1-1.0.0.png",
+            "sha256": "0000000000000000000000000000000000000000000000000000000000000003",
+            "size": 40000,
+            "type": "png"
+          }
+        ]
+      },
+      "sourceCommit": "0123456789abcdef0123456789abcdef01234567",
+      "reviewSha256": "0000000000000000000000000000000000000000000000000000000000000004",
+      "releasedAt": "2026-10-19T12:00:00.000Z"
+    },
+    {
+      "version": "1.1.0",
+      "format": "asset-zip-v2",
+      "tag": "example-game-v1.1.0",
+      "package": {
+        "url": "https://github.com/example-author/example-game/releases/download/example-game-v1.1.0/example-game-1.1.0.dshgame.zip",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000005",
+        "size": 640000,
+        "filesDigest": "0000000000000000000000000000000000000000000000000000000000000006"
+      },
+      "media": {
+        "cover": {
+          "url": "https://github.com/example-author/example-game/releases/download/example-game-v1.1.0/cover-1.1.0.png",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000007",
+          "size": 50000,
+          "type": "png"
+        },
+        "screenshots": [
+          {
+            "url": "https://github.com/example-author/example-game/releases/download/example-game-v1.1.0/screenshot-1-1.1.0.png",
+            "sha256": "0000000000000000000000000000000000000000000000000000000000000008",
+            "size": 40000,
+            "type": "png"
+          }
+        ]
+      },
+      "sourceCommit": "89abcdef0123456789abcdef0123456789abcdef",
+      "reviewSha256": "0000000000000000000000000000000000000000000000000000000000000009",
+      "releasedAt": "2026-10-21T12:00:00.000Z"
+    }
+  ],
+  "withdrawnAt": null,
+  "createdAt": "2026-10-19T12:00:00.000Z",
+  "updatedAt": "2026-10-21T12:00:00.000Z"
+}

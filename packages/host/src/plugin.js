@@ -56,6 +56,46 @@ function safeDispose(disposer, logger) {
   }
 }
 
+/**
+ * The DSH web page origin, read from the host `webServer` service.
+ *
+ * V1.5 needs this exact value for the `frame-ancestors` of the resource-origin
+ * wrapper and of an `asset-zip-v2` entry document (docs/V1.5-CONTRACTS.md §7.5,
+ * §7.5.2). Without it we would have to fall back to the configured loopback
+ * allowlist, which admits *any* loopback origin instead of just the app page.
+ *
+ * Deliberately defensive: the service may not be reachable from the plugin's
+ * fiber, or may not have bound a port yet, in which case `getOrigin()` throws.
+ * A missing origin is not fatal — the resource service then falls back to the
+ * configured `security.frameAncestors` allowlist.
+ *
+ * @returns {string|null} e.g. `http://127.0.0.1:54663`
+ */
+function resolveDshWebOrigin(ctx, logger) {
+  try {
+    // `ctx.reflect.get(name, false)` reads a service WITHOUT declaring it in
+    // `inject`: the plugin must keep activating on hosts that serve no web UI,
+    // so `webServer` stays optional rather than a hard dependency.
+    let webServer = null;
+    if (ctx && typeof ctx.reflect === 'object' && typeof ctx.reflect.get === 'function') {
+      webServer = ctx.reflect.get('webServer', false);
+    }
+    if (!webServer && typeof ctx.get === 'function') {
+      webServer = ctx.get('webServer');
+    }
+    if (!webServer || typeof webServer.getOrigin !== 'function') return null;
+    const origin = webServer.getOrigin();
+    if (typeof origin !== 'string' || origin.length === 0) return null;
+    const parsed = new URL(origin);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+    if (parsed.pathname !== '/' || parsed.search !== '' || parsed.hash !== '') return null;
+    return `${parsed.protocol}//${parsed.host}`;
+  } catch (error) {
+    logger.warn(LOG_PREFIX, 'dsh-web-origin-unavailable', `code=${error?.code || 'E_UNKNOWN'}`);
+    return null;
+  }
+}
+
 function registerHttpRoutes(ctx, host, logger) {
   ctx.effect(
     function gameMarketHttpRoutes() {
@@ -194,10 +234,27 @@ function registerAgentEvents(ctx, host, logger) {
 export function apply(ctx, config) {
   const logger = createLogger(ctx);
   try {
-    const host = createHost({ config, logger });
+    // V1.5: the exact DSH page origin feeds the resource-origin CSP
+    // `frame-ancestors` so only the app page can frame the wrapper /
+    // asset-zip-v2 entry document (contract §7.5.2).
+    const dshWebOrigin = resolveDshWebOrigin(ctx, logger);
+    const host = createHost({ config, logger, http: dshWebOrigin === null ? {} : { dshWebOrigin } });
     registerHttpRoutes(ctx, host, logger);
     registerAgentEvents(ctx, host, logger);
-  registerAgentSessionEvents(ctx, host, logger);
+    registerAgentSessionEvents(ctx, host, logger);
+    // V1.5: the instance resource origin is its own loopback server. It must be
+    // started when the plugin activates and closed when it is disposed, so a
+    // plugin reload never leaks a listening socket or a stale credential.
+    ctx.effect(
+      () => () => host.dispose(),
+      'game-market: resource origin teardown',
+    );
+    host.resources.start().catch((error) => {
+      // A failed resource origin must not fail plugin activation: the
+      // html-v1 path keeps working and asset-zip-v2 launches fail closed with
+      // GM-5038 (see docs/V1.5-CONTRACTS.md §7.1).
+      logger.error(LOG_PREFIX, 'resource-origin-failed', `code=${error?.code || 'E_UNKNOWN'}`);
+    });
     logger.info(LOG_PREFIX, 'applied', `hostEpoch=${host.hostEpoch}`);
   } catch (error) {
     logger.error(LOG_PREFIX, 'apply-failed', `code=${error?.code || 'E_UNKNOWN'}`);

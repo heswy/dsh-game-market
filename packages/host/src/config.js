@@ -11,7 +11,10 @@ import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { DEFAULT_OFFICIAL_REGISTRY_URL } from '../../shared/src/constants.js';
+import {
+  DEFAULT_OFFICIAL_REGISTRY_URL,
+  DEFAULT_OFFICIAL_REGISTRY_V2_URL,
+} from '../../shared/src/constants.js';
 import { DEFAULT_ALLOWED_HOSTS, REGISTRY_FILE } from '../../shared/src/registry.js';
 
 const BUNDLE_ROOT_URL = new URL('../../../', import.meta.url);
@@ -174,7 +177,11 @@ export function resolveRegistrySource(rawSource, env, issues) {
     mode: 'layered',
     source: null,
     origin: 'official-default',
+    // V1.5 default reads Registry v2 first (§5.2) and keeps the v1 index as the
+    // migration fallback while the content repository has not been regenerated
+    // yet (§11.3). Both are the same content repository, same PR.
     officialUrl: DEFAULT_OFFICIAL_REGISTRY_URL,
+    officialV2Url: DEFAULT_OFFICIAL_REGISTRY_V2_URL,
     seedSource: { kind: 'file', path: defaultRegistryPath() },
     allowLocalFile,
     issues,
@@ -276,8 +283,9 @@ export function normaliseConfig(raw, env = process.env) {
       source: registrySource,
       seedSource: resolved.seedSource || null,
       officialUrl: resolved.officialUrl || null,
+      officialV2Url: resolved.officialV2Url || null,
       origin: resolved.origin,
-      sourceUrl: registrySource ? sourceUrlOf(registrySource) : resolved.officialUrl || null,
+      sourceUrl: registrySource ? sourceUrlOf(registrySource) : resolved.officialV2Url || resolved.officialUrl || null,
       allowLocalFile: resolved.allowLocalFile,
       allowedHosts,
       defaultAllowedHosts: [...DEFAULT_ALLOWED_HOSTS],

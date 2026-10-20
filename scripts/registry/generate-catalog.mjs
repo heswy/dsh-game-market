@@ -6,7 +6,8 @@ import { pathToFileURL } from 'node:url';
  * Usage:
  *   node scripts/registry/generate-catalog.mjs --registry-dir <dir> [--check] [--json]
  *
- * Default writes the generated index; `--check` is read-only and exits 1 if the
+ * Default writes both generated indexes (`registry/games.json` for v1 and
+ * `registry/v2/games.json` for v2); `--check` is read-only and exits 1 if either
  * committed index is stale (content-repo CI uses this).
  */
 import { buildRegistry } from './lib/catalog.mjs';
@@ -40,9 +41,19 @@ export async function main(argv = process.argv.slice(2)) {
   }
   const result = await buildRegistry(options.registryDir, { write: !options.check, check: options.check });
   if (options.json) {
-    console.log(JSON.stringify({ ok: result.ok, registryDir: options.registryDir, check: options.check, changed: result.changed, count: result.index ? result.index.games.length : 0, generatedAt: result.generatedAt, errors: result.errors }, null, 2));
+    console.log(JSON.stringify({
+      ok: result.ok,
+      registryDir: options.registryDir,
+      check: options.check,
+      changed: result.changed,
+      changedV2: result.changedV2,
+      count: result.index ? result.index.games.length : 0,
+      countV2: result.indexV2 ? result.indexV2.games.length : 0,
+      generatedAt: result.generatedAt,
+      errors: result.errors,
+    }, null, 2));
   } else if (result.ok) {
-    console.log(`[registry] ${options.check ? 'OK (up to date)' : 'generated'} games=${result.index.games.length} generatedAt=${result.generatedAt}`);
+    console.log(`[registry] ${options.check ? 'OK (up to date)' : 'generated'} v1=${result.index.games.length} v2=${result.indexV2.games.length} generatedAt=${result.generatedAt}`);
   } else {
     console.error('[registry] FAILED');
     for (const error of result.errors) console.error(`  - ${error.code} ${error.field || ''}: ${error.message}`);

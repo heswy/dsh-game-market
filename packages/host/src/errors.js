@@ -70,14 +70,25 @@ export function statusForError(error) {
 /**
  * HTTP status for a GM code, per PRD §8.5.
  *
- * This intentionally does not use `shared/errors.js#httpStatusFor`: that helper
- * computes `Math.floor(4005 / 100) * 100 === 4000` for GM-4005 (a shared
- * contract bug), while the PRD requires 400/403/404/409/413/415/422/429.
+ * Kept local (rather than delegating to `shared/errors.js#httpStatusFor`) because
+ * the Host owns a few documented exceptions, e.g. disk-full GM-4142 is 413 even
+ * though its code lives in the 414x band. The V1.5 bands below mirror
+ * `shared/errors.js#httpStatusFor` so both layers agree.
  */
 export function statusForGm(code) {
   const text = String(code);
   if (!isGmCode(text)) return 500;
   const numeric = Number(text.slice(3));
+  // V1.5 resource credentials: decided before the numeric bands because 4011
+  // and 4013 would otherwise fall through to 500. S-A1 measured 403 for an
+  // expired/released instance and 410 for a replayed launch URL
+  // (docs/V1.5-CONTRACTS.md §7.2/§7.3).
+  if (text === GM.RESOURCE_CREDENTIAL_EXPIRED) return 403;
+  if (text === GM.ENTRY_LAUNCH_CONSUMED) return 410;
+  if (text === GM.RESOURCE_CREDENTIAL_INVALID) return 401;
+  if (text === GM.ENTRY_CREDENTIAL_CONSUMED) return 401;
+  // V1.5 archive/descriptor/catalog/inline semantics are all 422 (§8.1/§8.3).
+  if (numeric >= 4270 && numeric < 4290) return 422;
   if (numeric >= 5030 && numeric < 6000) return 503;
   if (numeric >= 5000) return 500;
   if (numeric >= 4290 && numeric < 4300) return 429;

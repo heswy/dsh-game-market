@@ -120,6 +120,24 @@ export function resumeRuntime(controller) {
   }
 }
 
+/**
+ * Reload the current instance with its resource credential (V1.5 contract §7.2).
+ * Returns whether the controller accepted the reload; failures surface through
+ * the controller's own events/state machine.
+ */
+export function reloadRuntime(controller) {
+  if (!controller || typeof controller.reload !== 'function') return false;
+  try {
+    const result = controller.reload();
+    if (result && typeof result.then === 'function') {
+      result.then(undefined, function ignore() {});
+    }
+    return true;
+  } catch (_error) {
+    return false;
+  }
+}
+
 /** Destroy the catalogued controller exactly once, swallowing teardown errors. */
 export function destroyRuntime(controller) {
   if (!controller || typeof controller.destroy !== 'function') return false;

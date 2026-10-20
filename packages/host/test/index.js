@@ -21,6 +21,9 @@ import { register as v1Install } from './cases/v1-install.js';
 import { register as v1Launch } from './cases/v1-launch.js';
 import { register as v1Games } from './cases/v1-games.js';
 import { register as v1Maintenance } from './cases/v1-maintenance.js';
+import { register as v15InstallZip } from './cases/v1.5-install-zip.js';
+import { register as v15RegistryV2 } from './cases/v1.5-registry-v2.js';
+import { register as v15Resources } from './cases/v1.5-resources.js';
 
 health();
 games();
@@ -36,3 +39,6 @@ v1Install();
 v1Launch();
 v1Games();
 v1Maintenance();
+v15InstallZip();
+v15RegistryV2();
+v15Resources();

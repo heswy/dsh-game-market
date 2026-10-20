@@ -26,6 +26,13 @@ await game.session.end({ outcome: 'completed', score });
 `score.submit/getBest` · `lifecycle.on` · `agent.getStatus/on` · V0-compatible
 `onError` / `isGameError`.
 
+V1.5 (`asset-zip-v2` only): `game.runtime.assetUrl(relativePath)` returns the
+absolute URL of a package-relative asset (image/audio/level/JSON), e.g.
+`game.runtime.assetUrl('levels/level-01.json')`. It is built from the instance
+`resourceBase` injected by the Runtime and normalized with the shared archive
+path rules: a path escaping the package throws `GM-4039`; an `html-v1` package
+(or a legacy Runtime with no resource route) throws `GM-4043`.
+
 - Types: [`src/index.d.ts`](src/index.d.ts) (PRD §8.3 / `docs/V1-CONTRACTS.md` §8).
 - Every rejection is a `GameError` with a stable `GM-*` `code`, `retryable` and
   optional `details`. Internal `E_*` codes never cross the bridge (D-030).
@@ -33,8 +40,9 @@ await game.session.end({ outcome: 'completed', score });
   allowed; other calls reject with `GM-4031` without queueing.
 - Writes are serialized in call order (SDK + Runtime) and bounded at 32 queued
   requests (`GM-4291`); reads may run concurrently.
-- `runtime` is a frozen live view: `theme`, `reducedMotion`, `viewport` and
-  `ready` update as the Runtime reports changes.
+- `runtime` is a frozen live view: `theme`, `reducedMotion`, `viewport`,
+  `resourceBase`/`packageFormat` (V1.5) and `ready` update as the Runtime
+  reports changes.
 - Version negotiation: `protocolVersion` must be 1 (`GM-5002`); a Runtime
   `supportedSdkRange` below this SDK rejects; an SDK ahead of the Runtime
   continues with the forward-compatible policy. V0 `0.1.x` games continue to

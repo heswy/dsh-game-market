@@ -1,0 +1,62 @@
+{
+  "id": "M1-blocker-wrapper-csp-frame-ancestors-wildcard",
+  "generatedAt": "2026-10-20T04:41:27.874Z",
+  "kind": "product-defect (composition wiring) — reported to Lead; probe kept its strict assertion",
+  "environment": {
+    "dsh": {
+      "dshPackage": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.2"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.2"
+      },
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.2"
+      },
+      "asarExtractedAt": "2026-10-20T02:55:54.473Z"
+    },
+    "hostOrigin": "http://127.0.0.1:58281",
+    "isolatedHome": "/tmp/dsh-v15/home-probe-m1-wildcard",
+    "chrome": "headless CDP 127.0.0.1:9506"
+  },
+  "repro": [
+    "boot isolated dsh web with this worktree plugin row (injectProbeRow, devMode)",
+    "install real asset-zip-v2 package via POST /api/game-market/install-local (page-authenticated)",
+    "POST /api/game-market/launch, take data.wrapperUrl and data.entryResourceUrl",
+    "GET wrapperUrl -> response header Content-Security-Policy frame-ancestors",
+    "GET entryResourceUrl -> entry document CSP frame-ancestors (resource credential URL, launch credential NOT consumed)"
+  ],
+  "observed": {
+    "wrapperStatus": 200,
+    "wrapperCsp": "default-src 'none'; frame-src http://127.0.0.1:59729; child-src http://127.0.0.1:59729; script-src 'nonce-<credential>'; style-src 'unsafe-inline'; img-src 'none'; media-src 'none'; font-src 'none'; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self' http://127.0.0.1:* http://localhost:*",
+    "wrapperFrameAncestors": "'self' http://127.0.0.1:* http://localhost:*",
+    "entryStatus": 200,
+    "entryCsp": "default-src 'none'; script-src http://127.0.0.1:59729; style-src http://127.0.0.1:59729; img-src http://127.0.0.1:59729 data:; media-src http://127.0.0.1:59729; font-src http://127.0.0.1:59729; connect-src http://127.0.0.1:59729; frame-src 'none'; child-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:* http://localhost:* http://127.0.0.1:59729",
+    "entryFrameAncestors": "http://127.0.0.1:* http://localhost:* http://127.0.0.1:59729",
+    "dshWebOriginExpected": "http://127.0.0.1:58281"
+  },
+  "expected": {
+    "wrapper": "frame-ancestors http://127.0.0.1:58281 (exact DSH web origin, per contract §7.5.1 and Lead assertion 2026-10-20: no *)",
+    "entry": "frame-ancestors http://127.0.0.1:58281 <resourceOrigin> (contract §7.5)"
+  },
+  "rootCause": {
+    "chain": [
+      "packages/host/src/plugin.js apply(): createHost({ config, logger }) — no `http` overrides, so http.dshWebOrigin is undefined.",
+      "packages/host/src/host.js:92: dshWebOrigin: http.dshWebOrigin ?? null",
+      "packages/host/src/resources.js:546/842: webOrigin = null -> wrapperAncestors = normaliseFrameAncestors(config.security.frameAncestors)",
+      "packages/host/src/config.js:23-27 DEFAULT_FRAME_ANCESTORS = [\"'self'\", \"http://127.0.0.1:*\", \"http://localhost:*\"]",
+      "=> wrapper CSP frame-ancestors = 'self' http://127.0.0.1:* http://localhost:* (contains a loopback wildcard)",
+      "entry document CSP frame-ancestors = http://127.0.0.1:* http://localhost:* <resourceOrigin> (same fallback)"
+    ],
+    "note": "The resource service already supports the exact origin (dshWebOrigin parameter + unit test \"wrapper frame-ancestors ... exact when known\"), the production composition simply never passes it."
+  },
+  "impact": "Wrapper/entry documents can be framed by any loopback origin instead of exactly the DSH page. Egress boundary itself is intact (wrapper frame-src only resourceOrigin; game connect-src exact) — this is a header-contract/hardening gap, not an egress hole.",
+  "suggestedFix": "plugin.js should derive the DSH web origin (e.g. from ctx.get(\"webServer\") host/port/protocol) and call createHost({ config, logger, http: { dshWebOrigin } }); keep the fallback only for CLI/unit contexts. No probe assertion change.",
+  "probeAssertionsKept": [
+    "wrapper-csp-has-frame-ancestors-without-bare-wildcard (passes: no bare * source)",
+    "wrapper-csp-frame-ancestors-no-wildcard-at-all (fails: literal * in http://127.0.0.1:*) — Lead hard assertion 2026-10-20"
+  ]
+}

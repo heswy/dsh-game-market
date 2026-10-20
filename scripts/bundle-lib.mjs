@@ -1,15 +1,15 @@
 // Zero-dependency bundler for the restricted ESM style used in this repo.
 //
 // Supported syntax (one import per line, no cycles, no dynamic import):
-//   import React from 'react';                      // Client bundle only
+//   import React from 'react';                      // external allowlist below
 //   import { a, b as c } from './other.js';         // named imports
 //   import * as ns from './other.js';               // namespace import
 //   export function name(...) {}
 //   export const name = ...; / export let / export class
 //
 // Unsupported (fails loudly so nobody debugs a silent mis-bundle):
-//   export default, export { ... }, export * from, multi-line imports,
-//   bare package imports other than `react`, circular imports.
+//   export default, export { ... }, export * from,
+//   bare package imports outside EXTERNAL_MODULES, circular imports.
 //
 // Two output formats:
 //   - bundleModuleLoader(): window.__ModuleLoader__.load({ id, factory(require) })
@@ -19,9 +19,50 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const IMPORT_RE = /^import\s+(.+?)\s+from\s+["']([^"']+)["'];?\s*$/;
+/** True once a (possibly multi-line, already joined) import statement is complete. */
+const IMPORT_COMPLETE_RE = /^import\s+.+?\s+from\s+["'][^"']+["'];?$/;
 const NAME_RE = /^[A-Za-z_$][\w$]*$/;
 const EXPORT_DECL_RE = /^export\s+(async\s+function|function|const|let|var|class)\s+([A-Za-z_$][\w$]*)/;
 const FORBIDDEN_EXPORT_RE = /^export\s+(default|\{|\*)/;
+
+/**
+ * Reviewed minimal external allowlist (docs/V1.5-CONTRACTS.md §12.4).
+ *
+ * These are host platform seed modules resolved by the DSH client module
+ * loader at runtime (verified in docs/verification/v1.5/brand.md). Nothing
+ * else may be imported as a bare specifier: widening this list is a contract
+ * change, so `packages/client/test/bundle-lib.test.js` pins the exact set.
+ */
+export const EXTERNAL_MODULES = Object.freeze([
+  'react',
+  'react-dom/client',
+  '@deepseek-ai/dsh-client-ui-primitives',
+]);
+
+const EXTERNAL_MODULE_SET = new Set(EXTERNAL_MODULES);
+
+/**
+ * Sanitize a source line that the bundler emits as a comment.
+ *
+ * Generated bundles are inlined into game HTML (bundleExpression). A comment
+ * that literally contains `<script ... id="dsh-game-manifest">` inside the
+ * inlined script would be picked up by the package validator's single-manifest
+ * extraction and look like a second manifest declaration. Comments are not
+ * executable, so HTML-escape only the dangerous tag openers while keeping the
+ * comment readable (and the bundle deterministic).
+ */
+function sanitizeCommentLine(line) {
+  return line
+    .replace(/<(\/?)(script|style)\b/gi, '&lt;$1$2')
+    .replace(/url\(/gi, 'url (');
+}
+
+function externalImportError(specifier, where) {
+  return new Error(
+    `Unsupported bare import "${specifier}" in ${where}; only relative imports and the reviewed ` +
+      `external allowlist (${EXTERNAL_MODULES.join(', ')}) are allowed`
+  );
+}
 
 /**
  * @param {{entry: string, root: string}} options
@@ -34,9 +75,9 @@ export function collectModules({ entry, root }) {
   const visiting = new Set();
 
   function resolveImport(importerAbs, specifier) {
-    if (specifier === 'react') return { kind: 'external', specifier };
+    if (EXTERNAL_MODULE_SET.has(specifier)) return { kind: 'external', specifier };
     if (!specifier.startsWith('.')) {
-      throw new Error(`Unsupported bare import "${specifier}" in ${path.relative(rootAbs, importerAbs)}; only relative imports and "react" are allowed`);
+      throw externalImportError(specifier, path.relative(rootAbs, importerAbs));
     }
     if (!specifier.endsWith('.js')) {
       throw new Error(`Imports must include the .js extension: "${specifier}" in ${path.relative(rootAbs, importerAbs)}`);
@@ -62,26 +103,37 @@ export function collectModules({ entry, root }) {
     const exportedNames = [];
     let inBlockComment = false;
 
-    for (const rawLine of lines) {
-      const line = rawLine;
+    for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+      const line = lines[lineIndex];
       const trimmed = line.trim();
       // Preserve comments/blank lines; only line-start declarations matter.
       if (inBlockComment) {
-        body.push(line);
+        body.push(sanitizeCommentLine(line));
         if (trimmed.includes('*/')) inBlockComment = false;
         continue;
       }
       if (trimmed.startsWith('/*')) {
         inBlockComment = !trimmed.includes('*/');
-        body.push(line);
+        body.push(sanitizeCommentLine(line));
         continue;
       }
       if (trimmed.startsWith('//')) {
-        body.push(line);
+        body.push(sanitizeCommentLine(line));
         continue;
       }
       if (trimmed.startsWith('import ')) {
-        imports.push(parseImport(trimmed, abs, rootAbs, resolveImport));
+        // A single import statement may span lines (e.g. long named-import
+        // lists in shared modules). Join until the closing `from "…";` so the
+        // restricted subset still parses import-by-import.
+        let statement = trimmed;
+        while (!IMPORT_COMPLETE_RE.test(statement)) {
+          lineIndex += 1;
+          if (lineIndex >= lines.length) {
+            throw new Error(`Unterminated import in ${path.relative(rootAbs, abs)}: ${trimmed}`);
+          }
+          statement = `${statement} ${lines[lineIndex].trim()}`;
+        }
+        imports.push(parseImport(statement, abs, rootAbs, resolveImport));
         continue;
       }
       if (trimmed.startsWith('export ')) {
@@ -192,14 +244,30 @@ function toPosix(value) {
 
 function renderedImports(record, modules) {
   const lines = [];
+  // One `require` per external specifier per module, in first-use order. Names
+  // are module-local, so they cannot collide across modules.
+  const externalRefs = new Map();
+  let externalIndex = 0;
+
+  function externalRef(specifier) {
+    if (!EXTERNAL_MODULE_SET.has(specifier)) throw new Error(`Unsupported external import: ${specifier}`);
+    let ref = externalRefs.get(specifier);
+    if (ref) return ref;
+    ref = `__external_${externalIndex}`;
+    externalIndex += 1;
+    externalRefs.set(specifier, ref);
+    // Generation form fixed by the M0 S-B1 probe (docs/verification/v1.5/brand.md §5).
+    lines.push(`const ${ref} = require(${JSON.stringify(specifier)});`);
+    return ref;
+  }
+
   for (const imp of record.imports) {
     const target = imp.target;
     if (target.kind === 'external') {
-      if (target.specifier !== 'react') throw new Error(`Unsupported external import: ${target.specifier}`);
-      lines.push(`const __react = require('react');`);
-      if (imp.defaultName) lines.push(`const ${imp.defaultName} = __react;`);
-      if (imp.namespaceName) lines.push(`const ${imp.namespaceName} = __react;`);
-      for (const named of imp.named) lines.push(`const ${named.local} = __react.${named.imported};`);
+      const ref = externalRef(target.specifier);
+      if (imp.defaultName) lines.push(`const ${imp.defaultName} = ${ref};`);
+      if (imp.namespaceName) lines.push(`const ${imp.namespaceName} = ${ref};`);
+      for (const named of imp.named) lines.push(`const ${named.local} = ${ref}.${named.imported};`);
       continue;
     }
     const dep = modules.get(target.abs);
@@ -263,8 +331,8 @@ export function bundleModuleLoader({ entry, root, id }) {
  */
 export function bundleExpression({ entry, root }) {
   const collected = collectModules({ entry, root });
-  const usesReact = [...collected.modules.values()].some((m) => m.imports.some((i) => i.target.kind === 'external'));
-  if (usesReact) throw new Error('bundleExpression cannot be used with external imports (react)');
+  const usesExternal = [...collected.modules.values()].some((m) => m.imports.some((i) => i.target.kind === 'external'));
+  if (usesExternal) throw new Error('bundleExpression cannot be used with external imports (games have no platform host modules)');
   return `(function () {\n  'use strict';\n${indent(prelude(collected), 2)}\n  return __entry;\n})()`;
 }
 

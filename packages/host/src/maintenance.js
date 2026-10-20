@@ -12,6 +12,8 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
+import { ASSET_ZIP_V2, DESCRIPTOR_FILE } from '../../shared/src/constants.js';
+import { GM } from '../../shared/src/errors.js';
 import {
   ENTRY_FILE,
   PACKAGES_DIR,
@@ -19,8 +21,8 @@ import {
   STAGING_DIR,
   TRASH_DIR,
 } from '../../shared/src/installation.js';
-import { GM } from '../../shared/src/errors.js';
 import { hostError } from './errors.js';
+import { verifyInstalledRecord } from './installations.js';
 import { INSTALL_LOCK_FILE } from './install-lock.js';
 import { parseVersion } from './semver.js';
 import { isInside } from './validation.js';
@@ -65,6 +67,7 @@ export function createMaintenanceService({
   logger = null,
   now = () => new Date(),
   trashTtlMs = TRASH_TTL_MS,
+  resources = null,
 }) {
   let ready = null;
 
@@ -136,12 +139,26 @@ export function createMaintenanceService({
     return true;
   }
 
-  function markBroken(record) {
-    if (record.compatibility && record.compatibility.status === 'broken') return false;
+  /**
+   * §6.5 consistency check. One implementation only: the installer's
+   * `verifyInstalledRecord` (host-zip) decides entry existence, html-v1 sha256
+   * and the `asset-zip-v2` descriptor/digest checks. Maintenance only records
+   * the verdict and never deletes data.
+   */
+  async function recordIssue(record) {
+    const verification = await verifyInstalledRecord(record, { storage });
+    return verification.ok ? null : verification.reason || 'record-invalid';
+  }
+
+  function markBroken(record, reasons = ['entry-missing']) {
+    const already = record.compatibility && record.compatibility.status === 'broken';
+    const wanted = Array.isArray(reasons) && reasons.length > 0 ? reasons.slice() : ['entry-missing'];
+    // Keep the first observed reason set: it is the actual state maintenance saw.
+    if (already) return false;
     record.compatibility = {
       ...(record.compatibility || {}),
       status: 'broken',
-      reasons: ['entry-missing'],
+      reasons: wanted,
       checkedAt: now().toISOString(),
     };
     return true;
@@ -180,26 +197,31 @@ export function createMaintenanceService({
           logger?.warn?.('[game-market/host] version-cleanup-failed', `gameId=${id}`);
         }
       }
-      const entryPath = path.join(idDirectory, record.version, ENTRY_FILE);
-      if (!(await pathExists(entryPath)) && markBroken(record)) {
+      const issue = await recordIssue(record);
+      if (issue !== null && markBroken(record, [issue])) {
         recordsChanged = true;
         summary.brokenRecords += 1;
-        logger?.warn?.('[game-market/host] package-missing-entry', `gameId=${id}`);
+        logger?.warn?.('[game-market/host] package-inconsistent', `gameId=${id}`, `reason=${issue}`);
       }
-      if (record.previousVersion && !(await pathExists(path.join(idDirectory, record.previousVersion, ENTRY_FILE)))) {
-        record.previousVersion = null;
-        recordsChanged = true;
+      if (record.previousVersion) {
+        const previousDirectory = path.join(idDirectory, record.previousVersion);
+        const previousFormat = record.previousFormat === ASSET_ZIP_V2 ? ASSET_ZIP_V2 : 'html-v1';
+        const previousMarker = previousFormat === ASSET_ZIP_V2
+          ? path.join(previousDirectory, DESCRIPTOR_FILE)
+          : path.join(previousDirectory, ENTRY_FILE);
+        if (!(await pathExists(previousMarker))) {
+          record.previousVersion = null;
+          recordsChanged = true;
+        }
       }
     }
 
     for (const [id, record] of Object.entries(records)) {
-      const idDirectory = storage.filePath(PACKAGES_DIR, id);
-      const entryPath = path.join(idDirectory, record.version, ENTRY_FILE);
-      if (await pathExists(entryPath)) continue;
-      if (markBroken(record)) {
+      const issue = await recordIssue(record);
+      if (issue !== null && markBroken(record, [issue])) {
         recordsChanged = true;
         summary.brokenRecords += 1;
-        logger?.warn?.('[game-market/host] package-missing-entry', `gameId=${id}`);
+        logger?.warn?.('[game-market/host] package-inconsistent', `gameId=${id}`, `reason=${issue}`);
       }
     }
 
@@ -249,16 +271,36 @@ export function createMaintenanceService({
     const trash = await cleanTrash();
     const packages = await cleanPackages(file);
     const previews = await cleanPreviewCache(file);
+    // Expired/released runtime resource credentials are memory-only; a sweep
+    // keeps the instance map from accumulating across a long-lived session.
+    let resourceInstancesPruned = 0;
+    if (resources && typeof resources.pruneExpired === 'function') {
+      try {
+        resourceInstancesPruned = resources.pruneExpired();
+      } catch (error) {
+        logger?.warn?.('[game-market/host] resource-sweep-failed', `code=${error?.code || 'E_UNKNOWN'}`);
+      }
+    }
     return {
       stagingRemoved: staging,
       trashRemoved: trash,
       packages,
       previewEntriesRemoved: previews,
+      resourceInstancesPruned,
     };
   }
 
   async function runStartup() {
     try {
+      // Resource credentials are memory-only; a restart starts from an empty
+      // instance map, but pruning keeps the observable promise explicit.
+      if (resources && typeof resources.pruneExpired === 'function') {
+        try {
+          resources.pruneExpired();
+        } catch (_error) {
+          // Never let a credential sweep block filesystem maintenance.
+        }
+      }
       await storage.ensureReady();
       if (!(await hasAnythingToClean())) return { skipped: 'empty' };
       if (!lock) return await cleanup();
@@ -267,7 +309,7 @@ export function createMaintenanceService({
     } catch (error) {
       if (error && error.code === GM.INSTALL_IO) logger?.warn?.('[game-market/host] maintenance-failed');
       else logger?.warn?.('[game-market/host] maintenance-failed', `code=${error?.code || 'E_UNKNOWN'}`);
-      throw hostError(GM.INSTALL_IO, 'Startup maintenance failed', { retryable: true });
+      throw hostError(GM.INSTALL_IO, 'Startup maintenance failed', { retryable: true, cause: error });
     }
   }
 

@@ -19,6 +19,7 @@ import {
   isValidVersion,
   packageFileName,
 } from './manifest.js';
+import { packageFileNameForFormat } from './package-v2.js';
 
 export const REGISTRY_FILE = 'games.json';
 export const REGISTRY_CACHE_FILE = 'registry-cache.json';
@@ -177,10 +178,12 @@ export function validateRegistryGame(input, options = {}) {
     errors.push(regError('E_REGISTRY_FIELD_TYPE', 'package must be an object', { field: 'package' }));
   } else {
     const pkg = game.package;
+    const format = pkg.format === 'asset-zip-v2' ? 'asset-zip-v2' : 'html-v1';
     if (typeof pkg.sha256 !== 'string' || !SHA256_RE.test(pkg.sha256)) {
       errors.push(regError('E_REGISTRY_FIELD_RANGE', 'package.sha256 must be 64 lowercase hex', { field: 'package.sha256' }));
     }
-    if (!Number.isInteger(pkg.size) || pkg.size < 1 || pkg.size > LIMITS.packageBytes) {
+    const sizeLimit = format === 'asset-zip-v2' ? LIMITS.zip.zipOuterBytes : LIMITS.packageBytes;
+    if (!Number.isInteger(pkg.size) || pkg.size < 1 || pkg.size > sizeLimit) {
       errors.push(regError('E_REGISTRY_FIELD_RANGE', 'package.size is out of range', { field: 'package.size' }));
     }
     if (!isIsoDate(pkg.releasedAt)) {
@@ -194,6 +197,8 @@ export function validateRegistryGame(input, options = {}) {
       sourceType: options.sourceType,
       sourceUrl: options.sourceUrl,
       allowedHosts: options.allowedHosts,
+      // V1.5: a v2 index carries `package.format`; a v1 index does not.
+      format: pkg.format === 'asset-zip-v2' ? 'asset-zip-v2' : 'html-v1',
     });
     if (!urlResult.ok) {
       errors.push(regError('E_REGISTRY_INVALID', urlResult.message, { field: 'package.url' }));
@@ -296,7 +301,12 @@ export function validatePackageUrl(value, options = {}) {
   if (typeof value !== 'string' || value.length === 0 || value.length > 1000) {
     return { ok: false, url: null, message: 'package.url must be a non-empty string' };
   }
-  const expectedFile = packageFileName(id, version);
+  // V1.5: the expected file name depends on the package format. A v1 call passes
+  // no `format`, so `html-v1` keeps the V1 behaviour byte for byte.
+  const format = options.format === 'asset-zip-v2' ? 'asset-zip-v2' : 'html-v1';
+  const expectedFile = format === 'html-v1'
+    ? packageFileName(id, version)
+    : packageFileNameForFormat(id, version, format);
 
   if (sourceType === 'file') {
     if (!RELATIVE_PACKAGE_RE.test(value)) {

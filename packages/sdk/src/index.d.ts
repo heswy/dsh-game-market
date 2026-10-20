@@ -34,6 +34,8 @@ export type GameErrorCode =
   | 'GM-4031'
   | 'GM-4032'
   | 'GM-4033'
+  | 'GM-4039'
+  | 'GM-4043'
   | 'GM-4092'
   | 'GM-4093'
   | 'GM-4098'
@@ -170,6 +172,19 @@ export interface GameRuntimeInfo {
   /** How the platform launched this run (resume-paused = platform modal is the only confirmation). */
   readonly launchMode: 'start' | 'resume-paused';
   readonly viewport: Readonly<{ width: number; height: number; dpr: number }>;
+  /**
+   * V1.5: instance resource prefix (`http://127.0.0.1:<port>/res/<instance>/<token>`).
+   * `null` for html-v1 packages and legacy Runtime builds.
+   */
+  readonly resourceBase: string | null;
+  /** V1.5 package format, or `null` on legacy Runtime builds. */
+  readonly packageFormat: 'html-v1' | 'asset-zip-v2' | null;
+  /**
+   * V1.5: absolute URL for a package-relative asset (`levels/a.json`).
+   * Throws `GM-4043` for html-v1/legacy instances and `GM-4039` for a path
+   * that escapes the instance resource prefix.
+   */
+  assetUrl(relativePath: string): string;
   readonly ready: boolean;
 }
 

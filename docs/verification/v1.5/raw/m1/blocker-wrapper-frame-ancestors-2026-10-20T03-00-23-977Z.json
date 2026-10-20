@@ -1,0 +1,92 @@
+{
+  "id": "M1-blocker-wrapper-frame-ancestors",
+  "generatedAt": "2026-10-20T03:00:23.976Z",
+  "kind": "pre-fix diagnostic (implementation still in progress; reported to Lead)",
+  "environment": {
+    "dsh": "@deepseek-ai/dsh-desktop-runtime 0.2.1-rc.2 (isolated dsh web, DSH_HOME=/tmp/dsh-v15/home-probe-m1-framing2)",
+    "chrome": "Google Chrome 155.0.8059.85 headless=new, 127.0.0.1:9505 CDP",
+    "hostPlugin": "worktree index.js injected via injectProbeRow (devMode)",
+    "game": "asset-zip-v2 test package installed through POST /api/game-market/install-local"
+  },
+  "question": "Can the platform wrapper (resource origin, static) embed the game document when the Runtime sandbox attribute is applied to the outer wrapper iframe as packages/runtime/src/controller.js does today?",
+  "cases": [
+    {
+      "id": "A-sandboxed-wrapper",
+      "outerIframeAttributes": "sandbox=\"allow-scripts\" (current Runtime createIframe)",
+      "resourceOrigin": "http://127.0.0.1:55028",
+      "wrapperOriginReportedByWrapperDocument": "null (opaque; from window.origin inside wrapper)",
+      "frameSessions": 2,
+      "sessions": [
+        {
+          "session": "6D3942",
+          "value": "{\"href\":\"http://127.0.0.1:55028/wrapper?src=<redacted>\",\"origin\":\"null\",\"title\":\"Game\",\"body\":\"\",\"iframes\":1}"
+        },
+        {
+          "session": "2A47C9",
+          "value": "{\"href\":\"chrome-error://chromewebdata/\",\"origin\":\"null\",\"title\":\"127.0.0.1\",\"body\":\"127.0.0.1 拒绝了我们的连接请求。\",\"iframes\":0}"
+        }
+      ],
+      "network": [
+        {
+          "status": 200,
+          "type": "Document",
+          "url": "http://127.0.0.1:55028/res/<id>/<id>/index.html?launch=<redacted>",
+          "ctype": "text/html",
+          "csp": "default-src 'none'; script-src http://127.0.0.1:55028; style-src http://127.0.0.1:55028; img-src http://127.0.0.1:55028 ",
+          "acao": "*",
+          "nosniff": "nosniff"
+        }
+      ],
+      "browserLog": [
+        "Framing 'http://127.0.0.1:55028/' violates the following Content Security Policy directive: \"frame-ancestors http://127.0.0.1:* http://localhost:* http://127.0.0.1:55028\". The request has been blocked.\n"
+      ],
+      "console": []
+    },
+    {
+      "id": "B-plain-wrapper",
+      "outerIframeAttributes": "no sandbox attribute (diagnostic only)",
+      "resourceOrigin": "http://127.0.0.1:55028",
+      "wrapperOriginReportedByWrapperDocument": "resource origin (normal)",
+      "frameSessions": 1,
+      "sessions": [
+        {
+          "session": "733289",
+          "value": "{\"href\":\"http://127.0.0.1:55028/res/<credential>/f32a67c57d\",\"origin\":\"null\",\"title\":\"Orbit Courier\",\"body\":\"ready\",\"iframes\":0}"
+        }
+      ],
+      "network": [
+        {
+          "status": 200,
+          "type": "Stylesheet",
+          "url": "http://127.0.0.1:55028/res/<id>/<id>/styles/game.css",
+          "ctype": "text/css",
+          "csp": null,
+          "acao": "*",
+          "nosniff": "nosniff"
+        },
+        {
+          "status": 200,
+          "type": "Script",
+          "url": "http://127.0.0.1:55028/res/<id>/<id>/scripts/main.js",
+          "ctype": "text/javascript",
+          "csp": null,
+          "acao": "*",
+          "nosniff": "nosniff"
+        }
+      ],
+      "browserLog": [],
+      "console": []
+    }
+  ],
+  "finding": {
+    "summary": "With sandbox=\"allow-scripts\" on the outer wrapper iframe (current controller.js), the wrapper document runs with an OPAQUE origin (\"null\"). The nested game document CSP frame-ancestors lists the resource origin URL and http://127.0.0.1:*, but an opaque-origin ancestor can never match a host-source, so Chrome blocks the nested frame: \"Framing 'http://127.0.0.1:<resPort>/' violates ... frame-ancestors http://127.0.0.1:* http://localhost:* http://127.0.0.1:<resPort>\". The game target falls back to chrome-error; no game resources load.",
+    "contractConflict": "docs/V1.5-CONTRACTS.md §7.5 asset-zip-v2 entry CSP MUST include frame-ancestors <DSH web origin>; §7.5.1 MUST use the platform wrapper; current Runtime MUST sets sandbox=\"allow-scripts\" on its only iframe (never allow-same-origin). These three MUSTs cannot hold simultaneously: the wrapper is an ancestor of the game document; a sandboxed wrapper has an opaque origin and cannot be listed in frame-ancestors.",
+    "verifiedControl": "Removing only the outer sandbox attribute (wrapper served unchanged, same CSP) makes the same launch load and run: game document title \"Orbit Courier\", body \"ready\", stylesheet + script 200, no CSP violation log. So the cause is isolated to the outer sandbox/opaque ancestor, not to the wrapper document or its CSP.",
+    "candidateFixes": [
+      "A (recommended, needs M1-D + contract §7.5.1 update): the Runtime MUST NOT sandbox the platform wrapper iframe (it is static platform content, no game bytes, CSP nonce-pinned relay); the nested GAME iframe keeps sandbox=\"allow-scripts\" and the game document keeps its exact frame-ancestors. Security invariant becomes: game document is sandboxed and opaque; wrapper is trusted platform UI hosted on the resource origin.",
+      "B (rejected): remove frame-ancestors from the game CSP, or use * — weakens the contract anti-embedding boundary.",
+      "C (rejected): add allow-same-origin to the outer iframe — explicitly forbidden by project/contract rules."
+    ],
+    "evidenceLimits": "Chromium 155 only; the outer iframe in case A is created by this diagnostic exactly like packages/runtime/src/controller.js createIframe() (sandbox=\"allow-scripts\" + allow=autoplay + referrerpolicy=no-referrer). The real controller path is re-tested once M1-D lands a decision."
+  }
+}

@@ -3,9 +3,12 @@ import assert from 'node:assert/strict';
 import { TIMING } from '../../shared/src/constants.js';
 import { GM } from '../../shared/src/errors.js';
 import {
+  canReloadRuntime,
   deriveLoadPhase,
   isRuntimeLoadingState,
   isSafeEntryUrl,
+  isTerminalResourceError,
+  shouldReloadRuntime,
   shouldReleaseRuntimeInstance,
   validateLaunchInfo,
 } from '../src/runtime-utils.js';
@@ -13,6 +16,7 @@ import {
   isRuntimeController,
   pauseRuntime,
   pauseRuntimeBounded,
+  reloadRuntime,
   safeCreateRuntime,
 } from '../src/runtime-adapter.js';
 import {
@@ -199,4 +203,115 @@ test('pauseRuntimeBounded never leaves the UI waiting forever', async function (
   assert.equal(result.ok, false);
   assert.equal(result.unresponsive, true);
   assert.equal(result.error.code, GM.IFRAME_UNRESPONSIVE);
+});
+
+// ---------------------------------------------------------------------------
+// V1.5 instance resource fields + resource-credential reload (contract §7.2/§7.6)
+// ---------------------------------------------------------------------------
+
+const RESOURCE_ORIGIN = 'http://127.0.0.1:58302';
+const RESOURCE_BASE = `${RESOURCE_ORIGIN}/res/${'a'.repeat(32)}/${'c'.repeat(32)}`;
+const RESOURCE_ENTRY = `${RESOURCE_BASE}/index.html`;
+const ZIP_LAUNCH_URL =
+  `${RESOURCE_ORIGIN}/entry?gameId=snake&version=1.0.0&instance=${'a'.repeat(32)}` +
+  `&nonce=${'b'.repeat(32)}&launch=${'b'.repeat(32)}`;
+
+function zipLaunchInfo(overrides) {
+  return launchInfo({
+    entryUrl: ZIP_LAUNCH_URL,
+    resourceOrigin: RESOURCE_ORIGIN,
+    resourceBase: RESOURCE_BASE,
+    resourceTtlMs: 600000,
+    entryResourceUrl: RESOURCE_ENTRY,
+    package: { format: 'asset-zip-v2', entry: 'index.html', filesDigest: 'd'.repeat(64) },
+    ...(overrides || {}),
+  });
+}
+
+test('absolute loopback resource entry URLs are accepted; external ones are not', function () {
+  assert.equal(isSafeEntryUrl(ZIP_LAUNCH_URL), true);
+  assert.equal(isSafeEntryUrl(`${RESOURCE_BASE}/levels/a.json`), true);
+  for (const bad of [
+    'https://evil.example/entry?x=1',
+    'http://192.168.1.10:8080/entry?x=1',
+    'http://127.0.0.1:58302/entry/%2e%2e/x',
+    'http://127.0.0.1:58302/entry\u0000',
+    '//127.0.0.1:58302/entry',
+    'file:///etc/passwd',
+  ]) {
+    assert.equal(isSafeEntryUrl(bad), false, `${bad} must be rejected`);
+  }
+});
+
+test('launch info validation covers the V1.5 resource extension', function () {
+  assert.equal(validateLaunchInfo(zipLaunchInfo()).ok, true);
+
+  // asset-zip-v2 must carry the complete resource credential set.
+  const missingResource = zipLaunchInfo();
+  delete missingResource.resourceBase;
+  assert.equal(validateLaunchInfo(missingResource).ok, false);
+  assert.equal(validateLaunchInfo(missingResource).error.code, GM.INVALID_PARAM);
+
+  const legacyEntryForZip = zipLaunchInfo({ entryUrl: '/api/game-market/entry?gameId=snake' });
+  assert.equal(validateLaunchInfo(legacyEntryForZip).ok, false);
+  assert.equal(validateLaunchInfo(legacyEntryForZip).error.code, GM.ASSET_INTEGRITY);
+
+  const foreignEntry = zipLaunchInfo({ entryUrl: 'https://evil.example/entry' });
+  assert.equal(validateLaunchInfo(foreignEntry).ok, false);
+
+  const badBase = zipLaunchInfo({ resourceBase: `${RESOURCE_ORIGIN}/res/short/token` });
+  assert.equal(validateLaunchInfo(badBase).ok, false);
+
+  const badEntryResource = zipLaunchInfo({ entryResourceUrl: `${RESOURCE_ORIGIN}/res/x/y/z.html` });
+  assert.equal(validateLaunchInfo(badEntryResource).ok, false);
+
+  const badTtl = zipLaunchInfo({ resourceTtlMs: -1 });
+  assert.equal(validateLaunchInfo(badTtl).ok, false);
+
+  const foreignWrapper = zipLaunchInfo({ wrapperUrl: 'http://127.0.0.1:9999/wrapper?src=x' });
+  assert.equal(validateLaunchInfo(foreignWrapper).ok, false);
+
+  const goodWrapper = zipLaunchInfo({ wrapperUrl: `${RESOURCE_ORIGIN}/wrapper?src=x` });
+  assert.equal(validateLaunchInfo(goodWrapper).ok, true);
+
+  // html-v1 with no new fields stays valid (V1 compatibility).
+  assert.equal(validateLaunchInfo(launchInfo()).ok, true);
+});
+
+test('resource-credential reload policy only applies to V1.5 launches', function () {
+  assert.equal(canReloadRuntime(zipLaunchInfo()), true);
+  assert.equal(canReloadRuntime(launchInfo()), false);
+  assert.equal(canReloadRuntime(null), false);
+
+  assert.equal(shouldReloadRuntime({ code: GM.LOAD_TIMEOUT }, zipLaunchInfo()), true);
+  assert.equal(shouldReloadRuntime({ code: GM.HANDSHAKE_TIMEOUT }, zipLaunchInfo()), true);
+  assert.equal(shouldReloadRuntime({ code: GM.ENTRY_LAUNCH_CONSUMED }, zipLaunchInfo()), true);
+  assert.equal(shouldReloadRuntime({ code: GM.SAVE_CORRUPT }, zipLaunchInfo()), false);
+  assert.equal(shouldReloadRuntime({ code: GM.LOAD_TIMEOUT }, launchInfo()), false);
+
+  assert.equal(isTerminalResourceError({ code: GM.RESOURCE_CREDENTIAL_EXPIRED }), true);
+  assert.equal(isTerminalResourceError({ code: GM.ENTRY_LAUNCH_CONSUMED }), true);
+  assert.equal(isTerminalResourceError({ code: GM.HOST_UNAVAILABLE }), false);
+  assert.equal(isTerminalResourceError(null), false);
+});
+
+test('reloadRuntime delegates to controller.reload and reports acceptance', function () {
+  let calls = 0;
+  const controller = {
+    reload() {
+      calls += 1;
+      return Promise.resolve({ ok: true });
+    },
+  };
+  assert.equal(reloadRuntime(controller), true);
+  assert.equal(calls, 1);
+  assert.equal(reloadRuntime({}), false);
+  assert.equal(
+    reloadRuntime({
+      reload() {
+        throw new Error('boom');
+      },
+    }),
+    false
+  );
 });

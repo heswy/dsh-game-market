@@ -17,7 +17,7 @@
  * in shared/errors.js (`INTERNAL_TO_GM`).
  */
 
-import { GAME_ID_PATTERN, LIMITS } from './constants.js';
+import { GAME_ID_PATTERN, LIMITS, PACKAGE_ZIP_EXTENSION } from './constants.js';
 
 export const MANIFEST_SCRIPT_ID = 'dsh-game-manifest';
 export const MANIFEST_VERSION = 1;
@@ -152,6 +152,15 @@ export function packageFileName(id, version) {
 
 export function isPackageFileName(fileName, id, version) {
   return typeof fileName === 'string' && fileName === packageFileName(id, version);
+}
+
+/** `snake` + `1.2.0` -> `snake-1.2.0.dshgame.zip` (V1.5 asset package). */
+export function zipPackageFileName(id, version) {
+  return `${id}-${version}${PACKAGE_ZIP_EXTENSION}`;
+}
+
+export function isZipPackageFileName(fileName, id, version) {
+  return typeof fileName === 'string' && fileName === zipPackageFileName(id, version);
 }
 
 function checkString(errors, value, field, { min = 1, max, pattern, control = true } = {}) {

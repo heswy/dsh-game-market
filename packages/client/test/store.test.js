@@ -189,3 +189,20 @@ test('runtime-start without a Session does not record a Game-tab target', functi
   store.dispatch({ type: 'runtime-start', gameId: 'snake', mode: 'start', sessionId: SESSION });
   assert.deepEqual(store.getState().sessionGames[SESSION], { gameId: 'snake' });
 });
+
+test('runtime-launch-refresh merges renewed metadata without touching the state machine', function () {
+  const store = createStore();
+  store.dispatch({ type: 'runtime-start', gameId: 'snake', mode: 'start', sessionId: SESSION });
+  store.dispatch({ type: 'runtime-launch-info', launchInfo: { instanceId: 'a'.repeat(32), resourceTtlMs: 600000 } });
+  store.dispatch({ type: 'runtime-patch', patch: { state: 'playing' } });
+  store.dispatch({ type: 'runtime-launch-refresh', patch: { resourceTtlMs: 900000 } });
+  const runtime = store.getState().runtime;
+  assert.equal(runtime.state, 'playing');
+  assert.equal(runtime.launchInfo.resourceTtlMs, 900000);
+  assert.equal(runtime.launchInfo.instanceId, 'a'.repeat(32));
+  // No launch info -> no-op; refresh is metadata-only.
+  store.dispatch({ type: 'runtime-reset' });
+  const before = store.getState();
+  store.dispatch({ type: 'runtime-launch-refresh', patch: { resourceTtlMs: 1 } });
+  assert.equal(store.getState(), before);
+});

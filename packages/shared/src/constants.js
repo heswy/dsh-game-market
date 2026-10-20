@@ -52,6 +52,38 @@ export const LIMITS = Object.freeze({
   iconBytes: 256 * 1024,
   /** Max preview image bytes served to Market UI. */
   previewBytes: 2 * 1024 * 1024,
+  /**
+   * V1.5 `asset-zip-v2` archive limits (docs/V1.5-CONTRACTS.md §3).
+   *
+   * A separate namespace on purpose: the V1 single-file limits above keep
+   * their exact semantics, and the two can be tuned independently later.
+   * Rule 0 of §3: the descriptor is ONE central-directory entry, so the total
+   * entry budget is 512 and `files[]` (which excludes the descriptor) is 511.
+   */
+  zip: Object.freeze({
+    /** Outer ZIP bytes; also the standard per-package size ceiling. */
+    zipOuterBytes: 20 * 1024 * 1024,
+    /** Sum of every extracted entry, measured, never trusting the central directory. */
+    zipUnpackedBytes: 100 * 1024 * 1024,
+    /** Total central-directory entries INCLUDING `dsh-package.json`. */
+    zipEntries: 512,
+    /** One extracted entry. */
+    zipEntryBytes: 20 * 1024 * 1024,
+    /** One compressed entry. */
+    zipEntryCompressedBytes: 20 * 1024 * 1024,
+    /** Whole-archive compression ratio ceiling (`unpacked / outer`). */
+    zipTotalRatio: 100,
+    /** Per-entry compression ratio ceiling. */
+    zipEntryRatio: 100,
+    /** Max path length in Unicode code points. */
+    zipPathChars: 240,
+    /** Max path depth in `/`-separated segments (file name counts as one). */
+    zipPathDepth: 12,
+    /** `dsh-package.json` bytes. */
+    descriptorBytes: 256 * 1024,
+    /** Streaming read chunk; no entry is ever buffered whole. */
+    zipChunkBytes: 64 * 1024,
+  }),
 });
 
 export const TIMING = Object.freeze({
@@ -93,6 +125,16 @@ export const TIMING = Object.freeze({
   /** How long a /entry launcher binding stays valid (TBD-10). */
   entryBindingTtlMs: 10 * 60 * 1000,
   runtimeRenewMs: 60 * 1000,
+  /**
+   * V1.5: instance-bound resource credential lifetime. A sliding window, exactly
+   * the entry-binding TTL, renewed by `POST /runtime-renew` (contract §7.2).
+   */
+  resourceCredentialTtlMs: 10 * 60 * 1000,
+  /** V1.5: whole-archive extraction wall-clock budget (contract §3). */
+  zipExtractMs: 60000,
+  /** V1.5: HMR capability probe cadence and deadline (contract §9.2). */
+  hmrProbeIntervalMs: 250,
+  hmrProbeTimeoutMs: 15000,
   /** UI animation durations (ms). */
   motion: Object.freeze({
     panel: 240,
@@ -181,3 +223,49 @@ export const AGENT_ACK_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
  * Host MUST fall back to the bundled `registry/games.json` seed on failure.
  */
 export const DEFAULT_OFFICIAL_REGISTRY_URL = 'https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json';
+
+/**
+ * V1.5 package formats (docs/V1.5-CONTRACTS.md §1).
+ *
+ * `html-v1` keeps every V1 rule; `asset-zip-v2` adds an outer ZIP with a
+ * `dsh-package.json` descriptor and a per-file manifest. A missing `format`
+ * always means `html-v1` (V1 indexes and old install records).
+ */
+export const PACKAGE_FORMATS = Object.freeze(['html-v1', 'asset-zip-v2']);
+export const DEFAULT_PACKAGE_FORMAT = 'html-v1';
+export const ASSET_ZIP_V2 = 'asset-zip-v2';
+
+/** `<id>-<version>.dshgame.zip` — the double extension is deliberate (§1.2). */
+export const PACKAGE_ZIP_EXTENSION = '.dshgame.zip';
+
+/** Root descriptor of an `asset-zip-v2` archive; never listed in its own `files[]`. */
+export const DESCRIPTOR_FILE = 'dsh-package.json';
+/** The one authoritative game manifest inside a ZIP package. */
+export const ZIP_GAME_MANIFEST_FILE = 'game.json';
+
+/** Registry v2 lives next to v1 in the same content repository (§5.2). */
+export const REGISTRY_V2_FILE = 'v2/games.json';
+export const REGISTRY_V2_VERSION = 2;
+/** V2 cache file + schema, deliberately different from the v1 pair (§5.3). */
+export const REGISTRY_CACHE_V2_FILE = 'registry-cache-v2.json';
+export const REGISTRY_CACHE_V2_SCHEMA_VERSION = 2;
+
+/** Instance resource origin path prefix: `/res/<instanceId>/<resourceToken>/<path>` (§7.1). */
+export const RESOURCE_ORIGIN_PATH = '/res';
+
+/**
+ * Platform-served wrapper document on the resource origin (§7.5.1).
+ *
+ * The wrapper is static platform HTML with `frame-src`/`child-src` limited to
+ * the resource origin, so a game document cannot navigate itself out of the
+ * package. It embeds the game in a child iframe addressed by `?src=<url>` and
+ * relays bridge messages point-to-point (see runtime/bridge docs).
+ */
+export const RESOURCE_WRAPPER_PATH = '/wrapper';
+export const RESOURCE_WRAPPER_QUERY = 'src';
+
+/** Default v2 registry: same content repository, `v2/` sub-directory (§5.2). */
+export const DEFAULT_OFFICIAL_REGISTRY_V2_URL = DEFAULT_OFFICIAL_REGISTRY_URL.replace(
+  /\/games\.json$/,
+  `/${REGISTRY_V2_FILE}`,
+);

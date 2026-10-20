@@ -12,6 +12,8 @@ import path from 'node:path';
 
 import {
   API_BASE,
+  ASSET_ZIP_V2,
+  DEFAULT_PACKAGE_FORMAT,
   LAUNCH_MODES,
   LIMITS,
   PROTOCOL_VERSION,
@@ -22,6 +24,7 @@ import {
 import { GM } from '../../shared/src/errors.js';
 import { ENTRY_FILE, PACKAGES_DIR } from '../../shared/src/installation.js';
 import { validatePackageHtml } from '../../shared/src/manifest.js';
+import { normalizeZipPath } from '../../shared/src/package-v2.js';
 import { DEFAULT_FRAME_ANCESTORS } from './config.js';
 import { hostError } from './errors.js';
 import { queryValue } from './http.js';
@@ -39,6 +42,26 @@ const LAUNCH_MODES_SET = new Set(LAUNCH_MODES);
 const DEFAULT_VIEWPORT = Object.freeze({ width: 960, height: 540, fit: 'contain' });
 const MAX_BINDINGS = 64;
 const LOOPBACK_HOSTS = new Set(['127.0.0.1', '::1', 'localhost']);
+
+/** V1 records have no `format`; a missing format always means `html-v1` (§6.2). */
+function recordFormatOf(record) {
+  return record && record.format === ASSET_ZIP_V2 ? ASSET_ZIP_V2 : DEFAULT_PACKAGE_FORMAT;
+}
+
+/**
+ * Entry path relative to `packages/<id>/<version>/`.
+ * `html-v1` is always `entry.html` (V1 semantics); `asset-zip-v2` uses the
+ * installation record's `entry` and re-applies the archive path rules.
+ */
+function installedEntryRel(format, record) {
+  if (format !== ASSET_ZIP_V2) return ENTRY_FILE;
+  const candidate = record && typeof record.entry === 'string' ? record.entry : null;
+  const normalized = normalizeZipPath(candidate);
+  if (!normalized.ok || !normalized.value.toLowerCase().endsWith('.html')) {
+    throw hostError(GM.DESCRIPTOR_MISMATCH, 'Installed package entry is invalid', { retryable: false });
+  }
+  return normalized.value;
+}
 
 function isLoopbackHostname(hostname) {
   const host = String(hostname || '').toLowerCase();
@@ -179,6 +202,7 @@ export function createEntryService({
   logger = null,
   now = () => new Date(),
   timing = {},
+  resources = null,
 }) {
   const instanceBindings = new Map();
   const frameAncestors = Array.isArray(settings?.security?.frameAncestors)
@@ -247,6 +271,9 @@ export function createEntryService({
         gameId,
         version: dev.version,
         manifest: dev.manifest,
+        format: DEFAULT_PACKAGE_FORMAT,
+        entry: ENTRY_FILE,
+        packageRoot: null,
         entryPath: dev.entryPath,
         record: null,
         source: 'dev',
@@ -254,12 +281,17 @@ export function createEntryService({
     }
     const record = await installations.get(gameId);
     if (record) {
+      const format = recordFormatOf(record);
+      const entry = installedEntryRel(format, record);
       return {
         kind: 'installed',
         gameId,
         version: record.version,
         manifest: record.manifest,
-        entryPath: storage.filePath(PACKAGES_DIR, record.id, record.version, ENTRY_FILE),
+        format,
+        entry,
+        packageRoot: storage.filePath(PACKAGES_DIR, record.id, record.version),
+        entryPath: storage.filePath(PACKAGES_DIR, record.id, record.version, entry),
         record,
         source: record.source,
       };
@@ -276,6 +308,9 @@ export function createEntryService({
         gameId,
         version: info.manifest.version,
         manifest: info.manifest,
+        format: DEFAULT_PACKAGE_FORMAT,
+        entry: ENTRY_FILE,
+        packageRoot: null,
         entryPath: info.entryPath,
         entryExists: info.entryExists,
         record: null,
@@ -319,41 +354,84 @@ export function createEntryService({
     if (!manifest) throw hostError(GM.INSTALL_CORRUPT, 'Installed package is incomplete', { retryable: true });
     checkCompatibility(manifest);
 
-    const bytes = await readEntryFile(resolved.entryPath);
-    const digest = sha256Hex(bytes);
-    if (resolved.kind === 'installed') {
-      const record = resolved.record;
-      if (typeof record.sha256 === 'string') {
-        if (digest !== record.sha256) {
-          throw hostError(GM.ASSET_INTEGRITY, 'Game files failed integrity check', {
-            retryable: true,
-            details: { reason: 'sha256' },
-          });
-        }
-      } else {
-        // local/dev installs carry no recorded hash: re-parse the inline
-        // manifest and require it to match the installation record.
-        const text = decodeText(bytes);
-        const validation = text === null ? null : validatePackageHtml(text, { packageBytes: LIMITS.entryBytes });
-        if (!validation || !validation.ok || !validation.manifest) {
-          throw hostError(GM.INSTALL_CORRUPT, 'Installed package is incomplete', {
-            retryable: true,
-            details: { reason: 'manifest' },
-          });
-        }
-        if (validation.manifest.id !== record.id || validation.manifest.version !== record.version) {
-          throw hostError(GM.INSTALL_CORRUPT, 'Installed package does not match its record', {
-            retryable: true,
-            details: { reason: 'manifest' },
-          });
+    const format = resolved.format === ASSET_ZIP_V2 ? ASSET_ZIP_V2 : DEFAULT_PACKAGE_FORMAT;
+    let digest = null;
+    if (format === ASSET_ZIP_V2) {
+      // `asset-zip-v2`: the executable entry lives in the validated file
+      // manifest, and the outer sha256 binds the ZIP, not this file. The
+      // resource service verifies descriptor + entry sha256 (contract §7.2).
+      if (!resources) {
+        throw hostError(GM.HOST_UNAVAILABLE, 'Resource origin is unavailable', { retryable: true });
+      }
+      digest = sha256Hex(await readEntryFile(resolved.entryPath));
+    } else {
+      const bytes = await readEntryFile(resolved.entryPath);
+      digest = sha256Hex(bytes);
+      if (resolved.kind === 'installed') {
+        const record = resolved.record;
+        if (typeof record.sha256 === 'string') {
+          if (digest !== record.sha256) {
+            throw hostError(GM.ASSET_INTEGRITY, 'Game files failed integrity check', {
+              retryable: true,
+              details: { reason: 'sha256' },
+            });
+          }
+        } else {
+          // local/dev installs carry no recorded hash: re-parse the inline
+          // manifest and require it to match the installation record.
+          const text = decodeText(bytes);
+          const validation = text === null ? null : validatePackageHtml(text, { packageBytes: LIMITS.entryBytes });
+          if (!validation || !validation.ok || !validation.manifest) {
+            throw hostError(GM.INSTALL_CORRUPT, 'Installed package is incomplete', {
+              retryable: true,
+              details: { reason: 'manifest' },
+            });
+          }
+          if (validation.manifest.id !== record.id || validation.manifest.version !== record.version) {
+            throw hostError(GM.INSTALL_CORRUPT, 'Installed package does not match its record', {
+              retryable: true,
+              details: { reason: 'manifest' },
+            });
+          }
         }
       }
     }
 
     const instanceId = createInstanceId();
     const nonce = createNonce();
-    const params = new URLSearchParams({ gameId, version: resolved.version, instance: instanceId, nonce });
     const preview = await previewLinks(gameId, resolved.version, resolved.source);
+
+    // Instance-bound resource credential (§7.2/§7.6). The resource origin is
+    // the only path that can serve an `asset-zip-v2` entry; `html-v1` keeps the
+    // V1 `/entry` URL as its launch URL and gets the extra fields additively.
+    let resourceInfo = null;
+    if (resources) {
+      resourceInfo = await resources.issue({
+        instanceId,
+        nonce,
+        gameId,
+        version: resolved.version,
+        format,
+        entry: resolved.entry,
+        entryPath: resolved.entryPath,
+        packageRoot: resolved.packageRoot || null,
+        entrySha256: digest,
+        filesDigest: format === ASSET_ZIP_V2 ? resolved.record?.fileManifestDigest ?? null : null,
+        ttlMs: bindingTtlMs,
+      });
+    }
+    if (format === ASSET_ZIP_V2 && !resourceInfo) {
+      throw hostError(GM.HOST_UNAVAILABLE, 'Resource origin is unavailable', { retryable: true });
+    }
+    const entrySha256 = digest;
+    const params = new URLSearchParams({ gameId, version: resolved.version, instance: instanceId, nonce });
+    const legacyEntryUrl = `${API_BASE}/entry?${params.toString()}`;
+    // §7.6: for `asset-zip-v2` the one-shot launch URL lives on the resource
+    // origin (inside the wrapper); `html-v1` keeps the V1 `/entry` semantics.
+    const entryUrl = format === ASSET_ZIP_V2 && resourceInfo
+      ? `${resourceInfo.entryResourceUrl}?launch=${encodeURIComponent(nonce)}`
+      : legacyEntryUrl;
+
     const createdAtMs = now().getTime();
     rememberInstance(instanceId, {
       gameId,
@@ -362,7 +440,7 @@ export function createEntryService({
       dshSessionId,
       source: resolved.source,
       entryPath: resolved.entryPath,
-      entrySha256: digest,
+      entrySha256,
       capabilities: Array.isArray(manifest.capabilities) ? manifest.capabilities.slice() : [],
       viewport: normaliseViewport(manifest.viewport),
       createdAt: now().toISOString(),
@@ -374,7 +452,7 @@ export function createEntryService({
     return {
       instanceId,
       nonce,
-      entryUrl: `${API_BASE}/entry?${params.toString()}`,
+      entryUrl,
       preview,
       runtimeVersion: RUNTIME_VERSION,
       sdkVersion: SDK_VERSION,
@@ -390,7 +468,32 @@ export function createEntryService({
       viewport: normaliseViewport(manifest.viewport),
       hostEpoch,
       mode,
-      entrySha256: digest,
+      entrySha256,
+      ...(resourceInfo
+        ? {
+            resourceOrigin: resourceInfo.resourceOrigin,
+            resourceBase: resourceInfo.resourceBase,
+            resourceTtlMs: resourceInfo.ttlMs,
+            entryResourceUrl: resourceInfo.entryResourceUrl,
+            package: {
+              format,
+              entry: resolved.entry,
+              filesDigest: format === ASSET_ZIP_V2 ? resolved.record?.fileManifestDigest ?? null : null,
+            },
+            // §7.5.1/M1-D: the Runtime frames the platform wrapper for
+            // `asset-zip-v2`; these two additively convey the wrapper URLs so
+            // it does not have to guess the document path. `wrapperUrl` embeds
+            // the one-shot launch URL, `wrapperResourceUrl` the repeatable
+            // resource URL. `html-v1` does not use the wrapper in M1, so it
+            // deliberately receives neither field.
+            ...(format === ASSET_ZIP_V2
+              ? {
+                  wrapperUrl: resourceInfo.wrapperUrl,
+                  wrapperResourceUrl: resourceInfo.wrapperResourceUrl,
+                }
+              : {}),
+          }
+        : {}),
     };
   }
 
@@ -404,9 +507,14 @@ export function createEntryService({
     const record = await installations.get(gameId);
     if (record) {
       if (record.version !== version) throw hostError(GM.GAME_NOT_FOUND, 'Game version not found');
+      const format = recordFormatOf(record);
+      const entry = installedEntryRel(format, record);
       return {
         kind: 'installed',
-        entryPath: storage.filePath(PACKAGES_DIR, record.id, record.version, ENTRY_FILE),
+        format,
+        entry,
+        packageRoot: storage.filePath(PACKAGES_DIR, record.id, record.version),
+        entryPath: storage.filePath(PACKAGES_DIR, record.id, record.version, entry),
         record,
       };
     }
@@ -416,7 +524,14 @@ export function createEntryService({
       if (!info.manifest) throw hostError(GM.MANIFEST_INVALID, 'Game manifest is invalid');
       if (info.manifest.version !== version) throw hostError(GM.GAME_NOT_FOUND, 'Game version not found');
       if (!info.entryExists) throw hostError(GM.ASSET_NOT_FOUND, 'Game entry file is missing');
-      return { kind: 'builtin', entryPath: info.entryPath, record: null };
+      return {
+        kind: 'builtin',
+        format: DEFAULT_PACKAGE_FORMAT,
+        entry: ENTRY_FILE,
+        packageRoot: null,
+        entryPath: info.entryPath,
+        record: null,
+      };
     }
     throw hostError(GM.GAME_NOT_FOUND, 'Game not found');
   }
@@ -428,6 +543,12 @@ export function createEntryService({
     const nonce = validateNonce(queryValue(url, 'nonce', { maxLength: 32 }));
 
     const resolved = await resolveForServe(gameId, version);
+    // `asset-zip-v2` entries are served by the instance resource origin only:
+    // package-relative URLs must resolve under `/res/<instance>/<token>/`, and
+    // the `/api` origin is fenced for opaque-origin documents (S-A1).
+    if (resolved.format === ASSET_ZIP_V2) {
+      throw hostError(GM.ASSET_NOT_FOUND, 'Game entry is served by the resource origin', { retryable: false });
+    }
 
     const binding = instanceBindings.get(instance);
     if (!binding) {
@@ -579,16 +700,34 @@ export function createEntryService({
     for (const [instanceId, binding] of instanceBindings) {
       if (binding.gameId === gameId) instanceBindings.delete(instanceId);
     }
+    if (resources) resources.releaseGame(gameId);
   }
 
-  /** Extend one live instance while its Runtime is still open. */
+  /**
+   * Extend one live instance while its Runtime is still open (§7.6).
+   * `POST /runtime-renew` MUST renew the entry binding *and* the instance-bound
+   * resource credential, and return the new `resourceTtlMs`.
+   */
   function renewInstance(instanceId) {
     const binding = instanceBindings.get(instanceId);
     if (!binding) return null;
     const stamp = now().getTime();
     if (binding.expiresAt <= stamp) {
       instanceBindings.delete(instanceId);
+      if (resources) resources.release(instanceId);
       return null;
+    }
+    let resourceTtlMs = null;
+    if (resources) {
+      const renewed = resources.renew(instanceId);
+      if (!renewed) {
+        // The resource credential is the runtime's actual read authority; if it
+        // cannot be renewed, the instance is no longer usable.
+        instanceBindings.delete(instanceId);
+        resources.release(instanceId);
+        return null;
+      }
+      resourceTtlMs = renewed.resourceTtlMs;
     }
     binding.expiresAt = stamp + bindingTtlMs;
     return {
@@ -596,15 +735,20 @@ export function createEntryService({
       gameId: binding.gameId,
       version: binding.version,
       expiresAt: binding.expiresAt,
+      ...(resourceTtlMs === null ? {} : { resourceTtlMs }),
     };
   }
 
   /** Release one instance (multi-window safe); a wrong gameId releases nothing. */
   function releaseInstance(instanceId, gameId) {
     const binding = instanceBindings.get(instanceId);
-    if (!binding) return 0;
+    if (!binding) {
+      if (resources) resources.release(instanceId);
+      return 0;
+    }
     if (typeof gameId === 'string' && binding.gameId !== gameId) return 0;
     instanceBindings.delete(instanceId);
+    if (resources) resources.release(instanceId, binding.gameId);
     return 1;
   }
 
@@ -617,6 +761,7 @@ export function createEntryService({
         released += 1;
       }
     }
+    if (resources) resources.releaseGame(gameId);
     return released;
   }
 

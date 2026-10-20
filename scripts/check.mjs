@@ -381,6 +381,148 @@ function collectJs(dir, out) {
   ok('community publishing artifacts');
 })();
 
+// V1.5 two-generation bundled registry (docs/V1.5-CONTRACTS.md §5).
+//
+// The seed index now exists twice. They must describe the same three HTML
+// releases: if the generations drift, a V1.5 client and a V1 client would
+// install different bytes under the same version, which §5.4 forbids.
+(function checkBundledRegistryV2() {
+  const v1Path = path.join(root, 'registry/games.json');
+  const v2Path = path.join(root, 'registry/v2/games.json');
+  if (!fs.existsSync(v2Path)) {
+    fail('missing bundled v2 registry: registry/v2/games.json (V1.5 ships both generations)');
+    return;
+  }
+  let v1;
+  let v2;
+  try {
+    v1 = JSON.parse(fs.readFileSync(v1Path, 'utf8'));
+    v2 = JSON.parse(fs.readFileSync(v2Path, 'utf8'));
+  } catch (error) {
+    fail(`bundled registry is not valid JSON: ${error.message}`);
+    return;
+  }
+  if (v2.registryVersion !== 2) fail('registry/v2/games.json registryVersion must be 2');
+  if (Number.isNaN(Date.parse(v2.generatedAt))) fail('registry/v2/games.json generatedAt must be ISO');
+  if (!Array.isArray(v2.games) || v2.games.length !== 3) {
+    fail('registry/v2/games.json must contain the three installable first-party games');
+    return;
+  }
+  const v1ById = new Map((v1.games || []).map((game) => [game.id, game]));
+  for (const game of v2.games) {
+    // The seed only ships HTML: a v2 seed entry without a format is a bug, and a
+    // ZIP entry here would need a real registry/packages/<id>-<version>.dshgame.zip.
+    if (!game || !game.package || game.package.format !== 'html-v1') {
+      fail(`registry/v2/games.json entry must declare package.format html-v1: ${game && game.id}`);
+      continue;
+    }
+    const twin = v1ById.get(game.id);
+    if (!twin) {
+      fail(`registry/v2/games.json game is missing from the v1 projection: ${game.id}`);
+      continue;
+    }
+    for (const field of ['version', 'sha256', 'size', 'url']) {
+      const left = field === 'url' ? twin.package?.url : (field === 'version' ? twin.version : twin.package?.[field]);
+      const right = field === 'url' ? game.package?.url : (field === 'version' ? game.version : game.package?.[field]);
+      if (left !== right) {
+        fail(`bundled registry generations drifted on ${game.id}.${field}`);
+      }
+    }
+    const fileName = `${game.id}-${game.version}.html`;
+    if (!String(game.package.url || '').endsWith(fileName)) {
+      fail(`registry/v2/games.json package.url must point at ${fileName}`);
+    }
+    if (game.package.filesDigest !== undefined) {
+      fail(`registry/v2/games.json must not declare filesDigest for an html-v1 release: ${game.id}`);
+    }
+  }
+  ok('bundled v2 registry present and consistent with the v1 projection');
+})();
+
+// V1.5 runtime dependency governance (docs/V1.5-CONTRACTS.md §2.5).
+//
+// The archive reader is the project's first runtime dependency, so the
+// supply-chain properties asserted here are load-bearing: exact version, no
+// install scripts, one import site, and a notices file. They fail with an
+// actionable message when dependencies were never installed, because from M1
+// on `npm run verify` needs `node_modules`.
+(function checkZipDependency() {
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  const declared = pkg.dependencies && pkg.dependencies.yauzl;
+  if (declared !== '3.4.0') {
+    fail(`package.json must pin dependencies.yauzl to the exact version "3.4.0" (found ${JSON.stringify(declared)})`);
+  }
+  const modules = path.join(root, 'node_modules');
+  const yauzlDir = path.join(modules, 'yauzl');
+  if (!fs.existsSync(yauzlDir)) {
+    fail(
+      'runtime dependencies are not installed: run `npm install` first. '
+      + 'asset-zip-v2 needs yauzl@3.4.0 (+ pend@1.2.0), so from V1.5 M1 on '
+      + '`npm run verify` requires a node_modules directory.',
+    );
+    return;
+  }
+  const expect = { yauzl: '3.4.0', pend: '1.2.0' };
+  for (const [name, version] of Object.entries(expect)) {
+    const dir = path.join(modules, name);
+    const manifestPath = path.join(dir, 'package.json');
+    if (!fs.existsSync(manifestPath)) {
+      fail(`installed dependency ${name} is missing (expected ${version}); re-run npm install`);
+      continue;
+    }
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    if (manifest.version !== version) fail(`dependency ${name} must be exactly ${version} (found ${manifest.version})`);
+    for (const script of ['install', 'preinstall', 'postinstall']) {
+      if (manifest.scripts && manifest.scripts[script]) fail(`dependency ${name} must not declare a ${script} script`);
+    }
+    if (manifest.license !== 'MIT') fail(`dependency ${name} must stay MIT licensed`);
+  }
+  const yauzlManifest = JSON.parse(fs.readFileSync(path.join(modules, 'yauzl/package.json'), 'utf8'));
+  const deps = Object.keys(yauzlManifest.dependencies || {});
+  if (deps.length !== 1 || deps[0] !== 'pend') {
+    fail(`yauzl dependency closure changed (expected only pend, found ${JSON.stringify(deps)})`);
+  }
+
+  // Exactly one import site: packages/host/src/zip.js plus its tests.
+  const allowed = new Set([
+    path.join('packages', 'host', 'src', 'zip.js'),
+    path.join('packages', 'host', 'test', 'support', 'zip-fixtures.js'),
+    path.join('tests', 'v1.5-zip-policy.test.js'),
+  ]);
+  const importPattern = /(?:from\s+|require\()\s*['"]yauzl['"]/;
+  const offenders = [];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (['node_modules', '.git', 'worktrees'].includes(entry.name)) continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (!/\.(?:js|mjs|cjs)$/.test(entry.name)) continue;
+      const rel = path.relative(root, full);
+      if (allowed.has(rel)) continue;
+      if (importPattern.test(fs.readFileSync(full, 'utf8'))) offenders.push(rel);
+    }
+  };
+  walk(root);
+  if (offenders.length > 0) {
+    fail(`yauzl must only be imported by packages/host/src/zip.js (and its tests); found: ${offenders.join(', ')}`);
+  }
+
+  const notices = path.join(root, 'THIRD-PARTY-NOTICES.md');
+  if (!fs.existsSync(notices)) {
+    fail('THIRD-PARTY-NOTICES.md is required: it must carry the MIT text and copyright line for yauzl and pend');
+  } else {
+    const text = fs.readFileSync(notices, 'utf8');
+    for (const name of ['yauzl', 'pend']) {
+      if (!text.includes(name)) fail(`THIRD-PARTY-NOTICES.md must name ${name}`);
+    }
+    if (!/MIT License/i.test(text)) fail('THIRD-PARTY-NOTICES.md must contain the MIT license text');
+  }
+  ok('V1.5 archive dependency pinned, auditable and single-site');
+})();
+
 // Report
 for (const message of checks) console.log(message);
 if (problems.length) {
