@@ -233,6 +233,36 @@ function normaliseFrameAncestors(value, issues) {
   return out.length > 0 ? out : [...DEFAULT_FRAME_ANCESTORS];
 }
 
+/**
+ * V1.5 platform update settings (docs/V1.5-CONTRACTS.md §9, m3-decisions §3–§4).
+ *
+ * `channel` is the explicit test-channel opt-in (default stable); it is a Host
+ * configuration key, never a one-click UI toggle. `startupCheck` keeps the
+ * silent startup check on (production) but lets unit tests/isolated probes run
+ * without network. `profileDir` is a defensive override used by isolated
+ * probes; production auto-discovers the profile from `$DSH_HOME/profiles`.
+ * The index URL is deliberately NOT configurable.
+ */
+function normalisePlatformUpdate(value, issues) {
+  const source = isPlainObject(value) ? value : {};
+  let channel = 'stable';
+  if (source.channel !== undefined && source.channel !== null) {
+    const requested = typeof source.channel === 'string' ? source.channel.trim().toLowerCase() : '';
+    if (requested === 'stable' || requested === 'test') channel = requested;
+    else issues.push('platformUpdate.channel:invalid');
+  }
+  let profileDir = null;
+  if (source.profileDir !== undefined && source.profileDir !== null) {
+    profileDir = normaliseConfiguredRoot(source.profileDir);
+    if (profileDir === null) issues.push('platformUpdate.profileDir:invalid');
+  }
+  return {
+    channel,
+    startupCheck: source.startupCheck !== false,
+    profileDir,
+  };
+}
+
 function normaliseDevGameRoots(value, devMode, issues) {
   if (!devMode || value === undefined || value === null) return [];
   if (!Array.isArray(value)) {
@@ -273,6 +303,7 @@ export function normaliseConfig(raw, env = process.env) {
     issues
   );
   const registrySource = resolved.source;
+  const platformUpdate = normalisePlatformUpdate(source.platformUpdate, issues);
   return {
     devMode,
     dataRoot: normaliseConfiguredRoot(source.dataRoot) || defaultDataRoot(env),
@@ -291,6 +322,7 @@ export function normaliseConfig(raw, env = process.env) {
       defaultAllowedHosts: [...DEFAULT_ALLOWED_HOSTS],
     },
     security: { frameAncestors },
+    platformUpdate,
     configIssues: issues,
   };
 }

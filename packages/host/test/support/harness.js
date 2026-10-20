@@ -231,8 +231,12 @@ export async function createHarness(
   // Isolate V0-style plugin tests from the bundled default Registry; tests that
   // need it use createHostHarness with an explicit fixture.
   const isolatedRegistry = { registry: { url: path.join(directory, 'missing-registry.json'), allowLocalFile: true } };
+  // The plugin wires the production global fetch for platform update discovery;
+  // unit tests must never touch the network, so the silent startup check is off
+  // unless a test opts in with its own injected transport.
+  const platformUpdate = { startupCheck: false, ...(config.platformUpdate || {}) };
   try {
-    apply(fake.ctx, { dataRoot, builtinGamesRoot: fixtureRoot, ...isolatedRegistry, ...config });
+    apply(fake.ctx, { dataRoot, builtinGamesRoot: fixtureRoot, ...isolatedRegistry, ...config, platformUpdate });
   } catch (error) {
     fake.logs.push(['error', 'apply-threw', error]);
   }
@@ -285,8 +289,9 @@ export async function createHostHarness(
   const registryIsolation = useDefaultRegistry
     ? {}
     : { registry: { url: path.join(directory, 'missing-registry.json'), allowLocalFile: true } };
+  const platformUpdate = { startupCheck: false, ...(config.platformUpdate || {}) };
   const host = createHost({
-    config: { dataRoot, builtinGamesRoot: fixtureRoot, ...registryIsolation, ...config },
+    config: { dataRoot, builtinGamesRoot: fixtureRoot, ...registryIsolation, ...config, platformUpdate },
     env: { DSH_HOME: home, ...env },
     logger: fake.logger,
     http: httpOptions,

@@ -25,6 +25,7 @@ import { register as v15InstallZip } from './cases/v1.5-install-zip.js';
 import { register as v15RegistryV2 } from './cases/v1.5-registry-v2.js';
 import { register as v15Resources } from './cases/v1.5-resources.js';
 import { register as v15BuiltinPackage } from './cases/v1.5-builtin-package.js';
+import { register as v15PlatformUpdate } from './cases/v1.5-platform-update.js';
 
 health();
 games();
@@ -44,3 +45,4 @@ v15InstallZip();
 v15RegistryV2();
 v15Resources();
 v15BuiltinPackage();
+v15PlatformUpdate();

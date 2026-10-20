@@ -11,3 +11,4 @@ export * from './catalog-v2.js';
 export * from './resources.js';
 export * from './installation.js';
 export * from './community.js';
+export * from './platform-update.js';

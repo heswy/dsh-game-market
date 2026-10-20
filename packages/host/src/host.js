@@ -8,11 +8,13 @@ import { createDevCatalog } from './dev-games.js';
 import { createEntryService } from './entry.js';
 import { createGameCatalog, createGamesService } from './games.js';
 import { createHealthService } from './health.js';
+import { createHostIdentity } from './host-identity.js';
 import { createHostEpoch } from './ids.js';
 import { createInstallLock } from './install-lock.js';
 import { createInstallService } from './install.js';
 import { createInstallationsStore } from './installations.js';
 import { createMaintenanceService } from './maintenance.js';
+import { createPlatformUpdateService } from './platform-update.js';
 import { createPreferencesService } from './preferences.js';
 import { createGameResolver } from './resolver.js';
 import { createLayeredRegistryService } from './registry-layered.js';
@@ -24,6 +26,7 @@ import { createSavesService } from './saves.js';
 import { createScoresService } from './scores.js';
 import { createSessionsService } from './sessions.js';
 import { createStorage } from './storage.js';
+import { createUpdateOperationService } from './update-operations.js';
 import { createAgentAdapter } from './agent-adapter.js';
 
 /**
@@ -55,11 +58,16 @@ export function createHost({
   hostEpoch = createHostEpoch(),
   version = readBundleVersion(),
   http = {},
+  pluginManager = null,
+  hmrResolver = null,
 } = {}) {
   const settings = normaliseConfig(config, env);
   const startedAt = now().getTime();
   const availability = { available: true };
   const storage = createStorage({ root: settings.dataRoot, logger });
+  // V1.5: the Host running identity is frozen at activation; requests never
+  // re-read the disk version and pretend it is what is running (§9, m3 §4).
+  const identity = createHostIdentity({ env, settings, version, now, logger });
   const installations = createInstallationsStore({ storage, logger, now });
   const catalog = createGameCatalog({ root: settings.builtinGamesRoot, logger });
   const devCatalog = createDevCatalog({ settings, logger, now });
@@ -136,6 +144,21 @@ export function createHost({
     now,
   });
   const agent = createAgentAdapter({ hostEpoch, now, logger });
+  // V1.5 platform update adapter/operations are wired here; H1 ships the route
+  // surface with fail-closed capability while H2 fills the native adapter.
+  let adapter = null;
+  let updates = null;
+  const platformUpdate = createPlatformUpdateService({
+    storage,
+    settings,
+    logger,
+    now,
+    http,
+    identity,
+    hostEpoch,
+    getAdapterInfo: async () => (adapter === null ? null : adapter.describe()),
+    getOperation: () => (updates === null ? null : updates.currentObservation()),
+  });
   const health = createHealthService({
     storage,
     catalog,
@@ -150,9 +173,11 @@ export function createHost({
     startedAt,
     now,
     logger,
+    identity,
   });
   const services = {
     health,
+    platformUpdate,
     games,
     saves,
     sessions,
@@ -169,10 +194,30 @@ export function createHost({
     maintenance,
     resources,
   };
+  updates = createUpdateOperationService({
+    storage,
+    discovery: platformUpdate,
+    adapter,
+    identity,
+    coordination: {
+      listActiveInstances: () => entry.listActiveInstances(),
+    },
+    healthCheck: () => health.snapshot(),
+    hostEpoch,
+    logger,
+    now,
+    timing: settings.platformUpdate,
+  });
+  services.updates = updates;
   const routes = createRouteTable({ services, devMode: settings.devMode });
   const router = createRouter({ routes, logger, now });
   // Background Registry refresh (missing/stale cache) never blocks activation.
   registry.start();
+  // V1.5 discovery: the silent startup check is background-only and must never
+  // block activation or game/market routes (m3-decisions §3).
+  const platformUpdateReady = platformUpdate.start().catch((error) => {
+    logger?.warn?.('[game-market/host] platform-update-start-failed', `code=${error?.code || 'E_UNKNOWN'}`);
+  });
   return {
     settings,
     storage,
@@ -189,6 +234,9 @@ export function createHost({
     startedAt,
     availability,
     resources,
+    identity,
+    platformUpdate,
+    updates,
     /**
      * Release the loopback resource server. Idempotent; awaited by the plugin
      * teardown so tests never leave a listening socket behind.
@@ -197,7 +245,15 @@ export function createHost({
       try {
         await maintenance.stop?.();
       } catch (_error) { /* best effort */ }
+      try {
+        await platformUpdate.stop();
+      } catch (_error) { /* best effort */ }
+      try {
+        await updates.stop?.();
+      } catch (_error) { /* best effort */ }
       await resources.close();
     },
+    /** Settles discovery cache load / silent startup check (bounded by caller). */
+    platformUpdateReady,
   };
 }

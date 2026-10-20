@@ -712,6 +712,38 @@ export function createEntryService({
     throw hostError(GM.ASSET_NOT_FOUND, 'Asset not found', { retryable: false });
   }
 
+  /**
+   * Active runtime instances (launch bindings whose TTL has not expired).
+   *
+   * V1.5 coordination needs the authoritative Host-side list: an update may not
+   * change the package until every live instance in this profile has paused,
+   * saved and confirmed (docs/V1.5-CONTRACTS.md §9, m3-decisions §4). Instance
+   * bindings are renewed by `POST /runtime-renew`, so an abandoned page stops
+   * blocking updates once its TTL lapses.
+   *
+   * @returns {Array<{instanceId:string, gameId:string, version:string, dshSessionId:string|null, createdAt:string}>}
+   */
+  function listActiveInstances() {
+    const stamp = now().getTime();
+    const active = [];
+    for (const [instanceId, binding] of instanceBindings) {
+      if (binding.expiresAt <= stamp) {
+        instanceBindings.delete(instanceId);
+        if (resources) resources.release(instanceId, binding.gameId);
+        continue;
+      }
+      active.push({
+        instanceId,
+        gameId: binding.gameId,
+        version: binding.version,
+        dshSessionId: typeof binding.dshSessionId === 'string' ? binding.dshSessionId : null,
+        createdAt: binding.createdAt,
+      });
+    }
+    active.sort((left, right) => (left.createdAt < right.createdAt ? -1 : left.createdAt > right.createdAt ? 1 : 0));
+    return active;
+  }
+
   function hasActiveInstance(gameId) {
     const stamp = now().getTime();
     for (const [instanceId, binding] of instanceBindings) {
@@ -798,6 +830,7 @@ export function createEntryService({
     serveEntry,
     servePreview,
     hasActiveInstance,
+    listActiveInstances,
     invalidateGame,
     releaseGame,
     renewInstance,

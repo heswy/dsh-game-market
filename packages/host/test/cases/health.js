@@ -142,6 +142,13 @@ export function register() {
       ROUTES.RUNTIME_RENEW,
       ROUTES.ENTRY,
       ROUTES.PREVIEW,
+      ROUTES.PLATFORM_UPDATE,
+      ROUTES.PLATFORM_UPDATE_REFRESH,
+      ROUTES.PLATFORM_UPDATE_BEGIN,
+      ROUTES.PLATFORM_UPDATE_OBSERVE,
+      ROUTES.PLATFORM_UPDATE_CANCEL,
+      ROUTES.PLATFORM_UPDATE_COORDINATE,
+      ROUTES.PLATFORM_UPDATE_CLIENT_REPORT,
     ];
     assert.deepEqual([...host.routes.keys()].sort(), expectedPaths.sort());
     for (const route of host.routes.values()) {
