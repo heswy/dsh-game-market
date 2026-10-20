@@ -112,7 +112,7 @@
 - `POST /platform-update/coordinate` -> `{accepted, phase:'waiting'|'satisfied'|'failed', pending:{windows,instances}, failed?}`；
   15s 超时中止且不进入包变更。
 - `POST /platform-update/client-report` -> `{accepted:true, state:'idle'|'updating', expected?:{buildVersion,buildCommit}}`（expected 仅诊断）。
-- `PATCH /platform-update/observe` 终态保留到下一次 begin；未知 operationId -> `GM-4002`。
+- `GET /platform-update/observe` 终态保留到下一次 begin；未知 operationId -> `GM-4002`。
 - `updated` payload：`{state:'updated', version, host:'<loadedVersion>+<commit>', client:'<buildVersion>+<buildCommit>'}`；
   `failed` 允许附加只读 `reasonKey`（`error{code,message}` 与 `oldVersionStillRunning` 不变）。
 - 新增错误码 `GM-5039 E_UPDATE_INDEX_UNAVAILABLE`（索引不可用，已有登记）。
