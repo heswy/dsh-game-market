@@ -9,6 +9,8 @@
  */
 
 import assert from 'node:assert/strict';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
 import test from 'node:test';
 
 import { GM } from '../../../shared/src/errors.js';
@@ -579,6 +581,47 @@ export function register() {
     );
     assert.equal(harness.managerCalls.installBundle.length, 0);
     harness.manager.ownerContext.get = originalGet;
+  });
+
+  test('documented seed record drives recovery injection (response-lost, never success)', async (t) => {
+    const harness = await createUpdateHarness(t, { managerOptions: { waitInstall: async () => null } });
+    await harness.stop();
+    // The documented operator-note seed shape (§17.4): a persisted non-terminal
+    // record is the ONLY recovery carrier. Writing it must not be read as success.
+    const stamp = new Date().toISOString();
+    const operationId = 'upd_0123456789abcdef';
+    const seed = {
+      schemaVersion: 1,
+      operationId,
+      requestId: 'upd_fedcba9876543210',
+      createdAt: stamp,
+      updatedAt: stamp,
+      status: 'installing',
+      target: harness.target,
+      previous: {
+        spec: `github:heswy/dsh-game-market#${COMMIT_B}`,
+        specShape: 'git-url',
+        version: '1.2.0',
+        commit: COMMIT_B,
+        enabled: true,
+        loadedVersion: '1.2.0',
+        loadedCommit: COMMIT_B,
+        dataRoot: harness.dataRoot,
+      },
+      coordination: null,
+      cancelled: false,
+      observation: { operationId, state: 'installing', stage: 'install', progress: null },
+      hostEpochStarted: 'he_0000000000000000',
+    };
+    await fs.mkdir(harness.dataRoot, { recursive: true });
+    await fs.writeFile(path.join(harness.dataRoot, 'platform-update-operation.json'), JSON.stringify(seed));
+    const reopened = await harness.reopen();
+    const failed = await waitObservation(reopened.operations, (observation) => observation.state === 'verification-failed');
+    assert.equal(failed.reason, 'response-lost');
+    assert.equal(failed.runningVersion, '1.2.0');
+    assert.equal(reopened.operations.observe(operationId).state, 'verification-failed');
+    assert.equal(harness.managerCalls.installBundle.length, 0, 'recovery must never start a new install');
+    await reopened.operations.stop();
   });
 
   test('multi-window concurrent begins collapse into one operation and one install', async (t) => {
