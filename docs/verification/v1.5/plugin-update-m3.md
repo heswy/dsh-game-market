@@ -179,7 +179,7 @@ adapter/observation/协调/UI 路径不在本矩阵（H2/V1/V2）。另：并发
 **命令序列草案**（`release-tools` CLI 冻结后以其实际 flag 为准；所有 git 写操作由 Lead 执行）：
 
 ```bash
-cd "/Users/orange/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update"
+cd dsh-game-market-worktrees/v1.5-platform-update   # 在包含该 worktree 的目录下执行
 test -z "$(git status --porcelain)" || { echo "worktree must be clean"; exit 1; }
 
 # ---- R_final = 1.3.0（M3 PR 固定 head；不 tag / 不 release）----

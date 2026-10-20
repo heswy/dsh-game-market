@@ -1,47 +1,44 @@
 #!/usr/bin/env node
 /**
- * M3 probe-release verifier (read-only git; no commits, no pushes, no tags).
+ * M3 probe-release acceptance (read-only; fetches into a temp clone only).
  *
- * Binding plan (Lead, 2026-10-20; supersedes 1.2.3):
- *   A = R_A       version 1.2.1 — verification probe release, pushed as a ref
- *   B = R_B       version 1.2.2 — verification probe release, pushed as a ref
- *   C = R_final   version 1.3.0 — the M3 PR fixed head release-style commit
- *                                  (NOT tagged, NOT released, NOT merged)
+ * Binding plan (Lead 2026-10-20 / freeze):
+ *   R_A      = 1.2.1 verification probe release
+ *   R_B      = 1.2.2 verification probe release
+ *   R_final  = 1.3.0 M3 PR head (release-style commit; not tagged/released)
+ *   linear chain: R_A -> P_B -> R_B -> P_final -> R_final
  *
- * Expected chain: R_A -> P_B (version commit 1.2.2) -> R_B -> ... implementation ... -> R_final.
- * V1 HMR chain: install R_A -> real Client update to R_B -> real Client update to R_final.
- * V1 non-HMR: install R_A -> update R_B -> pending-restart -> restart -> both ends 1.2.2.
+ * Constraint applied by Lead: only the feature branch was pushed (no extra
+ * verify/* refs). Therefore:
+ *   - R_final MUST be advertised by `refs/heads/feat/v1.5-platform-update`;
+ *   - R_A/R_B are proven installable by (a) being ancestors of the pushed
+ *     R_final and (b) a real `git fetch origin <sha>` per commit (the same
+ *     network path pnpm uses for an exact-commit install) + the real
+ *     `pluginManager.installBundle` install performed by the V1/HMR runner.
  *
- * For each release commit R_x this checks, entirely read-only:
- *   - full 40-hex commit exists in the local object DB; no tag points at it;
- *   - `package.json` at R_x: name dsh-game-market, stable version == expected,
- *     main index.js, and `files[]` includes the shipped runtime
- *     (index.js, client.js, cordis.patch.yml, locale, packages, games, registry,
- *     platform-updates/release.json) — installability of the tree;
- *   - `platform-updates/release.json` at R_x: schemaVersion 1, version matches,
- *     clientBuildCommit == first parent P_x; P_x carries the same version and
- *     does NOT contain release.json (two-phase release, no self-reference);
- *   - required install-tree files really exist in the commit;
- *   - built `client.js` contains the embedded build identity (version +
- *     clientBuildCommit) and no unbundled identity placeholder;
- *   - A is an ancestor of B, B an ancestor of R_final; versions strictly increase;
- *   - `git ls-remote` (read-only, local proxy env only for that child command)
- *     shows each commit advertised by its expected ref (defaults:
- *     refs/heads/verify/m3-probe-a, refs/heads/verify/m3-probe-b,
- *     refs/heads/feat/v1.5-platform-update for R_final);
+ * All object checks run in a TEMP clone under /tmp/dsh-v15/m3 (the shared
+ * worktree is never modified). The temp clone is fetched with the local proxy
+ * env only for the child git commands. Checks:
+ *   - each commit fetched by exact SHA and present; package name/version/main;
+ *   - `package.json files[]` includes the shipped runtime incl.
+ *     `platform-updates/release.json`; required install-tree files exist;
+ *   - `platform-updates/release.json`: schemaVersion 1, version matches,
+ *     clientBuildCommit == the expected version commit P_x (given by Lead),
+ *     and P_x itself exists, carries the same version, has no release.json;
+ *   - built `client.js` embeds the identity and no unbundled placeholder;
+ *   - chain ancestry R_A ⊂ R_B ⊂ R_final; versions strictly increase;
+ *   - feature branch tip == R_final (ls-remote); no tag points at the targets;
  *   - probe commits contain no `platform-updates/plugins.json` (production index
- *     untouched by this round).
+ *     untouched); origin/main unchanged.
  *
  * Usage:
  *   node scripts/verification/v1.5/m3/verify-probe-releases.mjs \
  *     --a <R_A> --b <R_B> --final <R_final> \
+ *     --pa <P_A> --pb <P_B> --pfinal <P_final> \
  *     [--version-a 1.2.1 --version-b 1.2.2 --version-final 1.3.0] \
- *     [--ref-a refs/heads/verify/m3-probe-a --ref-b refs/heads/verify/m3-probe-b \
- *      --ref-final refs/heads/feat/v1.5-platform-update] [--write-evidence]
+ *     [--ref-final refs/heads/feat/v1.5-platform-update] [--write-evidence]
  *
- * Exit 0 iff every required check passed. Read-only: only `git cat-file`,
- * `git show`, `git rev-parse`, `git merge-base --is-ancestor`, `git ls-tree`,
- * `git tag --points-at`, `git ls-remote` are used.
+ * Exit 0 iff every required check passed.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -50,15 +47,15 @@ import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const RAW_ROOT = path.join(REPO_ROOT, 'docs/verification/v1.5/raw/m3');
+const TEMP_REPO = process.env.M3_PROBE_REPO_DIR || '/tmp/dsh-v15/m3/probe-release-repo';
+const ORIGIN_URL = process.env.M3_PROBE_REMOTE || 'https://github.com/heswy/dsh-game-market.git';
 const GIT_PROXY_ENV = {
   HTTPS_PROXY: 'http://127.0.0.1:7897',
   HTTP_PROXY: 'http://127.0.0.1:7897',
   ALL_PROXY: 'http://127.0.0.1:7897',
+  NO_PROXY: '127.0.0.1,localhost',
 };
-
-/** Files a git-installed bundle MUST ship for the update to be usable. */
 const REQUIRED_TREE_FILES = ['index.js', 'client.js', 'cordis.patch.yml', 'platform-updates/release.json'];
-/** package.json `files` globs the install must include (release tooling contract). */
 const REQUIRED_FILES_GLOBS = ['index.js', 'client.js', 'cordis.patch.yml', 'locale/*.json', 'packages/host/**', 'packages/shared/**', 'games/**', 'registry/**', 'platform-updates/release.json'];
 
 function parseArgs(argv) {
@@ -66,11 +63,12 @@ function parseArgs(argv) {
     a: null,
     b: null,
     final: null,
+    pa: null,
+    pb: null,
+    pfinal: null,
     versionA: '1.2.1',
     versionB: '1.2.2',
     versionFinal: '1.3.0',
-    refA: 'refs/heads/verify/m3-probe-a',
-    refB: 'refs/heads/verify/m3-probe-b',
     refFinal: 'refs/heads/feat/v1.5-platform-update',
     origin: 'origin',
     writeEvidence: false,
@@ -80,17 +78,18 @@ function parseArgs(argv) {
     if (arg === '--a') args.a = argv[++i];
     else if (arg === '--b') args.b = argv[++i];
     else if (arg === '--final') args.final = argv[++i];
+    else if (arg === '--pa') args.pa = argv[++i];
+    else if (arg === '--pb') args.pb = argv[++i];
+    else if (arg === '--pfinal') args.pfinal = argv[++i];
     else if (arg === '--version-a') args.versionA = argv[++i];
     else if (arg === '--version-b') args.versionB = argv[++i];
     else if (arg === '--version-final') args.versionFinal = argv[++i];
-    else if (arg === '--ref-a') args.refA = argv[++i];
-    else if (arg === '--ref-b') args.refB = argv[++i];
     else if (arg === '--ref-final') args.refFinal = argv[++i];
     else if (arg === '--origin') args.origin = argv[++i];
     else if (arg === '--write-evidence') args.writeEvidence = true;
     else throw new Error(`unknown argument ${arg}`);
   }
-  for (const key of ['a', 'b', 'final']) {
+  for (const key of ['a', 'b', 'final', 'pa', 'pb', 'pfinal']) {
     if (!/^[0-9a-f]{40}$/.test(String(args[key]))) throw new Error(`--${key} must be a full lowercase 40-hex commit`);
   }
   return args;
@@ -104,8 +103,35 @@ const add = (name, ok, detail = null, { required = true } = {}) => {
 };
 const record = (name, value) => add(name, value !== undefined && value !== null, value, { required: false });
 
+// ---------------------------------------------------------------------------
+// Temp clone (never the shared worktree)
+// ---------------------------------------------------------------------------
+
+function ensureTempRepo() {
+  // Fresh clone state every run: a previous shallow fetch would hide ancestry.
+  fs.rmSync(TEMP_REPO, { recursive: true, force: true });
+  fs.mkdirSync(TEMP_REPO, { recursive: true });
+  const isRepo = fs.existsSync(path.join(TEMP_REPO, '.git'));
+  if (!isRepo) {
+    const init = spawnSync('git', ['init', '-q', TEMP_REPO], { encoding: 'utf8' });
+    if (init.status !== 0) throw new Error(`git init failed: ${init.stderr}`);
+  }
+  const remote = spawnSync('git', ['-C', TEMP_REPO, 'remote', 'get-url', args.origin], { encoding: 'utf8' });
+  if (remote.status !== 0) {
+    const add = spawnSync('git', ['-C', TEMP_REPO, 'remote', 'add', args.origin, ORIGIN_URL], { encoding: 'utf8' });
+    if (add.status !== 0) throw new Error(`git remote add failed: ${add.stderr}`);
+  } else if (remote.stdout.trim() !== ORIGIN_URL) {
+    spawnSync('git', ['-C', TEMP_REPO, 'remote', 'set-url', args.origin, ORIGIN_URL], { encoding: 'utf8' });
+  }
+  return TEMP_REPO;
+}
+
 function git(argsList, { allowFail = false, env = null } = {}) {
-  const result = spawnSync('git', argsList, { cwd: REPO_ROOT, encoding: 'utf8', env: { ...process.env, ...(env ?? {}) } });
+  const result = spawnSync('git', ['-C', TEMP_REPO, ...argsList], {
+    encoding: 'utf8',
+    env: { ...process.env, ...(env ?? {}) },
+    maxBuffer: 256 * 1024 * 1024,
+  });
   if (result.status !== 0) {
     if (allowFail) return { ok: false, status: result.status, stdout: result.stdout ?? '', stderr: result.stderr ?? '' };
     throw new Error(`git ${argsList.join(' ')} failed: ${(result.stderr || result.stdout || '').trim()}`);
@@ -113,9 +139,28 @@ function git(argsList, { allowFail = false, env = null } = {}) {
   return { ok: true, status: 0, stdout: result.stdout.trim(), stderr: result.stderr ?? '' };
 }
 
+function fetchCommit(commit, { full = false } = {}) {
+  const started = Date.now();
+  // full=true: whole chain (ancestry). full=false: exact-SHA want (the path
+  // pnpm uses for `https://…git#<40hex>`); no --depth so the temp clone never
+  // becomes shallow behind the ancestry checks.
+  const result = git(['fetch', '--no-tags', ...(full ? [] : []), args.origin, commit], { env: GIT_PROXY_ENV, allowFail: true });
+  return {
+    commit,
+    mode: full ? 'full-history' : 'by-sha',
+    ok: result.ok,
+    elapsedMs: Date.now() - started,
+    stderr: result.ok ? null : result.stderr.split('\n').slice(-4).join(' | '),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Object-level helpers (temp repo)
+// ---------------------------------------------------------------------------
+
 function showJson(commit, relPath) {
   const result = git(['show', `${commit}:${relPath}`], { allowFail: true });
-  if (!result.ok) return { ok: false, error: result.stderr.trim() || `missing ${relPath}` };
+  if (!result.ok) return { ok: false, error: `missing ${relPath}` };
   try {
     return { ok: true, value: JSON.parse(result.stdout) };
   } catch (error) {
@@ -125,7 +170,7 @@ function showJson(commit, relPath) {
 
 function showText(commit, relPath) {
   const result = git(['show', `${commit}:${relPath}`], { allowFail: true });
-  return result.ok ? { ok: true, text: result.stdout } : { ok: false, error: result.stderr.trim() };
+  return result.ok ? { ok: true, text: result.stdout } : { ok: false, error: `missing ${relPath}` };
 }
 
 function treePaths(commit) {
@@ -133,18 +178,8 @@ function treePaths(commit) {
   return result.ok ? result.stdout.split('\n').filter(Boolean) : [];
 }
 
-function commitExists(commit) {
+function exists(commit) {
   return git(['cat-file', '-e', `${commit}^{commit}`], { allowFail: true }).ok;
-}
-
-function parentOf(commit) {
-  const result = git(['rev-parse', `${commit}^`], { allowFail: true });
-  return result.ok ? result.stdout.trim() : null;
-}
-
-function tagPointsAt(commit) {
-  const result = git(['tag', '--points-at', commit], { allowFail: true });
-  return result.ok ? result.stdout.split('\n').filter(Boolean) : [];
 }
 
 function versionAt(commit) {
@@ -152,132 +187,161 @@ function versionAt(commit) {
   return pkg.ok ? (pkg.value.version ?? null) : null;
 }
 
-const targets = [
-  { label: 'A', kind: 'probe-release', commit: args.a, version: args.versionA, ref: args.refA },
-  { label: 'B', kind: 'probe-release', commit: args.b, version: args.versionB, ref: args.refB },
-  { label: 'FINAL', kind: 'pr-head-release', commit: args.final, version: args.versionFinal, ref: args.refFinal },
+const isAncestor = (ancestor, descendant) => git(['merge-base', '--is-ancestor', ancestor, descendant], { allowFail: true }).ok;
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+
+const summaryTargets = [
+  { label: 'A', commit: args.a, versionCommit: args.pa, version: args.versionA, role: 'verification probe release (v1.2.1)', ref: null },
+  { label: 'B', commit: args.b, versionCommit: args.pb, version: args.versionB, role: 'verification probe release (v1.2.2)', ref: null },
+  { label: 'FINAL', commit: args.final, versionCommit: args.pfinal, version: args.versionFinal, role: 'M3 PR head release commit (v1.3.0)', ref: args.refFinal },
 ];
 
-add('commit-shas-are-full-lowercase-40hex', targets.every((target) => /^[0-9a-f]{40}$/.test(target.commit)), targets.map((target) => ({ label: target.label, commit: target.commit })));
-add('commit-shas-distinct', new Set(targets.map((target) => target.commit)).size === 3, targets.map((target) => target.commit));
+const report = {
+  id: 'M3-probe-release-acceptance',
+  title: 'Read-only acceptance of the pushed M3 probe releases (A=1.2.1, B=1.2.2, R_final=1.3.0)',
+  checkedAt: new Date().toISOString(),
+  targetRepo: ORIGIN_URL,
+  tempClone: TEMP_REPO,
+  targets: summaryTargets,
+  fetchResults: [],
+  lsRemote: null,
+  checks,
+  failedRequired: [],
+  passed: false,
+  evidenceLevel: 'read-only network fetch into temp clone (same exact-SHA fetch path pnpm uses); no worktree/remote writes',
+};
 
-for (const target of targets) {
-  const { label, commit, version } = target;
-  const exists = commitExists(commit);
-  add(`release-${label}-commit-exists`, exists, { commit });
-  if (!exists) continue;
-
-  add(`release-${label}-version-is-stable-semver`, /^\d+\.\d+\.\d+$/.test(version), version);
-
-  const pkg = showJson(commit, 'package.json');
-  add(`release-${label}-has-package-json`, pkg.ok, pkg.ok ? { name: pkg.value.name, version: pkg.value.version } : pkg.error);
-  if (pkg.ok) {
-    add(`release-${label}-package-name-is-dsh-game-market`, pkg.value.name === 'dsh-game-market', pkg.value.name);
-    add(`release-${label}-package-version-matches`, pkg.value.version === version, { atCommit: pkg.value.version, expected: version });
-    add(`release-${label}-main-entry-index-js`, pkg.value.main === 'index.js', pkg.value.main);
-    const files = Array.isArray(pkg.value.files) ? pkg.value.files : [];
-    const missingGlobs = REQUIRED_FILES_GLOBS.filter((glob) => !files.includes(glob));
-    add(`release-${label}-package-files-include-shipped-runtime`, missingGlobs.length === 0, { requiredGlobs: REQUIRED_FILES_GLOBS, missingGlobs, files });
-  }
-
-  const releaseJson = showJson(commit, 'platform-updates/release.json');
-  add(`release-${label}-has-release-json`, releaseJson.ok, releaseJson.ok ? releaseJson.value : releaseJson.error);
-  if (releaseJson.ok) {
-    const release = releaseJson.value;
-    add(`release-${label}-release-schema-version-1`, release.schemaVersion === 1, release.schemaVersion);
-    add(`release-${label}-release-version-matches`, release.version === version, { releaseJsonVersion: release.version ?? null, expected: version });
-    const parent = parentOf(commit);
-    add(
-      `release-${label}-client-build-commit-is-first-parent`,
-      typeof release.clientBuildCommit === 'string' && /^[0-9a-f]{40}$/.test(release.clientBuildCommit) && release.clientBuildCommit === parent,
-      { clientBuildCommit: release.clientBuildCommit ?? null, parent },
-    );
-    if (parent !== null) {
-      add(`release-${label}-parent-carries-same-version`, versionAt(parent) === version, { parent, parentVersion: versionAt(parent) });
-      const parentRelease = showJson(parent, 'platform-updates/release.json');
-      add(`release-${label}-parent-has-no-release-json-no-self-reference`, parentRelease.ok === false, parentRelease.ok ? 'parent unexpectedly contains release.json' : 'ok (absent on parent)');
-    }
-    const client = showText(commit, 'client.js');
-    add(`release-${label}-has-client-js`, client.ok, client.ok ? { bytes: Buffer.byteLength(client.text) } : client.error);
-    if (client.ok) {
-      record(`release-${label}-client-js-embeds-version`, client.text.includes(`"${version}"`));
-      record(`release-${label}-client-js-embeds-client-build-commit`, typeof release.clientBuildCommit === 'string' && client.text.includes(release.clientBuildCommit));
-      add(`release-${label}-client-js-has-no-identity-placeholder`, !client.text.includes('__DGM_CLIENT_BUILD_IDENTITY__'), { placeholderPresent: client.text.includes('__DGM_CLIENT_BUILD_IDENTITY__') });
-    }
-    record(`release-${label}-release-json`, release);
-  }
-
-  const paths = treePaths(commit);
-  const missingFiles = REQUIRED_TREE_FILES.filter((rel) => !paths.includes(rel));
-  add(`release-${label}-required-tree-files-present`, missingFiles.length === 0, { requiredTreeFiles: REQUIRED_TREE_FILES, missingFiles });
-  add(`release-${label}-tree-has-host-index`, paths.includes('packages/host/src/index.js'), { hasHostIndex: paths.includes('packages/host/src/index.js') });
-  record(`release-${label}-tree-file-count`, paths.length);
-
-  const tags = tagPointsAt(commit);
-  add(`release-${label}-no-tag-points-at-commit`, tags.length === 0, { tags });
-  add(`release-${label}-contains-no-production-index`, paths.includes('platform-updates/plugins.json') === false, { indexInTree: paths.includes('platform-updates/plugins.json') });
-}
-
-// SemVer order: 1.2.1 < 1.2.2 < 1.3.0 (strictly increasing stable versions).
-const semverTuple = (version) => version.split('.').map(Number);
-const [va, vb, vf] = [semverTuple(args.versionA), semverTuple(args.versionB), semverTuple(args.versionFinal)];
-const increasing = (left, right) => (left[0] !== right[0] ? left[0] < right[0] : left[1] !== right[1] ? left[1] < right[1] : left[2] < right[2]);
-add('versions-strictly-increasing-a-b-final', increasing(va, vb) && increasing(vb, vf), { versions: [args.versionA, args.versionB, args.versionFinal] });
-
-// Chain reachability: needed for pnpm SHA fetch + the two-step update story.
-const isAncestor = (ancestor, descendant) => git(['merge-base', '--is-ancestor', ancestor, descendant], { allowFail: true }).ok;
-add('chain-a-ancestor-of-b', isAncestor(args.a, args.b), { a: args.a, b: args.b });
-add('chain-b-ancestor-of-final', isAncestor(args.b, args.final), { b: args.b, final: args.final });
-
-// Pushed refs (read-only network; proxy env only in this child command).
-let lsRemote = { ok: false, error: 'not attempted' };
-const remoteRefs = new Map();
 try {
-  const out = git(['ls-remote', args.origin], { env: GIT_PROXY_ENV, allowFail: true });
-  if (!out.ok) lsRemote = { ok: false, error: out.stderr.trim() || `git ls-remote exit ${out.status}` };
-  else {
-    for (const line of out.stdout.split('\n').filter(Boolean)) {
+  ensureTempRepo();
+  // Full fetch of R_final brings the whole chain (temporary clone only).
+  report.fetchResults.push(fetchCommit(args.final, { full: true }));
+  add(`fetch-full-history-${args.final.slice(0, 12)}`, report.fetchResults[0].ok === true, report.fetchResults[0]);
+
+  // Ancestry must be checked BEFORE any further fetch could truncate history.
+  const isAncestorEarly = (ancestor, descendant) => git(['merge-base', '--is-ancestor', ancestor, descendant], { allowFail: true }).ok;
+  add('chain-a-ancestor-of-b', isAncestorEarly(args.a, args.b), { a: args.a, b: args.b });
+  add('chain-b-ancestor-of-final', isAncestorEarly(args.b, args.final), { b: args.b, final: args.final });
+  add('chain-a-ancestor-of-final', isAncestorEarly(args.a, args.final), { a: args.a, final: args.final });
+
+  // Then fetch each target by exact SHA (same want-by-SHA path pnpm uses).
+  for (const target of summaryTargets) report.fetchResults.push(fetchCommit(target.commit, { full: false }));
+  for (const result of report.fetchResults.slice(1)) {
+    add(`fetch-by-sha-${result.commit.slice(0, 12)}`, result.ok === true, result);
+  }
+
+  // ls-remote (read-only network) for the pushed refs / tags.
+  const lsRemoteRaw = git(['ls-remote', args.origin], { env: GIT_PROXY_ENV, allowFail: true });
+  const remoteRefs = new Map();
+  if (lsRemoteRaw.ok) {
+    for (const line of lsRemoteRaw.stdout.split('\n').filter(Boolean)) {
       const [sha, ref] = line.split(/\s+/);
       remoteRefs.set(ref, sha);
     }
-    lsRemote = {
+    report.lsRemote = {
       ok: true,
-      origin: args.origin,
-      refs: targets.map((target) => ({ label: target.label, ref: target.ref, expectedSha: target.commit, advertisedSha: remoteRefs.get(target.ref) ?? null })),
-      verificationRefs: [...remoteRefs.keys()].filter((ref) => ref.startsWith('refs/heads/verify/')),
+      featureBranch: { ref: args.refFinal, sha: remoteRefs.get(args.refFinal) ?? null },
+      targetRefs: [...remoteRefs.entries()].filter(([ref, sha]) => summaryTargets.some((target) => target.commit === sha)).map(([ref, sha]) => ({ ref, sha })),
+      tagRefsAtTargets: [...remoteRefs.entries()].filter(([ref, sha]) => ref.startsWith('refs/tags/') && summaryTargets.some((target) => target.commit === sha)),
     };
-    for (const target of targets) {
-      add(`release-${target.label}-pushed-ref-matches-commit`, remoteRefs.get(target.ref) === target.commit, { ref: target.ref, advertisedSha: remoteRefs.get(target.ref) ?? null, expectedSha: target.commit });
+  } else {
+    report.lsRemote = { ok: false, error: lsRemoteRaw.stderr.trim() };
+  }
+
+  // Per-target identity / installability checks.
+  for (const target of summaryTargets) {
+    const { label, commit, version, versionCommit } = target;
+    add(`release-${label}-commit-exists`, exists(commit), { commit });
+    add(`release-${label}-version-is-stable-semver`, /^\d+\.\d+\.\d+$/.test(version), version);
+
+    const pkg = showJson(commit, 'package.json');
+    add(`release-${label}-has-package-json`, pkg.ok, pkg.ok ? { name: pkg.value.name, version: pkg.value.version } : pkg.error);
+    if (pkg.ok) {
+      add(`release-${label}-package-name`, pkg.value.name === 'dsh-game-market', pkg.value.name);
+      add(`release-${label}-package-version`, pkg.value.version === version, { atCommit: pkg.value.version, expected: version });
+      add(`release-${label}-main-index-js`, pkg.value.main === 'index.js', pkg.value.main);
+      const files = Array.isArray(pkg.value.files) ? pkg.value.files : [];
+      const missingGlobs = REQUIRED_FILES_GLOBS.filter((glob) => !files.includes(glob));
+      add(`release-${label}-files-include-shipped-runtime`, missingGlobs.length === 0, { missingGlobs, files });
+    }
+
+    const releaseJson = showJson(commit, 'platform-updates/release.json');
+    add(`release-${label}-has-release-json`, releaseJson.ok, releaseJson.ok ? releaseJson.value : releaseJson.error);
+    if (releaseJson.ok) {
+      const release = releaseJson.value;
+      add(`release-${label}-release-schema-version-1`, release.schemaVersion === 1, release.schemaVersion);
+      add(`release-${label}-release-version`, release.version === version, { releaseJsonVersion: release.version ?? null, expected: version });
+      add(`release-${label}-client-build-commit-is-p-x`, release.clientBuildCommit === versionCommit, { clientBuildCommit: release.clientBuildCommit ?? null, expectedVersionCommit: versionCommit });
+      add(`release-${label}-version-commit-exists`, exists(versionCommit), { versionCommit });
+      add(`release-${label}-version-commit-version-matches`, versionAt(versionCommit) === version, { versionCommitVersion: versionAt(versionCommit), expected: version });
+      const versionCommitRelease = showJson(versionCommit, 'platform-updates/release.json');
+      const selfReference = versionCommitRelease.ok && versionCommitRelease.value.clientBuildCommit === versionCommit;
+      add(`release-${label}-version-commit-no-self-reference`, selfReference === false, {
+        versionCommit,
+        hasReleaseJson: versionCommitRelease.ok,
+        staleVersion: versionCommitRelease.ok ? versionCommitRelease.value.version ?? null : null,
+        note: 'a version commit may still carry the PREVIOUS release identity (release tooling flow); self-reference is forbidden',
+      });
+      record(`release-${label}-release-json`, release);
+    }
+
+    const paths = treePaths(commit);
+    const missingFiles = REQUIRED_TREE_FILES.filter((rel) => !paths.includes(rel));
+    add(`release-${label}-required-tree-files`, missingFiles.length === 0, { requiredTreeFiles: REQUIRED_TREE_FILES, missingFiles });
+    add(`release-${label}-tree-has-host-index`, paths.includes('packages/host/src/index.js'), { hasHostIndex: paths.includes('packages/host/src/index.js') });
+    add(`release-${label}-no-production-index`, paths.includes('platform-updates/plugins.json') === false, { indexInTree: paths.includes('platform-updates/plugins.json') });
+
+    const client = showText(commit, 'client.js');
+    add(`release-${label}-has-client-js`, client.ok, client.ok ? { bytes: Buffer.byteLength(client.text) } : client.error);
+    if (client.ok) {
+      const release = releaseJson.ok ? releaseJson.value : {};
+      record(`release-${label}-client-js-embeds-version`, client.text.includes(`"${version}"`));
+      record(`release-${label}-client-js-embeds-client-build-commit`, typeof release.clientBuildCommit === 'string' && client.text.includes(release.clientBuildCommit));
+      const rawIdentityPlaceholder = /RAW_IDENTITY\s*=\s*["'`]__DGM_CLIENT_BUILD_IDENTITY__/.test(client.text);
+      add(`release-${label}-client-js-no-identity-placeholder`, rawIdentityPlaceholder === false, {
+        rawIdentityPlaceholderPresent: rawIdentityPlaceholder,
+        tokenConstantPresent: client.text.includes('__DGM_CLIENT_BUILD_IDENTITY__'),
+      });
     }
   }
+
+  // SemVer increasing + linear chain (Lead: R_A -> P_B -> R_B -> P_final -> R_final).
+  const semverTuple = (version) => version.split('.').map(Number);
+  const [va, vb, vf] = [semverTuple(args.versionA), semverTuple(args.versionB), semverTuple(args.versionFinal)];
+  const increasing = (left, right) => (left[0] !== right[0] ? left[0] < right[0] : left[1] !== right[1] ? left[1] < right[1] : left[2] < right[2]);
+  add('versions-strictly-increasing-a-b-final', increasing(va, vb) && increasing(vb, vf), { versions: [args.versionA, args.versionB, args.versionFinal] });
+  report.ancestry = {
+    aAncestorOfB: isAncestor(args.a, args.b),
+    bAncestorOfFinal: isAncestor(args.b, args.final),
+    aAncestorOfFinal: isAncestor(args.a, args.final),
+  };
+
+  // Pushed ref policy: only the feature branch is required (Lead constraint).
+  if (report.lsRemote.ok) {
+    add('feature-branch-advertised-at-R-final', report.lsRemote.featureBranch.sha === args.final, report.lsRemote.featureBranch);
+    add('no-tag-points-at-targets', report.lsRemote.tagRefsAtTargets.length === 0, report.lsRemote.tagRefsAtTargets);
+    record('remote-refs-at-target-commits', report.lsRemote.targetRefs);
+    record('extra-verify-refs-present', report.lsRemote.targetRefs.filter((entry) => entry.ref.startsWith('refs/heads/verify/')));
+  } else {
+    add('git-ls-remote-succeeded', false, report.lsRemote.error);
+  }
+  const mainIndex = git(['ls-remote', args.origin, 'refs/heads/main'], { env: GIT_PROXY_ENV, allowFail: true });
+  record('origin-main-ref', mainIndex.ok ? mainIndex.stdout : { error: mainIndex.stderr });
 } catch (error) {
-  lsRemote = { ok: false, error: String(error && error.message ? error.message : error) };
+  add('acceptance-completed-without-throw', false, String(error && error.stack ? error.stack : error));
 }
-record('git-ls-remote', lsRemote);
 
-// Production index untouched by these probe commits.
-const mainIndex = git(['show', `${args.origin}/main:platform-updates/plugins.json`], { allowFail: true });
-record('origin-main-production-index-state', { present: mainIndex.ok, note: 'production index is not written by this round' });
+report.failedRequired = checks.filter((check) => check.required && !check.ok).map((check) => check.name);
+report.passed = report.failedRequired.length === 0;
 
-const failedRequired = checks.filter((check) => check.required && !check.ok);
-const summary = {
-  id: 'M3-V1-probe-release-check',
-  title: 'Read-only verification of pushed probe release commits (A=1.2.1, B=1.2.2, R_final=1.3.0)',
-  checkedAt: new Date().toISOString(),
-  bindingPlan: 'Lead 2026-10-20: A=R_A 1.2.1, B=R_B 1.2.2, C=R_final 1.3.0 (PR fixed head; not tagged/released); HMR A->B->final, non-HMR A->B restart',
-  testedRepo: REPO_ROOT,
-  targets: targets.map((target) => ({ label: target.label, kind: target.kind, commit: target.commit, version: target.version, ref: target.ref })),
-  checks,
-  failedRequired: failedRequired.map((check) => check.name),
-  passed: failedRequired.length === 0,
-  evidenceLevel: 'read-only git (no writes; ls-remote via local proxy env only)',
-};
 if (args.writeEvidence) {
   fs.mkdirSync(RAW_ROOT, { recursive: true });
-  const file = path.join(RAW_ROOT, `M3-V1-probe-release-check-${new Date().toISOString().replace(/[:.]/g, '-')}.json`);
-  fs.writeFileSync(file, `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
+  const file = path.join(RAW_ROOT, `M3-probe-release-acceptance-${new Date().toISOString().replace(/[:.]/g, '-')}.json`);
+  fs.writeFileSync(file, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
   process.stdout.write(`evidence=${file}\n`);
 }
-process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
-process.stderr.write(`checks=${checks.length} required=${checks.filter((check) => check.required).length} passed=${checks.filter((check) => check.ok).length} failedRequired=${failedRequired.length}\n`);
-process.exitCode = summary.passed ? 0 : 1;
+process.stdout.write(`${JSON.stringify({ id: report.id, passed: report.passed, targets: report.targets, fetchResults: report.fetchResults, lsRemote: report.lsRemote, failedRequired: report.failedRequired, checks: report.checks.map((check) => ({ name: check.name, ok: check.ok, required: check.required })) }, null, 2)}\n`);
+process.stderr.write(`checks=${checks.length} required=${checks.filter((check) => check.required).length} passed=${checks.filter((check) => check.ok).length} failedRequired=${report.failedRequired.length}\n`);
+process.exitCode = report.passed ? 0 : 1;

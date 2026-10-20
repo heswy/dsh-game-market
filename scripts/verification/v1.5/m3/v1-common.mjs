@@ -79,6 +79,49 @@ export function parseTargets(argv, { versions = { a: '1.2.1', b: '1.2.2', final:
   return args;
 }
 
+/**
+ * Fetch the pushed probe-release commits into an isolated temp clone (never the
+ * shared worktree) and return a git runner bound to that clone. The full fetch
+ * of `final` brings the chain; each SHA is then fetched explicitly (the
+ * exact-SHA want path pnpm uses for `https://…git#<40hex>`).
+ *
+ * Network is read-only; proxy env is applied only to these child git commands.
+ */
+export function prepareTargetRepo({ final, commits = [], workDir = '/tmp/dsh-v15/m3/v1-target-repo', originUrl = REPO_URL } = {}) {
+  const proxyEnv = {
+    HTTPS_PROXY: 'http://127.0.0.1:7897',
+    HTTP_PROXY: 'http://127.0.0.1:7897',
+    ALL_PROXY: 'http://127.0.0.1:7897',
+    NO_PROXY: '127.0.0.1,localhost',
+  };
+  fs.rmSync(workDir, { recursive: true, force: true });
+  fs.mkdirSync(workDir, { recursive: true });
+  const run = (gitArgs, { allowFail = false } = {}) => {
+    const result = spawnSync('git', ['-C', workDir, ...gitArgs], { encoding: 'utf8', env: { ...process.env, ...proxyEnv }, maxBuffer: 256 * 1024 * 1024 });
+    if (result.status !== 0) {
+      if (allowFail) return { ok: false, status: result.status, stdout: result.stdout ?? '', stderr: result.stderr ?? '' };
+      throw new Error(`git ${gitArgs.join(' ')} failed: ${(result.stderr || result.stdout || '').trim()}`);
+    }
+    return { ok: true, status: 0, stdout: result.stdout.trim(), stderr: result.stderr ?? '' };
+  };
+  run(['init', '-q', '.']);
+  run(['remote', 'add', 'origin', originUrl]);
+  const fetchResults = [];
+  const fetchOne = (commit, mode) => {
+    const started = Date.now();
+    const result = run(['fetch', '--no-tags', 'origin', commit], { allowFail: true });
+    fetchResults.push({ commit, mode, ok: result.ok, elapsedMs: Date.now() - started, stderr: result.ok ? null : result.stderr.split('\n').slice(-3).join(' | ') });
+    return result.ok;
+  };
+  fetchOne(final, 'full-history');
+  for (const commit of commits) fetchOne(commit, 'by-sha');
+  const gitRunner = (gitArgs, { allowFail = false } = {}) => {
+    const result = run(gitArgs, { allowFail });
+    return allowFail ? (result.ok ? result.stdout.trim() : null) : result.stdout.trim();
+  };
+  return { dir: workDir, fetchResults, git: gitRunner };
+}
+
 /** Read a commit's `platform-updates/release.json` (read-only git). */
 export function readReleaseIdentity(commit, { git = null } = {}) {
   const runner = git ?? ((args) => {

@@ -54,6 +54,7 @@ import {
   makeScenarioEnvironment,
   openRealPage,
   parseTargets,
+  prepareTargetRepo,
   probeInspect,
   readReleaseIdentity,
   readUpdateUi,
@@ -101,9 +102,16 @@ const evidence = {
 };
 let thrown = null;
 
+const targetRepo = (() => {
+  try {
+    return prepareTargetRepo({ final: targets.final, commits: [targets.a, targets.b] });
+  } catch (error) {
+    return { dir: null, fetchResults: [{ ok: false, error: String(error && error.message ? error.message : error) }], git: () => null };
+  }
+})();
+
 function gitRun(args) {
-  const result = spawnSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8' });
-  return result.status === 0 ? result.stdout.trim() : null;
+  return targetRepo.dir === null ? null : targetRepo.git(args, { allowFail: true });
 }
 
 function recordAction(name, result, extra = {}) {
@@ -141,6 +149,10 @@ function recordTargetIdentities() {
     hasClientJs: gitRun(['cat-file', '-e', `${ref.commit}:client.js`]) !== null,
   }));
   evidence.targetIdentities = identities;
+  evidence.targetRepo = { dir: targetRepo.dir, fetchResults: targetRepo.fetchResults };
+  for (const result of targetRepo.fetchResults) {
+    run.report.add(`target-repo-fetch-${result.mode ?? 'failed'}-${String(result.commit ?? '').slice(0, 12)}`, result.ok === true, result);
+  }
   for (const identity of identities) {
     run.report.add(`target-${identity.key}-commit-exists`, identity.exists === true, { commit: identity.commit });
     run.report.add(`target-${identity.key}-version`, identity.packageVersion === identity.version, { actual: identity.packageVersion, expected: identity.version });
