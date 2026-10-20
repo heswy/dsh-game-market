@@ -38,6 +38,7 @@ import { ROUTES } from '../../../shared/src/contracts.js';
 import { GM } from '../../../shared/src/errors.js';
 import { fileManifestDigest } from '../../../shared/src/package-v2.js';
 import { createHostHarness } from '../support/harness.js';
+import { buildPackage, defaultFiles } from '../../../../tests/helpers/zip-package.mjs';
 
 const REPO_ROOT = path.resolve(fileURLToPath(new URL('../../../../', import.meta.url)));
 const REPO_GAMES_ROOT = path.join(REPO_ROOT, 'games');
@@ -527,6 +528,120 @@ test('the real games/orbit-courier/dist package passes catalog validation when p
   assert.ok(declared, 'orbit-courier must be declared in BUILTIN_GAMES');
   assert.equal(declared.format, ASSET_ZIP_V2);
   assert.equal(declared.version, info.manifest.version);
+});
+
+// ---------------------------------------------------------------------------
+// CR8-04: shipped-but-damaged built-ins stay visible and keep their id protection
+// ---------------------------------------------------------------------------
+
+test('a shipped built-in that lost only its descriptor stays visible, broken and install-protected', async (t) => {
+  const gamesRoot = await makeGamesRoot(t);
+  const pkg = await writeBuiltinPackage(gamesRoot);
+  // Keep the whole dist/ tree, remove only the package descriptor.
+  await fs.rm(path.join(pkg.dist, DESCRIPTOR_FILE));
+
+  const host = await createHostHarness(t, { fixtureRoot: gamesRoot });
+  // The id is still a built-in (presence is decided by the dist/ directory, not by
+  // the descriptor), so install/uninstall of this id must stay rejected.
+  assert.equal(
+    host.host.catalog.entries.some((entry) => entry.id === ORBIT_ID && entry.format === ASSET_ZIP_V2),
+    true,
+    'a shipped-but-damaged built-in must keep its built-in id registration'
+  );
+  const listed = (await host.data(ROUTES.GAMES)).items.find((entry) => entry.id === ORBIT_ID);
+  assert.ok(listed, 'the damaged built-in must be visible instead of disappearing');
+  assert.equal(listed.issue, 'package-invalid');
+  assert.equal(listed.entryAvailable, false);
+  assert.equal(listed.filesDigest, null);
+  assert.equal(listed.builtin, true);
+
+  const launch = await host.requestJson(ROUTES.LAUNCH, { body: { gameId: ORBIT_ID } });
+  assert.equal(launch.response.status, 422);
+  assert.equal(launch.payload.error.code, GM.DESCRIPTOR_INVALID);
+  assert.ok(!launch.text.includes('data-test-page'), 'the rejection must not echo package content');
+
+  const uninstall = await host.requestJson(ROUTES.UNINSTALL, { body: { gameId: ORBIT_ID } });
+  assert.equal(uninstall.response.status, 403);
+  assert.equal(uninstall.payload.error.code, GM.UNINSTALL_BUILTIN);
+
+  // A local ZIP trying to claim the built-in id is still refused (no takeover).
+  const takeover = buildPackage(defaultFiles());
+  const install = await host.requestJson(ROUTES.INSTALL_LOCAL, {
+    rawBody: takeover.zip,
+    contentType: 'application/zip',
+    query: { operationId: 'cr8-04-takeover' },
+  });
+  assert.equal(install.response.status, 400);
+  assert.equal(install.payload.error.code, GM.INVALID_PARAM);
+  assert.deepEqual(await host.listDataFiles('staging'), [], 'a rejected install leaves no staging tree');
+  assert.equal(await host.pathExists('packages/orbit-courier'), false, 'a rejected install writes no version dir');
+});
+
+test('a built-in with its whole dist directory absent is treated as not shipped', async (t) => {
+  const gamesRoot = await makeGamesRoot(t);
+  // Source-only tree: games/<id>/game.json exists, but dist/ was never built.
+  await fs.mkdir(path.join(gamesRoot, ORBIT_ID), { recursive: true });
+  await fs.writeFile(path.join(gamesRoot, ORBIT_ID, 'game.json'), JSON.stringify(miniManifest(), null, 2));
+
+  const host = await createHostHarness(t, { fixtureRoot: gamesRoot });
+  assert.equal(host.host.catalog.entries.some((entry) => entry.id === ORBIT_ID), false);
+  const list = await host.data(ROUTES.GAMES);
+  assert.equal(list.items.some((entry) => entry.id === ORBIT_ID), false);
+  assert.equal(list.items.some((entry) => entry.issue === 'package-invalid'), false);
+  const launch = await host.requestJson(ROUTES.LAUNCH, { body: { gameId: ORBIT_ID } });
+  assert.equal(launch.response.status, 404);
+  assert.equal(launch.payload.error.code, GM.GAME_NOT_FOUND);
+});
+
+test('an unreadable built-in package is reported as broken, never silently skipped (CR8-04)', async (t) => {
+  if (process.platform === 'win32') {
+    t.skip('POSIX permission bits are not simulated on Windows');
+    return;
+  }
+  if (typeof process.getuid === 'function' && process.getuid() === 0) {
+    t.skip('running as root: chmod(0o000) does not deny access');
+    return;
+  }
+  const directory = await fs.mkdtemp(path.join(tmpdir(), 'dsh-gm-m2-perm-'));
+  const gamesRoot = path.join(directory, 'games');
+  const created = await writeBuiltinPackage(gamesRoot);
+  t.after(async () => {
+    await fs.chmod(created.dist, 0o755).catch(() => {});
+    await rmTree(directory);
+  });
+  await fs.chmod(created.dist, 0o000);
+
+  const host = await createHostHarness(t, { fixtureRoot: gamesRoot });
+  assert.equal(
+    host.host.catalog.entries.some((entry) => entry.id === ORBIT_ID),
+    true,
+    'a permission error must not be treated as "not distributed"'
+  );
+  const list = await host.data(ROUTES.GAMES);
+  const item = list.items.find((entry) => entry.id === ORBIT_ID);
+  assert.ok(item, 'the unreadable built-in must stay visible');
+  assert.equal(item.issue, 'package-invalid');
+  assert.equal(item.entryAvailable, false);
+  const launch = await host.requestJson(ROUTES.LAUNCH, { body: { gameId: ORBIT_ID } });
+  assert.equal(launch.response.status, 422);
+  assert.equal(launch.payload.error.code, GM.DESCRIPTOR_INVALID);
+});
+
+test('a healthy shipped built-in still validates and launches (CR8-04 non-regression)', async (t) => {
+  const gamesRoot = await makeGamesRoot(t);
+  const pkg = await writeBuiltinPackage(gamesRoot);
+  const host = await createHostHarness(t, { fixtureRoot: gamesRoot });
+  const item = (await host.data(ROUTES.GAMES)).items.find((entry) => entry.id === ORBIT_ID);
+  assert.ok(item);
+  assert.equal(item.issue, null);
+  assert.equal(item.filesDigest, pkg.digest);
+  const info = await host.data(ROUTES.LAUNCH, { body: { gameId: ORBIT_ID } });
+  assert.equal(info.package.format, ASSET_ZIP_V2);
+  const entry = await rawRequest(
+    info.resourceOrigin,
+    `${new URL(info.resourceBase).pathname}/index.html?launch=${info.nonce}`
+  );
+  assert.equal(entry.status, 200);
 });
 
 // Registered explicitly from `packages/host/test/index.js`. The tests above are

@@ -195,11 +195,11 @@ CR7-01 的修复同时收紧了 §7.5 的一条边界：**「可文档化资源�
 
 | 项 | 命令 | 结果 |
 |---|---|---|
-| 完整门禁 | `npm install && npm run verify` | **1149/1149 pass，exit 0**；`CHECK OK (42)` |
-| 新游戏自带测试 | `node --test "games/orbit-courier/test/*.test.js"` | 27/27（18 规则 + 9 包契约，含真 ZIP → `extractPackageArchive` 往返） |
-| 内置资源包 Host | `node --test "packages/host/test/index.js"` | 225/225（含 11 条 builtin `asset-zip-v2` 用例） |
-| 双格式 CLI | `node --test "scripts/cli/test/*.test.js"` | 68/68（含 `format-v2.test.js` 双格式 + 确定性 + 非法包拒绝） |
-| ZIP 投稿发布链 | `node --test tests/v1.5-publish-zip.test.js` | 10/10 |
+| 完整门禁 | `npm install && npm run verify` | **1189/1189 pass，exit 0**；`CHECK OK (42)` |
+| 新游戏自带测试 | `node --test "games/orbit-courier/test/*.test.js"` | **42/42**（规则 + 包契约 + 每局结算 7 条，含真 ZIP → `extractPackageArchive` 往返） |
+| 内置资源包 Host | `node --test "packages/host/test/index.js"` | **231/231**（含 builtin `asset-zip-v2` 15 条 + 卸载符号链接 2 条） |
+| 双格式 CLI | `node --test "scripts/cli/test/*.test.js"` | 74/74（含 `format-v2.test.js` 双格式 + 确定性 + 非法包拒绝 + dev save） |
+| ZIP 投稿发布链 | `node --test tests/v1.5-publish-zip.test.js` | **19/19**（含 CR8-02 素材绑定 9 条） |
 | 双格式投稿校验 | `node --test tests/v1.5-submission-format.test.js` | 6/6 |
 | 构建可复现 | `node scripts/build.mjs` ×2 + `shasum -a 256` | `client.js`、四个 HTML 游戏 dist + orbit-courier dist、两代 registry 均字节一致 |
 
@@ -295,6 +295,20 @@ CR7-01 的修复同时收紧了 §7.5 的一条边界：**「可文档化资源�
 | 子项 | 级别 | 证据 | 结论 |
 |---|---|---|---|
 | 安装 → 启动 → 存档 → 退出 Continue → 升级 1.0.1 → 回滚 1.0.0 → 旧 save Continue → 同版本不同内容 409 → 记录写失败恢复 → 重启恢复 → 卸载 | isolated-browser | `raw/m2/M2-lifecycle-zip-2026-10-20T07-39-01-494Z.json` **47/47 required，exit 0** | **通过** |
+
+## 11.7 CR8 复核轮（Codex 对 M2 head `a76f701` 的 5 项意见）
+
+| 条目 | 级别 | 修复 | 证据 |
+|---|---|---|---|
+| **CR8-01** 卸载跟随游戏根/祖先符号链接删外部文件 | P1 安全 | 卸载清理改为**先 realpath 边界**：祖先/根任一段是链接 → 不遍历（祖先只 warning、根只 rename 链接本身）；根非目录 → 只处理链接；`readdir` 前后 `lstat` 比对 `dev+ino` 防换链；子项 realpath 包含检查 + 不跟随链接的 unseal | host **231/231**（新增 2 条：根链接、祖先链接）；外部哨兵目录 3 文件 sha256 前后一致；正常卸载不回归 |
+| **CR8-02** 删除素材摘要绕过 V2 素材审核 | P1 安全 | 新增 `scripts/registry/lib/media.mjs` 统一绑定：catalog 的 `url+size` 必须存在，`sha256` 可**从可信 review 补足**但补足后**仍真实下载重算**；两边都缺 → `E_PUBLISH_MEDIA_UNBOUND`（绝不跳过）；可信历史增加 media 指纹，已发布 release 不能改素材 URL | publish-zip **19/19**：删摘要+换 URL → `E_PUBLISH_MEDIA_UNBOUND` 且**零下载零写入**、素材 404 → `E_PUBLISH_DOWNLOAD_FAILED`、内容不符 → `E_PUBLISH_SHA_MISMATCH`、review 也无摘要 → 拒绝、正向完整/补足各一条、已发布改 URL → `E_CATALOG_IMMUTABLE` |
+| **CR8-03** 轨道信使第二局不结算 | P2 | 新增 `games/orbit-courier/src/run-sessions.js` 每局账本：`beginRun()` 自增 runId、`settle()` 按 token 幂等、**同步**发 `score.submit`+`session.end` 并立即弹窗、异步结果只在 token 仍当前局时清存档；删除跨局 `sessionStarted/sessionEnded` 布尔 | 游戏 **42/42**（新增 7 条：两局/三局、pending 不串局、重复 settle、恢复局、host 失败、未开局 no-op）；真实宿主 run1 1392 → run2 9392 → run3 432，三局弹窗各一次、sessions 3 条独立 playSessionId |
+| **CR8-04** 缺描述符的内置包被当成「未分发」 | P2 | `builtinPackagePresent()` → `builtinPackageShipped()`：**只看 `dist/` 是否存在**，不看描述符；ENOENT/ENOTDIR → 未分发（skip），**EACCES/EPERM 等 → 仍视为已分发**（可见损坏）；描述符缺失/不可读 → `issue='package-invalid'` + `/launch` `GM-4277`，builtin id 保护继续生效 | host **231/231**（15 条 builtin 用例）：删描述符仍可见+不可卸载+安装同 id `GM-4002`；删整个 dist → 未分发；`chmod 000` → 可见损坏；正常 dist 不回归 |
+| **CR8-05** 探针重启后泄漏 Host、打印 PASSED 不退出 | P2 | `lib/lab.mjs` 的清理闭包改为**解引用当前 Host**（`get host()`）；新增 `handle.restart()`：先 kill → await exit（10s 超时抛错）→ 端口拒连证明 → 再起新 Host；5 个探针 `finally` 不再吞清理异常（失败强制 exit 1）；新增 `self-check-cleanup.mjs` 覆盖成功/断言失败/重启三条路径 | lifecycle **48/48 required，exit 0，real 31.82s，进程自行退出**；退出后 58420/58421/9522 无 LISTEN、无残留进程；self-check 三条路径 exit 0/1/0、总 real 10.41s，断言「自然退出 + 端口拒连 + PID 已死 + home 删除」 |
+
+**修复后全量**：`node --test` **1189/1189 pass**、`CHECK OK (42)`、构建字节可复现（`client.js`、orbit dist、两代 registry）。
+
+**已知边界（不作通过项）**：CR8-01 的 TOCTOU 仅剩「目录内部 walk 期间被换链」的极窄窗口（Node 无 openat/fd API，需 dataRoot 本地写权限，已如实记录）；CR8-04 的「是否随包分发」仍是 Host 激活时快照（构建中途增删需重启，与 M2-B 既有语义一致）。
 
 ## 12. M2 已知项与未验证项（不写成通过）
 

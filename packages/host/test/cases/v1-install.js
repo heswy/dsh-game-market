@@ -43,6 +43,22 @@ async function setup(t, specs, options = {}) {
   return { fixture, host };
 }
 
+/** Relative path -> sha256 (or `link:<target>`), for external sentinel dirs. */
+async function snapshotTree(root) {
+  const output = new Map();
+  async function walk(current, prefix) {
+    for (const entry of await fs.readdir(current, { withFileTypes: true })) {
+      const relative = prefix === '' ? entry.name : `${prefix}/${entry.name}`;
+      const absolute = path.join(current, entry.name);
+      if (entry.isDirectory()) await walk(absolute, relative);
+      else if (entry.isSymbolicLink()) output.set(relative, `link:${await fs.readlink(absolute)}`);
+      else output.set(relative, sha256Hex(await fs.readFile(absolute)));
+    }
+  }
+  await walk(root, '');
+  return Object.fromEntries([...output.entries()].sort());
+}
+
 async function install(host, gameId, extra = {}) {
   return host.data(ROUTES.INSTALL, {
     body: { gameId, operationId: nextOp('install'), ...extra },
@@ -633,6 +649,71 @@ export function register() {
     });
     assert.equal(retried.removed, true);
     assert.equal(await host.pathExists('packages/jump'), false);
+  });
+
+  test('CR8-01 uninstall never traverses a symlinked game package root', async (t) => {
+    const { host } = await setup(t, [{ manifest: { id: 'jump' } }]);
+    await install(host, 'jump');
+    // External sentinel directory that must never be touched.
+    const external = await fs.mkdtemp(path.join(os.tmpdir(), 'dsh-cr8-root-'));
+    t.after(() => fs.rm(external, { recursive: true, force: true }));
+    await fs.writeFile(path.join(external, 'sentinel.txt'), 'external sentinel');
+    await fs.mkdir(path.join(external, '1.0.0'), { recursive: true });
+    await fs.writeFile(path.join(external, '1.0.0', 'victim.txt'), 'must not be deleted');
+    const before = await snapshotTree(external);
+    // Tamper: replace the real game directory with a link to the sentinel.
+    await fs.rm(host.filePath('packages', 'jump'), { recursive: true, force: true });
+    await fs.symlink(external, host.filePath('packages', 'jump'));
+
+    const result = await host.requestJson(ROUTES.UNINSTALL, {
+      body: { gameId: 'jump', operationId: nextOp('cr8-root-link') },
+    });
+    assert.equal(result.response.status, 200, JSON.stringify(result.payload));
+    assert.equal(result.payload.data.removed, true);
+    assert.ok(Array.isArray(result.payload.data.warnings), 'tampered root must be reported');
+    assert.ok(
+      result.payload.data.warnings.includes('package-root-not-directory'),
+      JSON.stringify(result.payload.data.warnings)
+    );
+    // The link target is byte-identical: never enumerated, read or deleted.
+    assert.deepEqual(await snapshotTree(external), before);
+    assert.equal(await fs.readFile(path.join(external, 'sentinel.txt'), 'utf8'), 'external sentinel');
+    assert.equal(await fs.readFile(path.join(external, '1.0.0', 'victim.txt'), 'utf8'), 'must not be deleted');
+    // Only the link entry itself was moved to trash.
+    assert.equal(await host.pathExists('packages/jump'), false);
+    const installations = await host.readDataJson('installations.json');
+    assert.equal(installations.games.jump, undefined);
+  });
+
+  test('CR8-01 uninstall never traverses a symlinked packages ancestor', async (t) => {
+    const { host } = await setup(t, [{ manifest: { id: 'jump' } }]);
+    await install(host, 'jump');
+    const external = await fs.mkdtemp(path.join(os.tmpdir(), 'dsh-cr8-ancestor-'));
+    t.after(() => fs.rm(external, { recursive: true, force: true }));
+    await fs.writeFile(path.join(external, 'sentinel.txt'), 'external ancestor sentinel');
+    await fs.mkdir(path.join(external, 'jump', '1.0.0'), { recursive: true });
+    await fs.writeFile(path.join(external, 'jump', '1.0.0', 'entry.html'), 'external victim');
+    const before = await snapshotTree(external);
+    // Tamper: `packages/` itself becomes a link to the external tree.
+    await fs.rename(host.filePath('packages'), host.filePath('packages-real'));
+    await fs.symlink(external, host.filePath('packages'));
+
+    const result = await host.requestJson(ROUTES.UNINSTALL, {
+      body: { gameId: 'jump', operationId: nextOp('cr8-ancestor-link') },
+    });
+    assert.equal(result.response.status, 200, JSON.stringify(result.payload));
+    assert.equal(result.payload.data.removed, true);
+    assert.ok(Array.isArray(result.payload.data.warnings));
+    assert.ok(
+      result.payload.data.warnings.includes('package-path-symlink'),
+      JSON.stringify(result.payload.data.warnings)
+    );
+    assert.deepEqual(await snapshotTree(external), before, 'external ancestor tree must be byte-identical');
+    // The ancestor link is shared/global: left untouched, only reported.
+    const packagesStat = await fs.lstat(host.filePath('packages'));
+    assert.equal(packagesStat.isSymbolicLink(), true);
+    const installations = await host.readDataJson('installations.json');
+    assert.equal(installations.games.jump, undefined);
   });
 
   test('uninstall renames symlinks without following their targets', async (t) => {

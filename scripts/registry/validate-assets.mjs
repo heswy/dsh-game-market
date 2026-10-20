@@ -17,6 +17,12 @@
  * `fileManifestDigest`. A ZIP release must also still match its recorded
  * `package.filesDigest`; an outer sha256 match alone is not sufficient.
  *
+ * Media is re-verified the same way (CR8-02): a cover/screenshot digest deleted
+ * from the catalog may be recovered from the approved review record, but the
+ * bytes are still downloaded and re-hashed. If neither the catalog nor the
+ * review carries a digest — or the catalog lost the URL/size — the release is
+ * rejected as `E_PUBLISH_MEDIA_UNBOUND` instead of being skipped.
+ *
  *   node scripts/registry/validate-assets.mjs --registry-dir .
  */
 import { promises as fs } from 'node:fs';
@@ -26,10 +32,11 @@ import { pathToFileURL } from 'node:url';
 import { LIMITS } from '../../packages/shared/src/constants.js';
 import {
   downloadVerified,
-  validateMediaBytes,
+  publishError,
   validatePackageBytes,
 } from './lib/assets.mjs';
 import { classifyPackageFormat } from './lib/catalog.mjs';
+import { MEDIA_UNBOUND, verifyMediaAsset } from './lib/media.mjs';
 
 async function listCatalog(root) {
   const directory = path.join(root, 'catalog');
@@ -64,7 +71,22 @@ function releasesOf(entry) {
   }];
 }
 
-async function verifyRelease({ id, release, http }) {
+/** Approved review record for this release, or null when absent/unreadable. */
+async function loadReviewRecord(registryDir, id, version) {
+  try {
+    const raw = await fs.readFile(path.join(registryDir, 'reviews', id, `${version}.json`), 'utf8');
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+async function verifyRelease({ id, registryDir, release, http }) {
   const label = `${id}@${release.version}`;
   const format = release.format || classifyPackageFormat(release.package && release.package.url);
   const pkg = await downloadVerified(release.package.url, {
@@ -87,30 +109,38 @@ async function verifyRelease({ id, release, http }) {
     }
   }
 
-  // Media can only be authenticated when the approved digest + size are
-  // recorded. V1.2 catalog records always carry them; a minimal V1.5 catalog may
-  // omit them, in which case the review record is the only binding and this
-  // script must not invent a "size mismatch" failure.
-  const authenticatable = (asset) => Boolean(asset)
-    && typeof asset.url === 'string'
-    && typeof asset.sha256 === 'string'
-    && Number.isSafeInteger(asset.size);
-  const media = release.media || {};
-  const cover = media.cover || {};
-  if (authenticatable(cover)) {
-    const downloaded = await downloadVerified(cover.url, cover, http, `${label} cover`);
-    if (typeof cover.type === 'string') {
-      validateMediaBytes({ bytes: downloaded.bytes, media: cover, label: `${label} cover` });
-    }
+  // CR8-02: never skip a media asset because its digest is missing. The digest
+  // may be supplied by the approved review record, but then the bytes are still
+  // downloaded and re-hashed. `url`/`size` must come from the catalog.
+  const media = isPlainObject(release.media) ? release.media : null;
+  if (media === null) {
+    throw publishError(MEDIA_UNBOUND, `${label} release.media must be an object`, { label });
   }
-  const screenshots = Array.isArray(media.screenshots) ? media.screenshots : [];
-  for (let index = 0; index < screenshots.length; index += 1) {
-    const shot = screenshots[index];
-    if (!authenticatable(shot)) continue;
-    const downloaded = await downloadVerified(shot.url, shot, http, `${label} screenshot ${index + 1}`);
-    if (typeof shot.type === 'string') {
-      validateMediaBytes({ bytes: downloaded.bytes, media: shot, label: `${label} screenshot ${index + 1}` });
-    }
+  if (!Array.isArray(media.screenshots)) {
+    throw publishError(MEDIA_UNBOUND, `${label} release.media.screenshots must be an array`, { label });
+  }
+  const review = await loadReviewRecord(registryDir, id, release.version);
+  const reviewMedia = isPlainObject(review && review.media) ? review.media : {};
+  const reviewShots = Array.isArray(reviewMedia.screenshotSha256s) ? reviewMedia.screenshotSha256s : [];
+  const boundFromReview = [];
+
+  const cover = await verifyMediaAsset({
+    asset: media.cover,
+    reviewSha256: reviewMedia.coverSha256,
+    label: `${label} cover`,
+    http,
+  });
+  if (cover.digestSource === 'review') boundFromReview.push('cover');
+  const screenshots = [];
+  for (let index = 0; index < media.screenshots.length; index += 1) {
+    const shot = await verifyMediaAsset({
+      asset: media.screenshots[index],
+      reviewSha256: reviewShots[index],
+      label: `${label} screenshot ${index + 1}`,
+      http,
+    });
+    if (shot.digestSource === 'review') boundFromReview.push(`screenshot-${index + 1}`);
+    screenshots.push(shot);
   }
   return {
     gameId: id,
@@ -118,6 +148,11 @@ async function verifyRelease({ id, release, http }) {
     format,
     filesDigest: validation.filesDigest,
     fileCount: validation.fileCount,
+    media: {
+      cover: cover.digestSource,
+      screenshots: screenshots.length,
+      boundFromReview,
+    },
   };
 }
 
@@ -141,7 +176,7 @@ export async function validateAssets(registryDir, http = {}) {
     const gameId = entry.gameId || id;
     for (const release of releases) {
       try {
-        entries.push(await verifyRelease({ id: gameId, release, http }));
+        entries.push(await verifyRelease({ id: gameId, registryDir, release, http }));
       } catch (error) {
         errors.push({
           code: error.code || 'E_PUBLISH_ASSET_INVALID',

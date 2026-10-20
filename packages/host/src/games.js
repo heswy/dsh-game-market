@@ -77,15 +77,6 @@ function resolveInsidePackage(packageRoot, relPath) {
   return target;
 }
 
-async function pathExists(target) {
-  try {
-    await fs.lstat(target);
-    return true;
-  } catch (_error) {
-    return false;
-  }
-}
-
 /**
  * Verify `files[]` against the on-disk package tree (size + sha256 for every
  * entry, bounded by the §3 limits). Successful full verification is cached by a
@@ -326,15 +317,23 @@ function placeholderManifest(catalogEntry) {
 /**
  * Synchronous "is this built-in package shipped in this tree?" probe.
  *
- * A built-in `asset-zip-v2` entry is only a *built-in* when its extracted
- * package (descriptor included) is actually present. This keeps dev/test trees
- * (which do not carry every bundled game) from advertising ghost built-ins, and
- * it is what makes an id installable there. Production bundles always ship it;
- * `scripts/check.mjs` treats a missing built bundle as a build failure. The
- * probe runs once at catalog construction (host startup), so a package built
- * after startup is picked up on the next activation.
+ * CR8-04: shipped means the extracted package **directory** exists
+ * (`games/<id>/dist/`), *not* that the package is healthy. A shipped-but-broken
+ * package (descriptor missing/invalid, file manifest mismatch, unreadable files)
+ * must stay registered so the catalog shows `issue='package-invalid'` and
+ * `install.js#isBuiltinGame` keeps rejecting install/uninstall for that id.
+ *
+ * Three outcomes per candidate path:
+ *   - stat fails with ENOENT/ENOTDIR -> not shipped in this tree shape;
+ *   - stat succeeds (directory, or even a corrupt non-directory `dist`) -> shipped;
+ *   - stat fails with any other error (EACCES/EPERM/EIO/...) -> shipped but not
+ *     inspectable; never silently treated as absent.
+ *
+ * Only a tree that genuinely does not ship the package is filtered out (dev/test
+ * fixture roots). Production bundles missing the package fail `scripts/check.mjs`
+ * at build time. The probe runs once at catalog construction (host activation).
  */
-function builtinPackagePresent(root, catalogEntry) {
+function builtinPackageShipped(root, catalogEntry) {
   if (!catalogEntry || catalogEntry.format !== ASSET_ZIP_V2) return true;
   const directoryCandidates = [
     path.resolve(root, path.basename(String(catalogEntry.dir || ''))),
@@ -345,21 +344,33 @@ function builtinPackagePresent(root, catalogEntry) {
     : path.posix.dirname(String(catalogEntry.entryFile || ''));
   for (const directory of directoryCandidates) {
     if (!isInside(root, directory)) continue;
+    const packageRoot = path.resolve(directory, String(packageRel));
+    if (!isInside(directory, packageRoot) || !isInside(root, packageRoot)) continue;
     try {
-      if (!statSync(directory).isDirectory()) continue;
-    } catch (_error) {
-      continue;
-    }
-    const packageRoot = path.resolve(directory, packageRel);
-    if (!isInside(directory, packageRoot)) continue;
-    const descriptorPath = path.join(packageRoot, DESCRIPTOR_FILE);
-    try {
-      if (statSync(descriptorPath).isFile()) return true;
-    } catch (_error) {
-      // Try the next directory shape.
+      statSync(packageRoot);
+      return true;
+    } catch (error) {
+      const code = error && typeof error.code === 'string' ? error.code : '';
+      if (code === 'ENOENT' || code === 'ENOTDIR') continue;
+      // Permission/IO errors must not hide a shipped package (CR8-04).
+      return true;
     }
   }
   return false;
+}
+
+/**
+ * Probe one package path without collapsing "absent" into "inaccessible".
+ * @returns {Promise<{state:'ok', stats:import('node:fs').Stats}|{state:'absent'}|{state:'inaccessible', code:string}>}
+ */
+async function probePackagePath(absPath) {
+  try {
+    return { state: 'ok', stats: await fs.lstat(absPath) };
+  } catch (error) {
+    const code = error && typeof error.code === 'string' ? error.code : '';
+    if (code === 'ENOENT' || code === 'ENOTDIR') return { state: 'absent' };
+    return { state: 'inaccessible', code: code || 'EIO' };
+  }
 }
 
 /**
@@ -368,10 +379,11 @@ function builtinPackagePresent(root, catalogEntry) {
  * @param {{root: string, entries?: readonly object[], logger?: object}} options
  */
 export function createGameCatalog({ root, entries = BUILTIN_GAMES, logger = null }) {
-  // M2: an `asset-zip-v2` built-in only exists as a built-in when its package
-  // tree is present (see builtinPackagePresent). `snake` (html-v1) keeps the V1
-  // behaviour of remaining visible even when broken so diagnostics can explain it.
-  const catalogEntries = entries.filter((entry) => builtinPackagePresent(root, entry));
+  // M2/CR8-04: an `asset-zip-v2` built-in is registered when its package tree is
+  // *shipped* — healthy or broken (see builtinPackageShipped). `snake` (html-v1)
+  // keeps the V1 behaviour of remaining visible even when broken so diagnostics
+  // can explain it.
+  const catalogEntries = entries.filter((entry) => builtinPackageShipped(root, entry));
   const entryMap = new Map(catalogEntries.map((entry) => [entry.id, entry]));
 
   async function resolveDirectory(catalogEntry) {
@@ -487,16 +499,28 @@ export function createGameCatalog({ root, entries = BUILTIN_GAMES, logger = null
       return true;
     }
     info.packageRoot = packageRoot;
-    if (!(await pathExists(packageRoot))) return false;
-    const descriptorPath = path.join(packageRoot, DESCRIPTOR_FILE);
-    if (!(await pathExists(descriptorPath))) return false;
     try {
-      let descriptorStats;
-      try {
-        descriptorStats = await fs.lstat(descriptorPath);
-      } catch (_error) {
-        throw packageLayoutError('Built-in package descriptor is unreadable');
+      const packageRootState = await probePackagePath(packageRoot);
+      if (packageRootState.state === 'absent') return false;
+      if (packageRootState.state === 'inaccessible') {
+        throw hostError(GM.DESCRIPTOR_INVALID, 'Built-in package directory is not readable', {
+          retryable: false,
+        });
       }
+      if (!packageRootState.stats.isDirectory()) {
+        throw packageLayoutError('Built-in package path is not a directory');
+      }
+      const descriptorPath = path.join(packageRoot, DESCRIPTOR_FILE);
+      // CR8-04: a shipped package with a missing/unreadable descriptor is
+      // *damaged*, not undelivered — it must surface as package-invalid instead
+      // of making the built-in (and its id protection) disappear.
+      const descriptorState = await probePackagePath(descriptorPath);
+      if (descriptorState.state !== 'ok') {
+        throw hostError(GM.DESCRIPTOR_INVALID, 'Built-in package descriptor is missing or unreadable', {
+          retryable: false,
+        });
+      }
+      const descriptorStats = descriptorState.stats;
       if (descriptorStats.isSymbolicLink() || !descriptorStats.isFile()) {
         throw packageLayoutError('Built-in package descriptor is not a regular file');
       }

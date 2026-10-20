@@ -1,19 +1,20 @@
 # M2-F1 真实设备 / 浏览器证据
 
-> 任务：M2-F1 真实设备/浏览器证据（v1.5）
-> 工作区：`dsh-game-market-worktrees/v1.5-game-and-tooling`（基线 `9388b37` + 本轮 M2 未提交改动）
+> 任务：M2-F1 真实设备/浏览器证据（v1.5）+ PR #8 CR8 复核补齐
+> 工作区：`dsh-game-market-worktrees/v1.5-game-and-tooling`（PR #8 head `a76f701` + 本轮未提交 CR8 修复，稳定构建）
 > 环境：DSH `0.2.1-rc.2`（desktop-runtime / plugin-manager / electron 同版），Node `v24.14.0`，真实 Chrome `155.0.8059.85` headless（CDP 驱动）
 > 证据目录：`docs/verification/v1.5/raw/m2/`（JSON + 截图；仅本目录与脚本/报告为本次交付，**未 commit**）
-> 封版身份：`client.js` sha256 `4b7d2d19…`（M2 重建后），Host 结合本 worktree 未提交改动；每份 evidence 的 `environment`/`identity` 字段记录产生时的身份
+> 封版身份（CR8 修复后重建）：`client.js` sha256 `4b7d2d19…`；`orbit-courier` descriptor sha256 `16976945…920bd`（25 entries = 24 files + descriptor）；全仓 `node --test` **1189/1189**、`CHECK OK (42)`；分项：orbit-courier **42/42**、host **231/231**、publish-zip **19/19**（本机复跑，见 §5.1）
 
 ## 0. 总表
 
 | # | 探针（命令均在 worktree 根执行） | required | 结果 | exit | 证据 |
 | --- | --- | --- | --- | --- | --- |
-| A08 | `node scripts/verification/v1.5/m2/m2-a08-orbit-courier.mjs` | **34/34**（35 checks，1 条非 required 钩子可用性） | PASSED | 0 | `raw/m2/M2-A08-orbit-courier-2026-10-20T08-40-24-434Z.json` |
+| A08 | `node scripts/verification/v1.5/m2/m2-a08-orbit-courier.mjs` | **34/34**（35 checks，1 条非 required 钩子可用性） | PASSED | 0 | `raw/m2/M2-A08-orbit-courier-2026-10-20T10-43-08-523Z.json`（CR8 修复后构建） |
+| CR8-03 | `node scripts/verification/v1.5/m2/m2-cr8-03-two-runs.mjs` | **25/25** | PASSED | 0 | `raw/m2/M2-CR8-03-two-runs-2026-10-20T11-02-45-759Z.json` |
 | A02 | `node scripts/verification/v1.5/m2/m2-a02-orbit-resources.mjs` | **21/21** | PASSED | 0 | `raw/m2/M2-A02-orbit-multiresource-2026-10-20T07-36-13-978Z.json` |
 | 视觉 | `node scripts/verification/v1.5/m2/m2-visual-responsive.mjs` | **18/18** | PASSED | 0 | `raw/m2/M2-visual-responsive-2026-10-20T07-34-15-454Z.json` |
-| 生命周期 | `node scripts/verification/v1.5/m2/m2-lifecycle-zip.mjs` | **47/47** | PASSED | 0 | `raw/m2/M2-lifecycle-zip-2026-10-20T07-39-01-494Z.json` |
+| 生命周期 | `node scripts/verification/v1.5/m2/m2-lifecycle-zip.mjs` | **48/48** | PASSED | 0 | `raw/m2/M2-lifecycle-zip-2026-10-20T10-26-22-800Z.json`（CR8-05 后） |
 | CR7 | `node scripts/verification/v1.5/m2/m2-cr7-document-csp.mjs` | **21/21** | PASSED | 0 | `raw/m2/M2-CR7-document-csp-2026-10-20T08-01-43-798Z.json` |
 
 A/B 早期轮次（保留作缺陷与探针修正对照，非最终结论）：
@@ -21,7 +22,9 @@ A/B 早期轮次（保留作缺陷与探针修正对照，非最终结论）：
 | 证据 | 结果 | 用途 |
 | --- | --- | --- |
 | `raw/m2/M2-lifecycle-zip-2026-10-20T06-41-58-541Z.json` | 38/42（4 条红） | 卸载泄漏 defect + 记录写失败后同进程恢复不可行（前 42 检查版本，缺 html-v1 对照） |
+| `raw/m2/M2-lifecycle-zip-2026-10-20T07-39-01-494Z.json` | 47/47 | **CR8-05 前**：重启后 Host 泄漏、PASSED 后进程不退出；作清理修复 A/B |
 | `raw/m2/M2-A08-orbit-courier-2026-10-20T07-26-49-794Z.json` | 23/31 | orbit 存档 envelope 未解包 / 菜单态覆盖存档 defect；探针盲玩被撞毁、无 `__ORBIT_PROBE__` 钩子 |
+| `raw/m2/M2-A08-orbit-courier-2026-10-20T08-40-24-434Z.json` | 34/34 | **CR8-03 前构建**：A08 自身绿，但当时探针未覆盖「同页第二局结算」；作修复前构建 A/B |
 
 ## 1. A08 · `orbit-courier` 真实操作（内置游戏，asset-zip-v2）
 
@@ -37,17 +40,17 @@ A/B 早期轮次（保留作缺陷与探针修正对照，非最终结论）：
 
 ### 1.2 一局真打满 ~120 s（shift-complete）
 
-- 首个 session 真实游玩约 43 s → 暂停 → 退出（存档 `paused`）；Continue 后从 42.9 s 继续，跑满到 **120,000 ms** 自然结束，`endReason: "shift-complete"`。
-- 本局：score **280**，deliveries **10**，best **400**；Host `/game?id` `bestScore` = **400**。
+- 首个 session 真实游玩约 43 s → 暂停 → 退出（存档 `paused`）；Continue 后从 42.96 s 继续，跑满到 **120,000 ms** 自然结束，`endReason: "shift-complete"`（`attempts=1`）。
+- 本局：score **470**，deliveries **18**，best **606**；Host `/game?id` `bestScore` = **606**（CR8 修复后构建）。
 - 关键快照（evidence `scenario.snapshots`）：
 
 | 快照 | phase | elapsedMs | score | deliveries | shield | lane | cargo/asteroids | audio |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| playingStart | playing | 112 | 0 | 0 | 3/3 | 1 | 0/1 | unlocked=true, muted=false |
-| beforeExit（暂停退出前） | playing | 43088 | 200 | 7 | 3/3 | 1 | 0/2 | unlocked=true, muted=true |
-| afterContinueResume | playing | 43200 | 200 | 7 | 3/3 | 1 | 0/2 | unlocked=true, muted=true |
-| naturalRunEnded | ended(shift-complete) | 120000 | 280 | 10 | 2/3 | 1 | 3/5 | unlocked=true, muted=false |
-| afterFiveMinutes（累计活动 351934 ms） | ended(shift-complete) | 120000 | 260 | 10 | 1/3 | 0 | 2/5 | unlocked=true, muted=false |
+| playingStart | playing | 80 | 0 | 0 | 3/3 | 1 | 0/1 | unlocked=true, muted=false |
+| beforeExit（暂停退出前） | playing | 42896 | 95 | 4 | 3/3 | 2 | 2/2 | unlocked=true, muted=true |
+| afterContinueResume | playing | 42992 | 95 | 4 | 3/3 | 2 | 0/2 | unlocked=true, muted=true |
+| naturalRunEnded | ended(shift-complete) | 120000 | 470 | 18 | 2/3 | 2 | 2/5 | unlocked=true, muted=false |
+| afterFiveMinutes（累计活动 350733 ms） | ended(shift-complete) | 120000 | 660 | 20 | 3/3 | 2 | 3/5 | unlocked=true, muted=false |
 
 ### 1.3 暂停/继续与音频
 
@@ -58,14 +61,14 @@ A/B 早期轮次（保留作缺陷与探针修正对照，非最终结论）：
 ### 1.4 存档 / Continue 精确对齐
 
 - 退出前 Host 存档文件实测（`scenario.saves.hostSaveAfterExit`）：`saves/orbit-courier/current.json` 存在，`meta.json {hasSave:true, revision: 15, savedAt:…}`，`values.run = {schemaVersion:1, phase:"paused", elapsedMs:…, score:…}`。
-- Continue 后快照：`elapsedMs 43120 / score 200 / muted true` → `elapsedMs 43200 / score 200 / muted true`（elapsed/score/静音均保持；「继续」入口为我的游戏行）。
-- 最高分：本局结束后 `best`/HUD/ Host `bestScore` 三者一致（400）。
+- Continue 后快照：`elapsedMs 42896 / score 95 / muted true` → `elapsedMs 42992 / score 95 / muted true`（elapsed/score/静音均保持；「继续」入口为我的游戏行）。
+- 最高分：本局结束后 `best`/HUD/ Host `bestScore` 三者一致（606）。
 
 ### 1.5 ≥ 5 分钟实际推进（墙钟）
 
-- 累计**活动游玩**：**351,934 ms**（≥ 300,000 ms）；墙钟区间 `2026-10-20T08:33:23.102Z` → `2026-10-20T08:40:22.905Z`（419803 ms），活动时长 ≤ 墙钟——真实推进、非 near-time-up、非加速。
-- 组成：首个 ~120 s 局 + Continue 后半局 + 2 个 120 s 重开局（全部自然 `shift-complete`），运行在同一已挂载 Runtime 中，仅用真实 Enter 确认重开。
-- 帧率：活动窗口 rAF 采样 **avg 59.9 fps（4577 rAF / 76365 ms；分段 59.6/59.4/59.9/55.7/58.9）**（`__M2_FPS__` count/ms 增量；headless+CDP 开销下仍稳定推进）。
+- 累计**活动游玩**：**350,733 ms**（≥ 300,000 ms）；墙钟区间 `2026-10-20T10:36:09.023Z` → `2026-10-20T10:43:08.503Z`（419,480 ms），活动时长 ≤ 墙钟——真实推进、非 near-time-up、非加速。
+- 组成：首个 ~120 s 局 + Continue 后半局 + 2 个 120 s 重开局（均自然 `shift-complete`），运行在同一已挂载 Runtime 中，仅用真实 Enter 确认重开。
+- 帧率：活动窗口 rAF 采样 **avg 60.0 fps（4595 rAF / 76,578 ms；分段 60/60/60/60/60）**（`__M2_FPS__` count/ms 增量；headless+CDP 开销下仍稳定推进）。
 - CSP/可靠性：全程零 CSP 违规；探针未直接调用任何 Host 写 API/未伪造分数（`no-direct-api-install-from-probe-or-score-forgery`）。
 
 ## 2. A02 · 多资源真实加载（内置 `orbit-courier`）
@@ -101,7 +104,7 @@ A/B 早期轮次（保留作缺陷与探针修正对照，非最终结论）：
 10. **旧 HTML 对照**：额外 `html-v1` 本地 HTML 包经同一 UI 安装（format=`html-v1`）、启动渲染（opaque origin、canvas）、卸载成功——CR7「旧 HTML 对照路径仍可用」。
 11. 全程无探针直接 API 安装；零 frame-ancestors / CSP 违规。
 
-缺陷记录（已修复，见 §6）：本轮最初发现**卸载只清理 current 版本、previous 保留目录泄漏**（A/B 证据 `06-41-58` 红 4 条）；host-zip 修复后本探针 **47/47 全绿**（最终证据 `07-39-01`）。
+缺陷记录（已修复，见 §6）：本轮最初发现**卸载只清理 current 版本、previous 保留目录泄漏**（A/B 证据 `06-41-58` 红 4 条）；host-zip 修复后为 **47/47**（A/B `07-39-01`）；CR8-05 修复探针清理后又补一条 `host-cleanup-left-no-listener-after-restart`，稳定构建最终 **48/48 全绿、exit 0、进程自行退出**（最终证据 `10-26-22-800Z`）。
 
 ## 5. CR7 回归（同源第二 HTML + 历史目录/409/记录失败/ZIP 原始字节）
 
@@ -110,11 +113,57 @@ A/B 早期轮次（保留作缺陷与探针修正对照，非最终结论）：
 - **CR7-03 ZIP 原始字节上传**：安装上传 raw body（`postDataEntries` base64 还原）sha256 与源 `.dshgame.zip` 完全一致，长度一致；Content-Type `application/zip` 保持。
 - **旧 HTML 对照路径**：`html-v1` 安装→启动→卸载全通（§4.10，本轮新增，补上 M1 未覆盖的「对照路径仍可用」）。
 
+## 5.1 CR8 复核补充（PR #8 复核轮，CR8 修复后的稳定构建）
+
+本节覆盖 PR #8 复核提出的 5 个问题在**修复后稳定构建**上的复核证据；前四节是 M2-F1 原交付，本节是 CR8 回填。
+
+| 复核项 | 结论 | 本轮证据 |
+| --- | --- | --- |
+| CR8-01 卸载符号链接穿越 | 已修（host 安全遍历/不跟链接） | `packages/host/test/cases/v1-install.js` CR8-01 用例；host **231/231** |
+| CR8-02 媒体绑定（catalog 删摘要/换 URL 绕过 publish） | 已修（摘要+大小绑定，缺失即拒绝且不下载） | `tests/v1.5-publish-zip.test.js` **19/19**（含 9 条 CR8-02 用例） |
+| CR8-03 同页第二局不结算 | 已修（每局 run token 账本） | 新增真机探针 **25/25**，本节两局实测 |
+| CR8-04 builtin 损坏状态 | 已修（tampered/unreadable fail-closed，健康包不回归） | `packages/host/test/cases/v1.5-builtin-package.js` 用例；host **231/231** |
+| CR8-05 探针重启后 Host 泄漏/不退出 | 已修（handle 始终引用当前 Host + 端口拒连证明 + 三条路径自检） | `self-check-cleanup.mjs` 三条路径全绿；lifecycle **48/48** 自行退出 |
+
+### CR8-01 · 卸载不得穿越符号链接
+
+- 代码：`packages/host/src/install.js` 的 package 清理路径全程 `lstat`（不 `stat`/不递归 follow），`packages/` 或游戏根被替换为链接时只做**链接级 rename**，目标目录内容不被访问；命中时返回 `warnings: ['package-path-symlink']`。
+- 测试（`packages/host/test/cases/v1-install.js`）：`CR8-01 uninstall never traverses a symlinked game package root`、`CR8-01 uninstall never traverses a symlinked packages ancestor`、`uninstall renames symlinks without following their targets`；host 套件本机复跑 **231/231 pass, exit 0**。
+
+### CR8-02 · 发布媒体绑定（catalog 摘除摘要也必须拒绝）
+
+- 代码：publish 校验把 catalog 的 `media.cover/screenshots` 摘要+大小作为**批准绑定**；catalog 摘要/大小被删、URL 被换、远端字节与摘要不符等任一情况都拒绝发布，且**不会下载**未绑定 URL；已发布 release 的 media URL 不可改写。
+- 测试（`tests/v1.5-publish-zip.test.js`）：9 条 CR8-02 用例（stripped binding rejected & never downloaded / tampered catalog blocks publish before any write / missing remote asset / digest mismatch / complete binding positive control downloaded / digest recovered from approved review then real bytes verified / no digest anywhere rejected / published media URL immutable / V1.2→V1.5 migration history passes）；本机 **19/19 pass, exit 0**。
+
+### CR8-03 · 同一页面连续多局都结算（真机）
+
+- 缺陷：boot shell 用两个闭包布尔 `sessionStarted/sessionEnded`，`beginNewRun()` 不重置 → 第一局结算后第二局不再 `score.submit`/`session.end`/弹窗。
+- 修复：新增 `games/orbit-courier/src/run-sessions.js`——每局单调 run token；`settle()` 按 token 幂等，**同步发** `score.submit`+`session.end` 并立即弹结算窗，异步结果只在 token 仍为当前局时清存档；best 单调不降。`games/orbit-courier/test/run-sessions.test.js` 7 条用例 + orbit 套件 **42/42 pass**。
+- 真机探针 `m2-cr8-03-two-runs.mjs`（**25/25 required，exit 0**，真实 Chrome + 真实 Runtime + 真实 UI 行；同一游戏文档不刷新，页面 mark 与 `performance.timeOrigin` 全程一致）：
+
+| 局 | 结束方式 | 游戏时长 | finalScore | 弹窗 | best | Host 结算记录 |
+| --- | --- | --- | --- | --- | --- | --- |
+| run1 | shift-complete | 120,000 ms | **917** | 可见，「这一班完成 / 新纪录！」，`#btn-restart` | 917 | `ps_546695f94d3ef51467223e35` completed score 917 |
+| run2 | shift-complete | 120,000 ms | **519** | 可见，「这一班完成 / 最高分 917」 | **917（不降）** | `ps_08acb2dd68e1cb9dcc0fa2c1` completed score 519 |
+| run3 | wrecked（低分局） | 44,816 ms | **40** | 可见，「船体报废 / 最高分 917」 | **917（不降）** | `ps_6a3d2607cf3d162c4d1955a9` lost score 40 |
+
+- 断言：每局弹窗各出现一次（`finalText` 与 finalScore 一致）；**run2(519) < run1(917)** 时 best 保持 917（Lead 要求的「run2 分数 < run1」情形）；3 条记录 **3 个互异 `playSessionId`、全部闭合、各结算一次**（无重复 submit/end）；重开延迟 **77 ms**；页面未刷新；探针墙钟 314.75 s。证据：`raw/m2/M2-CR8-03-two-runs-2026-10-20T11-02-45-759Z.json`。
+
+### CR8-04 · builtin 损坏状态 fail-closed
+
+- 代码：builtin catalog 校验失败时不静默跳过；`package-invalid`/损坏状态在 `/games` 可见且 launch 被拒（`GM-4277` 等），健康 shipped builtin 行为不回归。
+- 测试（`packages/host/test/cases/v1.5-builtin-package.js`）：`a tampered built-in package fails closed: listed as package-invalid and launch is rejected`、`an unreadable built-in package is reported as broken, never silently skipped (CR8-04)`、`a healthy shipped built-in still validates and launches (CR8-04 non-regression)`、`a shipped built-in that lost only its descriptor stays visible, broken and install-protected`；host 套件 **231/231 pass, exit 0**。
+
+### CR8-05 · 探针基础设施：重启后 Host 泄漏/进程不退出
+
+- 修复：`scripts/verification/v1.5/m2/lib/lab.mjs` 的 handle 改为 state 支撑（`stop/cleanup` 解引用当前 Host），新增 `handle.restart()`（SIGKILL 旧子进程 → `await exit` → 端口拒连证明 → 再起新 Host）；新增 `self-check-cleanup.mjs` 三条路径（成功 exit 0 / 断言失败 exit 1 / 重启后成功 exit 0，均断言端口拒连、PID 死亡、home 删除）。
+- 实测：self-check 三条路径 **3022 / 3023 / 4250 ms，总 real 10.41 s，全绿**；lifecycle 探针 **48/48 required、exit 0、real 31.82 s 后进程自行退出**，退出后 58420/58421/9522 无监听、无残留 DSH 进程；重启快照：pid 37625→39228（同端口 58421），`oldPidAliveAfterRestart:false`，cleanup `pids:[37625,39228], finalPid:null`。
+
 ## 6. 归因表（product-defect / 探针问题 / 契约口径）
 
 | 现象 | 归因 | 证据 | 处理 |
 | --- | --- | --- | --- |
-| 卸载后 `packages/<id>/<previous>` 目录残留 | **product-defect（host-zip）**：uninstall 只 trash `record.version`，rmdir 父目录失败被静默吞掉 | A/B `M2-lifecycle-zip-2026-10-20T06-41-58-541Z`（`uninstall-prunes-package-directories` 红，目录仍存在） | 已报 lead；host-zip 修复为逐版本目录清理；最终 47/47 |
+| 卸载后 `packages/<id>/<previous>` 目录残留 | **product-defect（host-zip）**：uninstall 只 trash `record.version`，rmdir 父目录失败被静默吞掉 | A/B `M2-lifecycle-zip-2026-10-20T06-41-58-541Z`（`uninstall-prunes-package-directories` 红，目录仍存在） | 已报 lead；host-zip 修复为逐版本目录清理；最终 48/48（CR8-05 后） |
 | orbit Continue 后 elapsed/score 归零、静音不恢复（112/0） | **product-defect（orbit-courier）**：`storage.load` 返回 envelope，但 `loadSave/restoreMuted/readBest` 未取 `.data`；另有「Continue 时旧 menu 态 elapsed=0 覆盖有效存档」次生 bug | A/B `M2-A08-orbit-courier-2026-10-20T07-26-49-794Z`；修复前 Host 存档实测 `values.run` 完好而 UI 无 `#btn-continue` | 已报 lead 并给出最小复现/修复方向；brand-contracts 修复 envelope/menu 覆盖/启动竞态 + 35/35 游戏测试；最终 A08 Continue/mute 全绿 |
 | A08 一局未打满 120 s（撞毁） | **探针玩法能力**：无快照/盲玩，非游戏缺陷 | A/B A08（wrecked 76 s） | 使用 `__ORBIT_PROBE__.snapshot()` 只读快照 + 生存优先躲避策略；最终 120,000 ms shift-complete |
 | root target 的键盘事件对游戏无效 | **探针 harness**：cross-origin OOPIF 需把 `Input.dispatchKeyEvent` 下发到游戏 iframe 的 CDP session | 实测 root dispatch 无反应、iframe session dispatch 立即生效 | 已改为 per-session 投递（仍是真实浏览器输入管线/isTrusted） |
@@ -122,6 +171,11 @@ A/B 早期轮次（保留作缺陷与探针修正对照，非最终结论）：
 | 上传字节与源 ZIP 不一致/幽灵 409 | **探针 harness**：并行跑共享 fixture 目录竞态 | 曾出现 95948 vs 100407 | 每轮唯一 runTag fixture、fresh data root、source/upload sha256+长度+head16 对照、`postDataEntries` |
 | `EADDRINUSE` / `ENOTEMPTY` | **探针卫生**：上轮 host/端口未清 | 启动失败日志 | 唯一端口/唯一 host 名、跑前清理 listener 与 home |
 | `/installed` item 无 `format` 字段 | **契约口径**（非缺陷）：format 在 install 响应与 `GET /game?id` 的 `installed.format` | M1 留档一致 | 按响应契约断言 |
+| **CR8-01** 卸载穿越符号链接（复核） | 安全加固（非功能缺陷）：清理路径全程 `lstat`、只做链接级 rename，目标不被访问 | host `v1-install.js` CR8-01 三用例；host **231/231** | 已修并复跑全绿 |
+| **CR8-02** catalog 删媒体摘要/换 URL 绕过 publish（复核） | **product-defect（publish-zip）**：媒体绑定缺失时可绕过 | `tests/v1.5-publish-zip.test.js` 9 条 CR8-02 用例；**19/19** | 已修：摘要+大小绑定、缺失即拒绝且不下载；§5.1 |
+| **CR8-03** 同页第二局不结算（复核重点） | **product-defect（orbit-courier）**：boot shell 闭包布尔未随新局重置 | 修复前 A/B `M2-A08-orbit-courier-2026-10-20T08-40-24-434Z`（当时探针未覆盖两局）；新真机探针 **25/25** | 已修：`src/run-sessions.js` run token 账本；§5.1 两局实测 917→519 best 不降 |
+| **CR8-04** builtin 损坏状态（复核） | 健壮性修复：tampered/unreadable fail-closed 且健康包不回归 | host `v1.5-builtin-package.js` 用例；host **231/231** | 已修并复跑全绿；§5.1 |
+| **CR8-05** 探针重启后 Host 泄漏/不退出 | **探针基础设施**：cleanup 闭包引用旧 Host；restart 未关闭旧实例 | 修复前 lifecycle 47/47 不退出（A/B `07-39-01`）；self-check 三条路径 + lifecycle 48/48 自行退出 | 已修：lab handle 解引用当前 Host/端口拒连证明；§5.1 |
 | 记录写失败后进程内恢复安装 500 GM-5025 | **契约语义**：EACCES/EPERM 闩锁 readOnly 到进程重启 | A/B `06-41-58` 该条红 | 探针改为同 data root 重启 Host 后再恢复安装；最终绿并注明「重启是正确恢复」 |
 
 ## 7. 未验证 / 限制（如实）
@@ -145,24 +199,25 @@ node scripts/verification/v1.5/m2/m2-a02-orbit-resources.mjs    # 多资源
 node scripts/verification/v1.5/m2/m2-visual-responsive.mjs      # 375/dark/reduced-motion
 node scripts/verification/v1.5/m2/m2-lifecycle-zip.mjs          # 非 builtin ZIP 生命周期
 node scripts/verification/v1.5/m2/m2-cr7-document-csp.mjs       # CR7 同源第二 HTML
+node scripts/verification/v1.5/m2/m2-cr8-03-two-runs.mjs        # CR8-03 同页两局结算（~5 min）
+node scripts/verification/v1.5/m2/self-check-cleanup.mjs        # CR8-05 清理三路径自检
 ```
 
 每个脚本：`writeEvidence()` 输出 `raw/m2/<id>-<ISO>.json`（含 `passed/failed/required`、逐条 required、`scenario` 明细；token/nonce/launch 凭证与 `/Users/<real>` 已用证据层替换），退出码 0 当且仅当全部 required 通过。最终证据文件：
 
-- A08：`raw/m2/M2-A08-orbit-courier-2026-10-20T08-40-24-434Z.json`
+- A08（CR8 修复后构建）：`raw/m2/M2-A08-orbit-courier-2026-10-20T10-43-08-523Z.json`
+- CR8-03 两局：`raw/m2/M2-CR8-03-two-runs-2026-10-20T11-02-45-759Z.json`
 - A02：`raw/m2/M2-A02-orbit-multiresource-2026-10-20T07-36-13-978Z.json`
 - 视觉：`raw/m2/M2-visual-responsive-2026-10-20T07-34-15-454Z.json`（+ `raw/m2/screenshots/m2-visual-375-*.png`）
-- 生命周期：`raw/m2/M2-lifecycle-zip-2026-10-20T07-39-01-494Z.json`
+- 生命周期（CR8-05 后，48/48）：`raw/m2/M2-lifecycle-zip-2026-10-20T10-26-22-800Z.json`
 - CR7：`raw/m2/M2-CR7-document-csp-2026-10-20T08-01-43-798Z.json`
-- A/B：`raw/m2/M2-lifecycle-zip-2026-10-20T06-41-58-541Z.json`、`raw/m2/M2-A08-orbit-courier-2026-10-20T07-26-49-794Z.json`
+- A/B：`raw/m2/M2-lifecycle-zip-2026-10-20T06-41-58-541Z.json`（卸载泄漏）、`raw/m2/M2-lifecycle-zip-2026-10-20T07-39-01-494Z.json`（CR8-05 前 47/47）、`raw/m2/M2-A08-orbit-courier-2026-10-20T07-26-49-794Z.json`（存档 envelope）、`raw/m2/M2-A08-orbit-courier-2026-10-20T08-40-24-434Z.json`（CR8-03 前构建）
 
-`node scripts/check.mjs` 当前会报 3 类预期/外部项（均非本探针脚本问题）：
-- `evidence-not-tracked`：本轮 `raw/m2/**` 与报告按约定不 commit（由 lead 提交时纳入）；其他队友的 round2 截图同样由 lead 统一纳入。
-- `V1.5 evidence referenced but missing`：验收矩阵曾引用**早期 A08 证据**（该轮无 fps 采样，已被最终轮取代并清理）；已由 Lead 更新为最终 `raw/m2/M2-A08-orbit-courier-2026-10-20T08-40-24-434Z.json`，`check.mjs` 恢复通过。
-- 另一条「round2 下某条日志」的缺失告警与本轮无关（引用了被清理的中间文件）；final round 已由 Lead 校正。
+稳定构建上 `node scripts/check.mjs` 的 42 项检查全部 PASS；当前**唯一 FAIL** 是本轮 3 个新证据文件尚未跟踪（`M2-A08-orbit-courier-2026-10-20T10-43-08-523Z.json`、`M2-CR8-03-two-runs-2026-10-20T11-02-45-759Z.json`、`M2-lifecycle-zip-2026-10-20T10-26-22-800Z.json`）——按约定 `raw/m2/**` 新证据留待 Lead 提交时纳入，纳入后即恢复 `CHECK OK (42)`。
 
 ## 9. 结论
 
-- 真实 Chrome + 真实 Host + 真实 Market UI 下：非 builtin ZIP 全生命周期、内置 `orbit-courier` 真实 120 s 局与 ≥5 min 墙钟推进、多资源加载、375 px/深色/reduced-motion、CR7 同源第二 HTML 与历史目录/409/记录写失败/ZIP 原始字节/旧 HTML 对照，均以 required 全绿收口。
-- 发现并推动修复 2 个真实产品缺陷（卸载 previous 目录泄漏；orbit 存档 envelope/菜单态覆盖），修复后复跑全绿；探针侧的 OOPIF 输入/媒体模拟、fixture 竞态、端口卫生问题均已修正并在 §6 留档。
+- 真实 Chrome + 真实 Host + 真实 Market UI 下：非 builtin ZIP 全生命周期（48/48）、内置 `orbit-courier` 真实 120 s 局与 ≥5 min 墙钟推进（A08 34/34，新构建）、多资源加载（21/21）、375 px/深色/reduced-motion（18/18）、CR7 同源第二 HTML 与历史目录/409/记录写失败/ZIP 原始字节/旧 HTML 对照（21/21），均以 required 全绿收口。
+- **CR8 复核轮补齐**：同页连续多局结算真机验证 **25/25**（run1 917 → run2 519 best 不降 → run3 低分 40 best 不降，3 条互异 playSessionId 各结算一次）；CR8-01/02/04 引用 host **231/231**、publish-zip **19/19**；CR8-05 self-check 三路径 + lifecycle 48/48 自行退出。
+- 累计发现并推动修复 3 类真实产品缺陷（卸载 previous 目录泄漏、orbit 存档 envelope/菜单态覆盖、orbit 第二局不结算）与 1 类安全/健壮性加固（CR8-01/02/04）；探针侧 OOPIF 输入/媒体模拟、fixture 竞态、端口卫生、重启清理问题均已修正并在 §6 留档。
 - 未验证项集中在原生 Electron 外壳、非 Chromium 引擎、物理输入/音频输出与长时间 soak，未以 mock 代替。

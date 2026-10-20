@@ -35,6 +35,8 @@ import {
   OUT_DIR,
   WORK,
   screenshot,
+  hostPid,
+  portAccepting,
 } from './lib/lab.mjs';
 import {
   findClickable,
@@ -53,8 +55,6 @@ import {
   waitFor,
   waitForLifecycleEvent,
 } from './lib/ui.mjs';
-import { startHost } from '../lib/harness.mjs';
-
 import {
   buildLifecyclePackage,
   buildTamperedVersion,
@@ -214,13 +214,41 @@ function storagePaths(storageRoot) {
   };
 }
 
-/** Restart the isolated host on the SAME data root (fresh process state). */
+/**
+ * Restart the isolated host on the SAME data root (fresh process state).
+ *
+ * CR8-05: delegate to `handle.restart()`, which (a) SIGKILLs the previous child,
+ * (b) awaits its `exit`, (c) proves the listen port is refused, and only then
+ * boots the replacement. The handle's cleanup closure dereferences the current
+ * Host, so the restarted instance is reaped on every exit path.
+ */
+function pidAlive(pid) {
+  if (!Number.isInteger(pid)) return null;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (_error) {
+    return false;
+  }
+}
+
 async function restartHost(hostHandle, ports, logName) {
-  await hostHandle.host.stop();
-  const host = await startHost(hostHandle.home, { port: ports.host, logName });
-  hostHandle.host = host;
-  hostHandle.hostOrigin = `http://127.0.0.1:${ports.host}`;
-  return host;
+  const before = {
+    pid: hostPid(hostHandle.host),
+    port: ports.host,
+    accepting: await portAccepting(ports.host),
+    restarts: hostHandle.restarts,
+  };
+  const result = await hostHandle.restart({ port: ports.host, logName });
+  const after = {
+    pid: hostPid(result.host),
+    port: ports.host,
+    accepting: await portAccepting(ports.host),
+    restarts: hostHandle.restarts,
+    previousPid: result.previousPid,
+    oldPidAliveAfterRestart: pidAlive(before.pid),
+  };
+  return { host: result.host, evidence: { before, after, closed: result.closed } };
 }
 
 async function main() {
@@ -233,6 +261,7 @@ async function main() {
   let hostHandle = null;
   let cdp = null;
   let capture = null;
+  let cleanupError = null;
   let paths = null;
   let writeLockFile = null;
 
@@ -537,9 +566,10 @@ async function main() {
       // store to read-only"). Recovery therefore means a real Host restart on
       // the SAME data root, not an in-process retry.
       const restarted = await restartHost(hostHandle, PORTS, `probe-m2-lifecycle-${runTag}-restart`);
-      await cdp.navigate(restarted.url);
+      scenario.restart = restarted.evidence;
+      await cdp.navigate(restarted.host.url);
       const reboot = await waitForDshPage(cdp, hostHandle.hostOrigin);
-      scenario.steps.push({ step: 'host-restart-after-record-failure', health: reboot.health && reboot.health.status });
+      scenario.steps.push({ step: 'host-restart-after-record-failure', health: reboot.health && reboot.health.status, restart: restarted.evidence });
       check('host-restarts-on-same-data-root-after-readonly-latch', Boolean(reboot.health && reboot.health.status === 200), { health: reboot.health });
       await dismissOverlays(cdp);
       await openMarketPanel(cdp);
@@ -680,13 +710,27 @@ async function main() {
     } catch (_error) {
       // ignore
     }
-    try {
-      if (hostHandle) {
+    if (hostHandle) {
+      try {
         if (KEEP) await hostHandle.stop();
         else await hostHandle.cleanup();
+        scenario.cleanup = {
+          mode: KEEP ? 'keep' : 'cleanup',
+          restarts: hostHandle.restarts,
+          pids: hostHandle.hostPids,
+          portClosed: !(await portAccepting(PORTS.host)),
+          finalPid: hostPid(hostHandle.host),
+        };
+      } catch (error) {
+        cleanupError = error;
+        scenario.cleanup = {
+          mode: KEEP ? 'keep' : 'cleanup',
+          restarts: hostHandle.restarts,
+          pids: hostHandle.hostPids,
+          error: String(error && error.message ? error.message : error).slice(0, 500),
+        };
       }
-    } catch (_error) {
-      // ignore
+      check('host-cleanup-left-no-listener-after-restart', !cleanupError && scenario.cleanup.portClosed === true, scenario.cleanup);
     }
     if (hostHandle && KEEP) scenario.keptHome = hostHandle.home;
   }
@@ -707,7 +751,8 @@ async function main() {
   process.stdout.write(`\n${EVIDENCE_ID} ${written.passed ? 'PASSED' : 'FAILED'} (${checks.filter((c) => c.required && c.ok).length}/${checks.filter((c) => c.required).length} required checks)\n`);
   process.stdout.write(`evidence: ${written.file}\n`);
   for (const entry of failed) process.stdout.write(`  FAIL ${entry.name}: ${sample(entry.detail, 500)}\n`);
-  process.exitCode = failed.length > 0 ? 1 : 0;
+  process.exitCode = failed.length > 0 || cleanupError ? 1 : 0;
+  if (cleanupError) process.stderr.write(`[m2-lifecycle] cleanup failed: ${cleanupError && cleanupError.message ? cleanupError.message : cleanupError}\n`);
 }
 
 main().catch((error) => {

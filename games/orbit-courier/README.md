@@ -58,6 +58,7 @@ games/orbit-courier/
     input.js                # 键盘 + 指针输入
     audio.js                # WebAudio 一次性音效（首次手势后解锁 + 静音持久化）
     resume.js               # 存档 / 继续 / 最高分
+    run-sessions.js         # 每局独立的 session/结算账本（runId 令牌，异步安全）
     offline.js              # 脱离宿主时的 localStorage adapter（本地预览用）
     styles/game.css
     levels/shift-01.json    # 关卡数据（3 航段）
@@ -118,6 +119,9 @@ python3 -m http.server 8080 --directory games/orbit-courier/dist
 
 - **只用 SDK**：`game.ready()/storage/score/session/lifecycle`，不直连 Host API；SDK 以
   `scripts/vendor/dsh-sdk.js` 单文件打进包内（契约 §1.10），构建时由 `scripts/bundle-lib.mjs` 生成。
+- **每局独立结算**：`run-sessions.js` 用自增 runId 令牌管理 session 开始/结束、分数提交与存档清理；
+  `finishRun()` 的幂等保护按「当前局令牌」判定，而不是跨局布尔。连续玩多局时，上一局的
+  `score.submit`/`session.end` 若晚到，只会标记为 `stale`，不会清掉新局存档或污染最高分/弹窗。
 - **宿主返回的是 envelope**：`storage.load(key)` → `{ key, data, revision, updatedAt }`（payload 在 `.data`），
   `score.getBest()` → `{ score, achievedAt, meta }`。所有读取都经 `src/storage-shapes.js` 解包；
   存档只在真实运行开始后写入（菜单/加载态永不落盘），避免 resume-paused 重启时把可继续的存档覆盖成空局。

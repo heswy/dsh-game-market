@@ -29,6 +29,7 @@ import {
   sleep,
   runtimeIdentity,
   startIsolatedHost,
+  hostPid,
   createCdpCapture,
   waitForDshPage,
   writeEvidence,
@@ -533,6 +534,7 @@ async function main() {
   let hostHandle = null;
   let cdp = null;
   let capture = null;
+  let cleanupError = null;
   const runTag = Date.now().toString(36);
   const wall = scenario.wallClock;
   wall.startedAt = new Date().toISOString();
@@ -956,9 +958,21 @@ async function main() {
       if (hostHandle) {
         if (KEEP) await hostHandle.stop();
         else await hostHandle.cleanup();
+        scenario.cleanup = {
+          mode: KEEP ? 'keep' : 'cleanup',
+          restarts: hostHandle.restarts,
+          pids: hostHandle.hostPids,
+          finalPid: hostPid(hostHandle.host),
+        };
       }
-    } catch (_error) {
-      // ignore
+    } catch (error) {
+      // CR8-05: a failed close must fail the probe instead of exiting 0 with a
+      // leaked listener.
+      cleanupError = error;
+      scenario.cleanup = {
+        mode: KEEP ? 'keep' : 'cleanup',
+        error: String(error && error.message ? error.message : error).slice(0, 400),
+      };
     }
     if (hostHandle && KEEP) scenario.keptHome = hostHandle.home;
   }
@@ -979,7 +993,8 @@ async function main() {
   process.stdout.write(`\n${EVIDENCE_ID} ${written.passed ? 'PASSED' : 'FAILED'} (${checks.filter((c) => c.required && c.ok).length}/${checks.filter((c) => c.required).length} required checks)\n`);
   process.stdout.write(`evidence: ${written.file}\n`);
   for (const entry of failed) process.stdout.write(`  FAIL ${entry.name}: ${sample(entry.detail, 500)}\n`);
-  process.exitCode = failed.length > 0 ? 1 : 0;
+  process.exitCode = failed.length > 0 || cleanupError ? 1 : 0;
+  if (cleanupError) process.stderr.write(`[m2] cleanup failed: ${cleanupError && cleanupError.message ? cleanupError.message : cleanupError}\n`);
 }
 
 main().catch((error) => {

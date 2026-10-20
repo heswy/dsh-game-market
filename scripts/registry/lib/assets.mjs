@@ -49,7 +49,7 @@ function downloadOptions(http) {
   };
 }
 
-function publishError(code, message, details) {
+export function publishError(code, message, details) {
   const error = new Error(message);
   error.code = code;
   if (details !== undefined) error.details = details;
@@ -223,8 +223,12 @@ export async function validatePackageBytes({ bytes, id, version, format = 'html-
 export function validateMediaBytes({ bytes, media, label }) {
   const sniffed = sniffImageType(bytes);
   if (sniffed === null) throw publishError('E_PUBLISH_MEDIA_INVALID', `${label} is not a PNG/WebP/JPEG image`);
-  if (sniffed !== media.type) {
-    throw publishError('E_PUBLISH_MEDIA_TYPE', `${label} sniffed type ${sniffed} does not match declared ${media.type}`);
+  // A catalog record may omit the declared type; the bytes still have to be a
+  // real image, but there is nothing to compare against. When the type is
+  // declared, it must match the sniffed type (no content-type spoofing).
+  const declared = media && media.type;
+  if (declared !== undefined && declared !== null && sniffed !== declared) {
+    throw publishError('E_PUBLISH_MEDIA_TYPE', `${label} sniffed type ${sniffed} does not match declared ${declared}`);
   }
   const dimensions = imageDimensions(sniffed === 'jpeg' ? 'jpeg' : sniffed, bytes);
   if (dimensions && (dimensions.width < 1 || dimensions.height < 1)) {

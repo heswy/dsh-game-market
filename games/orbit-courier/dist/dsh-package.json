@@ -70,8 +70,8 @@
     },
     {
       "path": "scripts/game.js",
-      "size": 21513,
-      "sha256": "fdc58b9cadc022f7c625850fed32f39799555cc152e7529c494b96b27c3e9b94"
+      "size": 21808,
+      "sha256": "0136e50a29728dbc7fc9849272600692704918f1aad60aa6064791d1098b36cd"
     },
     {
       "path": "scripts/input.js",
@@ -102,6 +102,11 @@
       "path": "scripts/resume.js",
       "size": 2218,
       "sha256": "448056628da183c6b16d2b8320bf15c617f99a469cd641f6ac36f40314a8fbe9"
+    },
+    {
+      "path": "scripts/run-sessions.js",
+      "size": 4830,
+      "sha256": "f0a828a4879a3989bfb7c5ee51f282a109b6a9d9c3b69e08fa01ab13eeb5aaba"
     },
     {
       "path": "scripts/storage-shapes.js",

@@ -28,6 +28,7 @@
  * so one failed layer still leaves reviewable evidence for the rest.
  */
 import http from 'node:http';
+import net from 'node:net';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -686,12 +687,97 @@ export function createSinkOrigin({ port = 58332 } = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// Isolated host
+// Isolated host (CR8-05: restart-safe lifecycle)
 // ---------------------------------------------------------------------------
+
+/** PID of the current `dsh web` child, or null. */
+export function hostPid(host) {
+  return host && host.child && Number.isInteger(host.child.pid) ? host.child.pid : null;
+}
+
+/** True when the DSH web port accepts a TCP connection. */
+export function portAccepting(port, { host = '127.0.0.1', timeoutMs = 400 } = {}) {
+  return new Promise((resolve) => {
+    const socket = net.connect({ host, port });
+    const finish = (value) => {
+      try {
+        socket.destroy();
+      } catch (_error) {
+        // ignore
+      }
+      resolve(value);
+    };
+    socket.setTimeout(timeoutMs);
+    socket.once('connect', () => finish(true));
+    socket.once('timeout', () => finish(false));
+    socket.once('error', () => finish(false));
+  });
+}
+
+function waitForChildExit(child, timeoutMs = 10000) {
+  if (!child) return Promise.resolve({ exited: true, pid: null });
+  if (child.exitCode !== null || child.signalCode !== null) {
+    return Promise.resolve({ exited: true, pid: child.pid, code: child.exitCode, signal: child.signalCode });
+  }
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error(`host pid ${child.pid} did not exit within ${timeoutMs}ms after SIGKILL`));
+    }, timeoutMs);
+    const onExit = (code, signal) => {
+      cleanup();
+      resolve({ exited: true, pid: child.pid, code, signal });
+    };
+    function cleanup() {
+      clearTimeout(timer);
+      child.removeListener('exit', onExit);
+    }
+    child.once('exit', onExit);
+  });
+}
+
+async function waitForPortRefused(port, timeoutMs = 10000) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    if (!(await portAccepting(port))) return true;
+    await sleep(100);
+  }
+  if (!(await portAccepting(port))) return true;
+  throw new Error(`host port ${port} is still accepting connections ${timeoutMs}ms after the owner was closed`);
+}
+
+/**
+ * Fully close one Host child: SIGKILL, await its exit, then prove the listen
+ * port is refused. Every failure is thrown — cleanup must never be silent.
+ */
+export async function closeHostProcess(host) {
+  if (!host) return { pid: null, port: null, closed: true, alreadyClosed: true };
+  const pid = hostPid(host);
+  const port = host.port || null;
+  const child = host.child;
+  if (child && child.exitCode === null && child.signalCode === null) {
+    try {
+      child.kill('SIGKILL');
+    } catch (error) {
+      throw new Error(`failed to stop host pid ${pid}: ${error && error.message ? error.message : error}`);
+    }
+    await waitForChildExit(child, 10000);
+  }
+  if (port !== null) await waitForPortRefused(port, 10000);
+  return { pid, port, closed: true, alreadyClosed: child ? child.exitCode !== null : true };
+}
 
 /**
  * Boot an isolated `dsh web` host with this worktree's Host plugin injected.
- * Returns the host handle plus the DSH web origin; caller owns cleanup.
+ *
+ * The returned handle always dereferences the **current** Host: `handle.host`
+ * is a getter backed by internal state, `handle.restart()` fully closes the
+ * previous child (and proves its port is refused) before starting the next one,
+ * and `handle.cleanup()` closes whatever Host is current at that moment.
+ *
+ * A synchronous `process.on('exit')` listener is only a last-resort backstop for
+ * a synchronous crash; normal paths must `await handle.cleanup()` (the probes do
+ * this in `finally`) so the child is reaped and the port is proven closed.
  */
 export async function startIsolatedHost({ name, ports, pluginRoot = REPO_ROOT }) {
   ensureRuntime();
@@ -704,25 +790,96 @@ export async function startIsolatedHost({ name, ports, pluginRoot = REPO_ROOT })
     entry: path.join(pluginRoot, 'index.js'),
     config: { devMode: true },
   });
-  const host = await startHost(home, { port: ports.host, logName: `${name}-host` });
-  return {
+  const state = { host: null, restarts: 0, pids: [], closed: false };
+  const hostOrigin = `http://127.0.0.1:${ports.host}`;
+
+  // Backstop only: a synchronous crash still must not leave the `dsh` child
+  // alive. Normal paths await cleanup/stop instead of relying on this.
+  const exitGuard = () => {
+    const current = state.host;
+    if (current && current.child) {
+      try {
+        current.child.kill('SIGKILL');
+      } catch (_error) {
+        // ignore — exiting anyway
+      }
+    }
+  };
+  process.once('exit', exitGuard);
+
+  const handle = {
+    name,
     home,
-    host,
     patchPath,
-    hostOrigin: `http://127.0.0.1:${ports.host}`,
+    hostOrigin,
+    get host() {
+      return state.host;
+    },
+    get restarts() {
+      return state.restarts;
+    },
+    get hostPids() {
+      return state.pids.slice();
+    },
+    /**
+     * Close the current Host (same DSH_HOME is preserved for a later restart).
+     * Idempotent; resolves only after the child exited and the port is refused.
+     */
     async stop() {
       try {
         removeProbeRow(home, 'dsh-game-market');
       } catch (_error) {
         // ignore
       }
-      await host.stop();
+      const current = state.host;
+      state.host = null;
+      state.closed = true;
+      const closed = await closeHostProcess(current);
+      return closed;
     },
+    /**
+     * Restart on the same data root. The old Host must be fully closed (port
+     * refused) before the replacement boots; failures throw explicitly.
+     */
+    async restart({ logName = `${name}-restart`, port = ports.host } = {}) {
+      const previous = state.host;
+      if (!previous) throw new Error('cannot restart: no current Host is running');
+      const previousPid = hostPid(previous);
+      const closed = await closeHostProcess(previous);
+      state.host = null;
+      // If startHost fails, state.host stays null and the error surfaces; the
+      // caller's `finally` still runs cleanup on the (already closed) handle.
+      const next = await startHost(home, { port, logName: `${logName}-${state.restarts + 1}` });
+      state.host = next;
+      state.restarts += 1;
+      state.pids.push(hostPid(next));
+      return { host: next, previousPid, closed, restarts: state.restarts, port };
+    },
+    /** Close the final Host, prove the port is refused, then remove the home. */
     async cleanup() {
-      await this.stop();
+      const closed = await handle.stop();
+      process.removeListener('exit', exitGuard);
       fs.rmSync(home, { recursive: true, force: true });
+      state.closed = true;
+      return closed;
     },
   };
+
+  try {
+    state.host = await startHost(home, { port: ports.host, logName: `${name}-host` });
+    state.pids.push(hostPid(state.host));
+  } catch (error) {
+    // startHost cleans its own child on boot failure; drop the guard and the
+    // partial home, then surface the original error explicitly.
+    process.removeListener('exit', exitGuard);
+    try {
+      fs.rmSync(home, { recursive: true, force: true });
+    } catch (_rmError) {
+      // ignore
+    }
+    throw error;
+  }
+  return handle;
 }
 
 // ---------------------------------------------------------------------------

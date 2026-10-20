@@ -868,3 +868,257 @@ test('content-repo template documents and validates both package formats', async
   assert.ok(zipRelease);
   assert.match(zipRelease.package.filesDigest, /^[a-f0-9]{64}$/);
 });
+
+// ---------------------------------------------------------------------------
+// CR8-02 (P1, review bypass): a deleted media digest must never skip the audit
+// ---------------------------------------------------------------------------
+//
+// The audit bypass was: keep the approved review record, replace a cover /
+// screenshot URL in the catalog and delete its `sha256`/`size`. Both the
+// catalog binding check and the CI asset validation treated "no digest" as
+// "nothing to verify". Every case below starts from a *real* published catalog
+// (review record included) and then strips or swaps one binding, so a pass
+// cannot come from a fixture the pipeline never accepted.
+
+/** Mutable HTTP stub that records every fetch attempt (downloads only). */
+function trackedHttp(urls) {
+  const calls = [];
+  return {
+    calls,
+    fetch: async (url) => {
+      calls.push(String(url));
+      const body = urls.get(String(url));
+      if (!body) return new Response('missing', { status: 404 });
+      return new Response(body, { status: 200, headers: { 'content-length': String(body.length) } });
+    },
+    resolveHost: async () => [{ address: '203.0.113.7', family: 4 }],
+    retries: 0,
+  };
+}
+
+async function cr802Context(t) {
+  const content = await makeEmptyContentRepo();
+  t.after(() => fs.rm(content, { recursive: true, force: true }));
+  const published = await publishZip(t, content);
+  const catalog = JSON.parse(await fs.readFile(path.join(content, 'catalog', 'jump.json'), 'utf8'));
+  const catalogPath = path.join(content, 'catalog', 'jump.json');
+  const review = JSON.parse(await fs.readFile(path.join(content, 'reviews', 'jump', `${ZIP_VERSION}.json`), 'utf8'));
+  const release = catalog.releases.find((item) => item.version === ZIP_VERSION);
+  return { content, catalogPath, catalog, review, release, published };
+}
+
+async function copyCr802Repo(t, content) {
+  const copy = await tempDir(t, 'dsh-publish-zip-cr802-');
+  await fs.cp(content, copy, { recursive: true });
+  return copy;
+}
+
+/** Serve exactly the approved package/media bytes for a release. */
+function approvedHttp(release, published, { overrides = new Map(), drop = [] } = {}) {
+  const urls = new Map();
+  if (!drop.includes('package')) urls.set(release.package.url, published.pkg.zip);
+  const cover = release.media.cover;
+  if (!drop.includes('cover')) urls.set(cover.url, overrides.get(cover.url) || PNG_1X1);
+  for (const shot of release.media.screenshots) {
+    if (!drop.includes('screenshots')) urls.set(shot.url, overrides.get(shot.url) || PNG_1X1);
+  }
+  for (const [url, bytes] of overrides) urls.set(url, bytes);
+  return trackedHttp(urls);
+}
+
+test('CR8-02: stripped catalog media binding (digest+size deleted, URL swapped) is rejected and never downloaded', async (t) => {
+  const ctx = await cr802Context(t);
+  const tampered = await copyCr802Repo(t, ctx.content);
+  const tamperedCatalog = JSON.parse(JSON.stringify(ctx.catalog));
+  const tamperedRelease = tamperedCatalog.releases.find((item) => item.version === ZIP_VERSION);
+  const attackerUrl = `${releaseBaseUrl('9.9.9')}/stolen-cover.png`;
+  tamperedRelease.media.cover = { url: attackerUrl, type: 'png' }; // no sha256/size
+  await writeJson(path.join(tampered, 'catalog', 'jump.json'), tamperedCatalog);
+  const before = await snapshot(tampered);
+
+  const http = approvedHttp(tamperedRelease, ctx.published, { overrides: new Map([[attackerUrl, PNG_1X1]]) });
+  const result = await validateAssets(tampered, http);
+  assert.equal(result.ok, false);
+  assert.equal(result.errors[0].code, 'E_PUBLISH_MEDIA_UNBOUND', JSON.stringify(result.errors));
+  assert.equal(
+    http.calls.includes(attackerUrl),
+    false,
+    'an unbound media asset must be rejected before any download is attempted',
+  );
+  // Read-only CI: no local file may change and only GET/HEAD requests are made.
+  assert.deepEqual(await snapshot(tampered), before, 'asset validation must not mutate the content repository');
+
+  // The catalog/trusted-source validation must fail closed as well (the review
+  // can only supply a digest, never the missing size or URL).
+  const built = await buildRegistry(tampered, { check: false });
+  assert.equal(built.ok, false);
+  assert.ok(built.errors.some((error) => error.code === 'E_PUBLISH_MEDIA_UNBOUND'), JSON.stringify(built.errors));
+});
+
+test('CR8-02: a tampered catalog blocks publishing before any remote or local write', async (t) => {
+  const ctx = await cr802Context(t);
+  const tampered = await copyCr802Repo(t, ctx.content);
+  const tamperedCatalog = JSON.parse(JSON.stringify(ctx.catalog));
+  const tamperedRelease = tamperedCatalog.releases.find((item) => item.version === ZIP_VERSION);
+  tamperedRelease.media.cover = { url: `${releaseBaseUrl('9.9.9')}/stolen-cover.png`, type: 'png' };
+  await writeJson(path.join(tampered, 'catalog', 'jump.json'), tamperedCatalog);
+
+  // A perfectly valid *next* submission: publishing must still stop at the
+  // invalid existing catalog (this is the bypass path Codex reproduced).
+  const nextZip = zipPackage('1.2.0');
+  const submission = zipSubmission({ version: '1.2.0', zip: nextZip.zip });
+  const review = reviewFor(submission);
+  const base = await tempDir(t, 'dsh-publish-zip-cr802-publish-');
+  const submissionPath = path.join(base, 'submission.json');
+  const reviewPath = path.join(base, 'review.json');
+  await writeJson(submissionPath, submission);
+  await writeJson(reviewPath, review);
+  const before = await snapshot(tampered);
+  const git = makeFakeGit();
+  const github = makeFakeGithub();
+  await assert.rejects(
+    () => publish({
+      submissionPath,
+      reviewPath,
+      registryDir: tampered,
+      execute: false,
+      git,
+      github,
+      http: trackedHttp(new Map()),
+    }),
+    (error) => error.code === 'E_PUBLISH_REGISTRY_INVALID',
+  );
+  assert.equal(github.calls.length, 0, 'no remote call may happen before the catalog is validated');
+  assert.equal(git.calls.length, 0, 'no local git mutation may happen before the catalog is validated');
+  assert.deepEqual(await snapshot(tampered), before, 'rejected publish must not write the content repository');
+});
+
+test('CR8-02: a media asset that is missing on the remote fails asset validation', async (t) => {
+  const ctx = await cr802Context(t);
+  const http = approvedHttp(ctx.release, ctx.published, { drop: ['screenshots'] });
+  const result = await validateAssets(ctx.content, http);
+  assert.equal(result.ok, false);
+  assert.ok(
+    result.errors.some((error) => error.code === 'E_PUBLISH_DOWNLOAD_FAILED'),
+    JSON.stringify(result.errors),
+  );
+});
+
+test('CR8-02: media bytes that do not match the approved digest are rejected', async (t) => {
+  const ctx = await cr802Context(t);
+  const coverUrl = ctx.release.media.cover.url;
+  // Same length, different bytes: sha256 must catch it (not just size/type).
+  const mutated = Buffer.from(PNG_1X1);
+  mutated[mutated.length - 1] ^= 0xff;
+  const http = approvedHttp(ctx.release, ctx.published, { overrides: new Map([[coverUrl, mutated]]) });
+  const result = await validateAssets(ctx.content, http);
+  assert.equal(result.ok, false);
+  assert.ok(
+    result.errors.some((error) => error.code === 'E_PUBLISH_SHA_MISMATCH'),
+    JSON.stringify(result.errors),
+  );
+});
+
+test('CR8-02: complete media bindings still pass and are actually downloaded (positive control)', async (t) => {
+  const ctx = await cr802Context(t);
+  const http = approvedHttp(ctx.release, ctx.published);
+  const result = await validateAssets(ctx.content, http);
+  assert.equal(result.ok, true, JSON.stringify(result.errors));
+  assert.equal(result.entries[0].media.cover, 'catalog');
+  assert.equal(result.entries[0].media.boundFromReview.length, 0);
+  // Positive control for "fail closed": the approved cover/screenshot URLs are
+  // really fetched, so a rejection in the negative cases cannot mean "nothing ran".
+  assert.equal(http.calls.includes(ctx.release.media.cover.url), true);
+  for (const shot of ctx.release.media.screenshots) {
+    assert.equal(http.calls.includes(shot.url), true);
+  }
+});
+
+test('CR8-02: a digest deleted from the catalog may be recovered from the approved review, then must still verify real bytes', async (t) => {
+  const ctx = await cr802Context(t);
+  const supplemented = await copyCr802Repo(t, ctx.content);
+  const supplementedCatalog = JSON.parse(JSON.stringify(ctx.catalog));
+  const supplementedRelease = supplementedCatalog.releases.find((item) => item.version === ZIP_VERSION);
+  // Attack surface reduced to "digest gone": URL/size stay, review digests stay.
+  delete supplementedRelease.media.cover.sha256;
+  for (const shot of supplementedRelease.media.screenshots) delete shot.sha256;
+  await writeJson(path.join(supplemented, 'catalog', 'jump.json'), supplementedCatalog);
+
+  // Trusted-source validation accepts the release because the approved review
+  // still binds the digests.
+  const built = await buildRegistry(supplemented, { check: false });
+  assert.equal(built.ok, true, JSON.stringify(built.errors));
+
+  const http = approvedHttp(supplementedRelease, ctx.published);
+  const result = await validateAssets(supplemented, http);
+  assert.equal(result.ok, true, JSON.stringify(result.errors));
+  assert.deepEqual(result.entries[0].media.boundFromReview, ['cover', 'screenshot-1']);
+  assert.equal(http.calls.includes(ctx.release.media.cover.url), true, 'supplemented digest still requires a real download');
+  assert.equal(http.calls.includes(ctx.release.media.screenshots[0].url), true);
+
+  // Supplementing the digest must never become "trust the record": change the
+  // bytes on the remote and the re-download has to fail.
+  const mutated = Buffer.from(PNG_1X1);
+  mutated[mutated.length - 1] ^= 0xff;
+  const tamperedHttp = approvedHttp(supplementedRelease, ctx.published, {
+    overrides: new Map([[supplementedRelease.media.cover.url, mutated]]),
+  });
+  const rejected = await validateAssets(supplemented, tamperedHttp);
+  assert.equal(rejected.ok, false);
+  assert.ok(rejected.errors.some((error) => error.code === 'E_PUBLISH_SHA_MISMATCH'), JSON.stringify(rejected.errors));
+});
+
+test('CR8-02: no digest in the catalog and none in the review is rejected', async (t) => {
+  const ctx = await cr802Context(t);
+  const bare = await copyCr802Repo(t, ctx.content);
+  const bareCatalog = JSON.parse(JSON.stringify(ctx.catalog));
+  const bareRelease = bareCatalog.releases.find((item) => item.version === ZIP_VERSION);
+  delete bareRelease.media.cover.sha256;
+  await writeJson(path.join(bare, 'catalog', 'jump.json'), bareCatalog);
+  const bareReview = JSON.parse(JSON.stringify(ctx.review));
+  delete bareReview.media.coverSha256;
+  await writeJson(path.join(bare, 'reviews', 'jump', `${ZIP_VERSION}.json`), bareReview);
+
+  const http = approvedHttp(bareRelease, ctx.published);
+  const result = await validateAssets(bare, http);
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((error) => error.code === 'E_PUBLISH_MEDIA_UNBOUND'), JSON.stringify(result.errors));
+
+  // The catalog pipeline rejects it too (the review schema itself requires the
+  // digest, so a stripped review can never be a valid binding substitute).
+  const built = await buildRegistry(bare, { check: false });
+  assert.equal(built.ok, false);
+});
+
+test('CR8-02: an already published release cannot have its media URL rewritten', async (t) => {
+  const ctx = await cr802Context(t);
+  const candidate = await copyCr802Repo(t, ctx.content);
+  const candidateCatalog = JSON.parse(JSON.stringify(ctx.catalog));
+  const candidateRelease = candidateCatalog.releases.find((item) => item.version === ZIP_VERSION);
+  candidateRelease.media.cover.url = `${releaseBaseUrl('9.9.9')}/rewritten-cover.png`;
+  await writeJson(path.join(candidate, 'catalog', 'jump.json'), candidateCatalog);
+  const history = await validateAgainstBase(candidate, ctx.content);
+  assert.equal(history.ok, false);
+  assert.ok(
+    history.errors.some((error) => error.code === 'E_CATALOG_IMMUTABLE'),
+    JSON.stringify(history.errors),
+  );
+});
+
+test('CR8-02 regression: a legitimate V1.2 -> V1.5 catalog migration still passes history', async (t) => {
+  const { content } = await publishHtmlFixture(t);
+  // Trusted base = the content repo while it still uses the V1.2 catalog shape.
+  const base = await copyCr802Repo(t, content);
+  // Publish a ZIP on top: the game's catalog is migrated to the append-only
+  // V1.5 shape and keeps the previous HTML release, unchanged.
+  const published = await publishZip(t, content, { version: '1.1.0', submissionType: 'update' });
+  assert.equal(published.result.mode, 'execute');
+  const migrated = JSON.parse(await fs.readFile(path.join(content, 'catalog', 'jump.json'), 'utf8'));
+  assert.equal(migrated.schemaVersion, 2);
+  assert.deepEqual(
+    migrated.releases.map((release) => `${release.version}:${release.format}`),
+    ['1.0.0:html-v1', '1.1.0:asset-zip-v2'],
+  );
+  const history = await validateAgainstBase(content, base);
+  assert.equal(history.ok, true, JSON.stringify(history.errors));
+});

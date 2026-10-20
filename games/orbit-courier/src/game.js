@@ -26,6 +26,7 @@ import { createRenderer, loadSprites } from './render.js';
 import { createInput } from './input.js';
 import { createAudio } from './audio.js';
 import { loadSave, writeSave, clearSave, readBest, submitScore, resumeFromSave } from './resume.js';
+import { createRunSessions } from './run-sessions.js';
 
 export const FIXED_STEP_MS = 16;
 export const MAX_STEPS_PER_FRAME = 5;
@@ -123,10 +124,14 @@ export function boot(options) {
 
   let renderer = null;
   let state = createRunState(level, { seed: seed() });
-  let best = 0;
   let pausedByHost = false;
-  let sessionStarted = false;
-  let sessionEnded = false;
+  // CR8-03: session/settlement state is per run token, never a cross-run boolean.
+  const sessions = createRunSessions({
+    startSession: () => (adapter.session && typeof adapter.session.start === 'function' ? adapter.session.start() : null),
+    endSession: (request) => (adapter.session && typeof adapter.session.end === 'function' ? adapter.session.end(request) : null),
+    submitScore: (score) => submitScore(adapter, score),
+    clearSave: () => clearSave(adapter),
+  });
   let lastFrameAt = now();
   let accumulator = 0;
   let saveTimer = 0;
@@ -184,7 +189,7 @@ export function boot(options) {
     if (!force && t - lastUiAt < 80) return;
     lastUiAt = t;
     if (dom.score) dom.score.textContent = String(scoreOf(state));
-    if (dom.best) dom.best.textContent = String(best);
+    if (dom.best) dom.best.textContent = String(sessions.best);
     if (dom.time) dom.time.textContent = formatTime(state.timeLeftMs);
     if (dom.act) dom.act.textContent = currentAct(level, state).label;
     if (dom.combo) {
@@ -282,14 +287,11 @@ export function boot(options) {
     });
   }
 
-  function endedOverlay() {
-    const finalScore = scoreOf(state);
-    const isBest = finalScore > best;
-    if (isBest) best = finalScore;
+  function endedOverlay(finalScore, isBest) {
     const reason = state.endReason === 'wrecked' ? TEXT.wrecked : TEXT.shiftComplete;
     const body = [
       `<p class="final">${finalScore}</p>`,
-      `<p class="meta">${isBest ? TEXT.newBest : `${TEXT.best} ${best}`}</p>`,
+      `<p class="meta">${isBest ? TEXT.newBest : `${TEXT.best} ${sessions.best}`}</p>`,
       `<dl class="stats">`,
       `<div><dt>交付</dt><dd>${state.deliveries}</dd></div>`,
       `<div><dt>最快连击</dt><dd>×${state.bestCombo}</dd></div>`,
@@ -305,17 +307,8 @@ export function boot(options) {
     });
   }
 
-  function markSessionStart() {
-    if (sessionStarted) return;
-    sessionStarted = true;
-    sessionEnded = false;
-    if (adapter.session && typeof adapter.session.start === 'function') {
-      adapter.session.start().catch(() => {});
-    }
-  }
-
   function ensurePlayableGesture() {
-    if (state.phase === 'playing' || state.phase === 'paused') markSessionStart();
+    if (state.phase === 'playing' || state.phase === 'paused') sessions.ensureSessionStart();
   }
 
   async function beginNewRun() {
@@ -323,7 +316,8 @@ export function boot(options) {
     state = fresh;
     startRun(state);
     pausedByHost = false;
-    markSessionStart();
+    sessions.beginRun();
+    sessions.ensureSessionStart();
     hideOverlay();
     audio.unlock();
     updateHud(true);
@@ -338,7 +332,8 @@ export function boot(options) {
     state = resumed;
     state.phase = 'playing';
     pausedByHost = false;
-    markSessionStart();
+    sessions.beginRun();
+    sessions.ensureSessionStart();
     hideOverlay();
     audio.unlock();
     updateHud(true);
@@ -375,19 +370,21 @@ export function boot(options) {
     writeSave(adapter, payload).catch(() => {});
   }
 
-  async function finishRun() {
-    if (sessionEnded) return;
-    sessionEnded = true;
+  function finishRun() {
     const finalScore = scoreOf(state);
-    const result = await submitScore(adapter, finalScore);
-    if (result && result.isBest) best = Math.max(best, finalScore);
-    audio.play('end');
-    if (adapter.session && typeof adapter.session.end === 'function') {
-      adapter.session.end({ outcome: state.endReason === 'wrecked' ? 'lost' : 'completed', score: finalScore }).catch(() => {});
-    }
-    await clearSave(adapter);
+    const outcome = state.endReason === 'wrecked' ? 'lost' : 'completed';
     updateHud(true);
-    endedOverlay();
+    audio.play('end');
+    // Settlement is idempotent per run token: a duplicate end event is dropped,
+    // and a slow host answer can only ever report `stale`, never touch a newer run.
+    return sessions.settle({
+      score: finalScore,
+      outcome,
+      onIssued: ({ isBest }) => endedOverlay(finalScore, isBest),
+    }).then((result) => {
+      if (result.status === 'settled') updateHud(true);
+      return result;
+    });
   }
 
   function handleEvents(events) {
@@ -540,7 +537,7 @@ export function boot(options) {
           direction: rock.dir,
           ttlMs: rock.ttlMs,
         }))),
-        best,
+        best: sessions.best,
         audio: Object.freeze({ muted: audio.muted, unlocked: audio.unlocked, supported: audio.supported }),
       });
     };
@@ -581,7 +578,7 @@ export function boot(options) {
   async function start() {
     // Read persisted progress before subscribing to lifecycle events: a host
     // pause delivered during boot must not race the Continue load.
-    best = await readBest(adapter);
+    sessions.setBest(await readBest(adapter));
     pendingContinue = await loadSave(adapter);
     wireUi();
     input.attachPointer(canvas, () => ({
@@ -615,7 +612,7 @@ export function boot(options) {
       return state;
     },
     get best() {
-      return best;
+      return sessions.best;
     },
     get audio() {
       return audio;
