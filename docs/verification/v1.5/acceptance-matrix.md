@@ -334,10 +334,11 @@ CR7-01 的修复同时收紧了 §7.5 的一条边界：**「可文档化资源�
 >
 > - 记录日期：2026-10-20。分支 `feat/v1.5-platform-update`；基线 `origin/main` `40d701678e96d99e777520debb43e25b28ae2d0c`
 >   （PR #8 M2 合并提交）。
-> - 固定 head（PR-candidate）：**`R_final2` = `af992278e84cd3522e738fd12d18cd269347d388`**（package 1.3.0，
->   release-style，**未打 tag、未发布**）。前一次候选 `5c233445b943aaf7c6795c324fa0e456cb1b805e`（package 1.3.0）
->   因全量门禁在自动发现的 manual client smoke 上失败（test-only 缺陷，已在 `b1a351d` 修复）由 Lead 重新生成 release commit，
->   **不作为验收 head**；后续 PR head `D` 将是 `R_final2` 的 docs/evidence-only 后代（artifacts 不变）。
+> - 固定 head（PR-candidate）：**`R_final3` = `f218ea84d241d14586bd44569d013fb5a5ef4c03`**（package 1.3.0，
+>   release-style，**未打 tag、未发布**；P=`c3b3a6dc…`）。已被取代的候选：`5c23344…`（全量门禁在自动发现的 manual
+>   client smoke 上失败，test-only，已修）与 `af99227…`（**V1 首轮真实链路发现 client refresh-throttle 真实缺陷**，
+>   已在 `c19bfe1` 修复并重新生成 release commit），两者**均不作为验收 head**；后续 PR head `D` 将是 `R_final3` 的
+>   docs/evidence-only 后代（artifacts 不变）。
 > - 证据级别：`automated` / `isolated-host`（隔离 `dsh web` + 真实插件服务）/ `isolated-browser`（CDP + 真实 DSH
 >   页面/真实 Client 代码）/ `isolated transport fixture` / `real-Desktop` / `not-run`。**未跑就是 not-run，不写成通过。**
 > - 主证据索引：`docs/verification/v1.5/plugin-update-m3.md` + `docs/verification/v1.5/raw/m3/`。
@@ -346,19 +347,19 @@ CR7-01 的修复同时收紧了 §7.5 的一条边界：**「可文档化资源�
 
 | 项 | 值 / 命令 | 结果 |
 |---|---|---|
-| 固定 head | **`R_final2` = `af992278e84cd3522e738fd12d18cd269347d388`**（package 1.3.0，release-style） | 已推送：`origin/feat/v1.5-platform-update` → `af99227`；`release:verify` OK；**未打 tag、未发布** |
-| 版本提交 P（`release.json.clientBuildCommit`） | `0c57b0f3bb785cd847273b5a4c03497d91cd4b01` | 已核对（`git show af99227:platform-updates/release.json`） |
-| PR 最终 head `D` | `R_final2` 的后代（docs/evidence-only 提交，artifacts 不变） | **待 Lead 回填**；只要 artifacts 不变，`release.json` 的 digest 仍有效 |
-| 前一次候选（superseded） | `5c23344…`，package 1.3.0 | **不再指向/不作为验收 head**（manual client smoke test-only，已修；R_final2 重新生成）；仅作历史与旧构建确定性参考 |
+| 固定 head | **`R_final3` = `f218ea84d241d14586bd44569d013fb5a5ef4c03`**（package 1.3.0，release-style） | 已推送：`origin/feat/v1.5-platform-update` → `f218ea8`（branch tip）；**未打 tag、未发布** |
+| 版本提交 P（`release.json.clientBuildCommit`） | `c3b3a6dc5c6e8df308e521fb55ad1b7ed2772c16` | 已核对（`git show f218ea8:platform-updates/release.json`） |
+| PR 最终 head `D` | `R_final3` 的后代（docs/evidence-only 提交，artifacts 不变） | **待 Lead 回填**；只要 artifacts 不变，`release.json` 的 digest 仍有效 |
+| 前一次候选（superseded） | `5c23344…`（manual client smoke test-only）与 `af99227…`（V1 首轮发现 refresh-throttle 真实缺陷，`c19bfe1` 修复） | **均不再指向/不作为验收 head**；仅作历史与旧构建确定性参考 |
 | 基线 | `origin/main` `40d701678e96d99e777520debb43e25b28ae2d0c` | 已记录 |
-| 分支 / 远端 | `origin/feat/v1.5-platform-update` = `af99227` | 已推送；**远端只有该 feature 分支 ref，无 `verify/*`、无 tag**（Lead 核对；本地 `git tag --contains` 均为空） |
+| 分支 / 远端 | `origin/feat/v1.5-platform-update` = `f218ea8` | 已推送；**远端只有该 feature 分支 ref，无 `verify/*`、无 tag**（Lead 核对；本地 `git tag --contains` 均为空） |
 | 完整门禁（预发布候选） | `npm install && npm run verify` @ 提交树 `7e952f2` | **1463/1463 pass，exit 0；`CHECK OK (43)`；连续两次构建字节一致；构建后工作树干净**（Lead 执行） |
-| 完整门禁（固定 head） | `npm install && npm run verify`（build + check + tests）@ `R_final2` | **1463 tests / 1463 pass / 0 fail，exit 0，46.0s**；构建产物字节一致（构建后工作树干净，仅本文档编辑）——Lead 执行 |
-| 静态检查 | `node scripts/check.mjs` | `R_final2`：**`CHECK OK (44)`**，含 **release identity v1.3.0 matches checked-in artifacts + client bundle**；预发布候选为 `CHECK OK (43)`（44 = 43 + release-identity 断言） |
-| 构建确定性 | `release:verify` + `npm run verify` 重建 + `release:prepare` 隔离构建 | `R_final2`：**`release:verify` OK**；`client.js` sha256 `cd1f81e2d00fe471b712b964ee01d4f0007302ecd6ccf9dd3efcddb01614c24c`；`release.json.artifacts.sha256-tree-v1 = 179f61204cf71a3bced0da11ff6d20a3d87b3766137f2d3060880a47134ab082`（93 files / 3,401,297 B）；`client.js` 身份 banner `version=1.3.0 buildCommit=0c57b0f3…`；`npm run verify` 重建无 diff；**两次独立构建字节一致**证据：`7e952f2` 两次全量 1463/1463 + 工具链 4 次隔离构建；`5c23344` 旧 `client.js` sha `d7a2d7f0…` 仅历史参考 |
+| 完整门禁（固定 head） | `npm install && npm run verify`（build + check + tests）@ `R_final3` | **待 Lead 回填（正在执行）**；`R_final2` 的 1463/1463、46.0s 仅历史参考（该 head 已被取代） |
+| 静态检查 | `node scripts/check.mjs` | `R_final2`：`CHECK OK (44)`（含 release identity，历史参考）；`R_final3` 待 Lead 回填；预发布候选为 `CHECK OK (43)`（44 = 43 + release-identity 断言） |
+| 构建确定性 | `release:verify` + `npm run verify` 重建 + `release:prepare` 隔离构建 | `R_final3`：`release.json.artifacts.sha256-tree-v1 = 5451cd50728b7ca1e870829137de673020b757cc0e0269c763eddfba7094318e`（93 files / 3,402,366 B）；`client.js` sha256 `7f1b73bbb65f7ba4d9ea67eb90a58b2178390bbf5fe68f8474129e0060c5277a`；身份 banner `version=1.3.0 buildCommit=c3b3a6dc…`；`release:verify`/全量重建无 diff 数字待 Lead 回填。历史：`R_final2` client.js `cd1f81e2…`/artifacts `179f6120…`，`R_final-1` `d7a2d7f0…`；**两次独立构建字节一致**证据：工具链 4 次隔离构建 + `7e952f2` 两次全量 1463/1463（去掉运行期时间差异的确定性断言） |
 | 实现测试独立复跑（提交树 `61c890e`） | `run-implementation-tests-evidence.mjs --ref 61c890e…` | shared **13/13**、host **291/291**、client **249/249**、release-tools **37/37**，exit 0 [证据](raw/m3/M3-implementation-tests-committed-ref-61c890eba46a-2026-10-20T12-20-41-657Z.json) |
 | 实现测试复跑（最终代码树 `7e952f2`） | 同上 | shared 13/13、host 292/292、client 255/255、release-tools 37/37，exit 0 [证据](raw/m3/M3-implementation-tests-committed-ref-7e952f277c24-2026-10-20T12-24-04-731Z.json)（Lead 检查点 `f020d0c` 提交） |
-| 真实隔离验证 | V1/V2 runner（`plugin-update-m3.md` §3/§4） | **not-run（进行中）**；已完成的只有 V0（`plugin-update-m3.md` §1） |
+| 真实隔离验证 | V1/V2 runner（`plugin-update-m3.md` §3/§4） | **not-run（进行中）**；V0 已完成；首轮 V1（`af99227`）推进到真实 Client UI 并**发现 refresh-throttle 真实缺陷**（`c19bfe1` 修复，见 §20.11）；按 `R_final3` 的复验待跑 |
 
 **环境身份（V0 已自证）**：DSH `0.2.1-rc.2`（desktop / desktop-runtime / plugin-manager 同版），app.asar sha256
 `b9ec4c2bbc20c9dbc3e39fa4c961434a943434ab0a803052b26753dd15f3b066`（182,833,898 B）；Node `v24.14.0`；
@@ -368,15 +369,16 @@ Chrome `155.0.8059.85` headless（CDP）；隔离根 `/tmp/dsh-v15/m3/**`，未�
 ## 14. 验证用 probe releases 与发布身份（staged）
 
 **纪律**：本轮**不写生产索引、不打 tag、不创建 GitHub Release、不合并 main**。`R_A`/`R_B` 是验证专用 probe release
-（与最终代码树同源的 release-style commit，不发布），`R_final2` 是可被真实 profile 精确安装、可自证身份的
+（与最终代码树同源的 release-style commit，不发布），`R_final3` 是可被真实 profile 精确安装、可自证身份的
 PR-candidate release-style commit（不发布、不打 tag）。
 
 | 代号 | commit（40-hex） | package | `release.json.clientBuildCommit`（= 父版本提交 P） | `release.json.artifacts.sha256` | tag/Release | 可达性 |
 |---|---|---|---|---|---|---|
 | `R_A` | `2e2c1fc86dff365d0acf08c6e53a97c86da6a1e6` | 1.2.1 | `694f521f3abe82e607c271076175ec1a770a8d5c` | `d478abe8e09e947f10f8d7c565f045778f9b20c6b0089fbed712c05db7161807` | 无 | `origin/feat/v1.5-platform-update` 的祖先（无额外 ref、无 tag） |
 | `R_B` | `70aacee9444f16bc2df1ffbcc71155f2a509e16e` | 1.2.2 | `8bef927d9355bd3a788047acf384398239fea022` | `3345d26883a3537e89a3587d363df334545919589ab7faefff01a9d57e029bd9` | 无 | 同上 |
-| `R_final2` | `af992278e84cd3522e738fd12d18cd269347d388` | 1.3.0 | `0c57b0f3bb785cd847273b5a4c03497d91cd4b01` | `179f61204cf71a3bced0da11ff6d20a3d87b3766137f2d3060880a47134ab082` | 无 | = origin feature 分支 tip；`R_A`/`R_B` 为其祖先；后续 docs/evidence 提交将构成 PR head `D` |
-| （历史）`R_final-1` | `5c233445b943aaf7c6795c324fa0e456cb1b805e` | 1.3.0 | `c29af5a17beb91e667d847388088585ced2c1fc4` | `ea8d07fe1698b29a287a37f45543fd1851c2e23600dd3ba41f421fc7bcc823c8` | 无 | 已废弃为 head；仅作构建确定性数据来源 |
+| `R_final3` | `f218ea84d241d14586bd44569d013fb5a5ef4c03` | 1.3.0 | `c3b3a6dc5c6e8df308e521fb55ad1b7ed2772c16` | `5451cd50728b7ca1e870829137de673020b757cc0e0269c763eddfba7094318e` | 无 | = origin feature 分支 tip；`R_A`/`R_B` 为其祖先；后续 docs/evidence 提交将构成 PR head `D` |
+| （历史）`R_final2` | `af992278e84cd3522e738fd12d18cd269347d388` | 1.3.0 | `0c57b0f3bb785cd847273b5a4c03497d91cd4b01` | `179f61204cf71a3bced0da11ff6d20a3d87b3766137f2d3060880a47134ab082` | 无 | **已被取代**（V1 首轮发现 client refresh-throttle 缺陷，`c19bfe1` 修复后重新 release）；仅历史参考 |
+| （历史）`R_final-1` | `5c233445b943aaf7c6795c324fa0e456cb1b805e` | 1.3.0 | `c29af5a17beb91e667d847388088585ced2c1fc4` | `ea8d07fe1698b29a287a37f45543fd1851c2e23600dd3ba41f421fc7bcc823c8` | 无 | **已被取代**（manual client smoke test-only）；仅历史参考 |
 
 **记录方式（只读、可复现）**：
 
@@ -388,9 +390,13 @@ git tag --contains <sha>                                     # 期望空
 git ls-remote origin 'refs/heads/verify/*'                   # 期望空
 ```
 
-**已复跑（2026-10-20）**：`R_A`/`R_B` 均为 `af99227` 的祖先（`git merge-base --is-ancestor` exit 0）；`git tag --contains`
+**已复跑（2026-10-20）**：`R_A`/`R_B` 均为 `f218ea8` 的祖先（`git merge-base --is-ancestor` exit 0）；`git tag --contains`
 均为空；远端只有 feature 分支 ref、无 `verify/*`（Lead 核对）。若 PR head `D` 仅为 docs/evidence-only 后代且 artifacts 未变，
 本表身份继续有效；若重新生成 release commit，本表整体失效并重记。
+**probe-release 身份/可达性证据**：[M3-probe-release-acceptance-2026-10-20T12-39-40-569Z.json](raw/m3/M3-probe-release-acceptance-2026-10-20T12-39-40-569Z.json)
+（79/79 required 全过，exit 0：remote fetch-by-SHA、A/B/FINAL 身份、`release.json.clientBuildCommit=P`、无自引用、无 tag、
+无 `verify/*`、`origin/main` 未变）。注意：该证据的 FINAL 是已被取代的 `af99227`，因此**只对 `R_A`/`R_B` 身份与
+remote fetch 路径有效**；`f218ea8` 的同类检查须待 verification 用 `verify-probe-releases.mjs` 对新 head 重跑后引用。
 `R_A`/`R_B` 的**精确 commit 安装性**由 V1 的 `install-exact-commit`（真实 `pluginManager.installBundle`）提供；
 V0 已用已发布 v1.2.0 `f422e8d04b3b3de3f920a794317c0d28ee1246a2` 证明该 helper 与安装路径可用
 （31/31，exit 0，[证据](raw/m3/M3-V0-exact-install-2026-10-20T11-51-54-704Z.json)），但**不覆盖** `R_A`/`R_B`
@@ -411,7 +417,7 @@ V0 已用已发布 v1.2.0 `f422e8d04b3b3de3f920a794317c0d28ee1246a2` 证明该 h
 | `installBundle` 真实 Remote Result：外层 `ok` + `application` + `packageResult.exitCode` 同时核对 | isolated-browser | V1 待跑；M0 已用独立操作者实测 HMR `applied`（Host-only） | **not-run（M3 链路）** |
 | `applied`（中间态）→ `activating` → `updated`：Host 激活冻结 `loadedVersion`/`buildCommit`、Client 自报 `buildVersion`/`buildCommit`、`/health` 三者匹配目标 | isolated-browser | V1 待跑 | **not-run** |
 | 更新后存档/配置（`storages/dsh-game-market`、saves、preferences）保留，游戏可继续 | isolated-browser | V1 待跑；M0 证明包变更不触碰 storages（Host-only fixture） | **not-run** |
-| 连续第二次更新 `R_B → R_final2` 证明可持续（非一次性） | isolated-browser | V1 待跑 | **not-run** |
+| 连续第二次更新 `R_B → R_final3` 证明可持续（非一次性） | isolated-browser | V1 待跑 | **not-run** |
 | UI 在 `updated` 之前不得显示“已更新/已是最新”；`applied` 不是成功态 | isolated-browser + automated | Client 状态映射/no-fake-success 单测通过（计数见 §13）；真实 UI 文案断言归 V1 | **自动化层通过；真实 UI not-run** |
 
 **U02 结论：not-run。** 只有 V1 证据提交、且本表逐行有 committed raw JSON + 命令 + exit code 后才可改判。
@@ -467,7 +473,7 @@ V0 已用已发布 v1.2.0 `f422e8d04b3b3de3f920a794317c0d28ee1246a2` 证明该 h
 
 | 子项 | 级别 | 证据 | 结论 |
 |---|---|---|---|
-| release commit 身份一致：`package.json.version` = `release.json.version`；`clientBuildCommit` = 父版本提交 P；产物 digest 与 `release.json.artifacts` 一致；无自引用 | automated（静态 + 工具链） | release-tools 37/37（§13）；§14 只读 `git show` 记录；`5c23344` 上只读复跑 `node scripts/check.mjs` = `CHECK OK (44)`（含 release identity 断言） | **R_A/R_B 身份已核对（只读 git）；`5c23344` 身份断言通过（已废弃 head，仅参考）；`R_final2` 待回填复核** |
+| release commit 身份一致：`package.json.version` = `release.json.version`；`clientBuildCommit` = 父版本提交 P；产物 digest 与 `release.json.artifacts` 一致；无自引用 | automated（静态 + 工具链 + 只读远端 fetch） | release-tools 37/37（§13）；§14 只读 `git show`/`merge-base` 记录；[probe-release acceptance 79/79](raw/m3/M3-probe-release-acceptance-2026-10-20T12-39-40-569Z.json)（remote fetch-by-SHA + A/B/FINAL 身份 + 无自引用；FINAL 为已取代的 af99227） | **R_A/R_B 身份/可达性已通过；`R_final3` 身份已只读核对，新 head 的 probe-release acceptance 待 verification 重跑** |
 | Client 构建身份：`client.js` 内嵌 `{version, buildCommit}` 且确定性构建；Client 只上报自身身份、不回填 Host 值 | automated + isolated-browser | client/release 套件；V1 双端核验待跑 | **实现层通过；真实 not-run** |
 | 索引格式 1 严格校验 + 官方仓库/插件名/`source.type=git`/完整 40-hex 绑定；拒绝 branch/tag/短 SHA/本地路径/file:/任意仓库 | automated + isolated transport fixture | 共享契约 13/13；V0 发现矩阵 160/160（恶意索引/绑定拒绝用例） | **通过（单元/夹具层）**；生产索引未抓取 |
 | 不可变 target：`begin` 只接受当前已验证发现记录的 `targetId`；伪造/任意 spec → `GM-4090`（能力缺失 `GM-5038`） | automated + isolated-host | Host 路由/adapter 目标测试；V0 begin fail-closed（H1 基座 `GM-5038`；H2 后 `GM-4090` 由 V2-8 复核） | **实现层通过；真实 V2-8 not-run** |
@@ -484,18 +490,28 @@ V0 已用已发布 v1.2.0 `f422e8d04b3b3de3f920a794317c0d28ee1246a2` 证明该 h
 1. **真实 Desktop / Electron 主进程**：全部 M3 证据来自隔离 `dsh web` + headless Chrome；真实 App 内 Electron 网络栈、
    原生窗口 UI、真实用户 profile 未验证（不碰 `~/.dsh`）。
 2. **生产官方索引**：从未抓取/写入生产索引；夹具 body 是验证数据，不证明线上索引当前格式正确。
-3. **V1/V2 全部端到端场景未跑**：HMR A→B→R_final2 双端核验、RPC 丢失/刷新恢复、HMR dispose 存活、非 HMR 真实重启、
+3. **V1/V2 全部端到端场景未跑**：HMR A→B→R_final3 双端核验、RPC 丢失/刷新恢复、HMR dispose 存活、非 HMR 真实重启、
    混合态、多窗口并发、活跃实例保存阻断、取消/too-late、能力 unknown、dev-row、恶意索引/非法 target、失败恢复、
    清理自证——全部 `not-run`（见 `plugin-update-m3.md` §3/§4）。**不得用 Host 目标测试代替真实链路。**
+   首轮 V1（`af99227`）只推进到 UI 并**发现真实缺陷**（见下方第 11 条），回修后按 `R_final3` 重新验证。**
 4. **跨进程 profile 更新锁**：Host 目标测试只证明逻辑与锁复用；真实两进程竞争未压测（契约 §17.3 未验证项 3）。
 5. **真实故障注入**（ENOSPC/权限、游戏运行中保存失败）：自动化用假 manager/注入；真实隔离 profile 注入归 V2。
 6. **非 Chromium 引擎 / headed 真实窗口 / 长时 soak**：未验证。
 7. **夹具方法的 Node 依赖**：`NODE_USE_ENV_PROXY` 是 Node 24 行为；Electron 主进程是否同样尊重该 env 未验证。
 8. **`html-v1` wrapper 迁移**：M3 不涉及，仍为 **M4 前置独立提交**；不得宣称所有格式已阻断包外导航。
 9. **两段式 release 的“生产推广/回滚”**：本轮只 dry-run 与身份核对；真实 stable promote、旧通道用户升级、撤回演练均未执行。
-10. **`5c23344` 被取代的原因与固定 head**：全量门禁在自动发现的 manual client smoke 上失败（test-only），已在 `b1a351d`
-    修复并重新生成 release commit `R_final2 = af99227…`（P=`0c57b0f…`）；本文档只认 `R_final2`（及后续 docs/evidence-only
-    PR head `D`）的门禁数字，`5c23344` 不再作为任何验证目标。
+10. **release head 两次被取代的原因与当前固定 head**：
+    - `5c23344`：全量门禁在自动发现的 manual client smoke 上失败（test-only），已在 `b1a351d` 修复；
+    - `af99227`（R_final2）：**首轮真实 V1 链路发现 client refresh-throttle 真实缺陷**，已在 `c19bfe1` 修复
+      （手动刷新与自动检查节流解耦，含 client 单测），并重新生成 release commit；
+    - 当前只认 `R_final3 = f218ea8…`（P=`c3b3a6d…`）及后续 docs/evidence-only PR head `D` 的门禁数字；
+      `5c23344`、`af99227` 不再作为任何验证目标。
+11. **首轮 V1 发现的 refresh-throttle 缺陷（真实缺陷，已修复，复验未跑）**：`af99227` 上的隔离真实 DSH 链路发现
+    Client 手动刷新受自动检查节流影响（UI 状态/刷新路径不符合契约）。修复提交 `c19bfe1`（`update-section.js`/
+    `update-state.js`/`locale.js`/client 测试 + 重建 `client.js`），并重新 release 为 `R_final3`。
+    **证据状态**：修复提交已入库；已提交的 2 张 UI 截图（`raw/m3/screenshots/M3-V1-hmr-chain-*`）来自首轮
+    （`af99227`）partial run；完整的缺陷复现/修复后复验证据由 verification 在 V1 重跑后发布——**在此之前不得写成
+    “已验证修复”，只能写“已发现并修复、复验 not-run”。**
 
 ## 21. 证据索引（M3 已提交部分）
 
@@ -508,4 +524,6 @@ V0 已用已发布 v1.2.0 `f422e8d04b3b3de3f920a794317c0d28ee1246a2` 证明该 h
 | [M3-V0-h1-tests-committed-ref-6d94779eae88-2026-10-20T12-06-26-690Z.json](raw/m3/M3-V0-h1-tests-committed-ref-6d94779eae88-2026-10-20T12-06-26-690Z.json) | H1 提交树独立复跑 | shared 13/13 + host 245/245，exit 0 |
 | [M3-implementation-tests-committed-ref-61c890eba46a-2026-10-20T12-20-41-657Z.json](raw/m3/M3-implementation-tests-committed-ref-61c890eba46a-2026-10-20T12-20-41-657Z.json) | M3 实现测试独立复跑（提交树） | shared 13/13、host 291/291、client 249/249、release 37/37，exit 0 |
 | [M3-implementation-tests-committed-ref-7e952f277c24-2026-10-20T12-24-04-731Z.json](raw/m3/M3-implementation-tests-committed-ref-7e952f277c24-2026-10-20T12-24-04-731Z.json) | 最终代码树实现测试复跑（提交树 `7e952f2`） | shared 13/13、host 292/292、client 255/255、release 37/37，exit 0 |
-| （待跑）`M3-V1-*.json` / `M3-V2-*.json` | 真实 Client UI 更新链 / 边界与协调场景 | **not-run** |
+| [M3-probe-release-acceptance-2026-10-20T12-39-40-569Z.json](raw/m3/M3-probe-release-acceptance-2026-10-20T12-39-40-569Z.json) | probe releases 只读验收：remote fetch-by-SHA、A/B/FINAL 身份、`clientBuildCommit=P`、无自引用、无 tag/verify ref、`origin/main` 未变 | 79/79 required 全过，exit 0（**FINAL=已取代的 `af99227`**，仅 `R_A`/`R_B` 身份与 remote fetch 路径有效） |
+| [screenshots/M3-V1-hmr-chain-…-A-update-available.png](raw/m3/screenshots/M3-V1-hmr-chain-v1-hmr-chain-mvgoo6sr-0bc57b-A-update-available.png)、[…-update-A-to-B-stale-runtime.png](raw/m3/screenshots/M3-V1-hmr-chain-v1-hmr-chain-mvgoo6sr-0bc57b-update-A-to-B-stale-runtime.png) | 首轮 V1 partial run（`af99227`）真实 DSH 页面截图：发现可用更新 / A→B 期间 `stale-runtime` | 仅作为**缺陷发现过程**的 UI 证据；该 head 已被取代，完整 V1 复验待跑 |
+| （待跑）`M3-V1-*.json` / `M3-V2-*.json` | 真实 Client UI 更新链 / 边界与协调场景（按 `R_final3` 重跑） | **not-run** |

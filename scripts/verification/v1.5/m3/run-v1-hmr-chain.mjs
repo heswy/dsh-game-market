@@ -40,6 +40,7 @@ import {
   freePort,
   log,
   makeIsolatedHome,
+  sleep,
   verifyRuntime,
 } from './lib.mjs';
 import {
@@ -49,6 +50,7 @@ import {
   clickAction,
   cleanupRun,
   createRunContext,
+  discoveryCanRefresh,
   healthFromPage,
   inspectFromPage,
   makeScenarioEnvironment,
@@ -344,8 +346,17 @@ async function body() {
   if (refresh.mode === 'ui') {
     run.report.add('discovery-refresh-through-ui', refresh.clicked === true, refresh);
   } else if (refresh.mode === 'api-fallback-after-ui-defect') {
-    run.report.add('discovery-refresh-through-ui', false, { mode: refresh.mode, defect: refresh.defect, note: 'recorded client UI defect; refresh route called as a test control instead' });
-    run.report.add('client-refresh-ui-defect-recorded', refresh.defect?.hostCanRefresh === true && refresh.defect?.buttonDisabled === true, refresh.defect);
+    // Expected at this point: the installed R_B probe release predates the
+    // client refresh fix (A/B were built from the pre-fix tree); only R_final3
+    // carries the fixed client. Record the defect, use the same frozen refresh
+    // route as a labelled test control, and verify the fixed-client refresh
+    // explicitly after the chain reaches R_final3.
+    run.report.add('discovery-refresh-through-ui', false, {
+      mode: refresh.mode,
+      defect: refresh.defect,
+      note: 'expected for R_B (pre-fix client); refresh route called as a labelled test control; fixed client verified after R_final3',
+    });
+    run.report.add('probe-release-B-client-predates-refresh-fix-recorded', refresh.defect?.hostCanRefresh === true && refresh.defect?.buttonDisabled === true, refresh.defect);
     run.report.add('discovery-refresh-test-control-succeeded', refresh.response?.status === 200 && refresh.response?.envelopeOk === true, refresh.response);
   } else {
     run.report.add('discovery-refresh-through-ui', false, refresh);
@@ -365,6 +376,36 @@ async function body() {
   run.report.add('probe-operator-survived-all-updates', Number.isInteger(Number(boot1.boot?.pid)) && finalInspect?.host !== null, { operatorPid: boot1.boot?.pid ?? null });
   evidence.final = { inspect: finalInspect, ui: await readUpdateUi(cdp), health: (await healthFromPage(cdp)).data };
   await captureScreenshot(cdp, 'final-updated');
+
+  // FIXED-CLIENT REFRESH GATE: R_final3 carries the client refresh fix. After the
+  // chain the page runs the 1.3.0 client; once the Host reports canRefresh=true
+  // the real UI refresh button must be enabled (no 6h disable), and clicking it
+  // must issue a real POST refresh that updates checkedAt without changing the
+  // discovery target.
+  const finalCanRefresh = await discoveryCanRefresh(context, { timeoutMs: 90000 });
+  run.report.add('final-client-host-can-refresh', finalCanRefresh.ok === true, finalCanRefresh.waitedMs ?? null);
+  const finalUiBeforeRefresh = await readUpdateUi(cdp);
+  const finalRefreshButton = finalUiBeforeRefresh.actionButtons.find((button) => button.action === 'refresh-update');
+  const checkedAtBefore = (await inspectFromPage(cdp)).data?.discovery?.checkedAt ?? null;
+  const requestsBefore = run.transport.audit().requests.length;
+  const finalRefreshClick = finalRefreshButton !== undefined && finalRefreshButton.disabled !== true
+    ? await clickAction(cdp, 'refresh-update', 'final-refresh-fix')
+    : { clicked: false, reason: 'button-disabled-or-absent', button: finalRefreshButton ?? null };
+  let checkedAtAfter = null;
+  const waitStarted = Date.now();
+  while (Date.now() - waitStarted < 15000) {
+    const current = await inspectFromPage(cdp);
+    if (current.data?.discovery?.checkedAt !== checkedAtBefore) {
+      checkedAtAfter = current.data.discovery.checkedAt;
+      break;
+    }
+    await sleep(300);
+  }
+  const requestsAdded = run.transport.audit().requests.length - requestsBefore;
+  evidence.finalRefreshGate = { finalCanRefresh, button: finalRefreshButton ?? null, click: finalRefreshClick, checkedAtBefore, checkedAtAfter, requestsAdded };
+  run.report.add('final-client-refresh-button-enabled-no-6h-disable', finalRefreshButton !== undefined && finalRefreshButton.disabled !== true, finalRefreshButton ?? null);
+  run.report.add('final-client-refresh-click-posted-real-refresh', finalRefreshClick.clicked === true && checkedAtAfter !== null, { click: finalRefreshClick, checkedAtBefore, checkedAtAfter });
+  run.report.add('final-client-refresh-made-one-discovery-request', requestsAdded === 1, { requestsAdded });
 }
 
 try {
@@ -406,6 +447,7 @@ try {
       dialogs: evidence.dialogs,
       uiActions: evidence.uiActions,
       refreshStep: evidence.refreshStep ?? null,
+      finalRefreshGate: evidence.finalRefreshGate ?? null,
       identity: evidence.identity,
       dataPreservation: evidence.dataPreservation,
       screenshots: evidence.screenshots,

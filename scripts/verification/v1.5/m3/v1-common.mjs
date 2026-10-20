@@ -407,15 +407,38 @@ export async function waitForRoute(context, { timeoutMs = 60000 } = {}) {
 // Real page: launch + UI helpers
 // ---------------------------------------------------------------------------
 
-export async function openRealPage(context, { chromePort = null } = {}) {
+export async function openRealPage(context, { chromePort = null, marketOpenTimeoutMs = 60000 } = {}) {
   const port = chromePort ?? await freePort();
   const cdp = await Cdp.launch({ port });
   const page = { cdp, port, chromePid: cdp.chrome ? cdp.chrome.pid : null, chromeDir: path.join('/tmp/dsh-v15/m3', `chrome-${port}`) };
   await cdp.navigate(context.host.url);
   await waitForDshPage(cdp, context.host.origin, { timeoutMs: 60000 });
   await dismissOverlays(cdp, null);
-  const opened = await openMarketPanel(cdp, null);
+
+  // Opening the Market panel: the sidebar may still be mounting right after
+  // boot, so retry the real trusted click until the panel reports open.
+  const started = Date.now();
+  let opened = await openMarketPanel(cdp, null);
+  while (opened.opened !== true && Date.now() - started < marketOpenTimeoutMs) {
+    await dismissOverlays(cdp, null);
+    const clicked = await cdp.eval(`(() => {
+      const candidates = [...document.querySelectorAll('button, [role="button"], a')]
+        .filter((node) => node.offsetParent !== null && (node.innerText || '').trim() === '游戏市场');
+      const node = candidates[0];
+      if (!node) return null;
+      const rect = node.getBoundingClientRect();
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    })()`);
+    if (clicked !== null) {
+      await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: clicked.x, y: clicked.y });
+      await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: clicked.x, y: clicked.y, button: 'left', buttons: 1, clickCount: 1 });
+      await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: clicked.x, y: clicked.y, button: 'left', buttons: 0, clickCount: 1 });
+    }
+    await sleep(700);
+    opened = await openMarketPanel(cdp, null);
+  }
   page.marketOpened = opened;
+  page.marketOpenedAt = new Date().toISOString();
   return page;
 }
 

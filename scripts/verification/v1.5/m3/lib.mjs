@@ -60,6 +60,22 @@ export const LOGS_ROOT = path.join(M3_ROOT, 'logs');
 export const RAW_ROOT = path.join(REPO_ROOT, 'docs/verification/v1.5/raw/m3');
 export const SHOT_DIR = path.join(RAW_ROOT, 'screenshots');
 export const PROBE_PLUGIN = path.join(HERE, 'probe-m3-host.js');
+export const PROBE_PLUGIN_NEUTRAL_DIR = path.join(M3_ROOT, 'probe-plugin');
+export const PROBE_PLUGIN_NEUTRAL = path.join(PROBE_PLUGIN_NEUTRAL_DIR, 'probe-m3-host.js');
+/**
+ * Neutral copy of the probe plugin, loaded by `file://` from /tmp/dsh-v15/m3.
+ * The Loader row's moduleName must NOT contain the bundle id: the native adapter
+ * (update-adapter.js devRowShadowOf) treats a `file:` row whose module name
+ * includes "dsh-game-market" as a dev row shadowing the package — the worktree
+ * path does contain it, which would block every update (recorded finding: the
+ * heuristic also false-positives on unrelated file: rows with the bundle id
+ * anywhere in the path; harness avoids it, product hardening optional).
+ */
+export function ensureNeutralProbePlugin() {
+  ensureDir(PROBE_PLUGIN_NEUTRAL_DIR);
+  fs.copyFileSync(PROBE_PLUGIN, PROBE_PLUGIN_NEUTRAL);
+  return pathToFileURL(PROBE_PLUGIN_NEUTRAL).href;
+}
 export const PROBE_URL = pathToFileURL(PROBE_PLUGIN).href;
 
 /** The frozen official discovery entry point (docs/verification/v1.5/m3-decisions.md §3). */
@@ -299,9 +315,10 @@ export function removeHome(home) {
 
 /** Inject the M3 probe Host plugin row (independent of the bundle under test). */
 export function injectProbeRow(home, { runDir, bootTag, fixedIndexUrl = FIXED_INDEX_URL, profile = 'web' }) {
+  const probeUrl = ensureNeutralProbePlugin();
   return HARNESS.injectProbeRow(home, {
     id: PROBE_ROW_ID,
-    entry: PROBE_URL,
+    entry: probeUrl,
     config: { outDir: runDir, bootTag, fixedIndexUrl },
     profile,
   });
@@ -326,10 +343,15 @@ export async function startHostNode(home, { port, logName, env = {}, nodeArgs = 
   ensureDir(LOGS_ROOT);
   const logPath = path.join(LOGS_ROOT, `${logName ?? `host-${port}`}.log`);
   const logFd = fs.openSync(logPath, 'w');
+  ensureDir(path.join(M3_ROOT, 'host-cwd'));
   const child = spawn(
     process.execPath,
     [...nodeArgs, DSH_BIN, 'web', '--no-open', '--port', String(port), '--host', '127.0.0.1'],
-    { env: { ...process.env, DSH_HOME: home, ...env }, stdio: ['ignore', logFd, logFd] },
+    {
+      env: { ...process.env, DSH_HOME: home, ...env },
+      cwd: path.join(M3_ROOT, 'host-cwd'),
+      stdio: ['ignore', logFd, logFd],
+    },
   );
   const handle = {
     child,
