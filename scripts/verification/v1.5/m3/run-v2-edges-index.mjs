@@ -52,6 +52,7 @@ import {
   bootstrapInstalledProfile,
   cleanupRun,
   clickAction,
+  confirmDialog,
   createRunContext,
   healthFromPage,
   inspectFromPage,
@@ -195,41 +196,56 @@ async function beginViaApi(page, targetId) {
   return { status: response.status, envelope: body, errorCode: body?.error?.code ?? null, data: body?.data ?? null };
 }
 
-async function runStepToUpdated(page, { expectVersion, expectedClientCommit }) {
-  const step = {};
-  const discovered = await waitForUi(page.cdp, (ui) => ui.banner !== null || ui.operation !== null, { timeoutMs: 30000 });
-  step.uiBefore = discovered.ui;
-  let begin = null;
-  if (discovered.ui?.banner !== null && discovered.ui?.banner !== undefined) {
-    begin = await beginUpdateThroughUi(page.cdp, { expectVersion });
-  } else {
-    const retry = await clickAction(page.cdp, 'retry-update', 'retry-update');
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    const { confirmDialog } = await import('./v1-common.mjs');
-    const confirm = await confirmDialog(page.cdp);
-    begin = { retry, confirm, dialog: null, operationId: (await probeObserve(bootstrap.context, 'step')).snapshot ? ((await inspectFromPage(page.cdp)).data?.operation?.operationId ?? null) : null };
+async function startOrRetryUpdate(page, { expectVersion }) {
+  const cdp = page.cdp;
+  const ui = await readUpdateUi(cdp);
+  if (ui.banner !== null) {
+    return beginUpdateThroughUi(cdp, { expectVersion });
   }
-  step.begin = begin;
-  run.report.add(`${expectVersion}-step-begin-operation`, /^upd_[a-f0-9]{16}$/.test(String(begin?.operationId)), begin?.operationId ?? null);
-  const terminal = await waitForOperation(page.cdp, ['stale-runtime', 'updated', 'failed', 'verification-failed', 'pending-restart'], { timeoutMs: 240000 });
-  step.transitions = terminal.transitions?.map((entry) => entry.state) ?? [];
-  if (terminal.state === 'stale-runtime') {
-    const refresh = await clickAction(page.cdp, 'refresh-page', 'refresh-page');
-    step.refreshPage = refresh;
+  const retryAction = ui.actionButtons.find((button) => button.action === 'retry-update');
+  if (retryAction !== undefined) {
+    const click = await clickAction(cdp, 'retry-update', 'retry-update');
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    const confirm = await confirmDialog(cdp);
+    let operationId = null;
+    const started = Date.now();
+    while (Date.now() - started < 30000) {
+      const inspect = (await inspectFromPage(cdp)).data;
+      if (inspect?.operation?.operationId !== undefined) {
+        operationId = inspect.operation.operationId;
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    }
+    return { mode: 'ui-retry-action', retry: click, confirm, operationId, banner: ui.banner, dialog: null };
+  }
+  // Last resort: labelled direct begin test control (the UI blocked its entry).
+  const inspect = (await inspectFromPage(cdp)).data;
+  const targetId = inspect?.target?.id ?? null;
+  if (targetId === null) return { mode: 'no-entry', operationId: null, banner: null, dialog: null };
+  const api = await beginViaApi(page, targetId);
+  const after = await pollInspect(page, (data) => data?.operation !== null, { timeoutMs: 15000 });
+  return { mode: 'api-test-control', api, operationId: after.data?.operation?.operationId ?? null, banner: null, dialog: null };
+}
+
+async function completeUpdateToTarget(page, { expectVersion, expectedClientCommit, label }) {
+  const cdp = page.cdp;
+  let terminal = await waitForOperation(cdp, ['stale-runtime', 'updated', 'failed', 'verification-failed', 'pending-restart'], { timeoutMs: 240000 });
+  const transitions = terminal.transitions?.map((entry) => entry.state) ?? [];
+  if (terminal.state === 'stale-runtime' || terminal.state === 'too-late') {
+    const refresh = await clickAction(cdp, 'refresh-page', 'refresh-page');
+    await new Promise((resolve) => setTimeout(resolve, 1200));
     const { reloadRealPage } = await import('./v1-common.mjs');
-    await reloadRealPage(page, bootstrap.context);
-    const settled = await waitForOperation(page.cdp, ['updated', 'failed', 'verification-failed'], { timeoutMs: 180000 });
-    step.terminal = settled;
-    run.report.add(`${expectVersion}-step-updated`, settled.state === 'updated', { state: settled.state, observation: settled.observation });
-  } else {
-    run.report.add(`${expectVersion}-step-updated`, terminal.state === 'updated', { state: terminal.state, observation: terminal.observation });
+    const reloaded = await reloadRealPage(page, bootstrap.context, { expectedClientCommit });
+    const settled = await waitForOperation(cdp, ['updated', 'failed', 'verification-failed'], { timeoutMs: 180000 });
+    const inspect = (await inspectFromPage(cdp)).data;
+    const ui = await readUpdateUi(cdp);
+    const served = await (await import('./v1-common.mjs')).readServedClientIdentity(cdp);
+    return { label, transitions, refresh, reloaded, terminal: settled, served, inspect, ui };
   }
-  const inspect = (await inspectFromPage(page.cdp)).data;
-  const ui = await readUpdateUi(page.cdp);
-  step.final = { inspect, ui };
-  run.report.add(`${expectVersion}-step-host-version`, inspect?.host?.version === expectVersion, inspect?.host ?? null);
-  run.report.add(`${expectVersion}-step-client-identity`, ui.identities?.[1]?.commitAttr === expectedClientCommit, { client: ui.identities?.[1] ?? null, expected: expectedClientCommit });
-  return step;
+  const inspect = (await inspectFromPage(cdp)).data;
+  const ui = await readUpdateUi(cdp);
+  return { label, transitions, terminal, inspect, ui };
 }
 
 async function body() {
@@ -279,23 +295,25 @@ async function body() {
     section.transitions = terminal.transitions?.map((entry) => entry.state) ?? [];
     evidence.transitions.push(...(terminal.transitions ?? []).map((entry) => ({ section: 'cancel', ...entry })));
     run.report.add('cancel-terminal-is-cancelled-or-too-late', terminal.state === 'cancelled' || terminal.state === 'too-late' || terminal.state === 'stale-runtime' || terminal.state === 'updated', section);
-    const cancelled = terminal.state === 'cancelled';
     const probeAfter = await probeObserve(bootstrap.context, 'cancel-after');
     section.probe = probeAfter.snapshot?.profile ?? null;
+    const cancelled = terminal.state === 'cancelled';
     if (cancelled) {
       run.report.add('cancel-does-not-continue-install', String(section.probe?.diskPackage?.version) === targets.versionA, { diskPackage: section.probe?.diskPackage ?? null });
-      // Re-begin (UI retry entry if visible, else banner) and complete to R_B.
-      section.complete = await runStepToUpdated(run.page, { expectVersion: targets.versionB, expectedClientCommit: expectedClientB });
+      const restart = await startOrRetryUpdate(run.page, { expectVersion: targets.versionB });
+      section.reBegin = restart;
+      run.report.add('cancel-rebegin-accepted', /^upd_[a-f0-9]{16}$/.test(String(restart.operationId)), restart);
+      section.completion = await completeUpdateToTarget(run.page, { expectVersion: targets.versionB, expectedClientCommit: expectedClientB, label: 'after-cancel' });
+      run.report.add('cancel-then-complete-updated', section.completion.terminal?.state === 'updated', section.completion.terminal?.state ?? null);
     } else if (terminal.state === 'too-late') {
       run.report.add('tol-late-never-shows-cancelled-rollback', terminal.state === 'too-late', { state: terminal.state });
-      section.complete = await runStepToUpdated(run.page, { expectVersion: targets.versionB, expectedClientCommit: expectedClientB }).catch((error) => ({ error: String(error && error.message) }));
-    } else if (terminal.state === 'stale-runtime') {
-      const refresh = await clickAction(cdp, 'refresh-page', 'cancel-complete-refresh');
-      const { reloadRealPage } = await import('./v1-common.mjs');
-      await reloadRealPage(run.page, bootstrap.context);
-      const settled = await waitForOperation(cdp, ['updated', 'failed', 'verification-failed'], { timeoutMs: 180000 });
-      run.report.add('cancel-race-updated-after-refresh', settled.state === 'updated', settled.state);
+      section.completion = await completeUpdateToTarget(run.page, { expectVersion: targets.versionB, expectedClientCommit: expectedClientB, label: 'too-late' });
+      run.report.add('too-late-install-continues-to-correct-terminal', ['updated', 'stale-runtime'].includes(section.completion.terminal?.state), section.completion.terminal?.state ?? null);
+    } else if (['stale-runtime', 'updated'].includes(terminal.state)) {
+      section.completion = await completeUpdateToTarget(run.page, { expectVersion: targets.versionB, expectedClientCommit: expectedClientB, label: 'cancel-race' });
+      run.report.add('cancel-race-updated-after-refresh', section.completion.terminal?.state === 'updated', section.completion.terminal?.state ?? null);
     }
+    if (section.completion?.served) run.report.add('after-cancel-served-client-is-B', section.completion.served.identity?.buildCommit === expectedClientB, section.completion.served);
     evidence.sections.cancel = section;
   }
 

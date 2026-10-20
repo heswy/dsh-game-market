@@ -87,17 +87,46 @@ export function parseTargets(argv, { versions = { a: '1.2.1', b: '1.2.2', final:
  *
  * Network is read-only; proxy env is applied only to these child git commands.
  */
-export function prepareTargetRepo({ final, commits = [], workDir = '/tmp/dsh-v15/m3/v1-target-repo', originUrl = REPO_URL } = {}) {
-  const proxyEnv = {
-    HTTPS_PROXY: 'http://127.0.0.1:7897',
-    HTTP_PROXY: 'http://127.0.0.1:7897',
-    ALL_PROXY: 'http://127.0.0.1:7897',
-    NO_PROXY: '127.0.0.1,localhost',
-  };
+const PROXY_ENV = {
+  HTTPS_PROXY: 'http://127.0.0.1:7897',
+  HTTP_PROXY: 'http://127.0.0.1:7897',
+  ALL_PROXY: 'http://127.0.0.1:7897',
+  NO_PROXY: '127.0.0.1,localhost',
+};
+const PROXY_KEYS = ['HTTPS_PROXY', 'HTTP_PROXY', 'ALL_PROXY', 'https_proxy', 'http_proxy', 'all_proxy', 'npm_config_https_proxy', 'npm_config_http_proxy', 'npm_config_proxy'];
+
+function gitNetworkEnv(mode) {
+  const base = { ...process.env };
+  for (const key of PROXY_KEYS) delete base[key];
+  base.NO_PROXY = '127.0.0.1,localhost';
+  if (mode === 'proxy') Object.assign(base, PROXY_ENV);
+  return base;
+}
+
+function sleepSync(ms) {
+  try {
+    spawnSync('sleep', [String(Math.max(1, Math.round(ms / 1000)))]);
+  } catch { /* ignore */ }
+}
+
+/**
+ * Fetch the pushed probe-release commits into an isolated temp clone (never the
+ * shared worktree) and return a git runner bound to that clone.
+ *
+ * Network mode is DIRECT-first with a recorded proxy fallback (current machine
+ * topology: local proxy broken, direct GitHub works). Each commit fetch retries
+ * with backoff (~up to 60s per mode) and every attempt/mode is recorded.
+ */
+export function prepareTargetRepo({ final, commits = [], workDir = `/tmp/dsh-v15/m3/v1-target-repo-${process.pid}-${Date.now().toString(36)}`, originUrl = REPO_URL } = {}) {
   fs.rmSync(workDir, { recursive: true, force: true });
   fs.mkdirSync(workDir, { recursive: true });
-  const run = (gitArgs, { allowFail = false } = {}) => {
-    const result = spawnSync('git', ['-C', workDir, ...gitArgs], { encoding: 'utf8', env: { ...process.env, ...proxyEnv }, maxBuffer: 256 * 1024 * 1024 });
+  const run = (gitArgs, { allowFail = false, mode = 'direct' } = {}) => {
+    // `-c http.proxy=` neutralizes any user-level git proxy config; the network
+    // mode decides whether an explicit proxy is configured instead.
+    const proxyArgs = mode === 'proxy'
+      ? ['-c', `http.proxy=${PROXY_ENV.HTTP_PROXY}`, '-c', `https.proxy=${PROXY_ENV.HTTP_PROXY}`]
+      : ['-c', 'http.proxy=', '-c', 'https.proxy='];
+    const result = spawnSync('git', ['-C', workDir, ...proxyArgs, ...gitArgs], { encoding: 'utf8', env: gitNetworkEnv(mode), maxBuffer: 256 * 1024 * 1024 });
     if (result.status !== 0) {
       if (allowFail) return { ok: false, status: result.status, stdout: result.stdout ?? '', stderr: result.stderr ?? '' };
       throw new Error(`git ${gitArgs.join(' ')} failed: ${(result.stderr || result.stdout || '').trim()}`);
@@ -106,29 +135,74 @@ export function prepareTargetRepo({ final, commits = [], workDir = '/tmp/dsh-v15
   };
   run(['init', '-q', '.']);
   run(['remote', 'add', 'origin', originUrl]);
+
   const fetchResults = [];
-  const fetchOne = (commit, mode) => {
+  const fetchOne = (commit, kind) => {
     const started = Date.now();
-    const result = run(['fetch', '--no-tags', 'origin', commit], { allowFail: true });
-    fetchResults.push({ commit, mode, ok: result.ok, elapsedMs: Date.now() - started, stderr: result.ok ? null : result.stderr.split('\n').slice(-3).join(' | ') });
-    return result.ok;
+    const attempts = [];
+    let ok = false;
+    let modeUsed = null;
+    let lastError = null;
+    for (const mode of ['direct', 'proxy']) {
+      for (let attempt = 1; attempt <= 3 && !ok; attempt += 1) {
+        const result = run(['fetch', '--no-tags', 'origin', commit], { allowFail: true, mode });
+        attempts.push({ mode, attempt, ok: result.ok, elapsedMs: Date.now() - started });
+        if (result.ok) {
+          ok = true;
+          modeUsed = mode;
+          break;
+        }
+        lastError = result.stderr.split('\n').slice(-2).join(' | ');
+        sleepSync(attempt === 1 ? 3000 : attempt === 2 ? 6000 : 12000);
+      }
+      if (ok) break;
+    }
+    fetchResults.push({ commit, kind, ok, mode: modeUsed, attempts, elapsedMs: Date.now() - started, stderr: ok ? null : lastError });
+    return ok;
   };
   fetchOne(final, 'full-history');
   for (const commit of commits) fetchOne(commit, 'by-sha');
   const gitRunner = (gitArgs, { allowFail = false } = {}) => {
-    const result = run(gitArgs, { allowFail });
+    const result = run(gitArgs, { allowFail, mode: 'direct' });
     return allowFail ? (result.ok ? result.stdout.trim() : null) : result.stdout.trim();
   };
-  return { dir: workDir, fetchResults, git: gitRunner };
+  const networkModes = [...new Set(fetchResults.map((item) => item.mode).filter(Boolean))];
+  return { dir: workDir, fetchResults, networkModes, git: gitRunner };
 }
 
 /**
- * Shared bootstrap for V1/V2 scenarios: transport fixture (fixed official URL),
- * fresh isolated profile, real exact-commit install of the base release R_A via
- * the probe operator's real pluginManager, and the frozen routes up.
- *
- * Returns everything a runner must track for cleanup. No page is opened here.
+ * Exact-commit install with bounded retry on the KNOWN transient failure mode
+ * observed in M0 and here: the native manager's GitHub connectivity pre-check
+ * can time out ("connection to github.com timed out after 5000ms") and fail the
+ * whole operation without touching the profile. Retries are recorded verbatim;
+ * only this transient/timeout shape is retried, never a real management failure.
  */
+export async function installExactWithRetry(probe, { spec, requestIdBase, attempts = 3, timeoutMs = 420000 } = {}) {
+  const tried = [];
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const requestId = `${requestIdBase}-try${attempt}`;
+    const startedAt = Date.now();
+    let response = null;
+    try {
+      response = await probe.send({ id: `install-${requestIdBase}-try${attempt}`, action: 'install', spec, requestId, enabled: true }, { timeoutMs });
+    } catch (error) {
+      tried.push({ attempt, requestId, thrown: String(error && error.message ? error.message : error), elapsedMs: Date.now() - startedAt });
+      await sleep(2000);
+      continue;
+    }
+    const result = response.result ?? null;
+    const transient = result?.application === 'failed' && (
+      result?.error?.code === 'operation-error' ||
+      (result?.packageResult?.kind === 'timeout') ||
+      /connection to github\.com timed out|network|ETIMEDOUT|ECONNRESET/i.test(String(result?.error?.diagnostic ?? result?.packageResult?.output ?? ''))
+    );
+    tried.push({ attempt, requestId, result, elapsedMs: Date.now() - startedAt, transient: transient === true });
+    if (!transient) return { result, attempts: tried, retried: attempt > 1 };
+    await sleep(4000);
+  }
+  return { result: null, attempts: tried, retried: tried.length > 1, exhausted: true };
+}
+
 export async function bootstrapInstalledProfile({
   targetA,
   fixtureTargetVersion,
@@ -158,18 +232,14 @@ export async function bootstrapInstalledProfile({
   context.probe = booted.probe;
   context.boot = booted.boot;
   context.hostPort = booted.host.port;
-  const install = await context.probe.send({
-    id: 'install-base-a',
-    action: 'install',
-    spec: targetA.spec,
-    requestId: `m3-${name}-base`,
-    enabled: true,
-  }, { timeoutMs: 420000 });
-  const result = install.result ?? null;
+  const installOutcome = await installExactWithRetry(context.probe, { spec: targetA.spec, requestIdBase: `m3-${name}-base` });
+  const result = installOutcome.result;
+  context.installAttempts = installOutcome.attempts;
+  context.installRetried = installOutcome.retried === true;
   let applied = null;
   if (hmr) applied = await waitForHostVersion(context.probe, targetA.version, { timeoutMs: 240000 });
   const routeReady = await waitForRoute(context, { timeoutMs: 90000 });
-  return { env, tls: env.tls, tlsDir: env.tlsDir, transport, home, name, context, booted, install: result, applied, routeReady };
+  return { env, tls: env.tls, tlsDir: env.tlsDir, transport, home, name, context, booted, install: result, installAttempts: installOutcome.attempts, installRetried: installOutcome.retried === true, exhausted: installOutcome.exhausted === true, applied, routeReady };
 }
 
 /**
@@ -324,6 +394,7 @@ export async function bootWithInstalledBase({
 
 /** Stop the current host of a context, optionally restart on the same home. */
 export async function restartContextHost(context, { logNamePrefix = null } = {}) {
+  if (!Array.isArray(context.restarts)) context.restarts = [];
   const previousPid = context.host ? hostPid(context.host) : null;
   if (context.host) {
     await context.host.stop();
@@ -442,11 +513,38 @@ export async function openRealPage(context, { chromePort = null, marketOpenTimeo
   return page;
 }
 
-export async function reloadRealPage(page, context) {
-  await page.cdp.send('Page.reload', { ignoreCache: true });
-  await waitForDshPage(page.cdp, context.host.origin, { timeoutMs: 60000 });
-  await dismissOverlays(page.cdp, null);
-  return openMarketPanel(page.cdp, null);
+export async function reloadRealPage(page, context, { attempts = 5, perAttemptMs = 25000, expectedClientCommit = null } = {}) {
+  const cdp = page.cdp;
+  const tried = [];
+  let mount = { ok: false };
+  let opened = { opened: false };
+  let served = null;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    if (attempt === 1) {
+      await cdp.send('Page.reload', { ignoreCache: true });
+    } else {
+      // A fresh navigation with a cache-buster is the user-equivalent "refresh
+      // again". It is needed when the DSH module manifest was served while the
+      // Host plugin was mid HMR re-apply: such a page can mount but still run
+      // the PREVIOUS client bundle, which would never satisfy activation.
+      await cdp.navigate(`${context.host.url}&r=${Date.now()}-${attempt}`);
+    }
+    await waitForDshPage(cdp, context.host.origin, { timeoutMs: 60000 });
+    mount = await waitForClientMount(cdp, { timeoutMs: perAttemptMs });
+    served = mount.ok === true ? await readServedClientIdentity(cdp) : null;
+    const identityOk = expectedClientCommit === null
+      || served?.found === true && served.identity?.buildCommit === expectedClientCommit;
+    tried.push({ attempt, mount, served, identityOk });
+    if (mount.ok === true && identityOk) break;
+    await sleep(3000);
+  }
+  await dismissOverlays(cdp, null);
+  opened = await openMarketPanel(cdp, null);
+  if (opened.opened !== true) {
+    await sleep(1500);
+    opened = await openMarketPanel(cdp, null);
+  }
+  return { opened, mount, attempts: tried, served, reNavigated: tried.length > 1, page: { ready: 'complete' } };
 }
 
 export async function closeRealPage(page) {
@@ -595,6 +693,60 @@ export async function healthFromPage(cdp) {
     body = JSON.parse(response.body);
   } catch { /* not json */ }
   return { status: response.status, data: body && body.ok === true ? body.data : null };
+}
+
+/** Read the Client bundle identity that the Host actually served to this page. */
+export async function readServedClientIdentity(cdp) {
+  return cdp.eval(`(async () => {
+    const url = performance.getEntriesByType('resource').map((entry) => entry.name)
+      .find((name) => name.includes('dsh-game-market/client.js'));
+    if (!url) return { found: false, reason: 'plugin-client-resource-not-loaded' };
+    try {
+      const text = await (await fetch(url)).text();
+      const marker = 'RAW_IDENTITY = ';
+      const index = text.indexOf(marker);
+      if (index < 0) return { found: false, reason: 'RAW_IDENTITY-assignment-not-found', url: url.slice(0, 200) };
+      const rest = text.slice(index + marker.length).trimStart();
+      const quote = rest[0];
+      if (quote !== '"' && quote !== "'") return { found: false, reason: 'RAW_IDENTITY-not-a-literal', url: url.slice(0, 200) };
+      let escaped = false;
+      let literalEnd = -1;
+      for (let i = 1; i < rest.length; i += 1) {
+        const ch = rest[i];
+        if (escaped) { escaped = false; continue; }
+        if (ch === String.fromCharCode(92)) { escaped = true; continue; }
+        if (ch === quote) { literalEnd = i; break; }
+      }
+      if (literalEnd < 0) return { found: false, reason: 'RAW_IDENTITY-literal-unterminated', url: url.slice(0, 200) };
+      const literal = rest.slice(0, literalEnd + 1);
+      let identity = null;
+      try {
+        identity = JSON.parse(JSON.parse(literal));
+      } catch (error) {
+        return { found: false, reason: 'RAW_IDENTITY-unparseable', url: url.slice(0, 200) };
+      }
+      return { found: true, url: url.slice(0, 200), identity };
+    } catch (error) {
+      return { found: false, reason: String(error && error.message ? error.message : error), url: url.slice(0, 200) };
+    }
+  })()`);
+}
+
+/** Wait until the game-market Client has mounted (panel root or sidebar entry). */
+export async function waitForClientMount(cdp, { timeoutMs = 25000 } = {}) {
+  const started = Date.now();
+  let last = null;
+  while (Date.now() - started < timeoutMs) {
+    last = await cdp.eval(`(() => {
+      const root = Boolean(document.querySelector('.dgm-root'));
+      const sidebar = [...document.querySelectorAll('button, [role="button"], a')]
+        .some((node) => node.offsetParent !== null && (node.innerText || '').trim() === '游戏市场');
+      return { ready: document.readyState, root, sidebar };
+    })()`).catch((error) => ({ error: String(error && error.message ? error.message : error) }));
+    if (last && (last.root === true || last.sidebar === true)) return { ok: true, waitedMs: Date.now() - started, state: last };
+    await sleep(500);
+  }
+  return { ok: false, waitedMs: Date.now() - started, state: last };
 }
 
 /** Same-origin POST from the page (test control / negative-control calls only). */

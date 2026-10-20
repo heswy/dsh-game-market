@@ -187,7 +187,7 @@ async function body() {
   }
   await new Promise((resolve) => setTimeout(resolve, 2500));
   for (const [index, page] of [page1, page2].entries()) {
-    const reloaded = await import('./v1-common.mjs').then((module) => module.reloadRealPage(page, bootstrap.context));
+    const reloaded = await import('./v1-common.mjs').then((module) => module.reloadRealPage(page, bootstrap.context, { expectedClientCommit: expectedClientB }));
     run.report.add(`window${index + 1}-page-reloaded`, reloaded?.opened === true, reloaded);
   }
   const settled = [];

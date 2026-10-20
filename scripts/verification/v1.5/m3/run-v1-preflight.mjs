@@ -36,6 +36,7 @@ import {
   ensureDir,
   finalizeRun,
   log,
+  sleep,
   verifyRuntime,
 } from './lib.mjs';
 import {
@@ -52,6 +53,7 @@ import {
   prepareTargetRepo,
   probeInspect,
   readReleaseIdentity,
+  readServedClientIdentity,
   readUpdateUi,
   trackHost,
   trackPage,
@@ -96,7 +98,13 @@ async function body() {
   });
   trackHost(run, bootstrap.context);
   evidence.install = bootstrap.install;
-  run.report.add('R_A-install-applied', bootstrap.install?.application === 'applied', bootstrap.install?.application ?? null);
+  evidence.installAttempts = bootstrap.installAttempts ?? null;
+  run.report.add('R_A-install-attempts-recorded', Array.isArray(bootstrap.installAttempts) && bootstrap.installAttempts.length > 0, { attempts: bootstrap.installAttempts ?? null, retried: bootstrap.installRetried === true });
+  if (bootstrap.install?.application !== 'applied') {
+    run.report.add('R_A-install-applied', false, bootstrap.install);
+    throw new Error(`R_A exact-commit install did not apply (${bootstrap.install?.application ?? 'no result'}); evidence keeps the raw native result`);
+  }
+  run.report.add('R_A-install-applied', true, bootstrap.install);
   run.report.add('R_A-install-version', bootstrap.install?.version === targets.versionA, bootstrap.install?.version ?? null);
   run.report.add('R_A-running-version', bootstrap.applied?.ok === true, bootstrap.applied?.ok ?? bootstrap.applied?.last);
 
@@ -121,20 +129,49 @@ async function body() {
   const health = (await healthFromPage(cdp)).data;
   run.report.add('health-version-A', health?.version === targets.versionA, health?.version ?? null);
 
-  // Refresh-fix note: the INSTALLED R_A probe release predates the client
-  // refresh fix (A/B releases were built from the pre-fix tree); its refresh
-  // button therefore stays disabled although the Host canRefresh is true. This
-  // is expected for R_A and verified again on the FIXED client after the V1
-  // chain reaches R_final3. Keep the host-side semantics asserted here.
+  // Served-bundle validity: the page must run the INSTALLED release client
+  // (not the worktree checkout), proven from the served plugin bundle itself.
+  const servedClient = await readServedClientIdentity(cdp);
+  evidence.servedClient = servedClient;
+  run.report.add('served-client-bundle-is-installed-A', servedClient.found === true && servedClient.identity?.buildCommit === expectedClientA && servedClient.identity?.version === targets.versionA, servedClient);
+
+  // Fixed-client refresh gate (A2 builds on the fixed tree): after the 60s
+  // manual throttle window the real UI refresh button MUST be enabled, and
+  // clicking it must issue a real POST refresh (checkedAt changes, one request,
+  // transient 60s throttle — no 6h disable).
   const canRefresh = await discoveryCanRefresh(bootstrap.context, { timeoutMs: 90000 });
   run.report.add('host-can-refresh-after-throttle', canRefresh.ok === true, canRefresh.waitedMs ?? null);
-  const uiBeforeRefresh = await readUpdateUi(cdp);
-  const refreshButton = uiBeforeRefresh.actionButtons.find((button) => button.action === 'refresh-update');
-  evidence.refresh = { canRefresh, button: refreshButton ?? null, uiBeforeRefresh: { discovery: uiBeforeRefresh.discovery, actions: uiBeforeRefresh.actionButtons } };
-  run.report.add('probe-release-A-client-predates-refresh-fix-recorded', refreshButton !== undefined && refreshButton.disabled === true, {
-    button: refreshButton ?? null,
-    note: 'R_A/R_B were built before the client refresh fix (c19bfe1); their UI refresh button stays disabled although Host canRefresh=true. Fixed client is only in R_final3; verify there.',
-  });
+  // The Client re-inspects on its own schedule; poll the real UI until the
+  // refresh control is enabled (bounded), then assert it.
+  let uiBeforeRefresh = await readUpdateUi(cdp);
+  let refreshButton = uiBeforeRefresh.actionButtons.find((button) => button.action === 'refresh-update');
+  const buttonWaitStarted = Date.now();
+  while ((refreshButton === undefined || refreshButton.disabled === true) && Date.now() - buttonWaitStarted < 30000) {
+    await sleep(1000);
+    uiBeforeRefresh = await readUpdateUi(cdp);
+    refreshButton = uiBeforeRefresh.actionButtons.find((button) => button.action === 'refresh-update');
+  }
+  evidence.refresh = { canRefresh, buttonWaitMs: Date.now() - buttonWaitStarted, button: refreshButton ?? null, uiBeforeRefresh: { discovery: uiBeforeRefresh.discovery, actions: uiBeforeRefresh.actionButtons } };
+  run.report.add('ui-refresh-button-enabled-after-throttle', refreshButton !== undefined && refreshButton.disabled !== true, refreshButton ?? null);
+  const requestsBefore = bootstrap.transport.audit().requests.length;
+  const checkedAtBefore = (await inspectFromPage(cdp)).data?.discovery?.checkedAt ?? null;
+  const clicked = await clickAction(cdp, 'refresh-update', 'preflight-refresh');
+  evidence.refresh.clicked = clicked;
+  let refreshed = null;
+  const waitStarted = Date.now();
+  while (Date.now() - waitStarted < 15000) {
+    const current = (await inspectFromPage(cdp)).data;
+    if (current?.discovery?.checkedAt !== checkedAtBefore) {
+      refreshed = current;
+      break;
+    }
+    await sleep(300);
+  }
+  evidence.refresh.after = refreshed;
+  evidence.refresh.requestsAdded = bootstrap.transport.audit().requests.length - requestsBefore;
+  run.report.add('ui-refresh-click-posted-real-refresh', clicked.clicked === true && refreshed !== null, { clicked, before: checkedAtBefore, after: refreshed?.discovery?.checkedAt ?? null });
+  run.report.add('ui-refresh-made-one-discovery-request', evidence.refresh.requestsAdded === 1, evidence.refresh.requestsAdded);
+  run.report.add('ui-refresh-no-6h-disable', refreshed?.discovery?.nextCheckAt !== undefined && Date.parse(refreshed?.discovery?.nextCheckAt) < Date.now() + 90 * 1000, { nextCheckAt: refreshed?.discovery?.nextCheckAt ?? null });
 
   ensureDir(SHOT_DIR);
   const shot = path.join(SHOT_DIR, `M3-V1-preflight-${run.runTag}.png`);

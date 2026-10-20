@@ -49,12 +49,24 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 const RAW_ROOT = path.join(REPO_ROOT, 'docs/verification/v1.5/raw/m3');
 const TEMP_REPO = process.env.M3_PROBE_REPO_DIR || '/tmp/dsh-v15/m3/probe-release-repo';
 const ORIGIN_URL = process.env.M3_PROBE_REMOTE || 'https://github.com/heswy/dsh-game-market.git';
-const GIT_PROXY_ENV = {
+const PROXY_ENV = {
   HTTPS_PROXY: 'http://127.0.0.1:7897',
   HTTP_PROXY: 'http://127.0.0.1:7897',
   ALL_PROXY: 'http://127.0.0.1:7897',
   NO_PROXY: '127.0.0.1,localhost',
 };
+const PROXY_KEYS = ['HTTPS_PROXY', 'HTTP_PROXY', 'ALL_PROXY', 'https_proxy', 'http_proxy', 'all_proxy', 'npm_config_https_proxy', 'npm_config_http_proxy', 'npm_config_proxy'];
+/** Direct-first network env (current topology), proxy fallback recorded. */
+function gitNetworkEnv(mode) {
+  const base = { ...process.env };
+  for (const key of PROXY_KEYS) delete base[key];
+  base.NO_PROXY = '127.0.0.1,localhost';
+  if (mode === 'proxy') Object.assign(base, PROXY_ENV);
+  return base;
+}
+function sleepSync(ms) {
+  spawnSync('sleep', [String(Math.max(1, Math.round(ms / 1000)))]);
+}
 const REQUIRED_TREE_FILES = ['index.js', 'client.js', 'cordis.patch.yml', 'platform-updates/release.json'];
 const REQUIRED_FILES_GLOBS = ['index.js', 'client.js', 'cordis.patch.yml', 'locale/*.json', 'packages/host/**', 'packages/shared/**', 'games/**', 'registry/**', 'platform-updates/release.json'];
 
@@ -126,8 +138,13 @@ function ensureTempRepo() {
   return TEMP_REPO;
 }
 
-function git(argsList, { allowFail = false, env = null } = {}) {
-  const result = spawnSync('git', ['-C', TEMP_REPO, ...argsList], {
+function git(argsList, { allowFail = false, env = null, mode = null } = {}) {
+  const proxyArgs = mode === null
+    ? []
+    : mode === 'proxy'
+      ? ['-c', `http.proxy=${PROXY_ENV.HTTP_PROXY}`, '-c', `https.proxy=${PROXY_ENV.HTTP_PROXY}`]
+      : ['-c', 'http.proxy=', '-c', 'https.proxy='];
+  const result = spawnSync('git', ['-C', TEMP_REPO, ...proxyArgs, ...argsList], {
     encoding: 'utf8',
     env: { ...process.env, ...(env ?? {}) },
     maxBuffer: 256 * 1024 * 1024,
@@ -142,16 +159,27 @@ function git(argsList, { allowFail = false, env = null } = {}) {
 function fetchCommit(commit, { full = false } = {}) {
   const started = Date.now();
   // full=true: whole chain (ancestry). full=false: exact-SHA want (the path
-  // pnpm uses for `https://…git#<40hex>`); no --depth so the temp clone never
-  // becomes shallow behind the ancestry checks.
-  const result = git(['fetch', '--no-tags', ...(full ? [] : []), args.origin, commit], { env: GIT_PROXY_ENV, allowFail: true });
-  return {
-    commit,
-    mode: full ? 'full-history' : 'by-sha',
-    ok: result.ok,
-    elapsedMs: Date.now() - started,
-    stderr: result.ok ? null : result.stderr.split('\n').slice(-4).join(' | '),
-  };
+  // pnpm uses for `https://…git#<40hex>`). Direct network first, proxy fallback;
+  // retries with backoff because the link is intermittent.
+  const attempts = [];
+  let ok = false;
+  let modeUsed = null;
+  let lastError = null;
+  for (const mode of ['direct', 'proxy']) {
+    for (let attempt = 1; attempt <= 3 && !ok; attempt += 1) {
+      const result = git(['fetch', '--no-tags', args.origin, commit], { env: gitNetworkEnv(mode), allowFail: true, mode });
+      attempts.push({ mode, attempt, ok: result.ok, elapsedMs: Date.now() - started });
+      if (result.ok) {
+        ok = true;
+        modeUsed = mode;
+        break;
+      }
+      lastError = result.stderr.split('\n').slice(-2).join(' | ');
+      sleepSync(attempt === 1 ? 3000 : attempt === 2 ? 6000 : 12000);
+    }
+    if (ok) break;
+  }
+  return { commit, mode: full ? 'full-history' : 'by-sha', networkMode: modeUsed, attempts, ok, elapsedMs: Date.now() - started, stderr: ok ? null : lastError };
 }
 
 // ---------------------------------------------------------------------------
@@ -207,6 +235,7 @@ const report = {
   tempClone: TEMP_REPO,
   targets: summaryTargets,
   fetchResults: [],
+  networkMode: null,
   lsRemote: null,
   checks,
   failedRequired: [],
@@ -218,6 +247,7 @@ try {
   ensureTempRepo();
   // Full fetch of R_final brings the whole chain (temporary clone only).
   report.fetchResults.push(fetchCommit(args.final, { full: true }));
+  report.networkMode = report.fetchResults[0].networkMode ?? null;
   add(`fetch-full-history-${args.final.slice(0, 12)}`, report.fetchResults[0].ok === true, report.fetchResults[0]);
 
   // Ancestry must be checked BEFORE any further fetch could truncate history.
@@ -233,7 +263,16 @@ try {
   }
 
   // ls-remote (read-only network) for the pushed refs / tags.
-  const lsRemoteRaw = git(['ls-remote', args.origin], { env: GIT_PROXY_ENV, allowFail: true });
+  let lsRemoteRaw = { ok: false, stdout: '', stderr: 'not attempted' };
+  for (const mode of ['direct', 'proxy']) {
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      lsRemoteRaw = git(['ls-remote', args.origin], { env: gitNetworkEnv(mode), allowFail: true, mode });
+      lsRemoteRaw.networkMode = mode;
+      if (lsRemoteRaw.ok) break;
+      sleepSync(attempt === 1 ? 3000 : 6000);
+    }
+    if (lsRemoteRaw.ok) break;
+  }
   const remoteRefs = new Map();
   if (lsRemoteRaw.ok) {
     for (const line of lsRemoteRaw.stdout.split('\n').filter(Boolean)) {
@@ -242,6 +281,7 @@ try {
     }
     report.lsRemote = {
       ok: true,
+      networkMode: lsRemoteRaw.networkMode ?? null,
       featureBranch: { ref: args.refFinal, sha: remoteRefs.get(args.refFinal) ?? null },
       targetRefs: [...remoteRefs.entries()].filter(([ref, sha]) => summaryTargets.some((target) => target.commit === sha)).map(([ref, sha]) => ({ ref, sha })),
       tagRefsAtTargets: [...remoteRefs.entries()].filter(([ref, sha]) => ref.startsWith('refs/tags/') && summaryTargets.some((target) => target.commit === sha)),
@@ -327,7 +367,7 @@ try {
   } else {
     add('git-ls-remote-succeeded', false, report.lsRemote.error);
   }
-  const mainIndex = git(['ls-remote', args.origin, 'refs/heads/main'], { env: GIT_PROXY_ENV, allowFail: true });
+  const mainIndex = git(['ls-remote', args.origin, 'refs/heads/main'], { env: gitNetworkEnv('direct'), allowFail: true, mode: 'direct' });
   record('origin-main-ref', mainIndex.ok ? mainIndex.stdout : { error: mainIndex.stderr });
 } catch (error) {
   add('acceptance-completed-without-throw', false, String(error && error.stack ? error.stack : error));

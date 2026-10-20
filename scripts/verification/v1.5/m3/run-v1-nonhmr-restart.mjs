@@ -188,7 +188,7 @@ async function body() {
   const name = `v1-nonhmr-${run.runTag}`;
   const home = await makeIsolatedHome(name, { port: await freePort() });
   const patchFile = writeNoHmrPatch(home);
-  const context = { name, home, transport: run.transport };
+  const context = { name, home, transport: run.transport, restarts: [] };
   run.context = context;
   run.report.add('fresh-isolated-home', home.startsWith('/tmp/dsh-v15/m3/'), home);
   run.report.add('non-hmr-profile-patch-written', path.basename(patchFile) === 'cordis.patch.yml', { patchFile });
@@ -196,14 +196,10 @@ async function body() {
   // Boot 1: no bundle yet. Install R_A returns restart-required (no HMR service).
   const boot1 = await bootIndex(context, { transport: run.transport, name, home, bootIndex: 1, tag: 'boot' });
   run.report.add('boot1-hmr-capability-absent', boot1.boot?.capability?.managerContextHmr === false, boot1.boot?.capability ?? null);
-  const install = await context.probe.send({
-    id: 'nonhmr-install-base',
-    action: 'install',
-    spec: byKey.A.spec,
-    requestId: `m3-v1-nonhmr-install-a-${run.runTag}`,
-    enabled: true,
-  }, { timeoutMs: 420000 });
-  evidence.installs.push({ phase: 'install-R_A-nonhmr', result: install.result ?? null, elapsedMs: install.elapsedMs ?? null });
+  const { installExactWithRetry } = await import('./v1-common.mjs');
+  const outcome = await installExactWithRetry(context.probe, { spec: byKey.A.spec, requestIdBase: `m3-v1-nonhmr-install-a-${run.runTag}` });
+  const install = { result: outcome.result, attempts: outcome.attempts };
+  evidence.installs.push({ phase: 'install-R_A-nonhmr', result: install.result ?? null, attempts: outcome.attempts, retried: outcome.retried === true });
   run.report.add('install-R_A-application-restart-required', install.result?.application === 'restart-required', install.result?.application ?? null);
   run.report.add('install-R_A-restart-reason-no-hmr', install.result?.restartReason === 'no-hmr', install.result?.restartReason ?? null);
   run.report.add('install-R_A-version-matches', install.result?.version === byKey.A.version, install.result?.version ?? null);
@@ -282,7 +278,7 @@ async function body() {
   run.report.add('restart-host-epoch-changed', inspectAfterRestart?.host?.hostEpoch !== hostEpochBeforeUpdate, { before: hostEpochBeforeUpdate, after: inspectAfterRestart?.host?.hostEpoch ?? null, note: 'informational only: never used as restart proof' });
 
   // Page reload after the Host restart; Client reports its own B identity.
-  await reloadRealPage(run.page, context);
+  await reloadRealPage(run.page, context, { expectedClientCommit: expectedClient.B });
   const settled = await waitForOperation(cdp, ['updated', 'verification-failed', 'failed', 'cancelled'], { timeoutMs: 180000 });
   run.report.record('after-restart-transitions', settled.transitions?.map((entry) => entry.state) ?? []);
   run.report.add('after-restart-updated', settled.state === 'updated', { state: settled.state, observation: settled.observation });

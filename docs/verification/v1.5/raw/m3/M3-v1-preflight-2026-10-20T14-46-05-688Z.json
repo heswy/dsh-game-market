@@ -1,0 +1,415 @@
+{
+  "id": "M3-V1-preflight",
+  "title": "V1 environment preflight: installed A identity, real page/UI, discovery target B, refresh fix",
+  "commands": [
+    "node scripts/verification/v1.5/m3/run-v1-preflight.mjs --a 344ce99c57f03645cbb246a75a45845fc1e9d789 --b ef8197dc3a6979227037e7739a2aac9e3ea4a709 --final bf6c37f23f57c246c1f491b6e5aa9272c178c8e9"
+  ],
+  "startedAt": "2026-10-20T14:46:05.688Z",
+  "finishedAt": "2026-10-20T14:54:11.588Z",
+  "passed": false,
+  "failed": [
+    "R_A-install-applied",
+    "R_A-install-version",
+    "R_A-running-version",
+    "host-capability-can-begin-update",
+    "host-not-dev-row-shadowed",
+    "host-identity-loaded-version",
+    "host-identity-loaded-commit",
+    "discovery-target-is-R_B",
+    "real-page-market-panel-opened",
+    "update-section-present",
+    "ui-host-identity-A",
+    "ui-client-build-is-installed-A",
+    "ui-update-banner-present",
+    "health-version-A",
+    "preflight-completed-without-throw"
+  ],
+  "checks": [
+    {
+      "name": "runtime-extraction-matches-installed-app",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "target-repo-fetch-full-history",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "commit": "bf6c37f23f57c246c1f491b6e5aa9272c178c8e9",
+        "mode": "full-history",
+        "ok": true,
+        "elapsedMs": 3998,
+        "stderr": null
+      }
+    },
+    {
+      "name": "target-repo-fetch-by-sha",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "commit": "344ce99c57f03645cbb246a75a45845fc1e9d789",
+        "mode": "by-sha",
+        "ok": true,
+        "elapsedMs": 24,
+        "stderr": null
+      }
+    },
+    {
+      "name": "target-repo-fetch-by-sha",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "commit": "ef8197dc3a6979227037e7739a2aac9e3ea4a709",
+        "mode": "by-sha",
+        "ok": true,
+        "elapsedMs": 24,
+        "stderr": null
+      }
+    },
+    {
+      "name": "expected-client-identity-A",
+      "ok": true,
+      "required": true,
+      "detail": "1f6978482a375736bfd419c168b63aec4531c255"
+    },
+    {
+      "name": "expected-client-identity-A-version",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "schemaVersion": 1,
+        "version": "1.2.1",
+        "clientBuildCommit": "1f6978482a375736bfd419c168b63aec4531c255",
+        "repo": "https://github.com/heswy/dsh-game-market",
+        "artifacts": {
+          "algorithm": "sha256-tree-v1",
+          "roots": [
+            "client.js",
+            "games",
+            "registry"
+          ],
+          "sha256": "08c9acdf24e17a0f834c8027769bc3a10e1c6ed4cef27f68d1d5687e6aaba19e",
+          "files": 93,
+          "bytes": 3402366
+        }
+      }
+    },
+    {
+      "name": "R_A-install-applied",
+      "ok": false,
+      "required": true,
+      "detail": "failed"
+    },
+    {
+      "name": "R_A-install-version",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "R_A-running-version",
+      "ok": false,
+      "required": true,
+      "detail": false
+    },
+    {
+      "name": "host-capability-can-begin-update",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "host-not-dev-row-shadowed",
+      "ok": false,
+      "required": true,
+      "detail": {}
+    },
+    {
+      "name": "host-identity-loaded-version",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "host-identity-loaded-commit",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "commit": null,
+        "expected": "344ce99c57f03645cbb246a75a45845fc1e9d789"
+      }
+    },
+    {
+      "name": "discovery-target-is-R_B",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real-page-market-panel-opened",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "opened": false,
+        "steps": [
+          {
+            "sidebar": {
+              "label": "sidebar-market",
+              "clicked": false,
+              "reason": "not-found"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-section-present",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "discovery": null,
+        "identities": []
+      }
+    },
+    {
+      "name": "ui-host-identity-A",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "ui-client-build-is-installed-A",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "client": null,
+        "expected": {
+          "version": "1.2.1",
+          "buildCommit": "1f6978482a375736bfd419c168b63aec4531c255"
+        }
+      }
+    },
+    {
+      "name": "ui-not-blocked",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "ui-update-banner-present",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "health-version-A",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "preflight-completed-without-throw",
+      "ok": false,
+      "required": true,
+      "detail": "Error: evaluate failed: SyntaxError: Invalid regular expression: missing /\n    at Cdp.eval (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/lib/harness.mjs:317:13)\n    at async body (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-preflight.mjs:128:24)\n    at async file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-preflight.mjs:171:3"
+    },
+    {
+      "name": "cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "run-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T14:54:11.556Z",
+        "ports": [
+          {
+            "port": 50376,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 51149,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 37987,
+            "alive": false
+          },
+          {
+            "pid": 48264,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v1-preflight-v1-preflight-mvgsq1kn-62a54e",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-51149",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "transport-and-tls-cleaned",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "v1-preflight-transport-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T14:54:11.588Z",
+        "ports": [
+          {
+            "port": 50371,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/scenario-v1-preflight-mvgsq1kn-62a54e/tls",
+            "exists": false
+          }
+        ]
+      }
+    }
+  ],
+  "runTag": "v1-preflight-mvgsq1kn-62a54e",
+  "targets": {
+    "a": "344ce99c57f03645cbb246a75a45845fc1e9d789",
+    "b": "ef8197dc3a6979227037e7739a2aac9e3ea4a709",
+    "final": "bf6c37f23f57c246c1f491b6e5aa9272c178c8e9",
+    "versionA": "1.2.1",
+    "versionB": "1.2.2",
+    "versionFinal": "1.3.0",
+    "homeSuffix": null
+  },
+  "evidenceLevel": "isolated-browser preflight (real installed bundle + real page/UI) + isolated transport fixture",
+  "install": {
+    "stage": "install",
+    "target": "https://github.com/heswy/dsh-game-market.git#344ce99c57f03645cbb246a75a45845fc1e9d789",
+    "enabled": true,
+    "changed": false,
+    "application": "failed",
+    "registries": [],
+    "packageResult": {
+      "exitCode": 1,
+      "output": "dsh: connection to github.com timed out after 5000ms\n",
+      "truncated": false,
+      "logPath": "/tmp/dsh-v15/m3/home-v1-preflight-v1-preflight-mvgsq1kn-62a54e/profiles/web/.plugin-manager/logs/github-connection-F6FV1k/git.log",
+      "kind": "timeout"
+    },
+    "failedAt": "spec-host",
+    "error": {
+      "code": "operation-error",
+      "diagnostic": "dsh: connection to github.com timed out after 5000ms\n"
+    }
+  },
+  "ui": {
+    "sectionPresent": false,
+    "sectionHidden": null,
+    "discovery": null,
+    "identities": [],
+    "blocked": null,
+    "coordination": null,
+    "operation": null,
+    "banner": null,
+    "dialog": null,
+    "actionButtons": [],
+    "bodyText": "新会话\n⌥\n⌘\nN\n插件\n自动化任务\n工作区\n默认工作区\n新会话\n更多\n探索未至之境\n预览版\n默认工作区\n标准模式\n描述你想要构建的内容, / 调用指令, @ 文件或对话\n工作区内修改\n请选择模型"
+  },
+  "refresh": null,
+  "screenshots": [],
+  "cleanup": {
+    "hosts": [
+      {
+        "pid": 37987,
+        "closed": {
+          "pid": 37987,
+          "port": 50376,
+          "closed": true,
+          "alreadyClosed": false
+        }
+      }
+    ],
+    "pages": [
+      {
+        "chromePid": 48264,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-51149"
+      }
+    ],
+    "homes": [
+      {
+        "home": "/tmp/dsh-v15/m3/home-v1-preflight-v1-preflight-mvgsq1kn-62a54e",
+        "removed": true
+      }
+    ],
+    "proof": {
+      "label": "run-cleanup",
+      "ok": true,
+      "checkedAt": "2026-10-20T14:54:11.556Z",
+      "ports": [
+        {
+          "port": 50376,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 51149,
+          "accepting": false,
+          "listenerPids": []
+        }
+      ],
+      "pids": [
+        {
+          "pid": 37987,
+          "alive": false
+        },
+        {
+          "pid": 48264,
+          "alive": false
+        }
+      ],
+      "dirs": [
+        {
+          "dir": "/tmp/dsh-v15/m3/home-v1-preflight-v1-preflight-mvgsq1kn-62a54e",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-51149",
+          "exists": false
+        }
+      ]
+    }
+  },
+  "thrown": "Error: evaluate failed: SyntaxError: Invalid regular expression: missing /\n    at Cdp.eval (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/lib/harness.mjs:317:13)\n    at async body (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-preflight.mjs:128:24)\n    at async file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-preflight.mjs:171:3",
+  "environment": {
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "repoRoot": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update"
+  },
+  "failedRequired": [
+    "R_A-install-applied",
+    "R_A-install-version",
+    "R_A-running-version",
+    "host-capability-can-begin-update",
+    "host-not-dev-row-shadowed",
+    "host-identity-loaded-version",
+    "host-identity-loaded-commit",
+    "discovery-target-is-R_B",
+    "real-page-market-panel-opened",
+    "update-section-present",
+    "ui-host-identity-A",
+    "ui-client-build-is-installed-A",
+    "ui-update-banner-present",
+    "health-version-A",
+    "preflight-completed-without-throw"
+  ]
+}

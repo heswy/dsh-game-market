@@ -1,0 +1,264 @@
+{
+  "id": "M3-V1-nonhmr-restart",
+  "title": "Non-HMR pending-restart -> Host restart -> updated (real Client UI + real restart)",
+  "commands": [
+    "node scripts/verification/v1.5/m3/run-v1-nonhmr-restart.mjs --a 344ce99c57f03645cbb246a75a45845fc1e9d789 --b ef8197dc3a6979227037e7739a2aac9e3ea4a709 --final bf6c37f23f57c246c1f491b6e5aa9272c178c8e9"
+  ],
+  "startedAt": "2026-10-20T15:17:10.427Z",
+  "finishedAt": "2026-10-20T15:17:25.534Z",
+  "passed": false,
+  "failed": [
+    "target-repo-fetch-full-history-bf6c37f23f57",
+    "target-repo-fetch-by-sha-344ce99c57f0",
+    "target-repo-fetch-by-sha-ef8197dc3a69",
+    "target-A-commit-exists",
+    "target-A-version",
+    "target-A-release-identity",
+    "target-B-commit-exists",
+    "target-B-version",
+    "target-B-release-identity",
+    "target-FINAL-commit-exists",
+    "target-FINAL-version",
+    "target-FINAL-release-identity",
+    "precondition-probe-releases-available",
+    "scenario-completed-without-throw"
+  ],
+  "checks": [
+    {
+      "name": "runtime-extraction-matches-installed-app",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "target-repo-fetch-full-history-bf6c37f23f57",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "commit": "bf6c37f23f57c246c1f491b6e5aa9272c178c8e9",
+        "mode": "full-history",
+        "ok": false,
+        "elapsedMs": 14628,
+        "stderr": "fatal: early EOF | fatal: fetch-pack: invalid index-pack output | "
+      }
+    },
+    {
+      "name": "target-repo-fetch-by-sha-344ce99c57f0",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "commit": "344ce99c57f03645cbb246a75a45845fc1e9d789",
+        "mode": "by-sha",
+        "ok": false,
+        "elapsedMs": 51,
+        "stderr": "fatal: unable to access 'https://github.com/heswy/dsh-game-market.git/': Failed to connect to 127.0.0.1 port 7897 after 0 ms: Couldn't connect to server | "
+      }
+    },
+    {
+      "name": "target-repo-fetch-by-sha-ef8197dc3a69",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "commit": "ef8197dc3a6979227037e7739a2aac9e3ea4a709",
+        "mode": "by-sha",
+        "ok": false,
+        "elapsedMs": 32,
+        "stderr": "fatal: unable to access 'https://github.com/heswy/dsh-game-market.git/': Failed to connect to 127.0.0.1 port 7897 after 0 ms: Couldn't connect to server | "
+      }
+    },
+    {
+      "name": "target-A-commit-exists",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "commit": "344ce99c57f03645cbb246a75a45845fc1e9d789"
+      }
+    },
+    {
+      "name": "target-A-version",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "actual": null,
+        "expected": "1.2.1"
+      }
+    },
+    {
+      "name": "target-A-release-identity",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "target-B-commit-exists",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "commit": "ef8197dc3a6979227037e7739a2aac9e3ea4a709"
+      }
+    },
+    {
+      "name": "target-B-version",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "actual": null,
+        "expected": "1.2.2"
+      }
+    },
+    {
+      "name": "target-B-release-identity",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "target-FINAL-commit-exists",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "commit": "bf6c37f23f57c246c1f491b6e5aa9272c178c8e9"
+      }
+    },
+    {
+      "name": "target-FINAL-version",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "actual": null,
+        "expected": "1.3.0"
+      }
+    },
+    {
+      "name": "target-FINAL-release-identity",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "precondition-probe-releases-available",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "note": "R_A/R_B/R_final must be pushed first (not-run otherwise)"
+      }
+    },
+    {
+      "name": "scenario-completed-without-throw",
+      "ok": false,
+      "required": true,
+      "detail": "Error: probe release commits are not available locally (V1 not-run precondition)\n    at body (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-nonhmr-restart.mjs:177:36)\n    at file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-nonhmr-restart.mjs:305:9"
+    },
+    {
+      "name": "cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "run-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T15:17:25.534Z",
+        "ports": [],
+        "pids": [],
+        "dirs": []
+      }
+    },
+    {
+      "name": "transport-and-tls-cleaned",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "v1-nonhmr-transport-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T15:17:25.534Z",
+        "ports": [],
+        "pids": [],
+        "dirs": []
+      }
+    }
+  ],
+  "runTag": "v1-nonhmr-restart-mvgtu0ey-03cbb8",
+  "targets": {
+    "a": "344ce99c57f03645cbb246a75a45845fc1e9d789",
+    "b": "ef8197dc3a6979227037e7739a2aac9e3ea4a709",
+    "final": "bf6c37f23f57c246c1f491b6e5aa9272c178c8e9",
+    "versionA": "1.2.1",
+    "versionB": "1.2.2",
+    "versionFinal": "1.3.0",
+    "homeSuffix": null
+  },
+  "evidenceLevel": "isolated-browser (real installed DSH runtime + real DSH page + real Client UI clicks + real Host restart) + isolated transport fixture",
+  "notProven": [
+    "real Desktop/Electron main process (isolated dsh web only)",
+    "production official index content (fixture transport)"
+  ],
+  "targetIdentities": [
+    {
+      "key": "A",
+      "commit": "344ce99c57f03645cbb246a75a45845fc1e9d789",
+      "version": "1.2.1",
+      "exists": false,
+      "packageVersion": null,
+      "release": null
+    },
+    {
+      "key": "B",
+      "commit": "ef8197dc3a6979227037e7739a2aac9e3ea4a709",
+      "version": "1.2.2",
+      "exists": false,
+      "packageVersion": null,
+      "release": null
+    },
+    {
+      "key": "FINAL",
+      "commit": "bf6c37f23f57c246c1f491b6e5aa9272c178c8e9",
+      "version": "1.3.0",
+      "exists": false,
+      "packageVersion": null,
+      "release": null
+    }
+  ],
+  "boots": [],
+  "installs": [],
+  "transitions": [],
+  "dialogs": [],
+  "uiActions": [],
+  "dataPreservation": null,
+  "beforeRestart": null,
+  "afterRestart": null,
+  "screenshots": [],
+  "cleanup": {
+    "hosts": [],
+    "pages": [],
+    "homes": [],
+    "proof": {
+      "label": "run-cleanup",
+      "ok": true,
+      "checkedAt": "2026-10-20T15:17:25.534Z",
+      "ports": [],
+      "pids": [],
+      "dirs": []
+    }
+  },
+  "thrown": "Error: probe release commits are not available locally (V1 not-run precondition)\n    at body (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-nonhmr-restart.mjs:177:36)\n    at file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-nonhmr-restart.mjs:305:9",
+  "environment": {
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "repoRoot": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update"
+  },
+  "failedRequired": [
+    "target-repo-fetch-full-history-bf6c37f23f57",
+    "target-repo-fetch-by-sha-344ce99c57f0",
+    "target-repo-fetch-by-sha-ef8197dc3a69",
+    "target-A-commit-exists",
+    "target-A-version",
+    "target-A-release-identity",
+    "target-B-commit-exists",
+    "target-B-version",
+    "target-B-release-identity",
+    "target-FINAL-commit-exists",
+    "target-FINAL-version",
+    "target-FINAL-release-identity",
+    "precondition-probe-releases-available",
+    "scenario-completed-without-throw"
+  ]
+}

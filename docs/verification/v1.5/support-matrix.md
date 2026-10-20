@@ -143,8 +143,9 @@ Lead 实测反例：`apply()` 时读得 `hmr=false`（`Service.init` 未完成�
 | 旧 Client + 新 Host → `stale-runtime(client-old)`，刷新后 `updated` | Host 目标测试 | **实现层通过**；真实 **not-run** | 契约 §9.5.1 规则 6；V1-6 待跑 |
 | 不伪报已升级：`applied` 中间态；`pending-restart`/`verification-failed`/`stale-runtime` 不得显示成功；无伪百分比 | client 状态映射测试 + Host 目标测试 | **实现层通过（automated）**；真实 UI **not-run** | M3-V1 待跑 |
 | 隔离验证环境自证：运行时身份/解包一致性/真实 DSH 页面/端口与进程清理 | V0 harness | **已实测（isolated-browser）** | [M3-V0-harness](raw/m3/M3-V0-harness-2026-10-20T11-48-47-688Z.json) 33/32，exit 0 |
-| 验证专用 probe releases 身份（`R_A`=1.2.1 / `R_B`=1.2.2 / `R_final3`=1.3.0）与精确 commit 安装性 | 只读 git 身份核对 + probe-release acceptance 证据 + V1 真实安装 | **身份/remote fetch 已验证（79/79；FINAL 为已取代的 af99227，见下）；`R_final3` 身份与新 head 安装性待 verification 重跑；真实安装 not-run** | [M3-probe-release-acceptance](raw/m3/M3-probe-release-acceptance-2026-10-20T12-39-40-569Z.json)；`acceptance-matrix.md` §14；V1 待跑 |
-| 首轮真实 V1 链路发现的 client refresh-throttle 缺陷 | V1 partial run（isolated-browser，af99227 上）→ 修复 `c19bfe1`（`update-section.js`/`update-state.js`/`locale.js`/tests + `client.js`）→ 重新 release 为 `R_final3` | **缺陷已发现并修复（修复提交已入库）；修复后的端到端复验 not-run** | 修复提交 `c19bfe1`；V1 首轮证据待 verification 发布（当前仅有已提交的 2 张 UI 截图）；本节状态不得写成已通过 |
+| 验证专用 probe releases 身份（`A2`=1.2.1 / `B2`=1.2.2 / `R_final4`=1.3.0；固定代码树）与精确 commit 安装性 | 只读 git 身份核对 + probe-release acceptance 证据 + V1 真实安装 | **身份/remote fetch 已验证（79/79；`M3-probe-release-acceptance-2026-10-20T14-45-57-669Z.json`，待 Lead 提交后链接）；真实安装/更新链 not-run** | `acceptance-matrix.md` §14；V1 待跑。历史 `R_A`/`R_B`/`R_final2`/`R_final3` 全部已被取代，不得作为目标 |
+| 首轮真实 V1 链路发现的 client refresh-throttle 缺陷 | V1 partial run（isolated-browser，`af99227` 上）→ 修复 `c19bfe1`（`update-section.js`/`update-state.js`/`locale.js`/tests + `client.js`）→ 重建固定代码树 probe releases `A2`/`B2` + `R_final4` | **缺陷已发现并修复（修复提交已入库）；固定代码树链的端到端复验 not-run** | 修复提交 `c19bfe1`；旧 preflight 记录旧 `R_A`/`R_B` 刷新按钮 disabled；V1 首轮证据待 verification 发布；本节状态不得写成已通过 |
+| 旧 head/旧 probe releases 被取代（`5c23344` / `af99227` / `f218ea8` / `R_A` / `R_B`） | 见 `acceptance-matrix.md` §20.10 | **不得再作为验证目标**；仅作历史/缺陷发现/旧构建确定性参考 | 当前唯一目标：`R_final4` + `A2`/`B2` |
 
 ## 10. M0 未验证项在 M3 的去向（resolved / pending / residual）
 
@@ -166,7 +167,7 @@ Lead 实测反例：`apply()` 时读得 `hmr=false`（`Service.init` 未完成�
 |---|---|
 | 真实 Desktop / Electron 主进程内的发现网络栈、原生窗口 UI、真实用户 profile | 本轮不碰 `~/.dsh`；证据全部来自隔离 `dsh web` + headless Chrome |
 | 生产官方索引的真实内容与格式正确性 | 从未抓取/写入生产索引；夹具 body 是验证数据 |
-| V1/V2 全部端到端场景（HMR A→B→R_final3、恢复、非 HMR 真实重启、混合态、多窗口、协调、取消、能力 unknown、dev-row、恶意索引、失败恢复） | `not-run`（首轮 af99227 只跑到发现 refresh-throttle 缺陷即回修，已按 `c19bfe1`→`R_final3` 重新构建；复验待跑），见 `plugin-update-m3.md` §3/§4 与 `acceptance-matrix.md` §15–§19 |
+| V1/V2 全部端到端场景（HMR `A2→B2→R_final4`、恢复、非 HMR 真实重启、混合态、多窗口、协调、取消、能力 unknown、dev-row、恶意索引、失败恢复） | `not-run`（首轮 `af99227` 只跑到发现 refresh-throttle 缺陷即回修；固定代码树 probe releases `A2`/`B2` + `R_final4` 已就绪，V1/V2 复验待跑），见 `plugin-update-m3.md` §3/§4 与 `acceptance-matrix.md` §15–§19 |
 | 跨进程 profile 更新锁竞争 | 实现复用已验证安装锁；真实两进程压测未做 |
 | 真实 ENOSPC/权限/游戏运行中保存失败注入 | 自动化用假 manager/注入；隔离 profile 真实故障归 V2 |
 | 非 Chromium 引擎 / headed 窗口 / 长时 soak | 未覆盖 |

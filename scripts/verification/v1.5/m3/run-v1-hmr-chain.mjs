@@ -59,6 +59,7 @@ import {
   prepareTargetRepo,
   probeInspect,
   readReleaseIdentity,
+  readServedClientIdentity,
   readUpdateUi,
   readUserData,
   refreshDiscoveryThroughUi,
@@ -166,18 +167,15 @@ function recordTargetIdentities() {
 }
 
 async function installBaseRelease(context) {
-  const install = await context.probe.send({
-    id: 'install-base-a',
-    action: 'install',
-    spec: byKey.A.spec,
-    requestId: `m3-v1-hmr-install-a-${run.runTag}`,
-    enabled: true,
-  }, { timeoutMs: 420000 });
-  evidence.installs.push({ phase: 'install-R_A', result: install.result ?? null, elapsedMs: install.elapsedMs ?? null });
-  run.report.add('install-R_A-applied', install.result?.application === 'applied', install.result?.application ?? null);
-  run.report.add('install-R_A-version', install.result?.version === byKey.A.version, install.result?.version ?? null);
-  run.report.add('install-R_A-pnpm-exit-zero', install.result?.packageResult?.exitCode === 0, install.result?.packageResult?.exitCode ?? null);
-  return install.result ?? null;
+  const { installExactWithRetry } = await import('./v1-common.mjs');
+  const outcome = await installExactWithRetry(context.probe, { spec: byKey.A.spec, requestIdBase: `m3-v1-hmr-install-a-${run.runTag}` });
+  evidence.installs.push({ phase: 'install-R_A', result: outcome.result, attempts: outcome.attempts, retried: outcome.retried });
+  const install = outcome.result;
+  run.report.add('install-R_A-applied', install?.application === 'applied', install?.application ?? null);
+  run.report.add('install-R_A-version', install?.version === byKey.A.version, install?.version ?? null);
+  run.report.add('install-R_A-pnpm-exit-zero', install?.packageResult?.exitCode === 0, install?.packageResult?.exitCode ?? null);
+  if (install?.application !== 'applied') throw new Error(`R_A exact-commit install failed: ${JSON.stringify(install?.error ?? install)}`);
+  return install;
 }
 
 /**
@@ -248,11 +246,37 @@ async function runUiUpdateStep({ key, label, expectedClientCommit }) {
   const refresh = await clickAction(cdp, 'refresh-page', `${label}-refresh-page`);
   recordAction(`${label}-refresh-page`, refresh);
   run.report.add(`${label}-ui-refresh-action-clicked`, refresh.clicked === true, refresh);
-  const reloaded = await reloadRealPage(run.page, run.context);
+  const reloaded = await reloadRealPage(run.page, run.context, { expectedClientCommit });
   run.report.add(`${label}-page-reloaded`, reloaded?.opened === true, reloaded);
-  if (reloaded?.opened) await run.page.cdp.send('Runtime.evaluate', { expression: 'void 0' }).catch(() => {});
+  const servedAfterReload = await readServedClientIdentity(cdp);
+  step.servedClientAfterReload = servedAfterReload;
 
-  const settled = await waitForOperation(cdp, ['updated', 'verification-failed', 'failed', 'cancelled', 'stale-runtime'], { timeoutMs: 180000 });
+  let settled = await waitForOperation(cdp, ['updated', 'verification-failed', 'failed', 'cancelled', 'stale-runtime'], { timeoutMs: 90000 });
+  if (settled.state !== 'updated') {
+    // Second chance: the first reload may have mounted the pre-HMR client
+    // bundle; an identity-verified reload can still recover activation.
+    const secondReload = await reloadRealPage(run.page, run.context, { expectedClientCommit, attempts: 3 });
+    step.secondReload = secondReload;
+    if (secondReload.served?.identity?.buildCommit === expectedClientCommit) {
+      settled = await waitForOperation(cdp, ['updated', 'verification-failed', 'failed', 'cancelled', 'stale-runtime'], { timeoutMs: 120000 });
+    }
+  }
+  if (settled.state !== 'updated') {
+    // Diagnostic bundle for a failed post-refresh verification (no fake pass).
+    const inspectNow = (await inspectFromPage(cdp)).data;
+    const uiNow = await readUpdateUi(cdp);
+    step.postReloadDiagnostics = {
+      servedClient: servedAfterReload,
+      observation: inspectNow?.operation ?? null,
+      discovery: inspectNow?.discovery ?? null,
+      capability: inspectNow?.capability ?? null,
+      uiOperation: uiNow.operation,
+      uiIdentities: uiNow.identities,
+      panelPresent: uiNow.sectionPresent,
+      reloaded,
+    };
+  }
+  run.report.add(`${label}-served-client-bundle-is-target`, servedAfterReload.found === true && servedAfterReload.identity?.buildCommit === expectedClientCommit, servedAfterReload);
   step.terminal = settled;
   run.report.add(`${label}-updated-reached-after-refresh`, settled.state === 'updated', { state: settled.state, observation: settled.observation });
 
@@ -452,6 +476,8 @@ try {
       dataPreservation: evidence.dataPreservation,
       screenshots: evidence.screenshots,
       final: evidence.final,
+      refreshStep: evidence.refreshStep ?? null,
+      finalRefreshGate: evidence.finalRefreshGate ?? null,
       cleanup,
       thrown: evidence.thrown,
       environment: { node: process.version, platform: process.platform, repoRoot: REPO_ROOT },

@@ -176,6 +176,46 @@ function defaultScenarios() {
 // Data-plane helpers: real origin passthrough through the machine proxy
 // ---------------------------------------------------------------------------
 
+const PROXY_ENV_KEYS = ['HTTPS_PROXY', 'HTTP_PROXY', 'ALL_PROXY', 'https_proxy', 'http_proxy', 'all_proxy', 'npm_config_https_proxy', 'npm_config_http_proxy', 'npm_config_proxy'];
+
+/** Connect directly to host:port (no proxy) with a bounded timeout. */
+function connectDirect(host, port = 443, timeoutMs = 20000) {
+  return new Promise((resolve, reject) => {
+    const socket = net.connect({ host, port });
+    let settled = false;
+    const fail = (error) => {
+      if (settled) return;
+      settled = true;
+      try { socket.destroy(); } catch { /* ignore */ }
+      reject(error instanceof Error ? error : new Error(String(error)));
+    };
+    socket.setTimeout(timeoutMs);
+    socket.once('timeout', () => fail(new Error(`direct connect ${host}:${port} timed out`)));
+    socket.once('error', fail);
+    socket.once('connect', () => {
+      if (settled) return;
+      settled = true;
+      socket.setTimeout(0);
+      resolve({ socket, mode: 'direct' });
+    });
+  });
+}
+
+/**
+ * Open a TCP tunnel with recorded network mode: DIRECT first (current machine
+ * topology), falling back to the configured upstream proxy only when direct
+ * fails. The chosen mode is recorded by the transport audit.
+ */
+async function openTunnel(host, port, { proxyUrl = null, timeoutMs = 20000 } = {}) {
+  try {
+    return await connectDirect(host, port, timeoutMs);
+  } catch (directError) {
+    if (proxyUrl === null) throw directError;
+    const viaProxy = await connectViaProxy(proxyUrl, host, port, timeoutMs);
+    return { ...viaProxy, mode: 'proxy', directError: message(directError) };
+  }
+}
+
 /** CONNECT through the environment's HTTP proxy and return the raw tunnel. */
 function connectViaProxy(proxyUrl, host, port = 443, timeoutMs = 20000) {
   return new Promise((resolve, reject) => {
@@ -221,7 +261,62 @@ function connectViaProxy(proxyUrl, host, port = 443, timeoutMs = 20000) {
  * passthrough traffic). Used only to prove "non-fixture paths are untouched".
  */
 async function fetchRealThroughProxy({ proxyUrl, host, port = 443, requestPath, method = 'GET', headers = {}, timeoutMs = 25000 }) {
-  const { socket, rest } = await connectViaProxy(proxyUrl, host, port, timeoutMs);
+  // Direct first (current topology), proxy fallback. Returns { mode } for audit.
+  try {
+    const { socket } = await connectDirect(host, port, timeoutMs);
+    return await new Promise((resolve, reject) => {
+      let settled = false;
+      const fail = (error) => {
+        if (settled) return;
+        settled = true;
+        try { secure.destroy(); } catch { /* ignore */ }
+        reject(error instanceof Error ? error : new Error(String(error)));
+      };
+      const secure = tls.connect({ socket, servername: host, ALPNProtocols: ['http/1.1'] }, () => {
+        secure.write([
+          `${method} ${requestPath} HTTP/1.1`,
+          `Host: ${host}`,
+          ...Object.entries(headers).map(([key, value]) => `${key}: ${value}`),
+          'Connection: close',
+          'Accept-Encoding: identity',
+          '',
+          '',
+        ].join('\r\n'));
+      });
+      const chunks = [];
+      secure.setTimeout(timeoutMs);
+      secure.once('timeout', () => fail(new Error(`direct fetch ${host}${requestPath} timed out`)));
+      secure.once('error', fail);
+      secure.on('data', (chunk) => chunks.push(chunk));
+      secure.once('end', () => {
+        if (settled) return;
+        settled = true;
+        resolve(parseRawHttpResponse(Buffer.concat(chunks), 'direct'));
+      });
+    });
+  } catch (directError) {
+    const { socket, rest } = await connectViaProxy(proxyUrl, host, port, timeoutMs);
+    return fetchOverTunnelSocket({ socket, rest, host, requestPath, method, headers, timeoutMs, mode: 'proxy', directError: message(directError) });
+  }
+}
+
+/** Parse a raw HTTP/1.1 response body+status (shared by direct/proxy paths). */
+function parseRawHttpResponse(raw, mode) {
+  const split = raw.indexOf('\r\n\r\n');
+  const headerText = split === -1 ? raw.toString('latin1') : raw.subarray(0, split).toString('latin1');
+  const statusMatch = headerText.match(/^HTTP\/1\.[01]\s+(\d{3})/);
+  return {
+    mode,
+    status: statusMatch ? Number(statusMatch[1]) : null,
+    headers: headerText.split('\r\n').slice(1),
+    bytes: raw.length,
+    bodyPrefix: (split === -1 ? '' : raw.subarray(split + 4, split + 4 + 512).toString('utf8')),
+    raw,
+  };
+}
+
+/** Fetch over an already-established CONNECT tunnel (proxy mode fallback). */
+function fetchOverTunnelSocket({ socket, rest, host, requestPath, method, headers, timeoutMs, mode, directError = null }) {
   return new Promise((resolve, reject) => {
     let settled = false;
     const fail = (error) => {
@@ -231,7 +326,7 @@ async function fetchRealThroughProxy({ proxyUrl, host, port = 443, requestPath, 
       reject(error instanceof Error ? error : new Error(String(error)));
     };
     const secure = tls.connect({ socket, servername: host, ALPNProtocols: ['http/1.1'] }, () => {
-      const head = [
+      secure.write([
         `${method} ${requestPath} HTTP/1.1`,
         `Host: ${host}`,
         ...Object.entries(headers).map(([key, value]) => `${key}: ${value}`),
@@ -239,29 +334,20 @@ async function fetchRealThroughProxy({ proxyUrl, host, port = 443, requestPath, 
         'Accept-Encoding: identity',
         '',
         '',
-      ].join('\r\n');
-      secure.write(head);
+      ].join('\r\n'));
       if (rest && rest.length > 0) secure.write(rest);
     });
     const chunks = [];
     secure.setTimeout(timeoutMs);
-    secure.once('timeout', () => fail(new Error(`real fetch ${host}${requestPath} timed out`)));
+    secure.once('timeout', () => fail(new Error(`proxy fetch ${host}${requestPath} timed out`)));
     secure.once('error', fail);
     secure.on('data', (chunk) => chunks.push(chunk));
     secure.once('end', () => {
       if (settled) return;
       settled = true;
-      const raw = Buffer.concat(chunks);
-      const split = raw.indexOf('\r\n\r\n');
-      const headerText = split === -1 ? raw.toString('latin1') : raw.subarray(0, split).toString('latin1');
-      const statusMatch = headerText.match(/^HTTP\/1\.[01]\s+(\d{3})/);
-      resolve({
-        status: statusMatch ? Number(statusMatch[1]) : null,
-        headers: headerText.split('\r\n').slice(1),
-        bytes: raw.length,
-        bodyPrefix: (split === -1 ? '' : raw.subarray(split + 4, split + 4 + 512).toString('utf8')),
-        raw,
-      });
+      const parsed = parseRawHttpResponse(Buffer.concat(chunks), mode);
+      parsed.directError = directError;
+      resolve(parsed);
     });
   });
 }
@@ -433,7 +519,8 @@ export async function createIndexTransport({
     if (host !== fixedHost || port !== 443) {
       // Opaque tunnel: any other host is not intercepted at all.
       state.tunnels.push({ at: new Date().toISOString(), target });
-      connectViaProxy(upstreamProxy, host, port, requestTimeoutMs).then(({ socket, rest }) => {
+      openTunnel(host, port, { proxyUrl: upstreamProxy, timeoutMs: requestTimeoutMs }).then(({ socket, rest, mode }) => {
+        state.tunnels.push({ at: new Date().toISOString(), target, mode });
         clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
         if (rest && rest.length > 0) socket.write(rest);
         socket.pipe(clientSocket);

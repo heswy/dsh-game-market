@@ -95,12 +95,12 @@ export const GAME_MARKET_ID = 'dsh-game-market';
  * Not written to any user/App configuration; recorded in evidence for honesty.
  */
 export const PROBE_NETWORK_ENV = Object.freeze({
-  HTTPS_PROXY: 'http://127.0.0.1:7897',
-  HTTP_PROXY: 'http://127.0.0.1:7897',
-  ALL_PROXY: 'http://127.0.0.1:7897',
-  npm_config_https_proxy: 'http://127.0.0.1:7897',
-  npm_config_http_proxy: 'http://127.0.0.1:7897',
-  npm_config_proxy: 'http://127.0.0.1:7897',
+  // Current machine topology (2026-10-20 late): the local 7897 proxy is broken;
+  // GitHub/raw.githubusercontent are reachable DIRECTLY. The isolated host's
+  // pnpm/git therefore run without injected proxy variables. The discovery
+  // transport fixture still injects its own NODE_USE_ENV_PROXY/NODE_EXTRA_CA_CERTS
+  // for the fixed index URL; its tunnels/passthrough are direct-first with a
+  // recorded proxy fallback.
   NO_PROXY: '127.0.0.1,localhost',
 });
 
