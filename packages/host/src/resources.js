@@ -969,6 +969,10 @@ export function createResourceService({
       format = DEFAULT_PACKAGE_FORMAT,
       entry,
       entryPath,
+      // `packageRoot` is the directory that contains `dsh-package.json`. It may
+      // be an installed version directory (`packages/<id>/<version>/`) or a
+      // built-in extracted package directory (`games/<id>/dist/`, M2-B); the
+      // serving rules are identical and always come from the descriptor `files[]`.
       packageRoot = null,
       entrySha256 = null,
       filesDigest = null,

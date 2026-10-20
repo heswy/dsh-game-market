@@ -22,6 +22,7 @@ import { isLegacyV0Range, satisfies } from '../../../packages/host/src/semver.js
 import { EXIT_CODES, CliError, usageError } from './cli-error.mjs';
 import { decodeUtf8, readBuffer } from './fs-utils.mjs';
 import { makeReport, toIssue } from './issues.mjs';
+import { ASSET_ZIP_V2, DEFAULT_FORMAT, PACKAGE_ZIP_EXTENSION, isZipFormat, normalizeFormat, resolveFormat } from './formats.mjs';
 
 const PACKAGE_NAME_RE = /^[a-z0-9][a-z0-9-]*-\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?\.html$/;
 export const PACKAGE_BYTES_MAX = 20 * 1024 * 1024;
@@ -140,6 +141,32 @@ export function validateFile(absPath, options = {}) {
 }
 
 /**
+ * Decide whether a path is a V1.5 resource package. Explicit --format wins;
+ * then the file extension; then the project config (default html-v1).
+ */
+export function detectFormatForPath(inputPath, stat, options = {}) {
+  const explicit = normalizeFormat(options && options.format);
+  if (explicit !== null) return explicit;
+  if (stat && stat.isFile() && String(inputPath).toLowerCase().endsWith(PACKAGE_ZIP_EXTENSION)) {
+    return ASSET_ZIP_V2;
+  }
+  if (stat && stat.isDirectory()) {
+    if (fs.existsSync(path.join(inputPath, 'dsh-package.json'))) return ASSET_ZIP_V2;
+    const configPath = path.join(inputPath, 'dsh-game.config.json');
+    if (fs.existsSync(configPath)) {
+      try {
+        const parsed = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        const format = normalizeFormat(parsed && parsed.format);
+        if (format !== null) return format;
+      } catch (_error) {
+        // Fall through to the default; build/validate reports the config error.
+      }
+    }
+  }
+  return DEFAULT_FORMAT;
+}
+
+/**
  * Validate a path: a `.html` file, or a project directory (built in memory
  * first, never written). Returns the report plus optional built HTML.
  */
@@ -149,6 +176,11 @@ export async function validatePath(inputPath, options = {}) {
     stat = fs.statSync(inputPath);
   } catch (_error) {
     throw usageError(`Path does not exist: ${inputPath}`, 'Pass dist/index.html or the game project directory.');
+  }
+  const detectedFormat = detectFormatForPath(inputPath, stat, options);
+  if (isZipFormat(detectedFormat)) {
+    const { validatePackageV2 } = await import('./package-v2.mjs');
+    return validatePackageV2(inputPath, options);
   }
   if (stat.isDirectory()) {
     const { buildProject } = await import('./project.mjs');

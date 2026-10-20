@@ -39,6 +39,24 @@ Catalog records have two shapes; both project into the two indexes:
   or a format change is a **new version**, never an edit. See
   `examples/catalog-v2.example.json`.
 
+Package formats and release assets:
+
+- `html-v1` — one self-contained `<id>-<version>.html` + `.html.sha256`;
+- `asset-zip-v2` — `<id>-<version>.dshgame.zip` + `.dshgame.zip.sha256`, with a
+  root `dsh-package.json`, root `game.json` and static assets; the catalog
+  release additionally records `package.filesDigest` (the ZIP's inner
+  `fileManifestDigest`), so both the outer bytes and the inner file manifest are
+  bound by the review.
+- cover/screenshots are versioned: `cover-<version>.<ext>` and
+  `screenshot-<n>-<version>.<ext>`, so an update never overwrites an old
+  release's media.
+
+The publishing tool validates a ZIP exactly like `Host /install` does (limits,
+paths, types, content scans, CRC, local headers, inner file manifest) using the
+platform ZIP reader at the locked toolchain commit. `validate-assets` re-runs
+that same validation for every historical release on each PR; an outer sha256
+match alone is not accepted.
+
 Projection rule (shared by the platform tooling and CI): v2 uses the newest
 release of any format; v1 uses the newest **HTML** release, or omits the game
 when it has no HTML release at all. Withdrawing a game (`withdrawnAt` set while
@@ -51,6 +69,8 @@ Generation/validation (run from this repository, with the platform checkout at
 the locked commit):
 
 ```bash
+npm ci --prefix <platform> --ignore-scripts                              # ZIP validation needs the locked deps
 node <platform>/scripts/registry/generate-catalog.mjs --registry-dir .   # writes both indexes
 node <platform>/scripts/registry/validate-catalog.mjs --registry-dir .   # --check + history rules
+node <platform>/scripts/registry/validate-assets.mjs --registry-dir .    # re-download + archive validation
 ```

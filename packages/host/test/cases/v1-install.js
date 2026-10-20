@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { promises as fs } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
@@ -40,6 +41,22 @@ async function setup(t, specs, options = {}) {
   });
   await host.host.registry.ready();
   return { fixture, host };
+}
+
+/** Relative path -> sha256 (or `link:<target>`), for external sentinel dirs. */
+async function snapshotTree(root) {
+  const output = new Map();
+  async function walk(current, prefix) {
+    for (const entry of await fs.readdir(current, { withFileTypes: true })) {
+      const relative = prefix === '' ? entry.name : `${prefix}/${entry.name}`;
+      const absolute = path.join(current, entry.name);
+      if (entry.isDirectory()) await walk(absolute, relative);
+      else if (entry.isSymbolicLink()) output.set(relative, `link:${await fs.readlink(absolute)}`);
+      else output.set(relative, sha256Hex(await fs.readFile(absolute)));
+    }
+  }
+  await walk(root, '');
+  return Object.fromEntries([...output.entries()].sort());
 }
 
 async function install(host, gameId, extra = {}) {
@@ -522,6 +539,201 @@ export function register() {
     assert.equal(await host.pathExists('scores/jump.json'), true);
     const installations = await host.readDataJson('installations.json');
     assert.ok(installations.games.jump);
+  });
+
+  test('uninstall prunes the retained previous version directory (current+1 window)', async (t) => {
+    const { fixture, host } = await setup(t, [{ manifest: { id: 'jump', version: '1.0.0' } }]);
+    await install(host, 'jump');
+    fixture.remove('jump');
+    await fixture.add({ manifest: { id: 'jump', version: '1.1.0' } });
+    await rewriteRegistry(host, fixture);
+    const updated = await install(host, 'jump');
+    assert.equal(updated.version, '1.1.0');
+    assert.equal(updated.installation.previousVersion, '1.0.0');
+    assert.equal(await host.pathExists('packages/jump/1.0.0/entry.html'), true);
+    assert.equal(await host.pathExists('packages/jump/1.1.0/entry.html'), true);
+    await host.data(ROUTES.SAVE, {
+      body: { gameId: 'jump', key: 'current', data: { score: 3 }, operationId: nextOp('save-before-uninstall') },
+    });
+
+    const removed = await host.data(ROUTES.UNINSTALL, {
+      body: { gameId: 'jump', operationId: nextOp('uninstall-prune') },
+    });
+    assert.deepEqual(removed, { gameId: 'jump', removed: true, dataDeleted: false, ignored: false });
+    // M2-FIX: both the current and the retained previous directory must go.
+    assert.equal(await host.pathExists('packages/jump/1.1.0'), false);
+    assert.equal(await host.pathExists('packages/jump/1.0.0'), false);
+    assert.equal(await host.pathExists('packages/jump'), false);
+    const installations = await host.readDataJson('installations.json');
+    assert.equal(installations.games.jump, undefined);
+    // deleteData:false keeps saves/scores/sessions (V1 semantics unchanged).
+    assert.equal(await host.pathExists('saves/jump/current.json'), true);
+    const installed = await host.data(ROUTES.INSTALLED);
+    assert.equal(installed.items.some((item) => item.id === 'jump'), false);
+  });
+
+  test('uninstall cleanup failure is reported as warnings and other games stay intact', async (t) => {
+    const { host } = await setup(t, [
+      { manifest: { id: 'jump' } },
+      { manifest: { id: 'breakout' } },
+    ]);
+    await install(host, 'jump');
+    await install(host, 'breakout');
+    assert.equal(await host.pathExists('packages/breakout/1.0.0/entry.html'), true);
+
+    // Fail every move into trash for jump by making its package directory
+    // read-only (rename/rmdir inside it needs write permission).
+    const jumpPackages = host.filePath('packages', 'jump');
+    t.after(async () => {
+      await fs.chmod(jumpPackages, 0o700).catch(() => undefined);
+    });
+    await fs.chmod(jumpPackages, 0o500);
+
+    const result = await host.requestJson(ROUTES.UNINSTALL, {
+      body: { gameId: 'jump', operationId: nextOp('uninstall-cleanup-fail') },
+    });
+    assert.equal(result.response.status, 200, JSON.stringify(result.payload));
+    assert.equal(result.payload.data.removed, true);
+    assert.equal(result.payload.data.dataDeleted, false);
+    assert.equal(result.payload.data.ignored, false);
+    assert.ok(Array.isArray(result.payload.data.warnings), 'cleanup failure must be surfaced in warnings');
+    assert.ok(result.payload.data.warnings.includes('package-entry-cleanup-failed'), JSON.stringify(result.payload.data.warnings));
+    assert.ok(result.payload.data.warnings.includes('package-directory-remove-failed'), JSON.stringify(result.payload.data.warnings));
+    // The record is committed (UI consistent) and the leaked tree is reported.
+    const installations = await host.readDataJson('installations.json');
+    assert.equal(installations.games.jump, undefined);
+    assert.equal(await host.pathExists('packages/jump/1.0.0/entry.html'), true);
+    // Never touch another game's directory.
+    assert.equal(await host.pathExists('packages/breakout/1.0.0/entry.html'), true);
+    // Duplicate failures are collapsed to one warning per token.
+    assert.equal(result.payload.data.warnings.length, new Set(result.payload.data.warnings).size);
+    // The failure is visible in the host log, with the game id.
+    const warned = host.logs.some(
+      (entry) => entry[0] === 'warn'
+        && entry.includes('[game-market/host] uninstall-package-cleanup-failed')
+        && entry.includes('gameId=jump')
+    );
+    assert.equal(warned, true, JSON.stringify(host.logs.filter((entry) => entry[0] === 'warn').slice(-5)));
+
+    await fs.chmod(jumpPackages, 0o700);
+  });
+
+  test('uninstall record-write failure is retryable and keeps package trees untouched', async (t) => {
+    const { host } = await setup(t, [{ manifest: { id: 'jump' } }]);
+    await install(host, 'jump');
+    const store = host.host.installations;
+    const originalRemove = store.remove;
+    store.remove = async () => {
+      throw new Error('injected record-write failure');
+    };
+    try {
+      const failed = await host.requestJson(ROUTES.UNINSTALL, {
+        body: { gameId: 'jump', operationId: nextOp('uninstall-record-fail') },
+      });
+      assert.equal(failed.response.status, 503, JSON.stringify(failed.payload));
+      assertError(failed.payload, GM.INSTALL_IO);
+      assert.equal(failed.payload.error.retryable, true);
+      // The commit point is the record: nothing is destroyed before it.
+      assert.equal(await host.pathExists('packages/jump/1.0.0/entry.html'), true);
+      const installations = await host.readDataJson('installations.json');
+      assert.ok(installations.games.jump);
+      const installed = await host.data(ROUTES.INSTALLED);
+      assert.equal(installed.items.some((item) => item.id === 'jump'), true);
+    } finally {
+      store.remove = originalRemove;
+    }
+
+    // Retry succeeds and prunes the package directory.
+    const retried = await host.data(ROUTES.UNINSTALL, {
+      body: { gameId: 'jump', operationId: nextOp('uninstall-record-retry') },
+    });
+    assert.equal(retried.removed, true);
+    assert.equal(await host.pathExists('packages/jump'), false);
+  });
+
+  test('CR8-01 uninstall never traverses a symlinked game package root', async (t) => {
+    const { host } = await setup(t, [{ manifest: { id: 'jump' } }]);
+    await install(host, 'jump');
+    // External sentinel directory that must never be touched.
+    const external = await fs.mkdtemp(path.join(os.tmpdir(), 'dsh-cr8-root-'));
+    t.after(() => fs.rm(external, { recursive: true, force: true }));
+    await fs.writeFile(path.join(external, 'sentinel.txt'), 'external sentinel');
+    await fs.mkdir(path.join(external, '1.0.0'), { recursive: true });
+    await fs.writeFile(path.join(external, '1.0.0', 'victim.txt'), 'must not be deleted');
+    const before = await snapshotTree(external);
+    // Tamper: replace the real game directory with a link to the sentinel.
+    await fs.rm(host.filePath('packages', 'jump'), { recursive: true, force: true });
+    await fs.symlink(external, host.filePath('packages', 'jump'));
+
+    const result = await host.requestJson(ROUTES.UNINSTALL, {
+      body: { gameId: 'jump', operationId: nextOp('cr8-root-link') },
+    });
+    assert.equal(result.response.status, 200, JSON.stringify(result.payload));
+    assert.equal(result.payload.data.removed, true);
+    assert.ok(Array.isArray(result.payload.data.warnings), 'tampered root must be reported');
+    assert.ok(
+      result.payload.data.warnings.includes('package-root-not-directory'),
+      JSON.stringify(result.payload.data.warnings)
+    );
+    // The link target is byte-identical: never enumerated, read or deleted.
+    assert.deepEqual(await snapshotTree(external), before);
+    assert.equal(await fs.readFile(path.join(external, 'sentinel.txt'), 'utf8'), 'external sentinel');
+    assert.equal(await fs.readFile(path.join(external, '1.0.0', 'victim.txt'), 'utf8'), 'must not be deleted');
+    // Only the link entry itself was moved to trash.
+    assert.equal(await host.pathExists('packages/jump'), false);
+    const installations = await host.readDataJson('installations.json');
+    assert.equal(installations.games.jump, undefined);
+  });
+
+  test('CR8-01 uninstall never traverses a symlinked packages ancestor', async (t) => {
+    const { host } = await setup(t, [{ manifest: { id: 'jump' } }]);
+    await install(host, 'jump');
+    const external = await fs.mkdtemp(path.join(os.tmpdir(), 'dsh-cr8-ancestor-'));
+    t.after(() => fs.rm(external, { recursive: true, force: true }));
+    await fs.writeFile(path.join(external, 'sentinel.txt'), 'external ancestor sentinel');
+    await fs.mkdir(path.join(external, 'jump', '1.0.0'), { recursive: true });
+    await fs.writeFile(path.join(external, 'jump', '1.0.0', 'entry.html'), 'external victim');
+    const before = await snapshotTree(external);
+    // Tamper: `packages/` itself becomes a link to the external tree.
+    await fs.rename(host.filePath('packages'), host.filePath('packages-real'));
+    await fs.symlink(external, host.filePath('packages'));
+
+    const result = await host.requestJson(ROUTES.UNINSTALL, {
+      body: { gameId: 'jump', operationId: nextOp('cr8-ancestor-link') },
+    });
+    assert.equal(result.response.status, 200, JSON.stringify(result.payload));
+    assert.equal(result.payload.data.removed, true);
+    assert.ok(Array.isArray(result.payload.data.warnings));
+    assert.ok(
+      result.payload.data.warnings.includes('package-path-symlink'),
+      JSON.stringify(result.payload.data.warnings)
+    );
+    assert.deepEqual(await snapshotTree(external), before, 'external ancestor tree must be byte-identical');
+    // The ancestor link is shared/global: left untouched, only reported.
+    const packagesStat = await fs.lstat(host.filePath('packages'));
+    assert.equal(packagesStat.isSymbolicLink(), true);
+    const installations = await host.readDataJson('installations.json');
+    assert.equal(installations.games.jump, undefined);
+  });
+
+  test('uninstall renames symlinks without following their targets', async (t) => {
+    const { host } = await setup(t, [{ manifest: { id: 'jump' } }]);
+    await install(host, 'jump');
+    const external = await fs.mkdtemp(path.join(os.tmpdir(), 'dsh-gm-uninstall-link-'));
+    t.after(() => fs.rm(external, { recursive: true, force: true }));
+    await fs.writeFile(path.join(external, 'keep.txt'), 'must survive');
+    // A version-shaped symlink and a plain symlink; neither target may be touched.
+    await fs.symlink(external, host.filePath('packages', 'jump', '9.9.9'));
+    await fs.symlink(path.join(external, 'keep.txt'), host.filePath('packages', 'jump', 'link-file'));
+
+    const removed = await host.data(ROUTES.UNINSTALL, {
+      body: { gameId: 'jump', operationId: nextOp('uninstall-symlink') },
+    });
+    assert.equal(removed.removed, true);
+    assert.equal(removed.warnings, undefined, 'link removal must be clean');
+    assert.equal(await host.pathExists('packages/jump'), false);
+    // The link targets were never followed or deleted.
+    assert.equal(await fs.readFile(path.join(external, 'keep.txt'), 'utf8'), 'must survive');
   });
 
   test('built-in games cannot be uninstalled (GM-4038)', async (t) => {

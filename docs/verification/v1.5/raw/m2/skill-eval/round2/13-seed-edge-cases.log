@@ -1,0 +1,24 @@
+### seed-save with malformed JSON file (expect actionable failure)
+error: --seed-save is not valid JSON: Unexpected token 'o', "not-a-json-save" is not valid JSON
+  hint: Use the file produced by --save-out (or /dev/save/export).
+EXIT:2
+
+### seed-save with unknown-schema save (game must start fresh, no crash)
+pid 49055
+{
+  "ok": true,
+  "simulator": true,
+  "build": true,
+  "format": "asset-zip-v2",
+  "saveApi": true,
+  "hasSeedSave": true,
+  "saveOut": null,
+  "fileCount": 12,
+  "game": {
+    "id": "token-trail",
+    "name": "Token Trail",
+    "version": "1.0.1"
+  }
+}
+
+stopped unknown-seed server

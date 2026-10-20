@@ -12,6 +12,57 @@ function escapeJsonForScript(value) {
   return JSON.stringify(value).replace(/</g, '\\u003c');
 }
 
+/**
+ * Simulator wrapper document (V1.5-CONTRACTS §7.5.1).
+ *
+ * The Host loads asset-zip-v2 games through a platform-served wrapper on the
+ * resource origin: the wrapper is NOT sandboxed (a sandboxed ancestor fails the
+ * game document's frame-ancestors chain check) and it relays bridge messages
+ * point-to-point between the trusted parent and its sandboxed game iframe.
+ * The simulator mirrors that shape so authors exercise the real path.
+ */
+export function renderWrapper(options) {
+  const source = options && typeof options === 'object' ? options : {};
+  const gameUrl = escapeJsonForScript(String(source.src || ''));
+  const csp = "default-src 'none'; frame-src 'self'; child-src 'self'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'";
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DSH Game Runtime Simulator — wrapper</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #000; }
+      iframe { width: 100%; height: 100%; border: 0; display: block; background: #000; }
+    </style>
+    <meta http-equiv="Content-Security-Policy" content="${csp}" />
+  </head>
+  <body>
+    <iframe id="game" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+    <script>
+      "use strict";
+      var gameUrl = ${gameUrl};
+      var frame = document.getElementById("game");
+      // Point-to-point relay only: a game message goes up once, a Runtime
+      // message goes down once. No payload is inspected or rewritten.
+      window.addEventListener("message", function (event) {
+        if (event.source !== parent) return;
+        if (!frame.contentWindow) return;
+        frame.contentWindow.postMessage(event.data, "*");
+      });
+      window.addEventListener("message", function (event) {
+        if (event.source !== frame.contentWindow) return;
+        parent.postMessage(event.data, "*");
+      });
+      frame.addEventListener("load", function () { parent.postMessage({ v: 1, kind: "evt", event: "__simulator-wrapper-load" }, "*"); });
+      frame.src = gameUrl + (gameUrl.indexOf("?") === -1 ? "?" : "&") + "instance=" + encodeURIComponent(${escapeJsonForScript(
+        String(source.instanceId || '')
+      )}) + "&nonce=" + encodeURIComponent(${escapeJsonForScript(String(source.nonce || ''))});
+    </script>
+  </body>
+</html>`;
+}
+
 export function renderHarness(config) {
   return `<!doctype html>
 <html lang="zh-CN">
@@ -198,7 +249,10 @@ export function renderHarness(config) {
               <button data-command="pause">Pause</button>
               <button data-command="resume" class="primary">Resume</button>
               <button data-command="before-save">before-save</button>
+              <button data-command="export-save">Export save</button>
+              <button data-command="import-save">Import save</button>
               <button data-command="clear-save" class="danger">Clear save</button>
+              <input id="import-save-file" type="file" accept="application/json,.json" hidden />
             </div>
             <div class="row" style="margin-top:6px">
               <button data-command="reload">Reload game</button>
@@ -260,6 +314,15 @@ export function renderHarness(config) {
         agent: idleAgent(),
         pingSeq: 0
       };
+      // Dev-only seed: "dsh-game dev --seed-save <file>" (or a prior --save-out
+      // file) starts the fake storage with an existing save so upgrade paths
+      // (1.0.0 -> 1.0.1) can be exercised without a production-side import.
+      (function seedInitialSave() {
+        var seed = CONFIG.initialSave;
+        if (!seed || typeof seed !== "object") return;
+        Object.keys(seed).forEach(function (key) { state.save[key] = seed[key]; });
+        appendLog("·", "seeded save from CONFIG.initialSave", Object.keys(seed).length + " key(s)");
+      })();
       var viewports = [
         { width: 960, height: 540 },
         { width: 640, height: 360 },
@@ -427,6 +490,7 @@ export function renderHarness(config) {
             if (data === undefined || bytes > 256 * 1024) return respondError(message.id, "GM-4131", "Value exceeds 256 KiB", false);
             if (!(key in state.save) && Object.keys(state.save).length >= 32) return respondError(message.id, "GM-4132", "Save has more than 32 keys", false);
             state.save[key] = data;
+            postSaveSnapshot();
             state.revision += 1;
             render();
             return respond(message.id, { key: key, bytes: bytes, revision: state.revision, updatedAt: nowIso() });
@@ -446,6 +510,7 @@ export function renderHarness(config) {
             var removeKey = params.key;
             if (!checkKey(removeKey)) return respondError(message.id, "GM-4133", "Invalid storage key", false);
             delete state.save[removeKey];
+            postSaveSnapshot();
             state.revision += 1;
             render();
             return respond(message.id, { key: removeKey, removed: true, revision: state.revision });
@@ -508,6 +573,10 @@ export function renderHarness(config) {
         if (event.source !== iframe.contentWindow) return;
         var message = event.data;
         if (!message || message.v !== 1) return;
+        if (message.kind === "evt" && message.event === "__simulator-wrapper-load") {
+          appendLog("·", "wrapper loaded", "relaying bridge traffic");
+          return;
+        }
         if (message.kind === "evt" && message.event === "hello") {
           appendLog("←", "hello", "", message.data);
           if (!message.data || message.data.instanceId !== state.instanceId || message.data.nonce !== state.nonce) {
@@ -554,8 +623,13 @@ export function renderHarness(config) {
           sendEvent("resume", { reason: "user", at: Date.now() });
         } else if (name === "before-save") {
           sendEvent("before-save", { reason: "interval", deadlineMs: 800 });
+        } else if (name === "export-save") {
+          exportSave();
+        } else if (name === "import-save") {
+          importSaveClick();
         } else if (name === "clear-save") {
           state.save = Object.create(null);
+          postSaveSnapshot();
           state.revision += 1;
           state.scoreHistory = [];
           state.best = null;
@@ -593,14 +667,84 @@ export function renderHarness(config) {
         render();
       }
 
+      function postSaveSnapshot() {
+        if (!CONFIG.saveApi) return;
+        try {
+          fetch("/dev/save", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ save: state.save }),
+          }).catch(function () { /* simulator-only; never blocks the game */ });
+        } catch (error) {
+          appendLog("·", "save snapshot failed", String(error), null, true);
+        }
+      }
+
+      function exportSave() {
+        fetch("/dev/save/export", { cache: "no-store" })
+          .then(function (response) { return response.json(); })
+          .then(function (payload) {
+            if (!payload || !payload.ok) {
+              appendLog("·", "export save failed", (payload && payload.hint) || "no save yet", payload, true);
+              return;
+            }
+            var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+            var link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = CONFIG.game.id + "-" + CONFIG.game.version + ".save.json";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            appendLog("·", "exported save", Object.keys(payload.save || {}).length + " key(s)");
+          })
+          .catch(function (error) { appendLog("·", "export save failed", String(error), null, true); });
+      }
+
+      function importSaveClick() {
+        var input = document.getElementById("import-save-file");
+        if (input) input.click();
+      }
+
+      function importSaveFile(file) {
+        file.text()
+          .then(function (text) { return JSON.parse(text); })
+          .then(function (payload) {
+            var save = payload && typeof payload === "object" && "save" in payload ? payload.save : payload;
+            if (!save || typeof save !== "object") throw new Error("file has no save object");
+            return fetch("/dev/save/import", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ save: save }),
+            }).then(function (response) {
+              if (!response.ok) throw new Error("HTTP " + response.status);
+              CONFIG.initialSave = save;
+              state.save = Object.create(null);
+              Object.keys(save).forEach(function (key) { state.save[key] = save[key]; });
+              appendLog("·", "imported save", Object.keys(save).length + " key(s); reloading game");
+              loadGame();
+            });
+          })
+          .catch(function (error) { appendLog("·", "import save failed", String(error), null, true); });
+      }
+
       function loadGame() {
-        state.instanceId = randomHex(32);
-        state.nonce = randomHex(32);
+        if (CONFIG.format === "asset-zip-v2" && CONFIG.wrapperUrl) {
+          // Trusted platform wrapper on the resource origin: no sandbox on the
+          // outer iframe; the wrapper embeds the sandboxed game iframe.
+          state.instanceId = CONFIG.instanceId;
+          state.nonce = CONFIG.nonce;
+          iframe.removeAttribute("sandbox");
+          iframe.src = CONFIG.wrapperUrl;
+        } else {
+          state.instanceId = randomHex(32);
+          state.nonce = randomHex(32);
+          iframe.setAttribute("sandbox", "allow-scripts");
+          iframe.src = "/game?instance=" + state.instanceId + "&nonce=" + state.nonce;
+        }
         state.initSent = false;
         state.ready = false;
         state.paused = false;
         setStatus("waiting for hello", "");
-        iframe.src = "/game?instance=" + state.instanceId + "&nonce=" + state.nonce;
         appendLog("·", "iframe loading", iframe.src);
         // Refresh header metadata from the server so an in-place update is
         // visible without restarting the simulator.
@@ -618,6 +762,14 @@ export function renderHarness(config) {
       document.querySelectorAll("[data-command]").forEach(function (button) {
         button.addEventListener("click", function () { command(button.getAttribute("data-command")); });
       });
+      var importSaveInput = document.getElementById("import-save-file");
+      if (importSaveInput) {
+        importSaveInput.addEventListener("change", function () {
+          var file = importSaveInput.files && importSaveInput.files[0];
+          importSaveInput.value = "";
+          if (file) importSaveFile(file);
+        });
+      }
       iframe.addEventListener("load", function () {
         appendLog("·", "iframe loaded");
         render();

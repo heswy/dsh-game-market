@@ -20,7 +20,7 @@ export class CliError extends Error {
   /**
    * @param {string} message
    * @param {number} exitCode
-   * @param {{cause?: unknown, hint?: string}} [options]
+   * @param {{cause?: unknown, hint?: string, code?: string}} [options]
    */
   constructor(message, exitCode = EXIT_CODES.USAGE, options = {}) {
     super(message);
@@ -28,6 +28,7 @@ export class CliError extends Error {
     this.exitCode = exitCode;
     if (options.cause !== undefined) this.cause = options.cause;
     if (options.hint !== undefined) this.hint = options.hint;
+    if (options.code !== undefined) this.code = options.code;
   }
 }
 

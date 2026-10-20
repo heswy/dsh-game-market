@@ -11,12 +11,97 @@
 
 import fs from 'node:fs';
 import http from 'node:http';
+import path from 'node:path';
 
-import { EXIT_CODES, CliError, ValidationFailure } from './lib/cli-error.mjs';
-import { renderHarness } from './lib/dev-harness.mjs';
+import { EXIT_CODES, CliError, ValidationFailure, usageError } from './lib/cli-error.mjs';
+import { renderHarness, renderWrapper } from './lib/dev-harness.mjs';
 import { fileExists } from './lib/fs-utils.mjs';
 import { formatReport } from './lib/issues.mjs';
-import { buildProject, defaultOutFile, loadProjectManifest } from './lib/project.mjs';
+import { ASSET_ZIP_V2, isZipFormat, resolveFormat } from './lib/formats.mjs';
+import { buildPackageV2 } from './lib/package-v2.mjs';
+import { buildProject, defaultOutFile, loadConfig, loadProjectManifest } from './lib/project.mjs';
+
+const MIME_BY_EXTENSION = Object.freeze({
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
+  '.csv': 'text/csv; charset=utf-8',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.jpeg': 'image/jpeg',
+  '.jpg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ogg': 'audio/ogg',
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.m4a': 'audio/mp4',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+});
+
+function mimeFor(filePath) {
+  return MIME_BY_EXTENSION[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
+}
+
+function randomHex(length) {
+  const bytes = new Uint8Array(length / 2);
+  for (let index = 0; index < bytes.length; index += 1) bytes[index] = Math.floor(Math.random() * 256);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+/** Entry-document CSP used by the simulator resource origin. */
+function nowIso() {
+  return new Date().toISOString();
+}
+
+/** Read and JSON-parse a small request body (dev-only endpoints). */
+async function readJsonBody(request, maxBytes = 2 * 1024 * 1024) {
+  const chunks = [];
+  let total = 0;
+  for await (const chunk of request) {
+    total += chunk.length;
+    if (total > maxBytes) {
+      throw usageError(`Request body is larger than ${maxBytes} bytes`, 'Saves are limited to a single small JSON document.');
+    }
+    chunks.push(chunk);
+  }
+  const text = Buffer.concat(chunks).toString('utf8');
+  if (text.trim().length === 0) throw usageError('Request body must be JSON');
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    throw usageError(`Request body is not valid JSON: ${error.message}`);
+  }
+}
+
+function seedSaveValue(document) {
+  if (document && typeof document === 'object' && !Array.isArray(document) && 'save' in document) {
+    return document.save;
+  }
+  return document;
+}
+
+function entryCsp() {
+  return [
+    "default-src 'none'",
+    "script-src 'self'",
+    "style-src 'self'",
+    "img-src 'self' data:",
+    "media-src 'self'",
+    "font-src 'self'",
+    "connect-src 'self'",
+    "frame-src 'none'",
+    "child-src 'none'",
+    "worker-src 'none'",
+    "object-src 'none'",
+    "base-uri 'none'",
+    "form-action 'none'",
+  ].join('; ');
+}
 
 const DEFAULT_PORT = 4321;
 const DEFAULT_HOST = '127.0.0.1';
@@ -71,11 +156,37 @@ export async function startDevServer(options = {}) {
   const host = options.host || DEFAULT_HOST;
   const port = Number.isInteger(options.port) && options.port >= 0 ? options.port : DEFAULT_PORT;
 
+  const config = loadConfig(projectDir);
+  const format = resolveFormat({ format: options.format }, config);
+  const zipMode = isZipFormat(format);
+  const resourceOrigin = { instanceId: randomHex(32), token: randomHex(32) };
+  const resourcePrefix = `/res/${resourceOrigin.instanceId}/${resourceOrigin.token}`;
+  const gameResourceUrl = `${resourcePrefix}/index.html`;
+
+  function loggerError(message) {
+    if (options.logger && typeof options.logger.error === 'function') options.logger.error(message);
+  }
+
+  async function buildZipPackage() {
+    return buildPackageV2(projectDir, {
+      format: ASSET_ZIP_V2,
+      write: false,
+      quiet: true,
+      usePrebuilt: build === false,
+    });
+  }
+
   let initial;
+  let zipPackage = null;
   try {
-    initial = build
-      ? await buildProject(projectDir, { write: false, sdk: options.sdk, quiet: true })
-      : { manifest: loadProjectManifest(projectDir).manifest };
+    if (zipMode) {
+      zipPackage = await buildZipPackage();
+      initial = { manifest: zipPackage.manifest };
+    } else {
+      initial = build
+        ? await buildProject(projectDir, { write: false, sdk: options.sdk, quiet: true })
+        : { manifest: loadProjectManifest(projectDir).manifest };
+    }
   } catch (error) {
     if (error instanceof ValidationFailure) throw error;
     throw error;
@@ -105,14 +216,88 @@ export async function startDevServer(options = {}) {
     return Buffer.from(result.html, 'utf8');
   }
 
+  // Dev-only save bridge (P1: upgrade-path testing). Never part of the package
+  // format or the production Host: only this local simulator process sees it.
+  const saveOutPath = options.saveOut ? path.resolve(options.saveOut) : null;
+  let latestSave = null;
+  if (options.seedSave) {
+    const seedPath = path.resolve(options.seedSave);
+    if (!fileExists(seedPath)) {
+      throw usageError(`--seed-save file does not exist: ${seedPath}`, 'Export a save from a previous `dsh-game dev` session with --save-out first.');
+    }
+    try {
+      latestSave = seedSaveValue(JSON.parse(fs.readFileSync(seedPath, 'utf8')));
+    } catch (error) {
+      throw usageError(`--seed-save is not valid JSON: ${error.message}`, 'Use the file produced by --save-out (or /dev/save/export).');
+    }
+  }
+
+  function persistSave(save) {
+    latestSave = save;
+    if (!saveOutPath) return;
+    try {
+      const manifest = currentManifest();
+      fs.mkdirSync(path.dirname(saveOutPath), { recursive: true });
+      fs.writeFileSync(
+        saveOutPath,
+        `${JSON.stringify({ game: { id: manifest.id, version: manifest.version }, savedAt: nowIso(), save }, null, 2)}\n`
+      );
+    } catch (error) {
+      loggerError(`cannot write --save-out ${saveOutPath}: ${error.message}`);
+    }
+  }
+
   const server = http.createServer(async (req, res) => {
     const method = req.method || 'GET';
     const requestUrl = new URL(req.url || '/', `http://${host}`);
-    if (method !== 'GET' && method !== 'HEAD') {
+    if (!['GET', 'HEAD', 'POST'].includes(method)) {
+      sendJson(res, 405, { ok: false, error: 'method_not_allowed' }, method);
+      return;
+    }
+    if (method === 'POST' && !requestUrl.pathname.startsWith('/dev/save')) {
       sendJson(res, 405, { ok: false, error: 'method_not_allowed' }, method);
       return;
     }
     try {
+      if (requestUrl.pathname === '/dev/save/export') {
+        if (latestSave === null) {
+          sendJson(res, 404, { ok: false, error: 'no_save', hint: 'The game has not saved yet; trigger before-save or import a save.' }, method);
+          return;
+        }
+        const manifest = currentManifest();
+        const body = JSON.stringify({ ok: true, game: { id: manifest.id, version: manifest.version }, savedAt: nowIso(), save: latestSave }, null, 2);
+        res.writeHead(200, {
+          'content-type': 'application/json; charset=utf-8',
+          'content-length': Buffer.byteLength(body),
+          'cache-control': 'no-store',
+          'content-disposition': `attachment; filename="${manifest.id}-${manifest.version}.save.json"`,
+        });
+        if (method === 'HEAD') res.end();
+        else res.end(body);
+        return;
+      }
+      if (requestUrl.pathname === '/dev/save/import') {
+        const body = await readJsonBody(req);
+        const save = seedSaveValue(body);
+        if (save === null || typeof save !== 'object') {
+          sendJson(res, 400, { ok: false, error: 'invalid_save', hint: 'Expected { "save": <JSON object> }.' }, method);
+          return;
+        }
+        persistSave(save);
+        sendJson(res, 200, { ok: true, imported: true, bytes: Buffer.byteLength(JSON.stringify(save)) }, method);
+        return;
+      }
+      if (requestUrl.pathname === '/dev/save') {
+        const body = await readJsonBody(req);
+        const save = seedSaveValue(body);
+        if (save === null || typeof save !== 'object') {
+          sendJson(res, 400, { ok: false, error: 'invalid_save' }, method);
+          return;
+        }
+        persistSave(save);
+        sendJson(res, 200, { ok: true, bytes: Buffer.byteLength(JSON.stringify(save)) }, method);
+        return;
+      }
       if (requestUrl.pathname === '/' || requestUrl.pathname === '/index.html') {
         const manifest = currentManifest();
         const html = renderHarness({
@@ -125,11 +310,73 @@ export async function startDevServer(options = {}) {
           },
           theme: 'dark',
           locale: 'zh-CN',
+          format,
+          saveApi: true,
+          initialSave: latestSave,
+          ...(zipMode
+            ? {
+                wrapperUrl: `/wrapper?src=${encodeURIComponent(gameResourceUrl)}`,
+                instanceId: resourceOrigin.instanceId,
+                nonce: resourceOrigin.token,
+              }
+            : {}),
         });
         send(res, 200, 'text/html; charset=utf-8', html, method);
         return;
       }
-      if (requestUrl.pathname === '/game') {
+      if (zipMode && requestUrl.pathname === '/wrapper') {
+        const html = renderWrapper({
+          src: requestUrl.searchParams.get('src') || gameResourceUrl,
+          instanceId: resourceOrigin.instanceId,
+          nonce: resourceOrigin.token,
+        });
+        res.writeHead(200, {
+          'content-type': 'text/html; charset=utf-8',
+          'content-length': Buffer.byteLength(html),
+          'cache-control': 'no-store',
+          'x-content-type-options': 'nosniff',
+        });
+        if (method === 'HEAD') res.end();
+        else res.end(html);
+        return;
+      }
+      if (zipMode && requestUrl.pathname.startsWith(`${resourcePrefix}/`)) {
+        let relative;
+        try {
+          relative = decodeURIComponent(requestUrl.pathname.slice(resourcePrefix.length + 1));
+        } catch (_error) {
+          sendJson(res, 400, { ok: false, error: 'bad_path' }, method);
+          return;
+        }
+        let built;
+        try {
+          built = await buildZipPackage();
+        } catch (error) {
+          if (error instanceof ValidationFailure) {
+            options.logger?.error?.(formatReport(error.report));
+            send(res, 500, 'text/html; charset=utf-8', errorPage('Game build failed', error.report), method);
+            return;
+          }
+          throw error;
+        }
+        const data = built.entries.get(relative);
+        if (!data) {
+          sendJson(res, 404, { ok: false, error: 'not_found' }, method);
+          return;
+        }
+        const headers = {
+          'content-type': mimeFor(relative),
+          'content-length': data.length,
+          'cache-control': 'no-store',
+          'x-content-type-options': 'nosniff',
+        };
+        if (relative === 'index.html') headers['content-security-policy'] = entryCsp();
+        res.writeHead(200, headers);
+        if (method === 'HEAD') res.end();
+        else res.end(data);
+        return;
+      }
+      if (!zipMode && requestUrl.pathname === '/game') {
         try {
           const html = await packageHtml();
           send(res, 200, 'text/html; charset=utf-8', html, method);
@@ -148,7 +395,17 @@ export async function startDevServer(options = {}) {
         sendJson(
           res,
           200,
-          { ok: true, simulator: true, build, game: { id: manifest.id, name: manifest.name, version: manifest.version } },
+          {
+            ok: true,
+            simulator: true,
+            build,
+            format,
+            saveApi: true,
+            hasSeedSave: latestSave !== null,
+            saveOut: saveOutPath,
+            ...(zipMode ? { fileCount: zipPackage ? zipPackage.fileCount : 0 } : {}),
+            game: { id: manifest.id, name: manifest.name, version: manifest.version },
+          },
           method
         );
         return;
@@ -160,6 +417,19 @@ export async function startDevServer(options = {}) {
       }
       sendJson(res, 404, { ok: false, error: 'not_found' }, method);
     } catch (error) {
+      if (error instanceof CliError) {
+        // Bad dev-only request bodies are client errors (400); other CLI errors
+        // (e.g. --no-build with no dist/) keep the existing 500 simulator page.
+        const clientError = error.exitCode === EXIT_CODES.USAGE && requestUrl.pathname.startsWith('/dev/save');
+        if (!clientError) options.logger?.error?.(error);
+        sendJson(
+          res,
+          clientError ? 400 : 500,
+          { ok: false, error: error.code || (clientError ? 'bad_request' : 'simulator_error'), message: error.message, hint: error.hint || null },
+          method
+        );
+        return;
+      }
       options.logger?.error?.(error);
       sendJson(res, 500, { ok: false, error: 'simulator_error', message: error.message }, method);
     }
@@ -196,6 +466,11 @@ export async function startDevServer(options = {}) {
     host,
     port: actualPort,
     projectDir,
+    format,
+    saveApi: true,
+    saveOut: saveOutPath,
+    hasSeedSave: latestSave !== null,
+    ...(zipMode ? { resourcePrefix, wrapperUrl: `/wrapper?src=${encodeURIComponent(gameResourceUrl)}`, entryUrl: gameResourceUrl } : {}),
     manifest: initial.manifest,
     server,
     close() {

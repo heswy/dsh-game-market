@@ -1,0 +1,2149 @@
+{
+  "id": "M2-lifecycle-zip",
+  "title": "M2 non-builtin ZIP lifecycle: UI install → play/save → exit/Continue → upgrade → rollback → Continue → 409 → record-write failure → uninstall",
+  "generatedAt": "2026-10-20T07:39:01.495Z",
+  "command": "node scripts/verification/v1.5/m2/m2-lifecycle-zip.mjs",
+  "environment": {
+    "dsh": {
+      "dshPackage": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.2"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.2"
+      },
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.2"
+      },
+      "asarExtractedAt": "2026-10-20T02:55:54.473Z"
+    },
+    "chrome": "headless CDP",
+    "gameId": "m2-life-probe",
+    "ports": {
+      "bootstrap": 58420,
+      "host": 58421,
+      "chrome": 9522
+    }
+  },
+  "commands": [],
+  "startedAt": "2026-10-20T07:39:01.495Z",
+  "finishedAt": "2026-10-20T07:39:01.495Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "dsh-page-loads-and-host-api-answers",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "health": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "data": {
+              "ok": true,
+              "version": "1.2.0",
+              "hostEpoch": "he_5e9e332b160199fd",
+              "devMode": true,
+              "storage": {
+                "ok": true,
+                "root": "/tmp/dsh-v15/home-probe-m2-lifecycle-mvgdg2x7/storages/dsh-game-market",
+                "readOnly": false
+              },
+              "uptimeMs": 3278,
+              "registry": {
+                "state": "seed",
+                "sourceUrl": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-game-and-tooling/registry/games.json",
+                "fetchedAt": "2026-10-20T07:38:29.428Z",
+                "truncated": false,
+                "count": 3,
+                "lastError": null,
+                "generation": null,
+                "registryVersion": 1,
+                "activeSource": "seed",
+                "fallback": true,
+                "official": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v2",
+                  "registryVersion": 2
+                },
+                "officialV2": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v2",
+                  "registryVersion": 2
+                },
+                "officialV1": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v1",
+                  "registryVersion": 1
+                },
+                "seed": {
+                  "state": "fresh",
+                  "count": 3,
+                  "sourceUrl": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-game-and-tooling/registry/games.json"
+                }
+              },
+              "installations": {
+                "count": 0,
+                "updateAvailable": 0
+              },
+              "sessions": {
+                "running": 0,
+                "staleRunningPreserved": true
+              },
+              "games": {
+                "builtinCount": 2,
+                "issues": []
+              }
+            },
+            "requestId": "req_4eb964c0329ea180",
+            "serverTime": "2026-10-20T07:38:32.591Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "host-storage-root-visible",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "storageRoot": "/tmp/dsh-v15/home-probe-m2-lifecycle-mvgdg2x7/storages/dsh-game-market"
+      }
+    },
+    {
+      "name": "fresh-isolated-data-root-per-run",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "home": "/tmp/dsh-v15/home-probe-m2-lifecycle-mvgdg2x7",
+        "runTag": "mvgdg2x7"
+      }
+    },
+    {
+      "name": "picker-accepts-dshgame-zip",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "accept": ".html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed"
+      }
+    },
+    {
+      "name": "ui-install-1.0.0-200-asset-zip-v2",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "format": "asset-zip-v2",
+        "sha256": "727a5ada…<redacted-len64>"
+      }
+    },
+    {
+      "name": "ui-install-1.0.0-upload-bytes-byte-identical",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "selectedFile": "m2-life-probe-1.0.0.dshgame.zip",
+        "uploaded": {
+          "bytes": 100407,
+          "sha256": "727a5ada…<redacted-len64>",
+          "head16": "<credential>"
+        },
+        "source": {
+          "bytes": 100407,
+          "sha256": "727a5ada…<redacted-len64>",
+          "head16": "<credential>"
+        },
+        "bodyFrom": "Network.postDataEntries(base64)"
+      }
+    },
+    {
+      "name": "ui-install-1.0.0-content-type-application-zip",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "contentType": "application/zip"
+      }
+    },
+    {
+      "name": "ui-launch-1.0.0-runtime-stage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "play": true,
+        "runtime": {
+          "state": "launching",
+          "stage": true,
+          "savePill": null,
+          "controls": [
+            {
+              "label": "返回市场",
+              "disabled": false
+            },
+            {
+              "label": "暂停菜单",
+              "disabled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "game-1.0.0-ready-and-version-marker",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.0.0",
+        "phase": "playing",
+        "bridgeReady": true,
+        "sessionStarted": true,
+        "paused": false,
+        "ticks": 0,
+        "score": 0,
+        "saveAcks": 0,
+        "loadedSave": null,
+        "lastSave": null,
+        "lastSaveError": null,
+        "errors": []
+      }
+    },
+    {
+      "name": "game-1.0.0-starts-play-session",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sessionStarted": true,
+        "errors": []
+      }
+    },
+    {
+      "name": "game-1.0.0-autosave-interval-observed",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sessionId": "38A0D2A8E5EDB59DD3A441E8CA43AEE4",
+        "at": 1792481918442,
+        "event": "life-save",
+        "reason": "interval",
+        "version": "1.0.0",
+        "ticks": 20,
+        "score": 200,
+        "acks": 1
+      }
+    },
+    {
+      "name": "game-1.0.0-score-grows",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ticks": 20,
+        "score": 200
+      }
+    },
+    {
+      "name": "exit-through-runtime-back-control",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "click": {
+          "label": "runtime-back",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "",
+            "className": "dgm-control-btn",
+            "rect": {
+              "x": 317,
+              "y": 33,
+              "width": 32,
+              "height": 32
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 317,
+            "y": 33,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "left": true
+      }
+    },
+    {
+      "name": "exit-writes-save-before-leaving",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.0.0",
+        "ticks": 20,
+        "score": 200
+      }
+    },
+    {
+      "name": "my-games-shows-continue-after-exit",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "m2-life-probe",
+        "playText": "继续",
+        "menu": true
+      }
+    },
+    {
+      "name": "continue-loads-exit-save-exactly",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "loaded": {
+          "version": "1.0.0",
+          "ticks": 20,
+          "score": 200
+        },
+        "exitSave": {
+          "version": "1.0.0",
+          "ticks": 20,
+          "score": 200
+        },
+        "rawLoaded": {
+          "key": "progress",
+          "data": {
+            "schemaVersion": 1,
+            "value": {
+              "version": "1.0.0",
+              "ticks": 20,
+              "score": 200
+            },
+            "reason": "before-save"
+          },
+          "revision": 3,
+          "updatedAt": "2026-10-20T07:38:38.538Z"
+        }
+      }
+    },
+    {
+      "name": "continue-resumes-progress",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "grown": {
+          "ticks": 22,
+          "score": 220
+        },
+        "exitTicks": 20,
+        "resume": true
+      }
+    },
+    {
+      "name": "continue-exit-saves-again",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exit2": {
+          "version": "1.0.0",
+          "ticks": 22,
+          "score": 220
+        },
+        "exit1": {
+          "version": "1.0.0",
+          "ticks": 20,
+          "score": 200
+        }
+      }
+    },
+    {
+      "name": "ui-install-1.0.1-200-asset-zip-v2",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.0.1",
+        "sha256": "fac44f7d…<redacted-len64>"
+      }
+    },
+    {
+      "name": "ui-install-1.0.1-upload-sha-equals-source",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "server": "fac44f7d…<redacted-len64>",
+        "source": "fac44f7d…<redacted-len64>"
+      }
+    },
+    {
+      "name": "upgrade-retains-previous-version-directory",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "v100": {
+          "exists": true,
+          "mtimeMs": 1792481915636.8257,
+          "ino": 91759897,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        },
+        "v101": {
+          "exists": true,
+          "mtimeMs": 1792481921029.139,
+          "ino": 91760486,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        }
+      }
+    },
+    {
+      "name": "upgraded-game-runs-1.0.1",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.0.1",
+        "errors": []
+      }
+    },
+    {
+      "name": "upgrade-loads-previous-save",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.0.1",
+        "loaded": {
+          "version": "1.0.0",
+          "ticks": 22,
+          "score": 220
+        },
+        "expected": {
+          "version": "1.0.0",
+          "ticks": 22,
+          "score": 220
+        }
+      }
+    },
+    {
+      "name": "upgraded-game-saves-on-exit",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.0.1",
+        "ticks": 34,
+        "score": 340
+      }
+    },
+    {
+      "name": "ui-rollback-1.0.0-200",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.0.0"
+      }
+    },
+    {
+      "name": "ui-rollback-1.0.0-sha-equals-source",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "server": "727a5ada…<redacted-len64>",
+        "source": "727a5ada…<redacted-len64>"
+      }
+    },
+    {
+      "name": "rollback-reuses-retained-directory-without-rewriting",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": {
+          "exists": true,
+          "mtimeMs": 1792481915636.8257,
+          "ino": 91759897,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        },
+        "after": {
+          "exists": true,
+          "mtimeMs": 1792481915636.8257,
+          "ino": 91759897,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        }
+      }
+    },
+    {
+      "name": "rolled-back-game-runs-1.0.0",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.0.0",
+        "errors": []
+      }
+    },
+    {
+      "name": "rollback-old-save-still-continues",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.0.0",
+        "loaded": {
+          "version": "1.0.1",
+          "ticks": 34,
+          "score": 340
+        },
+        "expected": {
+          "version": "1.0.1",
+          "ticks": 34,
+          "score": 340
+        }
+      }
+    },
+    {
+      "name": "rollback-continue-save-carries-newer-version-marker",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.0.1",
+        "ticks": 34,
+        "score": 340
+      }
+    },
+    {
+      "name": "same-version-different-content-still-409",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 409,
+        "code": "GM-4094",
+        "response": {
+          "ok": false,
+          "error": {
+            "code": "GM-4094",
+            "message": "Installed version contents differ from this install",
+            "retryable": false
+          },
+          "requestId": "req_490c5fa977a85097",
+          "serverTime": "2026-10-20T07:38:47.537Z"
+        }
+      }
+    },
+    {
+      "name": "rejected-conflict-keeps-retained-tree",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": {
+          "exists": true,
+          "mtimeMs": 1792481921029.139,
+          "ino": 91760486,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        },
+        "after": {
+          "exists": true,
+          "mtimeMs": 1792481921029.139,
+          "ino": 91760486,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        }
+      }
+    },
+    {
+      "name": "record-write-failure-is-rejected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "lockedStatus": 0,
+        "entryStatus": 500,
+        "response": {
+          "ok": false,
+          "error": {
+            "code": "GM-5025",
+            "message": "Storage is read-only",
+            "retryable": false
+          },
+          "requestId": "req_44e56f819a89d8f3",
+          "serverTime": "2026-10-20T07:38:49.687Z"
+        }
+      }
+    },
+    {
+      "name": "record-write-failure-does-not-delete-reused-directory",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": {
+          "exists": true,
+          "mtimeMs": 1792481921029.139,
+          "ino": 91760486,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        },
+        "after": {
+          "exists": true,
+          "mtimeMs": 1792481921029.139,
+          "ino": 91760486,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        },
+        "unlockedStatus": 0
+      }
+    },
+    {
+      "name": "host-restarts-on-same-data-root-after-readonly-latch",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "health": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "data": {
+              "ok": true,
+              "version": "1.2.0",
+              "hostEpoch": "he_fe54108f14f4b46c",
+              "devMode": true,
+              "storage": {
+                "ok": true,
+                "root": "/tmp/dsh-v15/home-probe-m2-lifecycle-mvgdg2x7/storages/dsh-game-market",
+                "readOnly": false
+              },
+              "uptimeMs": 978,
+              "registry": {
+                "state": "seed",
+                "sourceUrl": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-game-and-tooling/registry/games.json",
+                "fetchedAt": "2026-10-20T07:38:53.218Z",
+                "truncated": false,
+                "count": 3,
+                "lastError": null,
+                "generation": null,
+                "registryVersion": 1,
+                "activeSource": "seed",
+                "fallback": true,
+                "official": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v2",
+                  "registryVersion": 2
+                },
+                "officialV2": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v2",
+                  "registryVersion": 2
+                },
+                "officialV1": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v1",
+                  "registryVersion": 1
+                },
+                "seed": {
+                  "state": "fresh",
+                  "count": 3,
+                  "sourceUrl": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-game-and-tooling/registry/games.json"
+                }
+              },
+              "installations": {
+                "count": 1,
+                "updateAvailable": 0
+              },
+              "sessions": {
+                "running": 1,
+                "staleRunningPreserved": true
+              },
+              "games": {
+                "builtinCount": 2,
+                "issues": []
+              }
+            },
+            "requestId": "req_da07bacf9275cbe0",
+            "serverTime": "2026-10-20T07:38:53.701Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "record-write-recovery-install-succeeds",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "response": {
+          "ok": true,
+          "data": {
+            "gameId": "m2-life-probe",
+            "version": "1.0.1",
+            "sha256": "fac44f7d…<redacted-len64>",
+            "installedAt": "2026-10-20T07:38:35.654Z",
+            "changed": true,
+            "source": "local",
+            "warnings": [],
+            "installation": {
+              "id": "m2-life-probe",
+              "version": "1.0.1",
+              "source": "local",
+              "packagePath": "m2-life-probe/1.0.1",
+              "sha256": "fac44f7d…<redacted-len64>",
+              "sizeBytes": 100407,
+              "format": "asset-zip-v2",
+              "entry": "index.html",
+              "fileManifestDigest": "5768ee47…<redacted-len64>",
+              "fileCount": 9,
+              "unpackedBytes": 97925,
+              "previousVersion": "1.0.0",
+              "previousFormat": "asset-zip-v2",
+              "installedAt": "2026-10-20T07:38:35.654Z",
+              "updatedAt": "2026-10-20T07:38:56.156Z",
+              "manifest": {
+                "manifestVersion": 1,
+                "id": "m2-life-probe",
+                "name": "M2 Lifecycle Probe",
+                "version": "1.0.1",
+                "author": {
+                  "name": "dsh-game-market verification"
+                },
+                "description": "M2 non-builtin lifecycle probe: save/continue/upgrade/rollback.",
+                "categories": [
+                  "arcade"
+                ],
+                "capabilities": [
+                  "storage",
+                  "score"
+                ],
+                "sdkVersion": "^1.0.0",
+                "runtimeVersion": "^1.0.0",
+                "save": {
+                  "schemaVersion": 1
+                },
+                "score": {
+                  "direction": "higher-better",
+                  "min": 0,
+                  "max": 1000000,
+                  "integer": true
+                }
+              },
+              "compatibility": {
+                "status": "ok",
+                "sdkVersion": "1.0.0",
+                "runtimeVersion": "1.0.0",
+                "sdkRange": "^1.0.0",
+                "runtimeRange": "^1.0.0",
+                "checkedAt": "2026-10-20T07:38:56.156Z",
+                "reasons": []
+              },
+              "update": {
+                "available": false,
+                "latestVersion": "1.0.1",
+                "checkedAt": "2026-10-20T07:38:56.156Z",
+                "reason": null
+              },
+              "warnings": []
+            }
+          },
+          "requestId": "req_512579097b480fce",
+          "serverTime": "2026-10-20T07:38:56.136Z"
+        }
+      }
+    },
+    {
+      "name": "record-write-recovery-reuses-same-directory",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": {
+          "exists": true,
+          "mtimeMs": 1792481921029.139,
+          "ino": 91760486,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        },
+        "after": {
+          "exists": true,
+          "mtimeMs": 1792481921029.139,
+          "ino": 91760486,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        }
+      }
+    },
+    {
+      "name": "uninstall-menu-confirm-clicked",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "menuClick": {
+          "label": "row-menu",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "",
+            "className": "dgm-icon-btn dgm-row-menu-btn",
+            "rect": {
+              "x": 1288,
+              "y": 233,
+              "width": 40,
+              "height": 40
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 1288,
+            "y": 233,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "menuItem": {
+          "label": "menu-uninstall",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "卸载",
+            "className": "dgm-menu-item",
+            "rect": {
+              "x": 1198,
+              "y": 277,
+              "width": 206,
+              "height": 31
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 1198,
+            "y": 277,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "confirmClick": {
+          "label": "confirm-uninstall",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "卸载",
+            "className": "dgm-btn dgm-btn-danger",
+            "rect": {
+              "x": 991,
+              "y": 462,
+              "width": 72,
+              "height": 32
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 991,
+            "y": 462,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "dialog": {
+          "role": "alertdialog",
+          "title": "卸载《M2 Lifecycle Probe》？",
+          "body": "存档和最高分会保留，重新安装后可继续。",
+          "meta": [],
+          "notes": [],
+          "primaryLabel": "卸载"
+        }
+      }
+    },
+    {
+      "name": "uninstall-removes-game-from-my-games",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "rowGone": true
+      }
+    },
+    {
+      "name": "uninstall-removes-installation-record",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "stillInstalled": false
+      }
+    },
+    {
+      "name": "uninstall-prunes-package-directories",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "v100": {
+          "exists": false,
+          "mtimeMs": null,
+          "ino": null,
+          "entries": []
+        },
+        "v101": {
+          "exists": false,
+          "mtimeMs": null,
+          "ino": null,
+          "entries": []
+        }
+      }
+    },
+    {
+      "name": "html-v1-control-installs-through-ui-200",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "format": "html-v1",
+        "sizeBytes": 182158
+      }
+    },
+    {
+      "name": "html-v1-control-launches-and-renders",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "play": true,
+        "game": {
+          "title": "Breakout",
+          "origin": "null",
+          "hasCanvas": true,
+          "bodyLength": 183
+        }
+      }
+    },
+    {
+      "name": "html-v1-control-uninstalls",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "rowGone": true
+      }
+    },
+    {
+      "name": "no-direct-api-install-from-probe",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "observed": 7
+      }
+    },
+    {
+      "name": "zero-frame-ancestors-violations",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "zero-csp-violations",
+      "ok": true,
+      "required": true,
+      "detail": []
+    }
+  ],
+  "scenario": {
+    "steps": [
+      {
+        "step": "install-v100",
+        "dialog": {
+          "role": "dialog",
+          "title": "从本地安装《m2-life-probe-1.0.0.dshgame.zip》？",
+          "body": "本地文件不经过商店校验，请确认来源可信。安装后可以随时卸载，存档会保留。",
+          "meta": [
+            {
+              "label": "文件大小",
+              "value": "98.1 KB"
+            },
+            {
+              "label": "包格式",
+              "value": "资源包（.dshgame.zip）"
+            }
+          ],
+          "notes": [],
+          "primaryLabel": "安装",
+          "fileNameOk": true,
+          "formatLabelOk": true
+        },
+        "request": {
+          "status": 200,
+          "contentType": "application/zip"
+        },
+        "response": {
+          "ok": true,
+          "data": {
+            "gameId": "m2-life-probe",
+            "version": "1.0.0",
+            "sha256": "727a5ada…<redacted-len64>",
+            "installedAt": "2026-10-20T07:38:35.654Z",
+            "changed": true,
+            "source": "local",
+            "warnings": [],
+            "installation": {
+              "id": "m2-life-probe",
+              "version": "1.0.0",
+              "source": "local",
+              "packagePath": "m2-life-probe/1.0.0",
+              "sha256": "727a5ada…<redacted-len64>",
+              "sizeBytes": 100407,
+              "format": "asset-zip-v2",
+              "entry": "index.html",
+              "fileManifestDigest": "9f231856…<redacted-len64>",
+              "fileCount": 9,
+              "unpackedBytes": 97925,
+              "previousVersion": null,
+              "previousFormat": null,
+              "installedAt": "2026-10-20T07:38:35.654Z",
+              "updatedAt": "2026-10-20T07:38:35.654Z",
+              "manifest": {
+                "manifestVersion": 1,
+                "id": "m2-life-probe",
+                "name": "M2 Lifecycle Probe",
+                "version": "1.0.0",
+                "author": {
+                  "name": "dsh-game-market verification"
+                },
+                "description": "M2 non-builtin lifecycle probe: save/continue/upgrade/rollback.",
+                "categories": [
+                  "arcade"
+                ],
+                "capabilities": [
+                  "storage",
+                  "score"
+                ],
+                "sdkVersion": "^1.0.0",
+                "runtimeVersion": "^1.0.0",
+                "save": {
+                  "schemaVersion": 1
+                },
+                "score": {
+                  "direction": "higher-better",
+                  "min": 0,
+                  "max": 1000000,
+                  "integer": true
+                }
+              },
+              "compatibility": {
+                "status": "ok",
+                "sdkVersion": "1.0.0",
+                "runtimeVersion": "1.0.0",
+                "sdkRange": "^1.0.0",
+                "runtimeRange": "^1.0.0",
+                "checkedAt": "2026-10-20T07:38:35.654Z",
+                "reasons": []
+              },
+              "update": {
+                "available": false,
+                "latestVersion": "1.0.0",
+                "checkedAt": "2026-10-20T07:38:35.654Z",
+                "reason": null
+              },
+              "warnings": []
+            }
+          },
+          "requestId": "req_48961d3b2c358ef6",
+          "serverTime": "2026-10-20T07:38:35.622Z"
+        }
+      },
+      {
+        "step": "launch-v100",
+        "row": {
+          "id": "m2-life-probe",
+          "playText": "开始",
+          "menu": true
+        },
+        "play": {
+          "clicked": true
+        },
+        "runtime": {
+          "state": "launching",
+          "stage": true,
+          "savePill": null,
+          "controls": [
+            {
+              "label": "返回市场",
+              "disabled": false
+            },
+            {
+              "label": "暂停菜单",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      {
+        "step": "leave-v100",
+        "click": {
+          "clicked": true
+        },
+        "runtimeGone": true,
+        "frozenSave": {
+          "version": "1.0.0",
+          "ticks": 20,
+          "score": 200
+        }
+      },
+      {
+        "step": "continue-state",
+        "row": {
+          "id": "m2-life-probe",
+          "playText": "继续",
+          "menu": true
+        }
+      },
+      {
+        "step": "launch-continue",
+        "play": {
+          "clicked": true
+        },
+        "runtime": {
+          "state": "launching",
+          "stage": true,
+          "savePill": null,
+          "controls": [
+            {
+              "label": "返回市场",
+              "disabled": false
+            },
+            {
+              "label": "暂停菜单",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      {
+        "step": "resume-continue",
+        "resumed": true,
+        "control": {
+          "state": "playing",
+          "stage": true,
+          "savePill": null,
+          "controls": [
+            {
+              "label": "返回市场",
+              "disabled": false
+            },
+            {
+              "label": "暂停菜单",
+              "disabled": false
+            }
+          ]
+        }
+      },
+      {
+        "step": "leave-continue",
+        "clicked": true,
+        "left": true,
+        "frozenSave": {
+          "version": "1.0.0",
+          "ticks": 22,
+          "score": 220
+        }
+      },
+      {
+        "step": "install-v101",
+        "dialog": {
+          "role": "dialog",
+          "title": "从本地安装《m2-life-probe-1.0.1.dshgame.zip》？",
+          "body": "本地文件不经过商店校验，请确认来源可信。安装后可以随时卸载，存档会保留。",
+          "meta": [
+            {
+              "label": "文件大小",
+              "value": "98.1 KB"
+            },
+            {
+              "label": "包格式",
+              "value": "资源包（.dshgame.zip）"
+            }
+          ],
+          "notes": [
+            "将覆盖《M2 Lifecycle Probe》当前安装的 1.0.0；实际安装版本以包内声明为准。"
+          ],
+          "primaryLabel": "安装",
+          "fileNameOk": true,
+          "formatLabelOk": true
+        },
+        "request": {
+          "status": 200
+        },
+        "response": {
+          "ok": true,
+          "data": {
+            "gameId": "m2-life-probe",
+            "version": "1.0.1",
+            "sha256": "fac44f7d…<redacted-len64>",
+            "installedAt": "2026-10-20T07:38:35.654Z",
+            "changed": true,
+            "source": "local",
+            "warnings": [],
+            "installation": {
+              "id": "m2-life-probe",
+              "version": "1.0.1",
+              "source": "local",
+              "packagePath": "m2-life-probe/1.0.1",
+              "sha256": "fac44f7d…<redacted-len64>",
+              "sizeBytes": 100407,
+              "format": "asset-zip-v2",
+              "entry": "index.html",
+              "fileManifestDigest": "5768ee47…<redacted-len64>",
+              "fileCount": 9,
+              "unpackedBytes": 97925,
+              "previousVersion": "1.0.0",
+              "previousFormat": "asset-zip-v2",
+              "installedAt": "2026-10-20T07:38:35.654Z",
+              "updatedAt": "2026-10-20T07:38:41.034Z",
+              "manifest": {
+                "manifestVersion": 1,
+                "id": "m2-life-probe",
+                "name": "M2 Lifecycle Probe",
+                "version": "1.0.1",
+                "author": {
+                  "name": "dsh-game-market verification"
+                },
+                "description": "M2 non-builtin lifecycle probe: save/continue/upgrade/rollback.",
+                "categories": [
+                  "arcade"
+                ],
+                "capabilities": [
+                  "storage",
+                  "score"
+                ],
+                "sdkVersion": "^1.0.0",
+                "runtimeVersion": "^1.0.0",
+                "save": {
+                  "schemaVersion": 1
+                },
+                "score": {
+                  "direction": "higher-better",
+                  "min": 0,
+                  "max": 1000000,
+                  "integer": true
+                }
+              },
+              "compatibility": {
+                "status": "ok",
+                "sdkVersion": "1.0.0",
+                "runtimeVersion": "1.0.0",
+                "sdkRange": "^1.0.0",
+                "runtimeRange": "^1.0.0",
+                "checkedAt": "2026-10-20T07:38:41.034Z",
+                "reasons": []
+              },
+              "update": {
+                "available": false,
+                "latestVersion": "1.0.1",
+                "checkedAt": "2026-10-20T07:38:41.034Z",
+                "reason": null
+              },
+              "warnings": []
+            }
+          },
+          "requestId": "req_4000d1288233308c",
+          "serverTime": "2026-10-20T07:38:41.020Z"
+        }
+      },
+      {
+        "step": "leave-v101",
+        "clicked": true,
+        "left": true,
+        "frozenSave": {
+          "version": "1.0.1",
+          "ticks": 34,
+          "score": 340
+        }
+      },
+      {
+        "step": "rollback-v100",
+        "request": {
+          "status": 200
+        },
+        "response": {
+          "ok": true,
+          "data": {
+            "gameId": "m2-life-probe",
+            "version": "1.0.0",
+            "sha256": "727a5ada…<redacted-len64>",
+            "installedAt": "2026-10-20T07:38:35.654Z",
+            "changed": true,
+            "source": "local",
+            "warnings": [],
+            "installation": {
+              "id": "m2-life-probe",
+              "version": "1.0.0",
+              "source": "local",
+              "packagePath": "m2-life-probe/1.0.0",
+              "sha256": "727a5ada…<redacted-len64>",
+              "sizeBytes": 100407,
+              "format": "asset-zip-v2",
+              "entry": "index.html",
+              "fileManifestDigest": "9f231856…<redacted-len64>",
+              "fileCount": 9,
+              "unpackedBytes": 97925,
+              "previousVersion": "1.0.1",
+              "previousFormat": "asset-zip-v2",
+              "installedAt": "2026-10-20T07:38:35.654Z",
+              "updatedAt": "2026-10-20T07:38:44.881Z",
+              "manifest": {
+                "manifestVersion": 1,
+                "id": "m2-life-probe",
+                "name": "M2 Lifecycle Probe",
+                "version": "1.0.0",
+                "author": {
+                  "name": "dsh-game-market verification"
+                },
+                "description": "M2 non-builtin lifecycle probe: save/continue/upgrade/rollback.",
+                "categories": [
+                  "arcade"
+                ],
+                "capabilities": [
+                  "storage",
+                  "score"
+                ],
+                "sdkVersion": "^1.0.0",
+                "runtimeVersion": "^1.0.0",
+                "save": {
+                  "schemaVersion": 1
+                },
+                "score": {
+                  "direction": "higher-better",
+                  "min": 0,
+                  "max": 1000000,
+                  "integer": true
+                }
+              },
+              "compatibility": {
+                "status": "ok",
+                "sdkVersion": "1.0.0",
+                "runtimeVersion": "1.0.0",
+                "sdkRange": "^1.0.0",
+                "runtimeRange": "^1.0.0",
+                "checkedAt": "2026-10-20T07:38:44.881Z",
+                "reasons": []
+              },
+              "update": {
+                "available": false,
+                "latestVersion": "1.0.0",
+                "checkedAt": "2026-10-20T07:38:44.881Z",
+                "reason": null
+              },
+              "warnings": []
+            }
+          },
+          "requestId": "req_1377bcf1640b849b",
+          "serverTime": "2026-10-20T07:38:44.869Z"
+        }
+      },
+      {
+        "step": "leave-rollback",
+        "clicked": true,
+        "left": true,
+        "frozenSave": {
+          "version": "1.0.0",
+          "ticks": 34,
+          "score": 340
+        }
+      },
+      {
+        "step": "same-version-different-content",
+        "request": {
+          "status": 409
+        },
+        "response": {
+          "ok": false,
+          "error": {
+            "code": "GM-4094",
+            "message": "Installed version contents differ from this install",
+            "retryable": false
+          },
+          "requestId": "req_490c5fa977a85097",
+          "serverTime": "2026-10-20T07:38:47.537Z"
+        }
+      },
+      {
+        "step": "record-write-failure",
+        "failure": {
+          "lockedStatus": 0,
+          "entryStatus": 500,
+          "response": {
+            "ok": false,
+            "error": {
+              "code": "GM-5025",
+              "message": "Storage is read-only",
+              "retryable": false
+            },
+            "requestId": "req_44e56f819a89d8f3",
+            "serverTime": "2026-10-20T07:38:49.687Z"
+          }
+        }
+      },
+      {
+        "step": "host-restart-after-record-failure",
+        "health": 200
+      },
+      {
+        "step": "record-write-recovery",
+        "retry": {
+          "status": 200,
+          "response": {
+            "ok": true,
+            "data": {
+              "gameId": "m2-life-probe",
+              "version": "1.0.1",
+              "sha256": "fac44f7d…<redacted-len64>",
+              "installedAt": "2026-10-20T07:38:35.654Z",
+              "changed": true,
+              "source": "local",
+              "warnings": [],
+              "installation": {
+                "id": "m2-life-probe",
+                "version": "1.0.1",
+                "source": "local",
+                "packagePath": "m2-life-probe/1.0.1",
+                "sha256": "fac44f7d…<redacted-len64>",
+                "sizeBytes": 100407,
+                "format": "asset-zip-v2",
+                "entry": "index.html",
+                "fileManifestDigest": "5768ee47…<redacted-len64>",
+                "fileCount": 9,
+                "unpackedBytes": 97925,
+                "previousVersion": "1.0.0",
+                "previousFormat": "asset-zip-v2",
+                "installedAt": "2026-10-20T07:38:35.654Z",
+                "updatedAt": "2026-10-20T07:38:56.156Z",
+                "manifest": {
+                  "manifestVersion": 1,
+                  "id": "m2-life-probe",
+                  "name": "M2 Lifecycle Probe",
+                  "version": "1.0.1",
+                  "author": {
+                    "name": "dsh-game-market verification"
+                  },
+                  "description": "M2 non-builtin lifecycle probe: save/continue/upgrade/rollback.",
+                  "categories": [
+                    "arcade"
+                  ],
+                  "capabilities": [
+                    "storage",
+                    "score"
+                  ],
+                  "sdkVersion": "^1.0.0",
+                  "runtimeVersion": "^1.0.0",
+                  "save": {
+                    "schemaVersion": 1
+                  },
+                  "score": {
+                    "direction": "higher-better",
+                    "min": 0,
+                    "max": 1000000,
+                    "integer": true
+                  }
+                },
+                "compatibility": {
+                  "status": "ok",
+                  "sdkVersion": "1.0.0",
+                  "runtimeVersion": "1.0.0",
+                  "sdkRange": "^1.0.0",
+                  "runtimeRange": "^1.0.0",
+                  "checkedAt": "2026-10-20T07:38:56.156Z",
+                  "reasons": []
+                },
+                "update": {
+                  "available": false,
+                  "latestVersion": "1.0.1",
+                  "checkedAt": "2026-10-20T07:38:56.156Z",
+                  "reason": null
+                },
+                "warnings": []
+              }
+            },
+            "requestId": "req_512579097b480fce",
+            "serverTime": "2026-10-20T07:38:56.136Z"
+          }
+        }
+      },
+      {
+        "step": "uninstall",
+        "menuClick": {
+          "clicked": true
+        },
+        "menuItem": {
+          "clicked": true
+        },
+        "dialog": {
+          "role": "alertdialog",
+          "title": "卸载《M2 Lifecycle Probe》？",
+          "body": "存档和最高分会保留，重新安装后可继续。",
+          "meta": [],
+          "notes": [],
+          "primaryLabel": "卸载"
+        },
+        "confirmClicked": true,
+        "rowGone": true,
+        "stillInstalled": false
+      },
+      {
+        "step": "install-html-control",
+        "request": {
+          "status": 200
+        },
+        "response": {
+          "ok": true,
+          "data": {
+            "gameId": "m2-html-control",
+            "version": "1.0.0",
+            "sha256": null,
+            "installedAt": "2026-10-20T07:38:58.591Z",
+            "changed": true,
+            "source": "local",
+            "warnings": [],
+            "installation": {
+              "id": "m2-html-control",
+              "version": "1.0.0",
+              "source": "local",
+              "packagePath": "m2-html-control/1.0.0",
+              "sha256": null,
+              "sizeBytes": 182158,
+              "format": "html-v1",
+              "entry": "entry.html",
+              "fileManifestDigest": null,
+              "fileCount": null,
+              "unpackedBytes": null,
+              "previousVersion": null,
+              "previousFormat": null,
+              "installedAt": "2026-10-20T07:38:58.591Z",
+              "updatedAt": "2026-10-20T07:38:58.591Z",
+              "manifest": {
+                "manifestVersion": 1,
+                "id": "m2-html-control",
+                "name": "M2 HTML Control",
+                "version": "1.0.0",
+                "author": {
+                  "name": "DSH Game Market"
+                },
+                "description": "经典打砖块：移动挡板反弹球，击碎普通与坚硬砖块，闯过 5 个关卡。鼠标或键盘都能玩，支持暂停、自动保存与 Continue。",
+                "categories": [
+                  "arcade"
+                ],
+                "tags": [
+                  "arcade",
+                  "breakout",
+                  "keyboard",
+                  "mouse",
+                  "short-run"
+                ],
+                "capabilities": [
+                  "storage",
+                  "score"
+                ],
+                "sdkVersion": "^1.0.0",
+                "runtimeVersion": "^1.0.0",
+                "preferredTheme": "game-defined",
+                "viewport": {
+                  "width": 960,
+                  "height": 540,
+                  "fit": "contain"
+                },
+                "score": {
+                  "direction": "higher-better",
+                  "min": 0,
+                  "max": 10000000,
+                  "integer": true
+                },
+                "save": {
+                  "schemaVersion": 1
+                },
+                "license": "MIT"
+              },
+              "compatibility": {
+                "status": "ok",
+                "sdkVersion": "1.0.0",
+                "runtimeVersion": "1.0.0",
+                "sdkRange": "^1.0.0",
+                "runtimeRange": "^1.0.0",
+                "checkedAt": "2026-10-20T07:38:58.591Z",
+                "reasons": []
+              },
+              "update": {
+                "available": false,
+                "latestVersion": "1.0.0",
+                "checkedAt": "2026-10-20T07:38:58.591Z",
+                "reason": null
+              },
+              "warnings": []
+            }
+          },
+          "requestId": "req_f95189f389c15ea0",
+          "serverTime": "2026-10-20T07:38:58.572Z"
+        }
+      },
+      {
+        "step": "launch-html-control",
+        "play": true,
+        "game": {
+          "title": "Breakout",
+          "origin": "null",
+          "hasCanvas": true,
+          "bodyLength": 183
+        }
+      },
+      {
+        "step": "uninstall-html-control",
+        "menu": true,
+        "item": true,
+        "rowGone": true
+      }
+    ],
+    "fs": {
+      "v100DirAfterInstall": {
+        "exists": true,
+        "mtimeMs": 1792481915636.8257,
+        "ino": 91759897,
+        "entries": [
+          "assets",
+          "data",
+          "dsh-package.json",
+          "dsh-sdk.js",
+          "game.json",
+          "index.html",
+          "scripts",
+          "styles"
+        ]
+      },
+      "v100DirAfterUpgrade": {
+        "exists": true,
+        "mtimeMs": 1792481915636.8257,
+        "ino": 91759897,
+        "entries": [
+          "assets",
+          "data",
+          "dsh-package.json",
+          "dsh-sdk.js",
+          "game.json",
+          "index.html",
+          "scripts",
+          "styles"
+        ]
+      },
+      "v101DirAfterUpgrade": {
+        "exists": true,
+        "mtimeMs": 1792481921029.139,
+        "ino": 91760486,
+        "entries": [
+          "assets",
+          "data",
+          "dsh-package.json",
+          "dsh-sdk.js",
+          "game.json",
+          "index.html",
+          "scripts",
+          "styles"
+        ]
+      },
+      "v100Rollback": {
+        "before": {
+          "exists": true,
+          "mtimeMs": 1792481915636.8257,
+          "ino": 91759897,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        },
+        "after": {
+          "exists": true,
+          "mtimeMs": 1792481915636.8257,
+          "ino": 91759897,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        }
+      },
+      "v101Conflict": {
+        "before": {
+          "exists": true,
+          "mtimeMs": 1792481921029.139,
+          "ino": 91760486,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        },
+        "after": {
+          "exists": true,
+          "mtimeMs": 1792481921029.139,
+          "ino": 91760486,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        }
+      },
+      "v101RecordFailure": {
+        "before": {
+          "exists": true,
+          "mtimeMs": 1792481921029.139,
+          "ino": 91760486,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        },
+        "after": {
+          "exists": true,
+          "mtimeMs": 1792481921029.139,
+          "ino": 91760486,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        },
+        "unlockedStatus": 0
+      },
+      "v101Recovery": {
+        "after": {
+          "exists": true,
+          "mtimeMs": 1792481921029.139,
+          "ino": 91760486,
+          "entries": [
+            "assets",
+            "data",
+            "dsh-package.json",
+            "dsh-sdk.js",
+            "game.json",
+            "index.html",
+            "scripts",
+            "styles"
+          ]
+        }
+      },
+      "afterUninstall": {
+        "v100": {
+          "exists": false,
+          "mtimeMs": null,
+          "ino": null,
+          "entries": []
+        },
+        "v101": {
+          "exists": false,
+          "mtimeMs": null,
+          "ino": null,
+          "entries": []
+        }
+      }
+    },
+    "saves": {
+      "interval1": {
+        "sessionId": "38A0D2A8E5EDB59DD3A441E8CA43AEE4",
+        "at": 1792481918442,
+        "event": "life-save",
+        "reason": "interval",
+        "version": "1.0.0",
+        "ticks": 20,
+        "score": 200,
+        "acks": 1
+      },
+      "exit1": {
+        "version": "1.0.0",
+        "ticks": 20,
+        "score": 200
+      },
+      "exit2": {
+        "version": "1.0.0",
+        "ticks": 22,
+        "score": 220
+      },
+      "exit3": {
+        "version": "1.0.1",
+        "ticks": 34,
+        "score": 340
+      },
+      "exit4": {
+        "version": "1.0.0",
+        "ticks": 34,
+        "score": 340
+      }
+    },
+    "versions": {
+      "v100": {
+        "version": "1.0.0",
+        "phase": "playing",
+        "bridgeReady": true,
+        "sessionStarted": true,
+        "paused": false,
+        "ticks": 0,
+        "score": 0,
+        "saveAcks": 0,
+        "loadedSave": null,
+        "lastSave": null,
+        "lastSaveError": null,
+        "errors": []
+      },
+      "continue": {
+        "version": "1.0.0",
+        "phase": "playing",
+        "bridgeReady": true,
+        "sessionStarted": true,
+        "paused": true,
+        "ticks": 20,
+        "score": 200,
+        "saveAcks": 0,
+        "loadedSave": {
+          "key": "progress",
+          "data": {
+            "schemaVersion": 1,
+            "value": {
+              "version": "1.0.0",
+              "ticks": 20,
+              "score": 200
+            },
+            "reason": "before-save"
+          },
+          "revision": 3,
+          "updatedAt": "2026-10-20T07:38:38.538Z"
+        },
+        "lastSave": null,
+        "lastSaveError": null,
+        "errors": []
+      },
+      "v101": {
+        "version": "1.0.1",
+        "phase": "playing",
+        "bridgeReady": true,
+        "sessionStarted": true,
+        "paused": true,
+        "ticks": 22,
+        "score": 220,
+        "saveAcks": 0,
+        "loadedSave": {
+          "key": "progress",
+          "data": {
+            "schemaVersion": 1,
+            "value": {
+              "version": "1.0.0",
+              "ticks": 22,
+              "score": 220
+            },
+            "reason": "before-save"
+          },
+          "revision": 5,
+          "updatedAt": "2026-10-20T07:38:39.272Z"
+        },
+        "lastSave": null,
+        "lastSaveError": null,
+        "errors": []
+      },
+      "rollback": {
+        "version": "1.0.0",
+        "phase": "playing",
+        "bridgeReady": true,
+        "sessionStarted": true,
+        "paused": true,
+        "ticks": 34,
+        "score": 340,
+        "saveAcks": 0,
+        "loadedSave": {
+          "key": "progress",
+          "data": {
+            "schemaVersion": 1,
+            "value": {
+              "version": "1.0.1",
+              "ticks": 34,
+              "score": 340
+            },
+            "reason": "before-save"
+          },
+          "revision": 7,
+          "updatedAt": "2026-10-20T07:38:43.122Z"
+        },
+        "lastSave": null,
+        "lastSaveError": null,
+        "errors": []
+      }
+    },
+    "fixtures": {
+      "builtOncePerRun": true,
+      "v100": {
+        "file": "m2-life-probe-1.0.0.dshgame.zip",
+        "size": 100407,
+        "sha256": "727a5ada…<redacted-len64>",
+        "head16": "<credential>"
+      },
+      "v101": {
+        "file": "m2-life-probe-1.0.1.dshgame.zip",
+        "size": 100407,
+        "sha256": "fac44f7d…<redacted-len64>",
+        "head16": "<credential>"
+      },
+      "tampered101": {
+        "file": "m2-life-probe-1.0.1-tampered.dshgame.zip",
+        "size": 95948,
+        "sha256": "d9589f86…<redacted-len64>",
+        "head16": "<credential>"
+      }
+    },
+    "storageRoot": "/tmp/dsh-v15/home-probe-m2-lifecycle-mvgdg2x7/storages/dsh-game-market",
+    "dataRoot": {
+      "home": "/tmp/dsh-v15/home-probe-m2-lifecycle-mvgdg2x7",
+      "freshPerRun": true,
+      "runTag": "mvgdg2x7"
+    },
+    "dismissals": [
+      {
+        "label": "preview-continue",
+        "clicked": true,
+        "target": {
+          "tag": "BUTTON",
+          "text": "继续",
+          "className": "_button_1rv3m_2 _primary_1rv3m_36 _md_1rv3m_23 YXiQha_primary",
+          "rect": {
+            "x": 932,
+            "y": 533,
+            "width": 120,
+            "height": 36
+          },
+          "hitInsideTarget": true
+        },
+        "point": {
+          "x": 932,
+          "y": 533,
+          "trusted": "Input.dispatchMouseEvent"
+        }
+      },
+      {
+        "label": "close-modal",
+        "clicked": true,
+        "target": {
+          "tag": "BUTTON",
+          "text": "",
+          "className": "Rvc1TW_close",
+          "rect": {
+            "x": 871,
+            "y": 350,
+            "width": 28,
+            "height": 28
+          },
+          "hitInsideTarget": true
+        },
+        "point": {
+          "x": 871,
+          "y": 350,
+          "trusted": "Input.dispatchMouseEvent"
+        }
+      }
+    ],
+    "openMarket": {
+      "opened": true,
+      "steps": [
+        {
+          "sidebar": {
+            "label": "sidebar-market",
+            "clicked": true,
+            "target": {
+              "tag": "BUTTON",
+              "text": "游戏市场",
+              "className": "_3WPZCG_panelRow",
+              "rect": {
+                "x": 140,
+                "y": 218,
+                "width": 252,
+                "height": 36
+              },
+              "hitInsideTarget": true
+            },
+            "point": {
+              "x": 140,
+              "y": 218,
+              "trusted": "Input.dispatchMouseEvent"
+            }
+          }
+        }
+      ]
+    },
+    "pickerAccept": ".html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed",
+    "openMyGames": {
+      "click": {
+        "label": "mygames-tab",
+        "clicked": true,
+        "target": {
+          "tag": "BUTTON",
+          "text": "我的游戏",
+          "className": "dgm-tab",
+          "rect": {
+            "x": 431,
+            "y": 27,
+            "width": 57,
+            "height": 54
+          },
+          "hitInsideTarget": true
+        },
+        "point": {
+          "x": 431,
+          "y": 27,
+          "trusted": "Input.dispatchMouseEvent"
+        }
+      },
+      "page": "my-games"
+    },
+    "playedMsBeforeExit": 2010,
+    "openMarketTab": {
+      "click": {
+        "label": "market-tab",
+        "clicked": true,
+        "target": {
+          "tag": "BUTTON",
+          "text": "市场",
+          "className": "dgm-tab",
+          "rect": {
+            "x": 363,
+            "y": 27,
+            "width": 30,
+            "height": 54
+          },
+          "hitInsideTarget": true
+        },
+        "point": {
+          "x": 363,
+          "y": 27,
+          "trusted": "Input.dispatchMouseEvent"
+        }
+      },
+      "page": "market"
+    },
+    "csp": {
+      "framingViolations": [],
+      "otherViolations": []
+    },
+    "screenshots": {
+      "market": "docs/verification/v1.5/raw/m2/screenshots/m2-lifecycle-market.png"
+    }
+  }
+}

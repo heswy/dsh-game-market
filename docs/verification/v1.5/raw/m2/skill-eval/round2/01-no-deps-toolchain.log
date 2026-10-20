@@ -1,0 +1,58 @@
+### P1-A-1 create html-v1 project with no-node_modules CLI
+Created html-demo (vanilla, html-v1) at <work>/w/html-demo
+  .gitignore
+  README.md
+  dsh-game.config.json
+  index.html
+  manifest.json
+  package.json
+  scripts/build.mjs
+  scripts/cli.mjs
+  scripts/dev.mjs
+  scripts/pack.mjs
+  scripts/publish.mjs
+  scripts/validate.mjs
+  sdk/VERSION
+  sdk/index.d.ts
+  src/i18n.js
+  src/main.js
+  src/render.js
+  src/storage.js
+  src/styles.css
+
+Next steps:
+  cd <work>/w/html-demo
+  export DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs
+  npm run build
+  npm run validate
+  npm run dev
+  npm run pack
+  npm run publish -- --url https://github.com/<you>/<repo>/releases/download/v1.0.0/html-demo-1.0.0.html --cover https://example.com/cover.png
+EXIT:0
+
+### P1-A-2 build html-v1 (expect exit 0, no yauzl needed)
+built <work>/w/html-demo/dist/index.html (123353 bytes)
+  sha256: 0d3f6afcdbde73aba6bbd86e3726e92945bc26c623df2ff24eb7b2fa1f45720b
+  manifest: html-demo@1.0.0
+EXIT:0
+
+### P1-A-3 zip validate via no-node_modules CLI (expect E_TOOLCHAIN_DEPS_MISSING, exit 2)
+error: Missing toolchain dependency: asset-zip-v2 validation/packing needs the repository dependencies (the Host archive reader uses "yauzl")
+  hint: Run `npm install` (or `npm ci`) at the repository root, then retry. html-v1 commands work without it.
+EXIT:2
+
+### P1-A-4 zip validate project (in-memory build+zip) via no-node_modules CLI
+error: Missing toolchain dependency: asset-zip-v2 validation/packing needs the repository dependencies (the Host archive reader uses "yauzl")
+  hint: Run `npm install` (or `npm ci`) at the repository root, then retry. html-v1 commands work without it.
+EXIT:2
+
+### P1-A-5 zip pack via no-node_modules CLI (expect exit 2 + hint)
+{
+  "ok": false,
+  "error": {
+    "message": "Missing toolchain dependency: asset-zip-v2 validation/packing needs the repository dependencies (the Host archive reader uses \"yauzl\")",
+    "hint": "Run `npm install` (or `npm ci`) at the repository root, then retry. html-v1 commands work without it.",
+    "code": "E_TOOLCHAIN_DEPS_MISSING"
+  }
+}
+EXIT:2

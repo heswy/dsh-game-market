@@ -1,5 +1,5 @@
 /**
- * Orbit Catch — reference Game SDK v1 integration (PRD §8.2.9).
+ * Vanilla game — reference Game SDK v1 integration (PRD §8.2.9).
  *
  * Demonstrates, in order:
  *   1. await game.ready() before the main loop, visible error state on failure;

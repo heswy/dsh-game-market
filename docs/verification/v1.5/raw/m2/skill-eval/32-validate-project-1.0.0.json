@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "errors": [],
+  "warnings": [],
+  "truncated": false,
+  "manifest": {
+    "id": "token-trail",
+    "name": "Token Trail",
+    "version": "1.0.0"
+  },
+  "bytes": 147108,
+  "source": "<work>/token-trail (built in memory)",
+  "format": "asset-zip-v2",
+  "entry": "index.html",
+  "fileCount": 12,
+  "filesDigest": "64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e"
+}

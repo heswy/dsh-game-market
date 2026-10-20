@@ -42,6 +42,12 @@ import {
 import { preparePublish } from '../scripts/registry/lib/prepare.mjs';
 import { validateAssets } from '../scripts/registry/validate-assets.mjs';
 import { PNG_BYTES, buildManifest, buildPackage } from '../packages/host/test/support/packages.js';
+import { fileManifestDigest } from '../packages/shared/src/package-v2.js';
+import {
+  buildGameManifest,
+  buildPackage as buildZipPackage,
+  defaultFiles as defaultZipFiles,
+} from './helpers/zip-package.mjs';
 
 const COVER_SHA = 'b'.repeat(64);
 const SHOT_SHA = 'c'.repeat(64);
@@ -758,7 +764,17 @@ test('validate-assets re-downloads and verifies every release of a v2 catalog (H
   const repo = await makeRepo(t);
   const htmlPackage = buildPackage(buildManifest({ id: 'orbit-catch', version: '1.0.0' }));
   const htmlBytes = htmlPackage.bytes;
-  const zipBytes = Buffer.concat([Buffer.from([0x50, 0x4b, 0x03, 0x04]), Buffer.from('zip-payload')]);
+  // M2-D: ZIP releases are re-validated with the Host archive pipeline, not
+  // just their outer sha256 (the old M1 fixture was a 19-byte fake ZIP that no
+  // longer represents a legal package). Build a real `asset-zip-v2` fixture.
+  const zipFiles = defaultZipFiles();
+  zipFiles.set(
+    'game.json',
+    Buffer.from(JSON.stringify(buildGameManifest({ id: 'orbit-catch', name: 'Orbit Catch', version: '1.1.0' }), null, 2)),
+  );
+  const zipPackage = buildZipPackage(zipFiles);
+  const zipBytes = zipPackage.zip;
+  const zipFilesDigest = fileManifestDigest(zipPackage.descriptor.files, (text) => sha256(text));
   const png = PNG_BYTES;
   const files = new Map();
   const serve = (url, bytes) => {
@@ -805,7 +821,7 @@ test('validate-assets re-downloads and verifies every release of a v2 catalog (H
           url: serve('https://github.com/example/orbit-catch/releases/download/orbit-catch-v1.1.0/orbit-catch-1.1.0.dshgame.zip', zipBytes),
           sha256: sha256(zipBytes),
           size: zipBytes.length,
-          filesDigest: 'd'.repeat(64),
+          filesDigest: zipFilesDigest,
         },
         media: { cover: { url: serve(`https://github.com/example/orbit-catch/releases/download/v1/cover-2.png`, png), sha256: sha256(png), size: png.length, type: 'png' }, screenshots: [] },
         sourceCommit: SOURCE_COMMIT,

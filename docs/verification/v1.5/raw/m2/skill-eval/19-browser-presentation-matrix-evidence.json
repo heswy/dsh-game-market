@@ -1,0 +1,113 @@
+{
+  "url": "http://127.0.0.1:4402/",
+  "requests": [
+    "http://127.0.0.1:4402/",
+    "http://127.0.0.1:4402/wrapper?src=%2Fres%2F<instance>%2F<nonce>%2Findex.html",
+    "http://127.0.0.1:4402/health",
+    "http://127.0.0.1:4402/res/<instance>/<nonce>/index.html?instance=<hex32>&nonce=<hex32>",
+    "http://127.0.0.1:4402/favicon.ico",
+    "http://127.0.0.1:4402/favicon.ico"
+  ],
+  "console": [
+    "[simulator] · simulator ready select states on the right; every bridge message also appears in the console ",
+    "[simulator] · iframe loading http://127.0.0.1:4402/wrapper?src=%2Fres%2F<instance>%2F<nonce>%2Findex.html ",
+    "[simulator] ← hello  Object",
+    "[simulator] → init  Object",
+    "[simulator] → agent-status  Object",
+    "[simulator] → theme  Object",
+    "[simulator] → viewport  Object",
+    "[simulator] ← ready  Object",
+    "[simulator] → res ok Object",
+    "[simulator] · iframe loaded  ",
+    "[simulator] · wrapper loaded relaying bridge traffic ",
+    "[simulator] ← score.getBest  Object",
+    "[simulator] → res ok ",
+    "[simulator] ← storage.load  Object",
+    "[simulator] → res ok ",
+    "[simulator] ← session.start  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← storage.save  Object",
+    "[simulator] → res ok Object",
+    "[simulator] → before-save  Object",
+    "[simulator] ← storage.save  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← storage.save  Object",
+    "[simulator] → res ok Object",
+    "[simulator] → theme  Object",
+    "[simulator] → viewport  Object",
+    "[simulator] → viewport  Object",
+    "[simulator] → viewport  Object",
+    "[simulator] ← storage.save  Object",
+    "[simulator] → res ok Object",
+    "[simulator] → theme  Object",
+    "[simulator] · reducedMotion → true  ",
+    "[simulator] → theme  Object"
+  ],
+  "steps": [],
+  "finishedAt": "2026-10-20T07:41:57.083Z",
+  "initial": {
+    "status": "ready",
+    "frameW": 860,
+    "frameH": 540,
+    "vw": 1280,
+    "bodyTheme": null,
+    "meta": "token-trail@1.0.1 · Token Trail · instance 42e4347c…"
+  },
+  "pauseSave1": "{\"saveVersion\":2,\"score\":0,\"pickups\":0,\"rocksDodged\":1,\"lives\":3,\"elapsed\":4.733200000000006,\"lane\":1,\"objects\":[{\"lane\":2,\"y\":0.9227540594444656,\"kind\":\"token\"},{\"lane\":2,\"y\":0.5972283935691963,\"kind\":\"token\"},{\"lane\":1,\"y\":0.2947509928379384,\"kind\":\"rock\"},{\"lane\":0,\"y\":-0.06965582010402642,\"kind\":\"token\"}],\"spawnIn\":0.6643027999999995,\"speed\":0.4319984699740626,\"gameOver\":false}",
+  "pauseSave2": "{\"saveVersion\":2,\"score\":0,\"pickups\":0,\"rocksDodged\":1,\"lives\":3,\"elapsed\":4.733200000000006,\"lane\":1,\"objects\":[{\"lane\":2,\"y\":0.9227540594444656,\"kind\":\"token\"},{\"lane\":2,\"y\":0.5972283935691963,\"kind\":\"token\"},{\"lane\":1,\"y\":0.2947509928379384,\"kind\":\"rock\"},{\"lane\":0,\"y\":-0.06965582010402642,\"kind\":\"token\"}],\"spawnIn\":0.6643027999999995,\"speed\":0.4319984699740626,\"gameOver\":false}",
+  "pauseSave3": "{\"saveVersion\":2,\"score\":0,\"pickups\":0,\"rocksDodged\":1,\"lives\":2,\"elapsed\":6.149746000000023,\"lane\":1,\"objects\":[{\"lane\":2,\"y\":1.2213552745131606,\"kind\":\"token\"},{\"lane\":0,\"y\":0.5544710608399376,\"kind\":\"token\"},{\"lane\":0,\"y\":0.22075166691553888,\"kind\":\"token\"}],\"spawnIn\":0.005203047999999544,\"speed\":0.44899693140671615,\"gameOver\":false}",
+  "light": {
+    "status": "ready",
+    "frameW": 860,
+    "frameH": 540,
+    "vw": 1280,
+    "bodyTheme": null,
+    "meta": "token-trail@1.0.1 · Token Trail · instance 42e4347c…"
+  },
+  "resizeClicks": [
+    {
+      "status": "ready",
+      "frameW": 640,
+      "frameH": 360,
+      "vw": 1280,
+      "bodyTheme": null,
+      "meta": "token-trail@1.0.1 · Token Trail · instance 42e4347c…"
+    },
+    {
+      "status": "ready",
+      "frameW": 860,
+      "frameH": 588,
+      "vw": 1280,
+      "bodyTheme": null,
+      "meta": "token-trail@1.0.1 · Token Trail · instance 42e4347c…"
+    },
+    {
+      "status": "ready",
+      "frameW": 375,
+      "frameH": 588,
+      "vw": 1280,
+      "bodyTheme": null,
+      "meta": "token-trail@1.0.1 · Token Trail · instance 42e4347c…"
+    }
+  ],
+  "narrow": {
+    "status": "ready",
+    "frameW": 375,
+    "frameH": 588,
+    "vw": 1280,
+    "bodyTheme": null,
+    "meta": "token-trail@1.0.1 · Token Trail · instance 42e4347c…"
+  },
+  "narrowSave": "{\"saveVersion\":2,\"score\":0,\"pickups\":0,\"rocksDodged\":1,\"lives\":2,\"elapsed\":6.466336000000025,\"lane\":1,\"objects\":[{\"lane\":0,\"y\":0.697252020234808,\"kind\":\"token\"},{\"lane\":0,\"y\":0.3635326263104094,\"kind\":\"token\"},{\"lane\":2,\"y\":0.022780959394870504,\"kind\":\"token\"}],\"spawnIn\":0.44610276799999865,\"speed\":0.45279600780230417,\"gameOver\":false}",
+  "reducedMotion": {
+    "status": "ready",
+    "frameW": 375,
+    "frameH": 588,
+    "vw": 1280,
+    "bodyTheme": null,
+    "meta": "token-trail@1.0.1 · Token Trail · instance 42e4347c…"
+  },
+  "finalSave": "{\"saveVersion\":2,\"score\":0,\"pickups\":0,\"rocksDodged\":1,\"lives\":2,\"elapsed\":6.466336000000025,\"lane\":1,\"objects\":[{\"lane\":0,\"y\":0.697252020234808,\"kind\":\"token\"},{\"lane\":0,\"y\":0.3635326263104094,\"kind\":\"token\"},{\"lane\":2,\"y\":0.022780959394870504,\"kind\":\"token\"}],\"spawnIn\":0.44610276799999865,\"speed\":0.45279600780230417,\"gameOver\":false}",
+  "externalRequests": [],
+  "consoleErrors": []
+}

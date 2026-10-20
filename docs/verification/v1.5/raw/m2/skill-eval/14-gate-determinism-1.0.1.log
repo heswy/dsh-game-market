@@ -1,0 +1,21 @@
+### 1.0.1 gate: build
+built <work>/token-trail/dist (12 files, 146379 bytes)
+  format:   asset-zip-v2
+  entry:    index.html
+  digest:   def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1
+  manifest: token-trail@1.0.1
+build EXIT:0
+validate project EXIT:0
+validate dist EXIT:0
+pack EXIT:0
+validate zip EXIT:0
+pack-1.0.1.json ok= True sha256= 29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a bytes= 147769 fileCount= 12 filesDigest= def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1
+validate-zip-1.0.1.json ok= True sha256= None bytes= 147769 fileCount= 12 filesDigest= def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1
+### 1.0.1 determinism: two more build+pack cycles
+build#2 EXIT:0
+build#3 EXIT:0
+pack#2 sha256=29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a
+pack#3 sha256=29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a
+PACK_1.0.1_DETERMINISTIC=YES
+29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a  dist/token-trail-1.0.1.dshgame.zip
+29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a  token-trail-1.0.1.dshgame.zip

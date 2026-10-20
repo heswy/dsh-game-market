@@ -1,0 +1,14 @@
+### Skill P1-③ executable: pack --json
+EXIT:0
+{
+  "ok": true,
+  "format": "asset-zip-v2",
+  "id": "token-trail",
+  "version": "1.0.1",
+  "file": "<work>/token-trail/dist/token-trail-1.0.
+### publish --dry-run --json
+EXIT:0
+-- stderr:
+-- publish.json keys:
+['bytes', 'dates', 'entry', 'files', 'id', 'ok', 'registry', 'sha256', 'version', 'warnings']
+entry? True

@@ -1,0 +1,76 @@
+{
+  "draft": {
+    "ok": true,
+    "errors": [],
+    "warnings": [],
+    "pending": [
+      "author.login",
+      "author.githubUserId",
+      "author.sourceRepo",
+      "package.url",
+      "package.sha256Url",
+      "media.cover.url",
+      "media.screenshots[0].url",
+      "media.screenshots[1].url"
+    ],
+    "pendingNotes": []
+  },
+  "final": {
+    "ok": false,
+    "errors": [
+      {
+        "code": "E_SUBMISSION_AUTHOR",
+        "field": "author.login",
+        "message": "author.login must be a string (1..39 chars)"
+      },
+      {
+        "code": "E_SUBMISSION_AUTHOR",
+        "field": "author.githubUserId",
+        "message": "githubUserId must be the numeric GitHub user id"
+      },
+      {
+        "code": "E_SUBMISSION_URL",
+        "field": "author.sourceRepo",
+        "message": "author.sourceRepo must be an https URL"
+      },
+      {
+        "code": "E_SUBMISSION_PACKAGE",
+        "field": "package.url",
+        "message": "package.url must be an https URL"
+      },
+      {
+        "code": "E_SUBMISSION_PACKAGE",
+        "field": "package.sha256Url",
+        "message": "package.sha256Url must be an https URL"
+      },
+      {
+        "code": "E_SUBMISSION_MEDIA",
+        "field": "media.cover.url",
+        "message": "media.cover.url must be an https URL"
+      },
+      {
+        "code": "E_SUBMISSION_MEDIA",
+        "field": "media.screenshots[0].url",
+        "message": "media.screenshots[0].url must be an https URL"
+      },
+      {
+        "code": "E_SUBMISSION_MEDIA",
+        "field": "media.screenshots[1].url",
+        "message": "media.screenshots[1].url must be an https URL"
+      },
+      {
+        "code": "E_SUBMISSION_PENDING",
+        "field": "pending",
+        "message": "a final submission must resolve every pending remote field"
+      }
+    ]
+  },
+  "submissionPackage": {
+    "format": "asset-zip-v2",
+    "url": "",
+    "sha256": "29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a",
+    "size": 147769,
+    "sha256Url": "",
+    "filesDigest": "def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "scope": [
+    "Skill P1-\u2460 npm install prerequisite",
+    "Product P1-A no-node_modules actionable failure",
+    "Product P1-B dev-only old-save bridge (--save-out/--seed-save/export/import)",
+    "Skill P1-\u2462 executable submission draft",
+    "PD-1..PD-6 product/doc fixes",
+    "production leak check for dev save endpoints"
+  ],
+  "repoHead": "9388b37c7c73f3a4056d8d4607cb8ead38a0ed37",
+  "skillVersion": "1.1.0",
+  "verdicts": {
+    "skill_p1_1_npm_install": "closed (prerequisite documented) + NEW doc mismatch: failure mode text is stale",
+    "product_p1a_no_node_modules": "closed (html-v1 build exit 0; zip validate/pack exit 2 + E_TOOLCHAIN_DEPS_MISSING + hint)",
+    "product_p1b_dev_save_bridge": "closed (1.0.0 --save-out -> 1.0.1 --seed-save -> Continue restored old values; UI/API/seed edge cases verified)",
+    "skill_p1_3_submission_executable": "closed (SKILL \u00a77 snippets executed verbatim: generation exit 0, draft validation ok)",
+    "pd_1_review_checklist_zip": "closed",
+    "pd_2_filesDigest_naming": "closed",
+    "pd_3_zero_bytes_header": "closed",
+    "pd_4_dev_help": "closed",
+    "pd_5_template_residual": "closed",
+    "pd_6_guide_game_404": "closed",
+    "dev_save_production_leak": "none (no /dev/save outside scripts/cli dev server + tests)"
+  }
+}

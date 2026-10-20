@@ -1,0 +1,38 @@
+### npm run validate (Skill §4 exact command: build -> validate dist -> pack -> validate zip)
+
+> token-trail@1.0.1 validate
+> node scripts/validate.mjs
+
+built <work>/token-trail/dist (12 files, 146379 bytes)
+  format:   asset-zip-v2
+  entry:    index.html
+  digest:   def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1
+  manifest: token-trail@1.0.1
+OK  <work>/token-trail/dist (147769 bytes)
+    manifest: token-trail@1.0.1 (Token Trail)
+packed <work>/token-trail/dist/token-trail-1.0.1.dshgame.zip (147769 bytes, 12 files)
+  format:    asset-zip-v2
+  sha256:    29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a
+  fileCount: 12
+  filesDigest: def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1
+  digest:    <work>/token-trail/dist/token-trail-1.0.1.dshgame.zip.sha256
+  self-test: extracted OK (13 entries @0444)
+OK  <work>/token-trail/dist/token-trail-1.0.1.dshgame.zip (147769 bytes)
+    manifest: token-trail@1.0.1 (Token Trail)
+EXIT:0
+
+### npm run pack (Skill §4)
+
+packed <work>/token-trail/dist/token-trail-1.0.1.dshgame.zip (147769 bytes, 12 files)
+  format:    asset-zip-v2
+  sha256:    29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a
+  fileCount: 12
+  filesDigest: def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1
+  digest:    <work>/token-trail/dist/token-trail-1.0.1.dshgame.zip.sha256
+  self-test: extracted OK (13 entries @0444)
+EXIT:0
+
+### artifact after wrappers
+29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a  dist/token-trail-1.0.1.dshgame.zip
+-rw-r--r--@ 1 orange  wheel  147769 Oct 20 15:57 dist/token-trail-1.0.1.dshgame.zip
+-rw-r--r--@ 1 orange  wheel      96 Oct 20 15:57 dist/token-trail-1.0.1.dshgame.zip.sha256

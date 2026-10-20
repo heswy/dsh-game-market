@@ -32,6 +32,7 @@ import {
 import { makeReport } from './issues.mjs';
 import { REPO_ROOT, SDK_ENTRY, isInside, resolveInside } from './paths.mjs';
 import { checkCompatibility, validateHtmlText } from './validator.mjs';
+import { isZipFormat, resolveFormat } from './formats.mjs';
 
 export const CONFIG_FILE = 'dsh-game.config.json';
 export const MANIFEST_FILE = 'manifest.json';
@@ -364,6 +365,13 @@ export async function buildProject(projectDir, options = {}) {
   if (!dirExists(root)) throw usageError(`Project directory does not exist: ${root}`);
   const config = loadConfig(root);
   if (options.sdk === false) config.sdk = false;
+  // V1.5: explicit/config `asset-zip-v2` takes the resource-package pipeline;
+  // no option/config keeps the V1 single-file HTML behaviour byte-identical.
+  const requestedFormat = resolveFormat({ format: options.format }, config);
+  if (isZipFormat(requestedFormat)) {
+    const { buildPackageV2 } = await import('./package-v2.mjs');
+    return buildPackageV2(root, { ...options, format: requestedFormat });
+  }
 
   const manifestPath = locate(root, config.manifest, [MANIFEST_FILE, 'src/manifest.json']);
   let manifest;

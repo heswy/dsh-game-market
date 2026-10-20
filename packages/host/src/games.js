@@ -6,13 +6,21 @@
  * label so a missing/broken built-in remains visible and explainable.
  */
 
-import { promises as fs } from 'node:fs';
+import { promises as fs, statSync } from 'node:fs';
 import path from 'node:path';
 
-import { BUILTIN_GAMES, LIMITS } from '../../shared/src/constants.js';
-import { GM } from '../../shared/src/errors.js';
+import {
+  ASSET_ZIP_V2,
+  DEFAULT_PACKAGE_FORMAT,
+  DESCRIPTOR_FILE,
+  LIMITS,
+} from '../../shared/src/constants.js';
+import { BUILTIN_GAMES } from '../../shared/src/builtin-games.js';
+import { GM, INTERNAL_TO_GM } from '../../shared/src/errors.js';
+import { checkZipEntryType, fileManifestDigest, validateDescriptor } from '../../shared/src/package-v2.js';
 import { installationView } from './installations.js';
 import { hostError } from './errors.js';
+import { sha256Hex } from './ids.js';
 import { compatibilityFor, compareVersions, parseRange, parseVersion } from './semver.js';
 import {
   isInside,
@@ -42,6 +50,85 @@ const PREVIEW_TYPES = Object.freeze({
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
 });
+
+/**
+ * M2: built-in `asset-zip-v2` packages are validated with the *same* descriptor +
+ * file-manifest rules as installed ZIP packages (docs/V1.5-CONTRACTS §1/§4/§7).
+ * A built-in tree is trusted input, but "trusted" still means fail closed: a
+ * tampered/missing file must never be served or launched.
+ *
+ * Full content hashing of every file is cached by a filesystem fingerprint
+ * (path/size/mtime/inode). Every load still re-stats all files and re-verifies
+ * the descriptor, entry and `game.json`, so an in-place edit invalidates the
+ * cache and re-hashes the whole tree.
+ */
+const packageFileValidationCache = new Map();
+
+function packageLayoutError(message) {
+  return hostError(GM.DESCRIPTOR_MISMATCH, message || 'Built-in package does not match its file manifest', {
+    retryable: false,
+  });
+}
+
+/** Resolve a normalized package-relative path under its package root. */
+function resolveInsidePackage(packageRoot, relPath) {
+  const target = path.resolve(packageRoot, ...String(relPath).split('/'));
+  if (!isInside(packageRoot, target)) throw packageLayoutError('Package path escapes its root');
+  return target;
+}
+
+/**
+ * Verify `files[]` against the on-disk package tree (size + sha256 for every
+ * entry, bounded by the §3 limits). Successful full verification is cached by a
+ * stat fingerprint so repeated catalog loads do not re-hash megabytes.
+ */
+async function verifyPackageFiles({ packageRoot, files }) {
+  const fingerprint = [];
+  const absolutePaths = [];
+  let totalBytes = 0;
+  for (const file of files) {
+    const absPath = resolveInsidePackage(packageRoot, file.path);
+    let stats;
+    try {
+      stats = await fs.lstat(absPath);
+    } catch (_error) {
+      throw packageLayoutError('Package file is missing');
+    }
+    if (stats.isSymbolicLink() || !stats.isFile()) throw packageLayoutError('Package file is not a regular file');
+    if (stats.size !== file.size) throw packageLayoutError('Package file size does not match the manifest');
+    const typeCheck = checkZipEntryType(file.path);
+    if (!typeCheck.ok) {
+      throw hostError(GM.ASSET_TYPE_UNSUPPORTED, 'Built-in package contains an unsupported asset type', {
+        retryable: false,
+      });
+    }
+    totalBytes += file.size;
+    if (totalBytes > LIMITS.zip.zipUnpackedBytes) {
+      throw hostError(GM.ZIP_LIMIT, 'Built-in package exceeds the unpacked size limit', {
+        retryable: false,
+        details: { kind: 'zipUnpackedBytes', limit: LIMITS.zip.zipUnpackedBytes },
+      });
+    }
+    absolutePaths.push(absPath);
+    fingerprint.push(`${file.path}\u0000${file.size}\u0000${stats.mtimeMs}\u0000${stats.ino}`);
+  }
+  const signature = fingerprint.join('\n');
+  const cached = packageFileValidationCache.get(packageRoot);
+  if (cached && cached.signature === signature) return;
+  for (let index = 0; index < files.length; index += 1) {
+    const file = files[index];
+    let bytes;
+    try {
+      bytes = await fs.readFile(absolutePaths[index]);
+    } catch (_error) {
+      throw packageLayoutError('Package file is unreadable');
+    }
+    if (bytes.length !== file.size || sha256Hex(bytes) !== file.sha256) {
+      throw packageLayoutError('Package file content does not match the manifest');
+    }
+  }
+  packageFileValidationCache.set(packageRoot, { signature });
+}
 
 function manifestError(field, message) {
   return hostError(GM.MANIFEST_INVALID, message || 'Invalid game manifest', {
@@ -228,12 +315,76 @@ function placeholderManifest(catalogEntry) {
 }
 
 /**
+ * Synchronous "is this built-in package shipped in this tree?" probe.
+ *
+ * CR8-04: shipped means the extracted package **directory** exists
+ * (`games/<id>/dist/`), *not* that the package is healthy. A shipped-but-broken
+ * package (descriptor missing/invalid, file manifest mismatch, unreadable files)
+ * must stay registered so the catalog shows `issue='package-invalid'` and
+ * `install.js#isBuiltinGame` keeps rejecting install/uninstall for that id.
+ *
+ * Three outcomes per candidate path:
+ *   - stat fails with ENOENT/ENOTDIR -> not shipped in this tree shape;
+ *   - stat succeeds (directory, or even a corrupt non-directory `dist`) -> shipped;
+ *   - stat fails with any other error (EACCES/EPERM/EIO/...) -> shipped but not
+ *     inspectable; never silently treated as absent.
+ *
+ * Only a tree that genuinely does not ship the package is filtered out (dev/test
+ * fixture roots). Production bundles missing the package fail `scripts/check.mjs`
+ * at build time. The probe runs once at catalog construction (host activation).
+ */
+function builtinPackageShipped(root, catalogEntry) {
+  if (!catalogEntry || catalogEntry.format !== ASSET_ZIP_V2) return true;
+  const directoryCandidates = [
+    path.resolve(root, path.basename(String(catalogEntry.dir || ''))),
+    path.resolve(root, String(catalogEntry.dir || '')),
+  ];
+  const packageRel = typeof catalogEntry.packageDir === 'string' && catalogEntry.packageDir.length > 0
+    ? catalogEntry.packageDir
+    : path.posix.dirname(String(catalogEntry.entryFile || ''));
+  for (const directory of directoryCandidates) {
+    if (!isInside(root, directory)) continue;
+    const packageRoot = path.resolve(directory, String(packageRel));
+    if (!isInside(directory, packageRoot) || !isInside(root, packageRoot)) continue;
+    try {
+      statSync(packageRoot);
+      return true;
+    } catch (error) {
+      const code = error && typeof error.code === 'string' ? error.code : '';
+      if (code === 'ENOENT' || code === 'ENOTDIR') continue;
+      // Permission/IO errors must not hide a shipped package (CR8-04).
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Probe one package path without collapsing "absent" into "inaccessible".
+ * @returns {Promise<{state:'ok', stats:import('node:fs').Stats}|{state:'absent'}|{state:'inaccessible', code:string}>}
+ */
+async function probePackagePath(absPath) {
+  try {
+    return { state: 'ok', stats: await fs.lstat(absPath) };
+  } catch (error) {
+    const code = error && typeof error.code === 'string' ? error.code : '';
+    if (code === 'ENOENT' || code === 'ENOTDIR') return { state: 'absent' };
+    return { state: 'inaccessible', code: code || 'EIO' };
+  }
+}
+
+/**
  * Reads built-in manifests from `builtinGamesRoot`.
  *
  * @param {{root: string, entries?: readonly object[], logger?: object}} options
  */
 export function createGameCatalog({ root, entries = BUILTIN_GAMES, logger = null }) {
-  const entryMap = new Map(entries.map((entry) => [entry.id, entry]));
+  // M2/CR8-04: an `asset-zip-v2` built-in is registered when its package tree is
+  // *shipped* — healthy or broken (see builtinPackageShipped). `snake` (html-v1)
+  // keeps the V1 behaviour of remaining visible even when broken so diagnostics
+  // can explain it.
+  const catalogEntries = entries.filter((entry) => builtinPackageShipped(root, entry));
+  const entryMap = new Map(catalogEntries.map((entry) => [entry.id, entry]));
 
   async function resolveDirectory(catalogEntry) {
     // `builtinGamesRoot` is the `games/` directory, while BUILTIN_GAMES.dir is
@@ -258,20 +409,34 @@ export function createGameCatalog({ root, entries = BUILTIN_GAMES, logger = null
     const catalogEntry = entryMap.get(gameId);
     if (!catalogEntry) return null;
     const directory = await resolveDirectory(catalogEntry);
+    const format = catalogEntry.format === ASSET_ZIP_V2 ? ASSET_ZIP_V2 : DEFAULT_PACKAGE_FORMAT;
     const info = {
       gameId,
       catalogEntry,
       directory,
+      format,
       manifest: null,
       placeholder: placeholderManifest(catalogEntry),
       issue: null,
       entryRel: catalogEntry.entryFile,
+      entry: null,
       entryPath: null,
       entryExists: false,
+      packageRoot: null,
+      filesDigest: null,
+      fileCount: null,
+      packageError: null,
     };
     if (!isInside(root, directory)) {
       info.issue = 'path-escape';
       return info;
+    }
+    if (format === ASSET_ZIP_V2) {
+      // `false` means "this tree does not ship the package at all" (dev tree /
+      // missing build artifact): the game is skipped rather than shown broken.
+      // A present-but-invalid package is fail-closed below.
+      const bundled = await loadZipBuiltin(info, catalogEntry);
+      return bundled ? info : null;
     }
     let raw;
     try {
@@ -298,6 +463,7 @@ export function createGameCatalog({ root, entries = BUILTIN_GAMES, logger = null
       return info;
     }
     info.entryRel = info.manifest.entry;
+    info.entry = info.manifest.entry;
     info.entryPath = path.resolve(directory, info.entryRel);
     if (!isInside(directory, info.entryPath)) {
       info.issue = 'path-escape';
@@ -314,11 +480,140 @@ export function createGameCatalog({ root, entries = BUILTIN_GAMES, logger = null
     return info;
   }
 
+  /**
+   * Load a built-in `asset-zip-v2` package into `info` (M2-B).
+   *
+   * Returns `false` when the package is not present in this tree at all
+   * (missing directory / missing descriptor = not built here), and `true`
+   * otherwise — including the fail-closed `issue='package-invalid'` state, which
+   * is visible in listings and rejected at launch with a GM-* error.
+   */
+  async function loadZipBuiltin(info, catalogEntry) {
+    const packageRel = typeof catalogEntry.packageDir === 'string' && catalogEntry.packageDir.length > 0
+      ? catalogEntry.packageDir
+      : path.posix.dirname(String(catalogEntry.entryFile || ''));
+    const packageRoot = path.resolve(info.directory, String(packageRel));
+    if (!isInside(info.directory, packageRoot) || !isInside(root, packageRoot)) {
+      info.issue = 'package-invalid';
+      info.packageError = GM.DESCRIPTOR_INVALID;
+      return true;
+    }
+    info.packageRoot = packageRoot;
+    try {
+      const packageRootState = await probePackagePath(packageRoot);
+      if (packageRootState.state === 'absent') return false;
+      if (packageRootState.state === 'inaccessible') {
+        throw hostError(GM.DESCRIPTOR_INVALID, 'Built-in package directory is not readable', {
+          retryable: false,
+        });
+      }
+      if (!packageRootState.stats.isDirectory()) {
+        throw packageLayoutError('Built-in package path is not a directory');
+      }
+      const descriptorPath = path.join(packageRoot, DESCRIPTOR_FILE);
+      // CR8-04: a shipped package with a missing/unreadable descriptor is
+      // *damaged*, not undelivered — it must surface as package-invalid instead
+      // of making the built-in (and its id protection) disappear.
+      const descriptorState = await probePackagePath(descriptorPath);
+      if (descriptorState.state !== 'ok') {
+        throw hostError(GM.DESCRIPTOR_INVALID, 'Built-in package descriptor is missing or unreadable', {
+          retryable: false,
+        });
+      }
+      const descriptorStats = descriptorState.stats;
+      if (descriptorStats.isSymbolicLink() || !descriptorStats.isFile()) {
+        throw packageLayoutError('Built-in package descriptor is not a regular file');
+      }
+      if (descriptorStats.size > LIMITS.zip.descriptorBytes) {
+        throw hostError(GM.ZIP_LIMIT, 'Built-in package descriptor is too large', {
+          retryable: false,
+          details: { kind: 'descriptorBytes', limit: LIMITS.zip.descriptorBytes },
+        });
+      }
+      let parsed;
+      try {
+        parsed = JSON.parse(await fs.readFile(descriptorPath, 'utf8'));
+      } catch (_error) {
+        throw hostError(GM.DESCRIPTOR_INVALID, 'Built-in package descriptor is not valid JSON', {
+          retryable: false,
+        });
+      }
+      const validation = validateDescriptor(parsed);
+      if (!validation.ok) {
+        throw hostError(INTERNAL_TO_GM[validation.code] || GM.DESCRIPTOR_INVALID, 'Built-in package descriptor is invalid', {
+          retryable: false,
+        });
+      }
+      const descriptor = validation.value;
+      const entryPath = resolveInsidePackage(packageRoot, descriptor.entry);
+      const expectedEntryPath = path.resolve(info.directory, String(catalogEntry.entryFile || ''));
+      if (entryPath !== expectedEntryPath) {
+        throw hostError(GM.DESCRIPTOR_MISMATCH, 'Built-in package entry does not match its catalog entry', {
+          retryable: false,
+        });
+      }
+      const digest = fileManifestDigest(descriptor.files, sha256Hex);
+      await verifyPackageFiles({ packageRoot, files: descriptor.files });
+
+      // Display metadata: `game.json` is one of the verified `files[]`.
+      const manifestPath = path.join(packageRoot, catalogEntry.manifestFile || descriptor.gameManifest || 'game.json');
+      let manifestStats;
+      try {
+        manifestStats = await fs.lstat(manifestPath);
+      } catch (_error) {
+        throw hostError(GM.MANIFEST_INVALID, 'Built-in package manifest is missing', { retryable: false });
+      }
+      if (!manifestStats.isFile() || manifestStats.size > MANIFEST_MAX_BYTES) {
+        throw hostError(GM.MANIFEST_INVALID, 'Built-in package manifest is invalid', { retryable: false });
+      }
+      let parsedManifest;
+      try {
+        parsedManifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
+      } catch (_error) {
+        throw hostError(GM.MANIFEST_INVALID, 'Built-in package manifest is not valid JSON', { retryable: false });
+      }
+      const manifest = normalizeManifest(parsedManifest, catalogEntry);
+      if (manifest.version !== catalogEntry.version) {
+        throw hostError(GM.INSTALL_VERSION_MISMATCH, 'Built-in package version does not match BUILTIN_GAMES', {
+          retryable: false,
+          details: { field: 'version' },
+        });
+      }
+      // The descriptor is the serving authority for the entry path; keep the
+      // normalized display manifest consistent with it.
+      manifest.entry = descriptor.entry;
+      info.manifest = manifest;
+      info.entry = descriptor.entry;
+      info.entryRel = descriptor.entry;
+      info.entryPath = entryPath;
+      info.entryExists = true;
+      info.filesDigest = digest;
+      info.fileCount = descriptor.files.length;
+      info.issue = null;
+      return true;
+    } catch (error) {
+      const gmCode = error && typeof error.code === 'string' && /^GM-\d{4}$/.test(error.code)
+        ? error.code
+        : GM.DESCRIPTOR_INVALID;
+      info.issue = 'package-invalid';
+      info.packageError = gmCode;
+      info.manifest = null;
+      info.entry = null;
+      info.entryPath = null;
+      info.entryExists = false;
+      info.filesDigest = null;
+      info.fileCount = null;
+      logger?.warn?.('[game-market/host] builtin-package-invalid', `gameId=${info.gameId}`, `code=${gmCode}`);
+      return true;
+    }
+  }
+
   async function list() {
     const result = [];
-    for (const entry of entries) {
+    for (const entry of catalogEntries) {
       if (!entryMap.has(entry.id)) continue;
-      result.push(await load(entry.id));
+      const info = await load(entry.id);
+      if (info) result.push(info);
     }
     return result;
   }
@@ -329,6 +624,12 @@ export function createGameCatalog({ root, entries = BUILTIN_GAMES, logger = null
     const info = await load(gameId);
     if (!info) throw hostError(GM.GAME_NOT_FOUND, 'Game not found');
     if (!info.manifest) {
+      if (info.issue === 'package-invalid' && typeof info.packageError === 'string') {
+        throw hostError(info.packageError, 'Built-in package is invalid', {
+          retryable: false,
+          details: { reason: 'package-invalid' },
+        });
+      }
       if (info.issue === 'manifest-missing' || info.issue === 'manifest-unreadable') {
         throw hostError(GM.GAME_NOT_FOUND, 'Game not found');
       }
@@ -343,6 +644,7 @@ export function createGameCatalog({ root, entries = BUILTIN_GAMES, logger = null
       root,
       items: items.map((info) => ({
         gameId: info.gameId,
+        format: info.format || DEFAULT_PACKAGE_FORMAT,
         issue: info.issue,
         entryAvailable: info.entryExists,
         installed: Boolean(info.manifest),
@@ -379,7 +681,7 @@ export function createGameCatalog({ root, entries = BUILTIN_GAMES, logger = null
     return { bytes, contentType, size: bytes.length };
   }
 
-  return { root, entries, list, get, diagnostics, getPreview, load };
+  return { root, entries: catalogEntries, list, get, diagnostics, getPreview, load };
 }
 
 const PREVIEW_BASE = '/api/game-market/preview';
@@ -506,6 +808,13 @@ export function createGamesService({
       viewport: normaliseViewport(canonical && canonical.viewport),
       entryAvailable: info.entryExists,
       issue: info.issue,
+      // M2: built-in package projection. `asset-zip-v2` builtins expose the
+      // validated descriptor entry / file-manifest digest / file count so the
+      // Client and diagnostics can reason about them; `html-v1` keeps nulls.
+      format: info.format || DEFAULT_PACKAGE_FORMAT,
+      entry: info.entry || info.entryRel || null,
+      filesDigest: info.filesDigest ?? null,
+      fileCount: info.fileCount ?? null,
     };
   }
 

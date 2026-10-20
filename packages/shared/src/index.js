@@ -1,4 +1,5 @@
 export * from './constants.js';
+export * from './builtin-games.js';
 export * from './errors.js';
 export * from './protocol.js';
 export * from './contracts.js';

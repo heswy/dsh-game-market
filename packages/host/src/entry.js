@@ -299,20 +299,36 @@ export function createEntryService({
     if (isBuiltin(gameId)) {
       const info = await catalog.load(gameId);
       if (!info) return null;
+      // A present-but-invalid built-in package (`package-invalid`) fails closed
+      // with the catalog's GM code instead of being served as a broken game. A
+      // package that is not shipped in this tree is simply absent (catalog.list
+      // already skips it, so `info` would be null for launch lookups).
       if (!info.manifest) {
+        if (info.issue === 'package-invalid' && typeof info.packageError === 'string') {
+          throw hostError(info.packageError, 'Built-in package is invalid', {
+            retryable: false,
+            details: { reason: 'package-invalid' },
+          });
+        }
         if (info.issue === 'manifest-missing' || info.issue === 'manifest-unreadable') return null;
         throw hostError(GM.MANIFEST_INVALID, 'Game manifest is invalid', { retryable: false });
       }
+      const format = info.format === ASSET_ZIP_V2 ? ASSET_ZIP_V2 : DEFAULT_PACKAGE_FORMAT;
       return {
         kind: 'builtin',
         gameId,
         version: info.manifest.version,
         manifest: info.manifest,
-        format: DEFAULT_PACKAGE_FORMAT,
-        entry: ENTRY_FILE,
-        packageRoot: null,
+        format,
+        // `asset-zip-v2` builtins use the descriptor entry + its package root so
+        // the resource origin serves them through the *same* manifest path as an
+        // installed package; `html-v1` keeps the V1 single-file shape.
+        entry: format === ASSET_ZIP_V2 ? info.entry || info.entryRel : ENTRY_FILE,
+        packageRoot: format === ASSET_ZIP_V2 ? info.packageRoot : null,
         entryPath: info.entryPath,
         entryExists: info.entryExists,
+        filesDigest: format === ASSET_ZIP_V2 ? info.filesDigest ?? null : null,
+        fileCount: format === ASSET_ZIP_V2 ? info.fileCount ?? null : null,
         record: null,
         source: 'builtin',
       };
@@ -416,7 +432,9 @@ export function createEntryService({
         entryPath: resolved.entryPath,
         packageRoot: resolved.packageRoot || null,
         entrySha256: digest,
-        filesDigest: format === ASSET_ZIP_V2 ? resolved.record?.fileManifestDigest ?? null : null,
+        // Installed packages carry the digest on the installation record; a
+        // built-in package carries the catalog-validated digest (M2).
+        filesDigest: format === ASSET_ZIP_V2 ? resolved.filesDigest ?? resolved.record?.fileManifestDigest ?? null : null,
         ttlMs: bindingTtlMs,
       });
     }
@@ -478,7 +496,7 @@ export function createEntryService({
             package: {
               format,
               entry: resolved.entry,
-              filesDigest: format === ASSET_ZIP_V2 ? resolved.record?.fileManifestDigest ?? null : null,
+              filesDigest: format === ASSET_ZIP_V2 ? resolved.filesDigest ?? resolved.record?.fileManifestDigest ?? null : null,
             },
             // §7.5.1/M1-D: the Runtime frames the platform wrapper for
             // `asset-zip-v2`; these two additively convey the wrapper URLs so
@@ -521,15 +539,25 @@ export function createEntryService({
     if (isBuiltin(gameId)) {
       const info = await catalog.load(gameId);
       if (!info) throw hostError(GM.GAME_NOT_FOUND, 'Game not found');
-      if (!info.manifest) throw hostError(GM.MANIFEST_INVALID, 'Game manifest is invalid');
+      if (!info.manifest) {
+        if (info.issue === 'package-invalid' && typeof info.packageError === 'string') {
+          throw hostError(info.packageError, 'Built-in package is invalid', {
+            retryable: false,
+            details: { reason: 'package-invalid' },
+          });
+        }
+        throw hostError(GM.MANIFEST_INVALID, 'Game manifest is invalid');
+      }
       if (info.manifest.version !== version) throw hostError(GM.GAME_NOT_FOUND, 'Game version not found');
       if (!info.entryExists) throw hostError(GM.ASSET_NOT_FOUND, 'Game entry file is missing');
+      const format = info.format === ASSET_ZIP_V2 ? ASSET_ZIP_V2 : DEFAULT_PACKAGE_FORMAT;
       return {
         kind: 'builtin',
-        format: DEFAULT_PACKAGE_FORMAT,
-        entry: ENTRY_FILE,
-        packageRoot: null,
+        format,
+        entry: format === ASSET_ZIP_V2 ? info.entry || info.entryRel : ENTRY_FILE,
+        packageRoot: format === ASSET_ZIP_V2 ? info.packageRoot : null,
         entryPath: info.entryPath,
+        filesDigest: format === ASSET_ZIP_V2 ? info.filesDigest ?? null : null,
         record: null,
       };
     }

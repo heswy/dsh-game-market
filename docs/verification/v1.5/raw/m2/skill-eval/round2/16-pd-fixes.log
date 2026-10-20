@@ -1,0 +1,22 @@
+### PD-5: generate a fresh ZIP project with updated CLI and grep template residual
+create EXIT:0
+
+### PD-1/PD-2: republish ZIP with updated CLI and inspect checklist/upload-plan
+pack EXIT:0
+publish EXIT:0
+-- review-checklist ZIP line:
+5:- [x] Package validates as an **asset-zip-v2 resource package** (deterministic ZIP, descriptor + file manifest).
+10:- [x] ZIP entries use fixed order/timestamp/STORED and 0444 semantics; the Host archive reader extracted it.
+62:    "format": "asset-zip-v2",
+-- upload-plan digest field name:
+8:filesDigest: `def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1`
+22:`package.format: "asset-zip-v2"` and `package.filesDigest`; the catalog/registry
+30:3. the entry's `package.filesDigest` equals `filesDigest` in this plan and the extracted descriptor digest
+31:   (registry-entry / upload-plan / submission all use the same `filesDigest` field name; html-v1 has no filesDigest).
+
+### PD-3: stale descriptor header byte count
+FAIL  <work>/token-trail/dist (146409 bytes)
+  1. E_DESCRIPTOR_MISMATCH (GM-4278) files: descriptor file manifest does not match the package
+  2. E_DESCRIPTOR_MISMATCH (GM-4278) files: size mismatch for scripts/main.js
+validate dist EXIT:1
+rebuild EXIT:0

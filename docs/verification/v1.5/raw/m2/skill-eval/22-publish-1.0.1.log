@@ -1,0 +1,23 @@
+### publish --dry-run (zip)
+published token-trail@1.0.1 (dry run: no files written)
+  entry:     <work>/token-trail/dist/registry-entry.json
+  upload:    <work>/token-trail/dist/upload-plan.md
+  checklist: <work>/token-trail/dist/review-checklist.md
+  sha256:    29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a
+  package:   https://github.com/independent-author/token-trail/releases/download/token-trail-v1.0.1/token-trail-1.0.1.dshgame.zip
+EXIT:0
+
+### files after dry-run (dist listing, no registry-entry expected)
+assets audio dsh-package.json dsh-sdk.js game.json index.html levels scripts styles token-trail-1.0.0.dshgame.zip token-trail-1.0.0.dshgame.zip.sha256 token-trail-1.0.1.dshgame.zip token-trail-1.0.1.dshgame.zip.sha256 
+
+### publish (real, offline; writes registry-entry/upload-plan/checklist)
+published token-trail@1.0.1
+  entry:     <work>/token-trail/dist/registry-entry.json
+  upload:    <work>/token-trail/dist/upload-plan.md
+  checklist: <work>/token-trail/dist/review-checklist.md
+  sha256:    29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a
+  package:   https://github.com/independent-author/token-trail/releases/download/token-trail-v1.0.1/token-trail-1.0.1.dshgame.zip
+EXIT:0
+
+### files after publish
+assets audio dsh-package.json dsh-sdk.js game.json index.html levels registry-entry.json review-checklist.md scripts styles token-trail-1.0.0.dshgame.zip token-trail-1.0.0.dshgame.zip.sha256 token-trail-1.0.1.dshgame.zip token-trail-1.0.1.dshgame.zip.sha256 upload-plan.md 

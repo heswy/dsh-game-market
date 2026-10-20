@@ -8,6 +8,16 @@ import test from 'node:test';
 const ROOT = path.resolve(import.meta.dirname, '../../..');
 const NODE = process.execPath;
 
+/**
+ * The Skill is versioned independently of the platform (it ships to outside
+ * authors), so CLI assertions derive the archive name from VERSION instead of
+ * pinning one literal — otherwise every Skill release breaks unrelated CLI
+ * tests. The archive name is still verified end to end here.
+ */
+async function skillVersion() {
+  return (await fs.readFile(path.join(ROOT, 'skills/dsh-game-developer/VERSION'), 'utf8')).trim();
+}
+
 function run(script, args, options = {}) {
   return spawnSync(NODE, [path.join(ROOT, script), ...args], {
     cwd: options.cwd || ROOT,
@@ -48,7 +58,9 @@ test('content-repo CLI scripts run from a checkout path containing spaces', asyn
 
   const packed = run('scripts/registry/pack-skill.mjs', ['--out', path.join(directory, 'skill out')]);
   assert.equal(packed.status, 0, packed.stderr + packed.stdout);
-  assert.match(packed.stdout, /dsh-game-developer-1\.0\.0\.tar\.gz/);
+  const version = await skillVersion();
+  const escapedVersion = version.replace(/\./g, '\\.');
+  assert.match(packed.stdout, new RegExp(`dsh-game-developer-${escapedVersion}\\.tar\\.gz`));
   const manifest = JSON.parse(await fs.readFile(path.join(directory, 'skill out', 'manifest.json'), 'utf8'));
   assert.equal(manifest.name, 'dsh-game-developer');
 

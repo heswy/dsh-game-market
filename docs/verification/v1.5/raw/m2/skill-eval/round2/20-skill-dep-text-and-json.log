@@ -1,0 +1,38 @@
+### updated SKILL dependency section (mtime 16:30):
+2. Install the checkout's one runtime dependency package **before ZIP work**:
+
+   ```bash
+   cd <platform-checkout>
+   npm install        # or: npm ci --ignore-scripts   (package-lock.json is committed)
+   ```
+
+   V1.5's `asset-zip-v2` ZIP reading/writing needs `yauzl@3.4.0` (+ `pend@1.2.0`);
+   without `node_modules`, ZIP `validate` fails with
+   `E_ZIP_INVALID (GM-5000)` / a module-not-found error and ZIP `pack` exits 3.
+   `html-v1`-only work does not need the install. The toolchain itself never
+   uses the network at runtime: `build`/`validate`/`pack`/`publish`/`dev` are
+   offline, but ZIP validation/packing need these already-installed modules.
+   React-template projects additionally need their own `npm install` (Vite/
+   TypeScript/React dev dependencies) before `npm run build`.
+3. Use **Node.js ≥ 20**. The CLI is dependency-free JavaScript in the checkout.
+4. Set `DSH_GAME_CLI` in every shell that runs a **generated project's local
+   wrappers**. `create` deliberately does **not** record an absolute CLI path
+   (projects stay portable); the `dsh-game.config.json` `"cli"` field is an
+   optional manual override:
+
+
+### grep E_TOOLCHAIN in skill:
+<repo>/skills/dsh-game-developer/SKILL.md:29:   `E_ZIP_INVALID (GM-5000)` / a module-not-found error and ZIP `pack` exits 3.
+<repo>/skills/dsh-game-developer/references/package-and-sdk.md:39:`E_ZIP_INVALID (GM-5000)` / module-not-found and `pack` exits 3. The toolchain
+<repo>/skills/dsh-game-developer/references/verification.md:21:    `E_ZIP_INVALID (GM-5000)` and a module-not-found message; ZIP `pack`: exit 3
+
+### validate --json missing deps (absolute path):
+{
+  "ok": false,
+  "error": {
+    "message": "Missing toolchain dependency: asset-zip-v2 validation/packing needs the repository dependencies (the Host archive reader uses \"yauzl\")",
+    "hint": "Run `npm install` (or `npm ci`) at the repository root, then retry. html-v1 commands work without it.",
+    "code": "E_TOOLCHAIN_DEPS_MISSING"
+  }
+}
+EXIT:2

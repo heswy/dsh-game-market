@@ -1,0 +1,74 @@
+{
+  "ok": true,
+  "format": "asset-zip-v2",
+  "id": "token-trail",
+  "version": "1.0.1",
+  "file": "<work>/token-trail/dist/token-trail-1.0.1.dshgame.zip",
+  "digestFile": "<work>/token-trail/dist/token-trail-1.0.1.dshgame.zip.sha256",
+  "sha256": "29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a",
+  "bytes": 147769,
+  "fileCount": 12,
+  "filesDigest": "def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1",
+  "permissions": [
+    {
+      "path": "assets/README.txt",
+      "mode": "444"
+    },
+    {
+      "path": "assets/rock.png",
+      "mode": "444"
+    },
+    {
+      "path": "assets/token.png",
+      "mode": "444"
+    },
+    {
+      "path": "audio/README.txt",
+      "mode": "444"
+    },
+    {
+      "path": "audio/hit.wav",
+      "mode": "444"
+    },
+    {
+      "path": "audio/pickup.wav",
+      "mode": "444"
+    },
+    {
+      "path": "dsh-package.json",
+      "mode": "444"
+    },
+    {
+      "path": "dsh-sdk.js",
+      "mode": "444"
+    },
+    {
+      "path": "game.json",
+      "mode": "444"
+    },
+    {
+      "path": "index.html",
+      "mode": "444"
+    },
+    {
+      "path": "levels/level-01.json",
+      "mode": "444"
+    },
+    {
+      "path": "scripts/main.js",
+      "mode": "444"
+    },
+    {
+      "path": "styles/styles.css",
+      "mode": "444"
+    }
+  ],
+  "selfTest": {
+    "ok": true,
+    "entry": "index.html",
+    "fileCount": 12,
+    "filesDigest": "def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1",
+    "matchesBuild": true
+  },
+  "warnings": []
+}

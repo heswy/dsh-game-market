@@ -1,0 +1,116 @@
+[
+  {
+    "step": "create html-v1 in no-node_modules checkout",
+    "command": "node <repo-nodeps>/scripts/cli/dsh-game.mjs create html-demo --dir . --template vanilla --format html-v1",
+    "exitCode": 0,
+    "evidence": "01-no-deps-toolchain.log"
+  },
+  {
+    "step": "build html-v1 without node_modules",
+    "command": "node <repo-nodeps>/scripts/cli/dsh-game.mjs build html-demo --format html-v1",
+    "exitCode": 0,
+    "evidence": "01-no-deps-toolchain.log"
+  },
+  {
+    "step": "zip validate (packed zip) without node_modules",
+    "command": "node <repo-nodeps>/scripts/cli/dsh-game.mjs validate <zip> --format asset-zip-v2",
+    "exitCode": 2,
+    "evidence": "01-no-deps-toolchain.log"
+  },
+  {
+    "step": "zip validate (project) without node_modules",
+    "command": "node <repo-nodeps>/scripts/cli/dsh-game.mjs validate <project> --format asset-zip-v2",
+    "exitCode": 2,
+    "evidence": "01-no-deps-toolchain.log"
+  },
+  {
+    "step": "zip pack --json without node_modules",
+    "command": "node <repo-nodeps>/scripts/cli/dsh-game.mjs pack <project> --format asset-zip-v2 --json",
+    "exitCode": 2,
+    "evidence": "01-no-deps-toolchain.log"
+  },
+  {
+    "step": "zip validate --json without node_modules (code in JSON)",
+    "command": "node <repo-nodeps>/scripts/cli/dsh-game.mjs validate <zip> --format asset-zip-v2 --json",
+    "exitCode": 2,
+    "evidence": "20-skill-dep-text-and-json.log"
+  },
+  {
+    "step": "1.0.0 dev with --save-out",
+    "command": "node \"$DSH_GAME_CLI\" dev <1.0.0-project> --format asset-zip-v2 --port 4411 --save-out <file>",
+    "exitCode": "long-running (health 200)",
+    "evidence": "02-dev-1.0.0-saveout.log"
+  },
+  {
+    "step": "1.0.0 save export via GET /dev/save/export",
+    "command": "curl http://127.0.0.1:4411/dev/save/export",
+    "exitCode": 0,
+    "evidence": "21-exported-1.0.0-save.json"
+  },
+  {
+    "step": "1.0.1 dev with --seed-save",
+    "command": "node \"$DSH_GAME_CLI\" dev <1.0.1-project> --format asset-zip-v2 --port 4412 --seed-save <file>",
+    "exitCode": "long-running (health 200, hasSeedSave true)",
+    "evidence": "04-dev-1.0.1-seed.log"
+  },
+  {
+    "step": "POST /dev/save/import (documented shape)",
+    "command": "curl -X POST .../dev/save/import -d '{\"save\":{...}}'",
+    "exitCode": 200,
+    "evidence": "06-import-probe.json"
+  },
+  {
+    "step": "POST /dev/save/import invalid JSON",
+    "command": "curl -X POST .../dev/save/import -d 'not json'",
+    "exitCode": 400,
+    "evidence": "09-import-invalid-json.txt"
+  },
+  {
+    "step": "--seed-save malformed file",
+    "command": "node \"$DSH_GAME_CLI\" dev ... --seed-save <bad.json>",
+    "exitCode": 2,
+    "evidence": "13-seed-edge-cases.log"
+  },
+  {
+    "step": "browser Continue on seeded 1.0.1",
+    "command": "CDP: load, observe Continue, Space, play, P pause; GET /dev/save/export",
+    "exitCode": 0,
+    "evidence": "23-sim-1.0.1-seeded-continue-evidence.json"
+  },
+  {
+    "step": "browser unknown-schema seed",
+    "command": "CDP: load, Space, P pause; GET /dev/save/export",
+    "exitCode": 0,
+    "evidence": "24-sim-unknown-seed-fresh-evidence.json"
+  },
+  {
+    "step": "PD-1/2 publish ZIP checklist+plan",
+    "command": "node \"$DSH_GAME_CLI\" publish . --format asset-zip-v2 ...",
+    "exitCode": 0,
+    "evidence": "16-pd-fixes.log"
+  },
+  {
+    "step": "PD-3 stale descriptor",
+    "command": "node \"$DSH_GAME_CLI\" validate dist",
+    "exitCode": 1,
+    "evidence": "16-pd-fixes.log"
+  },
+  {
+    "step": "PD-5 fresh ZIP project template scan",
+    "command": "node \"$DSH_GAME_CLI\" create zip-demo --format asset-zip-v2",
+    "exitCode": 0,
+    "evidence": "16-pd-fixes.log"
+  },
+  {
+    "step": "Skill \u00a77 draft generation snippet",
+    "command": "node --input-type=module - <<EOF (verbatim from SKILL.md)",
+    "exitCode": 0,
+    "evidence": "18-skill-submission-executable.log"
+  },
+  {
+    "step": "Skill \u00a77 draft validation snippet",
+    "command": "node --input-type=module - <<EOF (verbatim from SKILL.md)",
+    "exitCode": 0,
+    "evidence": "18-skill-submission-executable.log"
+  }
+]

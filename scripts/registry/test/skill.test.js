@@ -10,11 +10,26 @@ import { buildSkillArchive } from '../pack-skill.mjs';
 const ROOT = path.resolve(import.meta.dirname, '../../..');
 const SKILL = path.join(ROOT, 'skills', 'dsh-game-developer');
 
+// The Skill ships to outside authors and is versioned independently of the
+// platform, so this test pins the *shape* of the version (semver) and the
+// consistency between VERSION, the archive name and the tar header — not one
+// literal, which would only force a test edit on every Skill release.
+async function readSkillVersion() {
+  const version = (await fs.readFile(path.join(SKILL, 'VERSION'), 'utf8')).trim();
+  assert.match(version, /^\d+\.\d+\.\d+$/, 'skill VERSION must be semver');
+  return version;
+}
+
 test('skill has valid frontmatter, version and no placeholder paths', async () => {
   const source = await fs.readFile(path.join(SKILL, 'SKILL.md'), 'utf8');
   assert.match(source, /^---\nname: dsh-game-developer\ndescription: /);
   assert.match(source, /DSH Game Market/);
-  assert.equal((await fs.readFile(path.join(SKILL, 'VERSION'), 'utf8')).trim(), '1.0.0');
+  const version = await readSkillVersion();
+  // M2: the Skill gained dual-format coverage and must advertise at least 1.1.0.
+  assert.ok(
+    Number(version.split('.')[0]) > 1 || Number(version.split('.')[1]) >= 1,
+    `skill VERSION must be >= 1.1.0 after the M2 dual-format update (found ${version})`,
+  );
   const files = ['package-and-sdk.md', 'presentation.md', 'submission.md', 'verification.md'];
   for (const file of files) {
     const body = await fs.readFile(path.join(SKILL, 'references', file), 'utf8');
@@ -33,10 +48,12 @@ test('skill archive is deterministic and manifest hashes match the archive', asy
   const first = await buildSkillArchive();
   const second = await buildSkillArchive();
   assert.equal(first.archive.equals(second.archive), true, 'two archives must be byte-identical');
-  assert.match(first.manifest.archive.file, /^dsh-game-developer-1\.0\.0\.tar\.gz$/);
+  const version = await readSkillVersion();
+  const escaped = version.replace(/\./g, '\\.');
+  assert.match(first.manifest.archive.file, new RegExp(`^dsh-game-developer-${escaped}\\.tar\\.gz$`));
   const tar = gunzipSync(first.archive);
   assert.ok(tar.length > 512);
   const headerName = tar.subarray(0, 100).toString('utf8').replace(/\0.*$/, '');
-  assert.match(headerName, /^dsh-game-developer-1\.0\.0\//);
+  assert.match(headerName, new RegExp(`^dsh-game-developer-${escaped}/`));
   assert.ok(first.manifest.files.some((file) => file.path.endsWith('SKILL.md')));
 });

@@ -1,0 +1,14 @@
+
+### ILLEGAL B: external stylesheet URL in index.html
+8:    <!-- INVALID ON PURPOSE (violation B): external stylesheet URL -->
+9-    <link rel="stylesheet" href="https://cdn.example.com/x.css" />
+10-    <link rel="stylesheet" href="src/styles.css" />
+
+--- build:
+
+> token-trail@1.0.0 build
+> node scripts/build.mjs
+
+error: External stylesheet is not allowed in asset-zip-v2: https://cdn.example.com/x.css
+  hint: Ship the CSS inside the package.
+EXIT:1

@@ -47,6 +47,7 @@ import {
   validateCatalogV2,
   validateRegistryV2,
 } from '../../../packages/shared/src/catalog-v2.js';
+import { resolveMediaBinding } from './media.mjs';
 
 export const REGISTRY_DIRS = Object.freeze({
   catalog: 'catalog',
@@ -270,19 +271,41 @@ async function loadV2Reviews(root, catalog) {
     if (typeof release.sourceCommit === 'string' && release.sourceCommit !== review.sourceCommit) {
       errors.push({ code: 'E_REVIEW_BINDING', field: `${relative}#sourceCommit`, message: 'review source commit does not match the release' });
     }
-    const coverSha = release.media && release.media.cover && release.media.cover.sha256;
-    if (typeof coverSha === 'string' && coverSha !== review.media.coverSha256) {
-      errors.push({ code: 'E_REVIEW_BINDING', field: `${relative}#cover`, message: 'review cover hash does not match the release media' });
-    }
-    const releaseShots = Array.isArray(release.media && release.media.screenshots)
-      ? release.media.screenshots.map((shot) => (isPlainObject(shot) ? shot.sha256 : undefined))
-      : [];
-    if (releaseShots.some((sha) => typeof sha === 'string')) {
-      const reviewShots = review.media.screenshotSha256s || [];
-      if (releaseShots.length !== reviewShots.length || releaseShots.some((sha, index) => sha !== reviewShots[index])) {
-        errors.push({ code: 'E_REVIEW_BINDING', field: `${relative}#screenshots`, message: 'review screenshot hashes do not match the release media' });
+    // CR8-02: deleting a media digest from the catalog must not disable the
+    // binding. The catalog has to stay bound to the approved review: `url` and
+    // `size` always come from the catalog, `sha256` may be recovered from the
+    // trusted review (and is then still verified against the downloaded bytes
+    // by validate-assets). A missing size — which the review schema cannot
+    // supply — or a review that also lacks the digest rejects the release.
+    const media = isPlainObject(release.media) ? release.media : {};
+    const reviewMedia = isPlainObject(review.media) ? review.media : {};
+    const mediaBinding = (asset, reviewSha256, field) => {
+      try {
+        resolveMediaBinding({ asset, reviewSha256, label: `${catalog.gameId}@${release.version} ${field}` });
+      } catch (error) {
+        errors.push({
+          code: error.code || 'E_REVIEW_BINDING',
+          field: `${relative}#${field}`,
+          message: error.message,
+          ...(error.details === undefined ? {} : { details: error.details }),
+        });
       }
+    };
+    mediaBinding(media.cover, reviewMedia.coverSha256, 'cover');
+    const releaseShots = Array.isArray(media.screenshots) ? media.screenshots : [];
+    const reviewShots = Array.isArray(reviewMedia.screenshotSha256s) ? reviewMedia.screenshotSha256s : [];
+    if (releaseShots.length !== reviewShots.length) {
+      errors.push({
+        code: 'E_REVIEW_BINDING',
+        field: `${relative}#screenshots`,
+        message: 'review screenshot count does not match the release media',
+      });
     }
+    releaseShots.forEach((shot, index) => {
+      // A digest at the same index is what the reviewer approved; a count
+      // mismatch is reported above, the binding check still fails closed.
+      mediaBinding(shot, reviewShots[index], `screenshots[${index}]`);
+    });
   }
   return { errors, digests };
 }
@@ -568,9 +591,16 @@ function releasesOf(entry) {
     sourceCommit: entry.source && entry.source.commit,
     reviewSha256: undefined,
     releasedAt: entry.release.releasedAt,
+    // Normalized to the V1.5 media shape so a legitimate V1.2 -> V1.5 catalog
+    // migration does not trip the media fingerprint (history compares the
+    // binding fields, not the envelope).
     media: {
-      cover: entry.release.cover && entry.release.cover.url,
-      screenshots: (entry.release.screenshots || []).map((shot) => shot && shot.url),
+      cover: entry.release.cover
+        ? { url: entry.release.cover.url, sha256: entry.release.cover.sha256, size: entry.release.cover.size }
+        : entry.release.cover,
+      screenshots: (entry.release.screenshots || []).map((shot) => (shot
+        ? { url: shot.url, sha256: shot.sha256, size: shot.size }
+        : shot)),
     },
   }];
 }
@@ -583,10 +613,25 @@ function newestRelease(releases) {
   return newest;
 }
 
+/**
+ * Fingerprint of a release's approved media (cover + screenshots). Only the
+ * binding fields are compared: a catalog cannot swap media URLs or rewrites at
+ * an already published version without tripping the history check.
+ */
+function mediaFingerprint(media) {
+  if (!isPlainObject(media)) return JSON.stringify(media === undefined ? null : media);
+  const normalize = (asset) => (isPlainObject(asset)
+    ? { url: asset.url, sha256: asset.sha256, size: asset.size }
+    : asset === undefined ? null : asset);
+  const shots = Array.isArray(media.screenshots) ? media.screenshots.map(normalize) : media.screenshots;
+  return JSON.stringify({ cover: normalize(media.cover), screenshots: shots });
+}
+
 function releaseBytesEqual(left, right) {
   return left.sha256 === right.sha256
     && left.size === right.size
-    && left.filesDigest === right.filesDigest;
+    && left.filesDigest === right.filesDigest
+    && mediaFingerprint(left.media) === mediaFingerprint(right.media);
 }
 
 function isWithdrawn(entry) {

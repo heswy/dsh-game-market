@@ -1,0 +1,876 @@
+{
+  "id": "M2-A02-orbit-multiresource",
+  "title": "M2 A02: builtin orbit-courier multi-resource load (ESM/CSS/JSON/PNG/WAV) through the real resource origin",
+  "generatedAt": "2026-10-20T07:36:13.979Z",
+  "command": "node scripts/verification/v1.5/m2/m2-a02-orbit-resources.mjs",
+  "environment": {
+    "dsh": {
+      "dshPackage": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.2"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.2"
+      },
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.2"
+      },
+      "asarExtractedAt": "2026-10-20T02:55:54.473Z"
+    },
+    "chrome": "headless CDP",
+    "gameId": "orbit-courier",
+    "ports": {
+      "bootstrap": 58460,
+      "host": 58461,
+      "chrome": 9526
+    }
+  },
+  "commands": [],
+  "startedAt": "2026-10-20T07:36:13.978Z",
+  "finishedAt": "2026-10-20T07:36:13.979Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "dsh-page-loads-and-host-api-answers",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "orbit-courier-launches-from-my-games-row",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "play": true,
+        "runtime": {
+          "state": "launching",
+          "stage": true,
+          "savePill": null,
+          "controls": [
+            {
+              "label": "返回市场",
+              "disabled": false
+            },
+            {
+              "label": "暂停菜单",
+              "disabled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "orbit-courier-instance-booted",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "phase": "ready",
+        "levelId": "shift-01"
+      }
+    },
+    {
+      "name": "outer-wrapper-iframe-has-no-sandbox-attribute",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sandbox": null,
+        "allow": "autoplay",
+        "referrerpolicy": "no-referrer",
+        "src": "http://127.0.0.1:52728/wrapper?src=<redacted-src>"
+      }
+    },
+    {
+      "name": "wrapper-layer-real-origin-and-inner-game-sandbox",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "frameFound": true,
+        "frameId": "8499EFAA6CFAE7F6CF8FCFEE6FD1E9D7",
+        "frameUrl": "http://127.0.0.1:52728/wrapper?src=<redacted-src>",
+        "value": {
+          "origin": "http://127.0.0.1:52728",
+          "windowOrigin": "http://127.0.0.1:52728",
+          "innerCount": 1,
+          "innerSandbox": "allow-scripts",
+          "innerAllow": "autoplay",
+          "innerReferrerPolicy": "no-referrer"
+        }
+      }
+    },
+    {
+      "name": "game-document-is-opaque-origin",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "origin": "null"
+      }
+    },
+    {
+      "name": "game-document-really-renders",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "title": "轨道信使 · Orbit Courier",
+        "hasStage": true,
+        "hasHud": true
+      }
+    },
+    {
+      "name": "game-uses-independent-esm-module-scripts",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "moduleScripts": [
+          "scripts/main.js"
+        ]
+      }
+    },
+    {
+      "name": "game-level-loads-from-package-json",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "levelId": "shift-01",
+        "durationMs": 120000
+      }
+    },
+    {
+      "name": "every-package-resource-fetched-200",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "badStatus": [],
+        "count": 20
+      }
+    },
+    {
+      "name": "every-package-resource-has-exact-mime",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "badMime": [],
+        "count": 20
+      }
+    },
+    {
+      "name": "every-package-resource-is-non-empty",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "zeroBytes": []
+      }
+    },
+    {
+      "name": "package-has-js-css-json-png-wav-resources",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "resources": [
+          "assets/asteroid.png",
+          "assets/cargo-pod.png",
+          "assets/courier-ship.png",
+          "audio/act.wav",
+          "audio/collect.wav",
+          "audio/deliver-fast.wav",
+          "audio/deliver.wav",
+          "audio/end.wav",
+          "audio/hit.wav",
+          "levels/shift-01.json",
+          "scripts/audio.js",
+          "scripts/game.js",
+          "scripts/input.js",
+          "scripts/logic.js",
+          "scripts/main.js",
+          "scripts/offline.js",
+          "scripts/render.js",
+          "scripts/resume.js",
+          "scripts/vendor/dsh-sdk.js",
+          "styles/game.css"
+        ]
+      }
+    },
+    {
+      "name": "entry-document-fetches-200",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "type": "text/html; charset=utf-8"
+      }
+    },
+    {
+      "name": "reserved-descriptor-and-manifest-are-403",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "rel": "dsh-package.json",
+          "status": 403
+        },
+        {
+          "rel": "game.json",
+          "status": 403
+        }
+      ]
+    },
+    {
+      "name": "resource-responses-carry-security-headers",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "count": 38,
+        "missingHeaders": []
+      }
+    },
+    {
+      "name": "resource-responses-are-anonymous-cors",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "wrapper-csp-frame-ancestors-exact-no-wildcard",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "frameAncestors": "http://127.0.0.1:58461"
+      }
+    },
+    {
+      "name": "entry-document-has-asset-csp",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "entryCsp": "default-src 'none'; script-src http://127.0.0.1:52728; style-src http://127.0.0.1:52728; img-src http://127.0.0.1:52728 data:; media-src http://127.0.0.1:52728; font-src http://127.0.0.1:52728; connect-src http://127.0.0.1:52728; frame-src 'none'; child-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58461 http://127.0.0.1:52728"
+      }
+    },
+    {
+      "name": "zero-frame-ancestors-violations",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "zero-csp-violations",
+      "ok": true,
+      "required": true,
+      "detail": []
+    }
+  ],
+  "scenario": {
+    "packageInventory": {
+      "root": "games/orbit-courier/dist",
+      "filesDigestCount": 23,
+      "files": [
+        "assets/asteroid.png",
+        "assets/cargo-pod.png",
+        "assets/courier-ship.png",
+        "audio/act.wav",
+        "audio/collect.wav",
+        "audio/deliver-fast.wav",
+        "audio/deliver.wav",
+        "audio/end.wav",
+        "audio/hit.wav",
+        "dsh-package.json",
+        "game.json",
+        "index.html",
+        "levels/shift-01.json",
+        "scripts/audio.js",
+        "scripts/game.js",
+        "scripts/input.js",
+        "scripts/logic.js",
+        "scripts/main.js",
+        "scripts/offline.js",
+        "scripts/render.js",
+        "scripts/resume.js",
+        "scripts/vendor/dsh-sdk.js",
+        "styles/game.css"
+      ]
+    },
+    "launch": {
+      "play": true,
+      "runtime": {
+        "state": "launching",
+        "stage": true,
+        "savePill": null,
+        "controls": [
+          {
+            "label": "返回市场",
+            "disabled": false
+          },
+          {
+            "label": "暂停菜单",
+            "disabled": true
+          }
+        ]
+      }
+    },
+    "outerFrame": {
+      "sandbox": null,
+      "allow": "autoplay",
+      "referrerpolicy": "no-referrer",
+      "src": "http://127.0.0.1:52728/wrapper?src=<redacted-src>"
+    },
+    "wrapperLayer": {
+      "frameFound": true,
+      "frameId": "8499EFAA6CFAE7F6CF8FCFEE6FD1E9D7",
+      "frameUrl": "http://127.0.0.1:52728/wrapper?src=<redacted-src>",
+      "value": {
+        "origin": "http://127.0.0.1:52728",
+        "windowOrigin": "http://127.0.0.1:52728",
+        "innerCount": 1,
+        "innerSandbox": "allow-scripts",
+        "innerAllow": "autoplay",
+        "innerReferrerPolicy": "no-referrer"
+      }
+    },
+    "gameDocument": {
+      "href": "http://127.0.0.1:52728/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+      "origin": "null",
+      "title": "轨道信使 · Orbit Courier",
+      "readyState": "complete",
+      "hasStage": true,
+      "hasHud": true,
+      "hudScore": "0",
+      "moduleScripts": [
+        "scripts/main.js"
+      ],
+      "phase": "ready",
+      "levelId": "shift-01",
+      "durationMs": 120000
+    },
+    "resources": [
+      {
+        "rel": "assets/asteroid.png",
+        "status": 200,
+        "contentType": "image/png",
+        "bytes": 1480
+      },
+      {
+        "rel": "assets/cargo-pod.png",
+        "status": 200,
+        "contentType": "image/png",
+        "bytes": 670
+      },
+      {
+        "rel": "assets/courier-ship.png",
+        "status": 200,
+        "contentType": "image/png",
+        "bytes": 1742
+      },
+      {
+        "rel": "audio/act.wav",
+        "status": 200,
+        "contentType": "audio/wav",
+        "bytes": 44144
+      },
+      {
+        "rel": "audio/collect.wav",
+        "status": 200,
+        "contentType": "audio/wav",
+        "bytes": 10628
+      },
+      {
+        "rel": "audio/deliver-fast.wav",
+        "status": 200,
+        "contentType": "audio/wav",
+        "bytes": 31796
+      },
+      {
+        "rel": "audio/deliver.wav",
+        "status": 200,
+        "contentType": "audio/wav",
+        "bytes": 30032
+      },
+      {
+        "rel": "audio/end.wav",
+        "status": 200,
+        "contentType": "audio/wav",
+        "bytes": 79424
+      },
+      {
+        "rel": "audio/hit.wav",
+        "status": 200,
+        "contentType": "audio/wav",
+        "bytes": 26504
+      },
+      {
+        "rel": "levels/shift-01.json",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "bytes": 1410
+      },
+      {
+        "rel": "scripts/audio.js",
+        "status": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 3940
+      },
+      {
+        "rel": "scripts/game.js",
+        "status": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 18231
+      },
+      {
+        "rel": "scripts/input.js",
+        "status": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 6732
+      },
+      {
+        "rel": "scripts/logic.js",
+        "status": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 16552
+      },
+      {
+        "rel": "scripts/main.js",
+        "status": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 2396
+      },
+      {
+        "rel": "scripts/offline.js",
+        "status": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 3689
+      },
+      {
+        "rel": "scripts/render.js",
+        "status": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 14678
+      },
+      {
+        "rel": "scripts/resume.js",
+        "status": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 1990
+      },
+      {
+        "rel": "scripts/vendor/dsh-sdk.js",
+        "status": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 89113
+      },
+      {
+        "rel": "styles/game.css",
+        "status": 200,
+        "contentType": "text/css; charset=utf-8",
+        "bytes": 10047
+      }
+    ],
+    "indexFetch": {
+      "status": 200,
+      "type": "text/html; charset=utf-8"
+    },
+    "reserved": [
+      {
+        "rel": "dsh-package.json",
+        "status": 403
+      },
+      {
+        "rel": "game.json",
+        "status": 403
+      }
+    ],
+    "resourceNetwork": [
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>",
+        "status": 200,
+        "resourceType": "Document",
+        "contentType": "text/html; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/styles/game.css",
+        "status": 200,
+        "resourceType": "Stylesheet",
+        "contentType": "text/css; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/main.js",
+        "status": 200,
+        "resourceType": "Script",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/vendor/dsh-sdk.js",
+        "status": 200,
+        "resourceType": "Script",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/offline.js",
+        "status": 200,
+        "resourceType": "Script",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/game.js",
+        "status": 200,
+        "resourceType": "Script",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/logic.js",
+        "status": 200,
+        "resourceType": "Script",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/render.js",
+        "status": 200,
+        "resourceType": "Script",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/input.js",
+        "status": 200,
+        "resourceType": "Script",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/audio.js",
+        "status": 200,
+        "resourceType": "Script",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/resume.js",
+        "status": 200,
+        "resourceType": "Script",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/levels/shift-01.json",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "application/json; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/assets/courier-ship.png",
+        "status": 200,
+        "resourceType": "Image",
+        "contentType": "image/png",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/assets/cargo-pod.png",
+        "status": 200,
+        "resourceType": "Image",
+        "contentType": "image/png",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/assets/asteroid.png",
+        "status": 200,
+        "resourceType": "Image",
+        "contentType": "image/png",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/assets/asteroid.png",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "image/png",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/assets/cargo-pod.png",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "image/png",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/assets/courier-ship.png",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "image/png",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/audio/act.wav",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "audio/wav",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/audio/collect.wav",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "audio/wav",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/audio/deliver-fast.wav",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "audio/wav",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/audio/deliver.wav",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "audio/wav",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/audio/end.wav",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "audio/wav",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/audio/hit.wav",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "audio/wav",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/levels/shift-01.json",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "application/json; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/audio.js",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/game.js",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/input.js",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/logic.js",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/main.js",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/offline.js",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/render.js",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/resume.js",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/scripts/vendor/dsh-sdk.js",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "text/javascript; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/styles/game.css",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "text/css; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/index.html",
+        "status": 200,
+        "resourceType": "Fetch",
+        "contentType": "text/html; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/dsh-package.json",
+        "status": 403,
+        "resourceType": "Fetch",
+        "contentType": "application/json; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      },
+      {
+        "url": "http://127.0.0.1:52728/res/<instance>/<token>/game.json",
+        "status": 403,
+        "resourceType": "Fetch",
+        "contentType": "application/json; charset=utf-8",
+        "acao": "*",
+        "nosniff": "nosniff",
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer"
+      }
+    ],
+    "wrapperCsp": {
+      "status": 200,
+      "frameAncestors": "http://127.0.0.1:58461",
+      "csp": "default-src 'none'; frame-src http://127.0.0.1:52728; child-src http://127.0.0.1:52728; script-src 'nonce-<credential>'; style-src 'unsafe-inline'; img-src 'none'; media-src 'none'; font-src 'none'; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58461"
+    },
+    "entryCsp": "default-src 'none'; script-src http://127.0.0.1:52728; style-src http://127.0.0.1:52728; img-src http://127.0.0.1:52728 data:; media-src http://127.0.0.1:52728; font-src http://127.0.0.1:52728; connect-src http://127.0.0.1:52728; frame-src 'none'; child-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58461 http://127.0.0.1:52728",
+    "csp": {
+      "framing": [],
+      "violations": []
+    }
+  }
+}

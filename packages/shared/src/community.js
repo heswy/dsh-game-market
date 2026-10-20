@@ -10,9 +10,10 @@
  * repository CI, tests and the developer Skill references.
  */
 
-import { DEFAULT_OFFICIAL_REGISTRY_URL, GAME_ID_PATTERN, LIMITS } from './constants.js';
+import { DEFAULT_OFFICIAL_REGISTRY_URL, GAME_ID_PATTERN, LIMITS, PACKAGE_FORMATS } from './constants.js';
 import { CATEGORIES, CAPABILITIES, RESERVED_GAME_IDS, isValidVersion } from './manifest.js';
 import { SHA256_RE, validateRegistryGame } from './registry.js';
+import { packageFileNameForFormat } from './package-v2.js';
 
 export const SUBMISSION_SCHEMA_VERSION = 1;
 export const REVIEW_SCHEMA_VERSION = 1;
@@ -226,14 +227,36 @@ export function validateSubmission(input, options = {}) {
   } else {
     const gameId = isPlainObject(game) ? game.id : '';
     const version = isPlainObject(game) ? game.version : '';
-    checkHttps(errors, submission.package.url, 'package.url', {
-      suffix: typeof gameId === 'string' && typeof version === 'string' ? `${gameId}-${version}.html` : null,
-      code: 'E_SUBMISSION_PACKAGE',
-    });
-    checkSha(errors, submission.package.sha256, 'package.sha256', 'E_SUBMISSION_PACKAGE');
-    checkHttps(errors, submission.package.sha256Url, 'package.sha256Url', { code: 'E_SUBMISSION_PACKAGE' });
-    if (!Number.isSafeInteger(submission.package.size) || submission.package.size < 1 || submission.package.size > LIMITS.packageBytes) {
-      error(errors, 'E_SUBMISSION_PACKAGE', 'package.size', 'package.size is out of range');
+    // V1.5: a submission may carry either format. `format` is optional and
+    // defaults to html-v1, so every existing HTML submission keeps validating
+    // exactly as before; a resource package declares `format` and is held to
+    // that format's file name and size ceiling (docs/V1.5-CONTRACTS.md §1/§3).
+    const declaredFormat = submission.package.format;
+    const format = declaredFormat === undefined ? 'html-v1' : declaredFormat;
+    if (!PACKAGE_FORMATS.includes(format)) {
+      error(errors, 'E_SUBMISSION_PACKAGE', 'package.format', 'package.format must be html-v1 or asset-zip-v2');
+    } else {
+      const hasIds = typeof gameId === 'string' && typeof version === 'string' && gameId.length > 0 && version.length > 0;
+      checkHttps(errors, submission.package.url, 'package.url', {
+        suffix: hasIds ? packageFileNameForFormat(gameId, version, format) : null,
+        code: 'E_SUBMISSION_PACKAGE',
+      });
+      // The archive digest is the trust anchor for HTML (the file *is* the
+      // package); for a resource package the archive digest binds the outer ZIP
+      // and `filesDigest` binds the validated inner manifest.
+      checkSha(errors, submission.package.sha256, 'package.sha256', 'E_SUBMISSION_PACKAGE');
+      checkHttps(errors, submission.package.sha256Url, 'package.sha256Url', { code: 'E_SUBMISSION_PACKAGE' });
+      const sizeLimit = format === 'asset-zip-v2' ? LIMITS.zip.zipOuterBytes : LIMITS.packageBytes;
+      if (!Number.isSafeInteger(submission.package.size) || submission.package.size < 1 || submission.package.size > sizeLimit) {
+        error(errors, 'E_SUBMISSION_PACKAGE', 'package.size', 'package.size is out of range');
+      }
+      if (submission.package.filesDigest !== undefined) {
+        if (format !== 'asset-zip-v2') {
+          error(errors, 'E_SUBMISSION_PACKAGE', 'package.filesDigest', 'package.filesDigest is only valid for asset-zip-v2');
+        } else if (typeof submission.package.filesDigest !== 'string' || !SHA256_RE.test(submission.package.filesDigest)) {
+          error(errors, 'E_SUBMISSION_PACKAGE', 'package.filesDigest', 'package.filesDigest must be 64 lowercase hex characters');
+        }
+      }
     }
   }
 

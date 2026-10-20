@@ -290,17 +290,27 @@ letterbox、不做 `contain` 等比缩放、不加舞台内边距。游戏必须
 ## 5. 本地预览 / Runtime Simulator
 
 ```bash
-npm run dev                 # 从源码构建并在 /game 提供最新产物
+npm run dev                 # 构建并按格式加载最新产物
 npm run dev -- --port 4400
-npm run dev -- --no-build   # 直接服务已构建的 dist/index.html
+npm run dev -- --no-build   # 直接服务已构建的 dist/ 产物
+npm run dev -- --save-out /tmp/game.save.json   # 每次存档写一份 JSON（dev only）
+npm run dev -- --seed-save /tmp/game.save.json  # 从该 JSON 启动 fake storage（dev only）
 ```
 
-模拟器（`scripts/cli/dev-server.mjs` + `scripts/cli/lib/dev-harness.mjs`）扮演可信 Runtime：
+模拟器（`scripts/cli/dev-server.mjs` + `scripts/cli/lib/dev-harness.mjs`）扮演可信 Runtime，
+按 `package.format` 走两条不同的入口：
 
-- 用 `sandbox="allow-scripts"` 的 iframe 加载 `dist/index.html`；
-- 完成 `hello → init → ready` 握手，并实现 storage/session/score/agent 的 fake Host；
+- **`html-v1`**：单层 iframe 加载 `dist/index.html`，可用 `curl http://127.0.0.1:4321/game` 取到构建产物；
+- **`asset-zip-v2`**：**两层 iframe** —— 外层是资源 origin 上的平台 wrapper（不 sandbox），
+  内层是 `sandbox="allow-scripts"` 的游戏文档；入口是 `/wrapper?src=<resource URL>`，
+  包内文件通过 `/res/<instance>/<token>/<path>` 提供；该模式下 `/game` **故意返回 404**。
+  `curl /health` 可确认当前 `format`（zip 还包含 `fileCount`）。
+- 无论哪种格式都完成 `hello → init → ready` 握手，并实现 storage/session/score/agent 的 fake Host；
 - 页面右侧可切换 **Agent Running / Waiting user / Completed / Error / Idle**；
-- **Pause / Resume / before-save / Clear save / Reload**；主题、locale、视口、Ping；
+- **Pause / Resume / before-save / Export save / Import save / Clear save / Reload**；主题、locale、视口、Ping；
+- **存档导入/导出（dev-only）**：`--save-out <file>` 每次 `storage.save/remove` 后把最新 fake save 写成 JSON；
+  `--seed-save <file>` 用该 JSON 初始化 fake storage；页面按钮 `Export save` / `Import save` 等价于
+  `GET /dev/save/export` 与 `POST /dev/save/import {save}`。生产 Host 不暴露这两个端点。
 - 每条 Bridge 消息同时显示在页面日志与浏览器 console；
 - 保存内容、revision、Session、最高分实时可见。
 
@@ -313,7 +323,9 @@ npm run dev -- --no-build   # 直接服务已构建的 dist/index.html
 5. `Pause` → 循环停止、立即保存；`Resume` → 暂停时长不计入游戏时间；
 6. `Waiting user` → 游戏暂停 + Agent 状态；`Completed` → **不暂停**；
 7. `Clear save` → `Reload` → 首次启动流程；
-8. 打开/关闭主题与 locale，检查画布/文案与 DPR。
+8. 打开/关闭主题与 locale，检查画布/文案与 DPR；
+9. **升级路径（1.0.0 → 1.0.1）**：在 1.0.0 上 `--save-out /tmp/game.save.json`、触发一次 before-save；
+   切到 1.0.1 后用 `--seed-save /tmp/game.save.json` 启动，验证 Continue/deserialize 与 schemaVersion 升级。
 
 ---
 
@@ -419,3 +431,91 @@ npm run publish -- --url <https package URL> --cover <https cover URL>
 - `docs/developer-cli.md`：CLI 参数、退出码、JSON 输出。
 - `packages/sdk/src/index.d.ts`：SDK 公开类型。
 - `templates/vanilla`：零依赖参考实现；`templates/react`：Vite + React 说明性模板。
+
+---
+
+## 10. V1.5 双格式（`html-v1` / `asset-zip-v2`）
+
+V1.5 起同一个 CLI、同一套模板支持两种包格式；**不带 `--format` 时行为与 M1 完全一致**
+（单文件 `dist/index.html` → `dist/<id>-<version>.html`，老工程/老命令无需改动）。
+
+### 10.1 选择格式
+
+```bash
+# 显式
+dsh-game create my-game --template vanilla --format asset-zip-v2
+dsh-game build . --format asset-zip-v2
+# 或在 dsh-game.config.json 里固定（省略 --format 时读取）
+#   "format": "asset-zip-v2"
+```
+
+优先级：显式 `--format` > `dsh-game.config.json#format` > `html-v1`。
+未知格式值会直接报错（不会静默回退）。
+
+| 命令 | `html-v1`（默认） | `asset-zip-v2` |
+|---|---|---|
+| `create` | 单文件模板 | 资源包骨架：`manifest.json` + `index.html` + `src/` + `scripts/` + `assets/ levels/ audio/` |
+| `build` | `dist/index.html`（内联） | `dist/` 目录树 + `dist/dsh-package.json`（files[] 按 UTF-8 排序，size/sha256）+ `dist/game.json` |
+| `validate` | `.html` / 项目目录 | 项目目录 / `dist/` / `.dshgame.zip`；真实调用 Host `extractPackageArchive` |
+| `pack` | `dist/<id>-<version>.html` + `.sha256` | `dist/<id>-<version>.dshgame.zip`（确定性、0444 条目）+ `fileCount`/`filesDigest`/self-test |
+| `publish` | registry v1 entry | registry v2 语义 entry：`package.format`/`filesDigest`；`--dry-run` 零写入 |
+| `dev` | 单文件 iframe | wrapper（resource origin，非 sandbox 外层）+ 沙箱游戏 iframe + `/res/<instance>/<token>/…` 资源 |
+
+### 10.2 `asset-zip-v2` 构建产物
+
+```text
+dist/index.html          entry（外部引用；禁止内联 script/style/on*=/javascript:）
+dist/dsh-sdk.js          平台 SDK（classic script，先于游戏代码）
+dist/scripts/main.js     游戏入口 bundle（相对 import）
+dist/styles/*.css        外部样式（build 重写 url() 指向 assets/）
+dist/assets/…            图片/音频等静态资源
+dist/levels/…  dist/audio/…   作者资源目录（config.resources）
+dist/game.json           包内权威 manifest（= manifest.json 规范化）
+dist/dsh-package.json    descriptor（formatVersion:2, entry, gameManifest, files[]）
+```
+
+约束（由 shared `package-v2.js` 与 Host `zip.js` 统一执法，CLI 不复制规则）：
+只允许白名单静态类型；禁止内联脚本/样式/事件属性/`javascript:`；禁止外部 URL、`<base>`、
+`<iframe>`、`eval`/`new Function`、service worker、`window.open`；包内引用只用相对路径。
+Runtime 侧用 `game.runtime.assetUrl('levels/level-01.json')` 读取包内资源。
+
+### 10.3 确定性
+
+同一份源码连续两次 `build`/`pack` 的产物 sha256 相同：
+
+- 构建：文件按 UTF-8 路径排序、固定 JSON 顺序、无时间戳/机器路径/随机 id；
+- ZIP：条目按 UTF-8 路径排序、固定 DOS 时间 1980-01-01、STORED（无压缩参数漂移）、
+  external attributes 固定 `0444`、UTF-8 名字标志、无 extra/comment/data-descriptor。
+
+`pack` 会做 **round-trip self-test**：把刚生成的 ZIP 再用 Host reader 解包，比较
+`fileManifestDigest`/entry/fileCount；`validate` 对 `.dshgame.zip` 亦走同一条真实解包校验。
+
+### 10.4 React 模板（`templates/react`，zip 形态）
+
+`asset-zip-v2` 必须是多文件资源包，**不能** singlefile/inline：模板 `vite.config.ts` 使用
+`base: './'`，输出 `dist/assets/*.js|css`（固定文件名），不注入 `dsh-game-manifest`；
+SDK 以 `public/dsh-sdk.js`（`var DSH_GAME_SDK = …`）提供，`index.html` 在模块脚本之前加载。
+`npm run build` 的执行顺序：`vite:build` → CLI finalize（写 `game.json` + `dsh-package.json`）
+→ `pack` → `validate` **最终 ZIP**（不是只看 dist 目录）。react 工程需要在项目内 `npm install`。
+
+### 10.5 发布
+
+`publish` 只做离线产物，不写远端、不重建 catalog：
+
+```bash
+dsh-game publish . --format asset-zip-v2 \
+  --url https://github.com/<you>/<repo>/releases/download/v1.0.0/<id>-1.0.0.dshgame.zip \
+  --cover https://raw.githubusercontent.com/<you>/<repo>/main/cover.png
+# 预演（零写入）：追加 --dry-run
+```
+
+产物：`registry-entry.json`（`package.format`/`filesDigest`）、`upload-plan.md`、
+`review-checklist.md`。提交到内容仓库/生成 v2 目录由 M2-D 工具链
+（`scripts/registry/prepare.mjs` 等）负责；`--registry-dir` 合并对 zip 暂未接通（会明确报错）。
+
+### 10.6 本地模拟器
+
+`npm run dev`（zip 工程）启动的模拟器按 Host 真实路径加载：入口 iframe 指向
+**平台 wrapper**（resource origin，外层不 sandbox），wrapper 内是 `sandbox="allow-scripts"`
+的游戏 iframe，桥消息由 wrapper 点对点转发；资源经 `/res/<instance>/<token>/…` 提供，
+SDK 握手/存档/暂停/Agent 状态控制与 html-v1 模式一致。`--no-build` 表示复用已构建产物。

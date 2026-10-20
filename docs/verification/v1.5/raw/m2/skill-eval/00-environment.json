@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-20",
+  "role": "independent third-party author AI; only skills/dsh-game-developer (SKILL.md v1.1.0) + its references + public repo docs used",
+  "platformRepo": {
+    "head": "9388b37c7c73f3a4056d8d4607cb8ead38a0ed37",
+    "workingTreeDirtyFiles": 66,
+    "note": "M2 working tree under evaluation; read-only reference during this evaluation",
+    "skillVersion": "1.1.0",
+    "cliVersion": "0.1.0 (dsh-game --help first line)",
+    "node": "v24.14.0"
+  },
+  "isolatedProject": "<work>/token-trail",
+  "workDirPolicy": "all project/build artifacts under /tmp/m2-skill-eval; repository writes limited to docs/verification/v1.5/raw/m2/skill-eval/**"
+}

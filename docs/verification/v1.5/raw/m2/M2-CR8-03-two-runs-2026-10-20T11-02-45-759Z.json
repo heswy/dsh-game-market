@@ -1,0 +1,664 @@
+{
+  "id": "M2-CR8-03-two-runs",
+  "title": "CR8-03: orbit-courier settles every run on one page (run1/run2/run3, best monotonic)",
+  "generatedAt": "2026-10-20T11:02:45.759Z",
+  "command": "node scripts/verification/v1.5/m2/m2-cr8-03-two-runs.mjs",
+  "environment": {
+    "dsh": {
+      "dshPackage": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.2"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.2"
+      },
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.2"
+      },
+      "asarExtractedAt": "2026-10-20T10:21:31.055Z"
+    },
+    "chrome": "headless CDP",
+    "gameId": "orbit-courier",
+    "ports": {
+      "bootstrap": 58600,
+      "host": 58601,
+      "chrome": 9532
+    },
+    "build": "CR8-fixed stable workspace"
+  },
+  "commands": [],
+  "startedAt": "2026-10-20T11:02:45.759Z",
+  "finishedAt": "2026-10-20T11:02:45.759Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "dsh-page-loads-and-host-api-answers",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "orbit-courier-launches-from-real-ui-row",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "play": true,
+        "runtime": {
+          "state": "launching",
+          "stage": true,
+          "savePill": null,
+          "controls": [
+            {
+              "label": "返回市场",
+              "disabled": false
+            },
+            {
+              "label": "暂停菜单",
+              "disabled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "orbit-probe-hook-available",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "phase": "ready"
+      }
+    },
+    {
+      "name": "starts-with-zero-play-sessions",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "count": 0
+      }
+    },
+    {
+      "name": "run1-ends-naturally",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "phase": "ended",
+        "endReason": "shift-complete",
+        "elapsedMs": 120000
+      }
+    },
+    {
+      "name": "run1-end-overlay-appears-with-restart",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "hidden": false,
+        "title": "这一班完成",
+        "subtitle": "夜航结束，这一班的分数已记录",
+        "bodyText": "917\n\n新纪录！\n\n交付\n21\n最快连击\n×5\n碰撞\n0",
+        "finalText": "917",
+        "actions": [
+          {
+            "id": "btn-restart",
+            "text": "重新开始",
+            "primary": true
+          }
+        ],
+        "visible": true
+      }
+    },
+    {
+      "name": "run1-final-score-positive-and-shown",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "finalScore": 917,
+        "overlayFinal": "917"
+      }
+    },
+    {
+      "name": "run1-best-updated",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "best": 917,
+        "hudBest": "917"
+      }
+    },
+    {
+      "name": "run1-host-session-settled-once",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exists": true,
+        "count": 1,
+        "records": [
+          {
+            "playSessionId": "ps_546695f94d3ef51467223e35",
+            "outcome": "completed",
+            "score": 917,
+            "durationMs": 119892,
+            "startedAt": "2026-10-20T10:57:38.970Z",
+            "endedAt": "2026-10-20T10:59:38.862Z",
+            "dshSessionId": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "run2-starts-on-the-same-page-without-reload",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "restartLatencyMs": 77,
+        "pageMark": "cr803-mvgkk39f-1j637c",
+        "timeOrigin": 1792493858613.6
+      }
+    },
+    {
+      "name": "run2-starts-a-second-host-play-session",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exists": true,
+        "count": 2,
+        "records": [
+          {
+            "playSessionId": "ps_08acb2dd68e1cb9dcc0fa2c1",
+            "outcome": "running",
+            "score": null,
+            "durationMs": 0,
+            "startedAt": "2026-10-20T10:59:39.494Z",
+            "endedAt": null,
+            "dshSessionId": null
+          },
+          {
+            "playSessionId": "ps_546695f94d3ef51467223e35",
+            "outcome": "completed",
+            "score": 917,
+            "durationMs": 119892,
+            "startedAt": "2026-10-20T10:57:38.970Z",
+            "endedAt": "2026-10-20T10:59:38.862Z",
+            "dshSessionId": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "run2-ends-naturally",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "phase": "ended",
+        "endReason": "shift-complete",
+        "elapsedMs": 120000
+      }
+    },
+    {
+      "name": "run2-end-overlay-appears-again",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "hidden": false,
+        "title": "这一班完成",
+        "subtitle": "夜航结束，这一班的分数已记录",
+        "bodyText": "519\n\n最高分 917\n\n交付\n17\n最快连击\n×5\n碰撞\n2",
+        "finalText": "519",
+        "actions": [
+          {
+            "id": "btn-restart",
+            "text": "重新开始",
+            "primary": true
+          }
+        ],
+        "visible": true
+      }
+    },
+    {
+      "name": "run2-final-score-positive-and-shown",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "finalScore": 519,
+        "overlayFinal": "519"
+      }
+    },
+    {
+      "name": "run2-best-is-monotonic",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "run1Final": 917,
+        "run2Final": 519,
+        "best": 917,
+        "expectedBestAfter2": 917
+      }
+    },
+    {
+      "name": "run2-host-sessions-two-distinct-settled-records",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exists": true,
+        "count": 2,
+        "records": [
+          {
+            "playSessionId": "ps_08acb2dd68e1cb9dcc0fa2c1",
+            "outcome": "completed",
+            "score": 519,
+            "durationMs": 119962,
+            "startedAt": "2026-10-20T10:59:39.494Z",
+            "endedAt": "2026-10-20T11:01:39.456Z",
+            "dshSessionId": null
+          },
+          {
+            "playSessionId": "ps_546695f94d3ef51467223e35",
+            "outcome": "completed",
+            "score": 917,
+            "durationMs": 119892,
+            "startedAt": "2026-10-20T10:57:38.970Z",
+            "endedAt": "2026-10-20T10:59:38.862Z",
+            "dshSessionId": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "run3-ends-with-end-overlay",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "phase": "ended",
+        "endReason": "wrecked",
+        "overlay": {
+          "hidden": false,
+          "title": "船体报废",
+          "subtitle": "船体耗尽，回到站台重新出发",
+          "bodyText": "40\n\n最高分 917\n\n交付\n1\n最快连击\n×2\n碰撞\n3",
+          "finalText": "40",
+          "actions": [
+            {
+              "id": "btn-restart",
+              "text": "重新开始",
+              "primary": true
+            }
+          ],
+          "visible": true
+        }
+      }
+    },
+    {
+      "name": "run3-score-lower-than-best",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "run3Final": 40,
+        "bestBefore3": 917
+      }
+    },
+    {
+      "name": "run3-best-not-decreased",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "best": 917,
+        "bestBefore3": 917
+      }
+    },
+    {
+      "name": "run3-host-sessions-three-distinct-settled-records",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exists": true,
+        "count": 3,
+        "records": [
+          {
+            "playSessionId": "ps_6a3d2607cf3d162c4d1955a9",
+            "outcome": "lost",
+            "score": 40,
+            "durationMs": 44812,
+            "startedAt": "2026-10-20T11:01:40.076Z",
+            "endedAt": "2026-10-20T11:02:24.888Z",
+            "dshSessionId": null
+          },
+          {
+            "playSessionId": "ps_08acb2dd68e1cb9dcc0fa2c1",
+            "outcome": "completed",
+            "score": 519,
+            "durationMs": 119962,
+            "startedAt": "2026-10-20T10:59:39.494Z",
+            "endedAt": "2026-10-20T11:01:39.456Z",
+            "dshSessionId": null
+          },
+          {
+            "playSessionId": "ps_546695f94d3ef51467223e35",
+            "outcome": "completed",
+            "score": 917,
+            "durationMs": 119892,
+            "startedAt": "2026-10-20T10:57:38.970Z",
+            "endedAt": "2026-10-20T10:59:38.862Z",
+            "dshSessionId": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "three-runs-settled-exactly-once-with-distinct-sessions",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "count": 3,
+        "ids": [
+          "ps_6a3d2607cf3d162c4d1955a9",
+          "ps_08acb2dd68e1cb9dcc0fa2c1",
+          "ps_546695f94d3ef51467223e35"
+        ],
+        "scores": [
+          40,
+          519,
+          917
+        ],
+        "expected": [
+          917,
+          519,
+          40
+        ]
+      }
+    },
+    {
+      "name": "best-score-never-decreased-across-runs",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "best": 917,
+        "scores": [
+          917,
+          519,
+          40
+        ],
+        "runs": [
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "name": "all-runs-on-one-page-instance",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "pageMark": "cr803-mvgkk39f-1j637c",
+        "timeOrigin": 1792493858613.6,
+        "expected": "cr803-mvgkk39f-1j637c"
+      }
+    },
+    {
+      "name": "zero-csp-violations-during-three-runs",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "no-direct-api-install-or-score-forgery",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "note": "real UI + real keyboard input only; Host session/score records come from the game SDK path"
+      }
+    }
+  ],
+  "scenario": {
+    "runs": [
+      {
+        "run": 1,
+        "endReason": "shift-complete",
+        "elapsedMs": 120000,
+        "finalScore": 917,
+        "best": 917,
+        "hudBest": "917",
+        "activeMs": 117720,
+        "wallMs": 119876,
+        "laneChanges": 20,
+        "overlay": {
+          "hidden": false,
+          "title": "这一班完成",
+          "subtitle": "夜航结束，这一班的分数已记录",
+          "bodyText": "917\n\n新纪录！\n\n交付\n21\n最快连击\n×5\n碰撞\n0",
+          "finalText": "917",
+          "actions": [
+            {
+              "id": "btn-restart",
+              "text": "重新开始",
+              "primary": true
+            }
+          ],
+          "visible": true
+        },
+        "hostSessions": {
+          "exists": true,
+          "count": 1,
+          "records": [
+            {
+              "playSessionId": "ps_546695f94d3ef51467223e35",
+              "outcome": "completed",
+              "score": 917,
+              "durationMs": 119892,
+              "startedAt": "2026-10-20T10:57:38.970Z",
+              "endedAt": "2026-10-20T10:59:38.862Z",
+              "dshSessionId": null
+            }
+          ]
+        },
+        "samePage": true
+      },
+      {
+        "run": 2,
+        "restartLatencyMs": 77,
+        "hostSessionsWhileRunning": {
+          "exists": true,
+          "count": 2,
+          "records": [
+            {
+              "playSessionId": "ps_08acb2dd68e1cb9dcc0fa2c1",
+              "outcome": "running",
+              "score": null,
+              "durationMs": 0,
+              "startedAt": "2026-10-20T10:59:39.494Z",
+              "endedAt": null,
+              "dshSessionId": null
+            },
+            {
+              "playSessionId": "ps_546695f94d3ef51467223e35",
+              "outcome": "completed",
+              "score": 917,
+              "durationMs": 119892,
+              "startedAt": "2026-10-20T10:57:38.970Z",
+              "endedAt": "2026-10-20T10:59:38.862Z",
+              "dshSessionId": null
+            }
+          ]
+        },
+        "endReason": "shift-complete",
+        "elapsedMs": 120000,
+        "finalScore": 519,
+        "best": 917,
+        "hudBest": "917",
+        "activeMs": 118661,
+        "wallMs": 119928,
+        "overlay": {
+          "hidden": false,
+          "title": "这一班完成",
+          "subtitle": "夜航结束，这一班的分数已记录",
+          "bodyText": "519\n\n最高分 917\n\n交付\n17\n最快连击\n×5\n碰撞\n2",
+          "finalText": "519",
+          "actions": [
+            {
+              "id": "btn-restart",
+              "text": "重新开始",
+              "primary": true
+            }
+          ],
+          "visible": true
+        },
+        "hostSessions": {
+          "exists": true,
+          "count": 2,
+          "records": [
+            {
+              "playSessionId": "ps_08acb2dd68e1cb9dcc0fa2c1",
+              "outcome": "completed",
+              "score": 519,
+              "durationMs": 119962,
+              "startedAt": "2026-10-20T10:59:39.494Z",
+              "endedAt": "2026-10-20T11:01:39.456Z",
+              "dshSessionId": null
+            },
+            {
+              "playSessionId": "ps_546695f94d3ef51467223e35",
+              "outcome": "completed",
+              "score": 917,
+              "durationMs": 119892,
+              "startedAt": "2026-10-20T10:57:38.970Z",
+              "endedAt": "2026-10-20T10:59:38.862Z",
+              "dshSessionId": null
+            }
+          ]
+        },
+        "samePage": true
+      },
+      {
+        "run": 3,
+        "endReason": "wrecked",
+        "elapsedMs": 44816,
+        "finalScore": 40,
+        "best": 917,
+        "bestBefore3": 917,
+        "activeMs": 44730,
+        "wallMs": 44798,
+        "overlay": {
+          "hidden": false,
+          "title": "船体报废",
+          "subtitle": "船体耗尽，回到站台重新出发",
+          "bodyText": "40\n\n最高分 917\n\n交付\n1\n最快连击\n×2\n碰撞\n3",
+          "finalText": "40",
+          "actions": [
+            {
+              "id": "btn-restart",
+              "text": "重新开始",
+              "primary": true
+            }
+          ],
+          "visible": true
+        },
+        "hostSessions": {
+          "exists": true,
+          "count": 3,
+          "records": [
+            {
+              "playSessionId": "ps_6a3d2607cf3d162c4d1955a9",
+              "outcome": "lost",
+              "score": 40,
+              "durationMs": 44812,
+              "startedAt": "2026-10-20T11:01:40.076Z",
+              "endedAt": "2026-10-20T11:02:24.888Z",
+              "dshSessionId": null
+            },
+            {
+              "playSessionId": "ps_08acb2dd68e1cb9dcc0fa2c1",
+              "outcome": "completed",
+              "score": 519,
+              "durationMs": 119962,
+              "startedAt": "2026-10-20T10:59:39.494Z",
+              "endedAt": "2026-10-20T11:01:39.456Z",
+              "dshSessionId": null
+            },
+            {
+              "playSessionId": "ps_546695f94d3ef51467223e35",
+              "outcome": "completed",
+              "score": 917,
+              "durationMs": 119892,
+              "startedAt": "2026-10-20T10:57:38.970Z",
+              "endedAt": "2026-10-20T10:59:38.862Z",
+              "dshSessionId": null
+            }
+          ]
+        }
+      }
+    ],
+    "hostSessions": [
+      {
+        "when": "before-run1",
+        "exists": false,
+        "count": 0,
+        "records": [],
+        "error": "ENOENT"
+      },
+      {
+        "when": "after-run3",
+        "exists": true,
+        "count": 3,
+        "records": [
+          {
+            "playSessionId": "ps_6a3d2607cf3d162c4d1955a9",
+            "outcome": "lost",
+            "score": 40,
+            "durationMs": 44812,
+            "startedAt": "2026-10-20T11:01:40.076Z",
+            "endedAt": "2026-10-20T11:02:24.888Z",
+            "dshSessionId": null
+          },
+          {
+            "playSessionId": "ps_08acb2dd68e1cb9dcc0fa2c1",
+            "outcome": "completed",
+            "score": 519,
+            "durationMs": 119962,
+            "startedAt": "2026-10-20T10:59:39.494Z",
+            "endedAt": "2026-10-20T11:01:39.456Z",
+            "dshSessionId": null
+          },
+          {
+            "playSessionId": "ps_546695f94d3ef51467223e35",
+            "outcome": "completed",
+            "score": 917,
+            "durationMs": 119892,
+            "startedAt": "2026-10-20T10:57:38.970Z",
+            "endedAt": "2026-10-20T10:59:38.862Z",
+            "dshSessionId": null
+          }
+        ]
+      }
+    ],
+    "wallClock": {
+      "startedAt": "2026-10-20T10:57:31.009Z",
+      "endedAt": "2026-10-20T11:02:45.759Z",
+      "wallMs": 314750
+    },
+    "storageRoot": "/tmp/dsh-v15/home-probe-m2-cr803-mvgkk39f/storages/dsh-game-market",
+    "page": {
+      "mark": "cr803-mvgkk39f-1j637c",
+      "timeOrigin": 1792493858613.6
+    },
+    "initialBest": 0,
+    "uiBeforeLeave": {
+      "state": "playing",
+      "stage": true,
+      "savePill": "已保存",
+      "controls": [
+        {
+          "label": "返回市场",
+          "disabled": false
+        },
+        {
+          "label": "暂停菜单",
+          "disabled": false
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,5 @@
+
+### ILLEGAL D: dist index.html gains inline <script>, descriptor patched consistently -> validate dist
+FAIL  <work>/token-trail/dist (0 bytes)
+  1. E_ASSET_INLINE_FORBIDDEN (GM-4283) entry: HTML is not package-safe: index.html
+EXIT:1

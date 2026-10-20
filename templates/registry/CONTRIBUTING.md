@@ -6,8 +6,15 @@
    - `asset-zip-v2`: a `<id>-<version>.dshgame.zip` with `dsh-package.json`,
      root `game.json`, static assets and the SDK file (no inline scripts/styles,
      no external URLs, no installation scripts).
-   Declare the format in the submission; changing an already published game
-   from HTML to ZIP requires a **new version** (never the same one).
+   Declare the format in the submission (`package.format`) and publish release
+   assets named exactly `<id>-<version>.html` or `<id>-<version>.dshgame.zip`
+   plus the matching `.sha256` file. For `asset-zip-v2` the maintainer tooling
+   computes the package's inner file-manifest digest (`filesDigest`); you may
+   include `package.filesDigest` in the submission, but if you do it must match.
+   Media is versioned (`cover-<version>.<ext>`, `screenshot-<n>-<version>.<ext>`).
+   Changing an already published game from HTML to ZIP requires a **new version**
+   (never the same one), and a ZIP package must not use inline scripts/styles,
+   inline handlers or `javascript:` URLs.
 2. Self-test (ready, pause/resume, before-save, Continue, keyboard, narrow window,
    light/dark theme, full-bleed + safe areas, no external network).
 3. Open the “Submit a game” Issue Form, or a profiling PR with the same data.

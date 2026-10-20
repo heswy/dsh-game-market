@@ -13,6 +13,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { bundleExpression } from '../../bundle-lib.mjs';
+import { DEFAULT_FORMAT, isZipFormat, normalizeFormat } from './formats.mjs';
+import { buildSdkGlobalSource } from './package-v2.mjs';
 import { GAME_ID_PATTERN } from '../../../packages/shared/src/constants.js';
 import { RESERVED_GAME_IDS } from '../../../packages/shared/src/manifest.js';
 import { usageError } from './cli-error.mjs';
@@ -91,16 +93,30 @@ function manifestFor(values) {
   };
 }
 
-function packageJsonFor(template, values) {
+function packageJsonFor(template, values, format) {
   if (template === 'react') {
     const sourcePath = path.join(TEMPLATES_ROOT, 'react/package.json');
     const source = JSON.parse(readText(sourcePath));
+    const scripts =
+      normalizeFormat(format) === 'asset-zip-v2'
+        ? {
+            ...source.scripts,
+            build: 'node scripts/build.mjs',
+            'vite:build': source.scripts.build,
+            dev: 'node scripts/dev.mjs',
+            runtime: 'node scripts/dev.mjs',
+            validate: 'node scripts/validate.mjs',
+            pack: 'node scripts/pack.mjs',
+            publish: 'node scripts/publish.mjs',
+          }
+        : source.scripts;
     return {
       ...source,
       name: values.id,
       version: '1.0.0',
       private: true,
       description: values.description,
+      scripts,
     };
   }
   return {
@@ -140,12 +156,32 @@ export const game = __sdk.game;
   return cachedSdkModule;
 }
 
-function configFor(template) {
+function configFor(template, format) {
+  if (normalizeFormat(format) !== 'asset-zip-v2') {
+    return {
+      manifest: 'manifest.json',
+      template: 'index.html',
+      entry: template === 'react' ? 'src/main.tsx' : 'src/main.js',
+      out: 'dist/index.html',
+    };
+  }
+  if (template === 'react') {
+    return {
+      format: 'asset-zip-v2',
+      manifest: 'manifest.json',
+      template: 'index.html',
+      entry: 'src/main.tsx',
+      prebuiltDir: 'dist',
+      buildCommand: 'npm run vite:build',
+    };
+  }
   return {
+    format: 'asset-zip-v2',
     manifest: 'manifest.json',
     template: 'index.html',
-    entry: template === 'react' ? 'src/main.tsx' : 'src/main.js',
-    out: 'dist/index.html',
+    entry: 'src/main.js',
+    outDir: 'dist',
+    resources: ['assets', 'levels', 'audio'],
   };
 }
 
@@ -153,13 +189,21 @@ function configFor(template) {
  * @param {{
  *   name: string, template?: 'vanilla'|'react', parentDir?: string,
  *   displayName?: string, description?: string, author?: string,
- *   force?: boolean, dryRun?: boolean
+ *   format?: 'html-v1'|'asset-zip-v2', force?: boolean, dryRun?: boolean
  * }} options
  */
 export function createProject(options = {}) {
   const template = options.template || 'vanilla';
   if (!TEMPLATE_NAMES.includes(template)) {
     throw usageError(`Unknown template "${template}"`, `Available templates: ${TEMPLATE_NAMES.join(', ')}.`);
+  }
+  let format = DEFAULT_FORMAT;
+  if (options.format !== undefined && options.format !== null && options.format !== '') {
+    const normalized = normalizeFormat(options.format);
+    if (normalized === null) {
+      throw usageError(`Unsupported package format "${options.format}"`, 'Use --format html-v1|asset-zip-v2.');
+    }
+    format = normalized;
   }
   const id = String(options.name || '').trim();
   if (id.includes('/') || id.includes('\\') || id === '.' || id === '..') {
@@ -183,6 +227,8 @@ export function createProject(options = {}) {
 
   const templateDir = path.join(TEMPLATES_ROOT, template);
   if (!dirExists(templateDir)) throw usageError(`Template not found: ${toPosix(path.relative(REPO_ROOT, templateDir))}`);
+  const overlayDir = path.join(templateDir, 'zip');
+  const useOverlay = isZipFormat(format) && dirExists(overlayDir);
 
   if (dirExists(targetDir) && !options.force) {
     const entries = fs.readdirSync(targetDir).filter((name) => name !== '.DS_Store');
@@ -209,21 +255,45 @@ export function createProject(options = {}) {
   };
 
   if (options.dryRun) {
+    const planned = new Map();
+    for (const abs of listFilesRecursive(templateDir)) {
+      const relative = toPosix(path.relative(templateDir, abs));
+      if (relative === 'zip' || relative.startsWith('zip/')) continue;
+      planned.set(relative, true);
+    }
+    if (useOverlay) {
+      for (const abs of listFilesRecursive(overlayDir)) planned.set(toPosix(path.relative(overlayDir, abs)), true);
+    }
+    planned.set('manifest.json', true);
+    planned.set('package.json', true);
+    planned.set('dsh-game.config.json', true);
     return {
       ok: true,
       dryRun: true,
       id,
       template,
+      format,
       targetDir: projectRoot,
-      files: listFilesRecursive(templateDir).map((abs) => toPosix(path.relative(templateDir, abs))),
+      files: [...planned.keys()].sort(),
     };
   }
 
   const generated = [];
   const skip = new Set(['manifest.json', 'package.json', 'dsh-game.config.json']);
+  const sources = new Map();
   for (const abs of listFilesRecursive(templateDir)) {
     const relative = toPosix(path.relative(templateDir, abs));
+    if (relative === 'zip' || relative.startsWith('zip/')) continue;
     if (skip.has(relative)) continue;
+    sources.set(relative, abs);
+  }
+  if (useOverlay) {
+    for (const abs of listFilesRecursive(overlayDir)) {
+      sources.set(toPosix(path.relative(overlayDir, abs)), abs);
+    }
+  }
+  for (const relative of [...sources.keys()].sort()) {
+    const abs = sources.get(relative);
     const destination = path.join(targetDir, relative);
     fs.mkdirSync(path.dirname(destination), { recursive: true });
     const extension = path.extname(relative);
@@ -240,10 +310,17 @@ export function createProject(options = {}) {
 
   const generatedFiles = {
     'manifest.json': `${JSON.stringify(manifestFor(values), null, 2)}\n`,
-    'package.json': `${JSON.stringify(packageJsonFor(template, values), null, 2)}\n`,
-    'dsh-game.config.json': `${JSON.stringify(configFor(template), null, 2)}\n`,
+    'package.json': `${JSON.stringify(packageJsonFor(template, values, format), null, 2)}\n`,
+    'dsh-game.config.json': `${JSON.stringify(configFor(template, format), null, 2)}\n`,
   };
-  if (template === 'react') generatedFiles['vendor/dsh-game-sdk.js'] = sdkModuleSource();
+  if (isZipFormat(format)) {
+    if (template === 'react') {
+      // The packaged SDK file is generated from the pinned @dsh-game/sdk source.
+      generatedFiles['public/dsh-sdk.js'] = buildSdkGlobalSource();
+    }
+  } else if (template === 'react') {
+    generatedFiles['vendor/dsh-game-sdk.js'] = sdkModuleSource();
+  }
   for (const [relative, content] of Object.entries(generatedFiles)) {
     writeText(path.join(targetDir, relative), content);
     generated.push(relative);
@@ -257,10 +334,12 @@ export function createProject(options = {}) {
     generated.push('sdk/index.d.ts', 'sdk/VERSION');
   }
 
+  const zip = isZipFormat(format);
   return {
     ok: true,
     id,
     template,
+    format,
     targetDir: projectRoot,
     name: values.name,
     description: values.description,
@@ -269,12 +348,15 @@ export function createProject(options = {}) {
     nextSteps: [
       `cd ${targetDir}`,
       'export DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs',
+      template === 'react' ? 'npm install' : null,
       'npm run build',
       'npm run validate',
-      template === 'react' ? 'npm install && npm run dev' : 'npm run dev',
+      template === 'react' ? 'npm run dev' : 'npm run dev',
       'npm run pack',
-      'npm run publish -- --url https://github.com/<you>/<repo>/releases/download/v1.0.0/' + `${id}-1.0.0.html` + ' --cover https://example.com/cover.png',
-    ],
+      'npm run publish -- --url https://github.com/<you>/<repo>/releases/download/v1.0.0/' +
+        `${id}-1.0.0.${zip ? 'dshgame.zip' : 'html'}` +
+        ' --cover https://example.com/cover.png',
+    ].filter(Boolean),
   };
 }
 

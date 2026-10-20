@@ -1457,6 +1457,258 @@ export function createInstallService({
     return result;
   }
 
+  /**
+   * Best-effort unseal of a package version tree that was already verified to be
+   * a real directory inside `packages/<gameId>/`. Unlike the generic sealer it
+   * never follows symlinks: only real directories are walked and only symlink
+   * entries are skipped (the later rename/rm removes the link itself, never its
+   * target). CR8-01.
+   */
+  async function unsealVerifiedPackageTree(rootPath) {
+    let rootStat;
+    try {
+      rootStat = await fs.lstat(rootPath);
+    } catch (_error) {
+      return;
+    }
+    if (!rootStat.isDirectory() || rootStat.isSymbolicLink()) return;
+    const stack = [rootPath];
+    while (stack.length > 0) {
+      const current = stack.pop();
+      let entries;
+      try {
+        entries = await fs.readdir(current, { withFileTypes: true });
+      } catch (_error) {
+        continue;
+      }
+      try {
+        await fs.chmod(current, 0o755);
+      } catch (_error) {
+        // Best effort; deletion only needs the parent to be writable.
+      }
+      for (const entry of entries) {
+        if (entry.isSymbolicLink()) continue;
+        const target = path.join(current, entry.name);
+        if (entry.isDirectory()) stack.push(target);
+        else if (entry.isFile()) {
+          try {
+            await fs.chmod(target, 0o644);
+          } catch (_error) {
+            // Best effort.
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Remove every on-disk package entry owned by one game: `packages/<gameId>/`
+   * may hold the current version, the retained previous version, and (after a
+   * crash or manual tampering) unexpected files/symlinks. All of them belong to
+   * this game and are moved to trash one by one.
+   *
+   * Safety (§6.4, CR8-01): `storage.filePath()` only checks lexically, so the
+   * real path is verified segment by segment before anything is enumerated:
+   *   - `packages/` and `packages/<gameId>/` must be real directories (a
+   *     symlink at either segment is never traversed; the game root entry is
+   *     renamed as a link only, and an ancestor link is left untouched);
+   *   - `realpath(packages/<gameId>)` must stay inside `realpath(packages/)`,
+   *     and every enumerated entry is re-checked the same way before use;
+   *   - symlink entries are renamed as links only — their targets are never
+   *     followed, read, chmod'd or deleted;
+   *   - other game ids are never enumerated.
+   * Failures are reported through `logger.warn` + the caller's `warnings[]`
+   * (the record is already gone, so the uninstall still succeeds and
+   * maintenance can retry the cleanup).
+   */
+  async function removeGamePackageDirectories(gameId) {
+    const warnings = [];
+    const seen = new Set();
+    function warnOnce(token, error) {
+      if (!seen.has(token)) {
+        seen.add(token);
+        warnings.push(token);
+      }
+      logger?.warn?.(
+        '[game-market/host] uninstall-package-cleanup-failed',
+        `gameId=${gameId}`,
+        `token=${token}`,
+        `code=${error && typeof error.code === 'string' ? error.code : 'E_UNKNOWN'}`,
+      );
+    }
+    async function lstatOrNull(target) {
+      try {
+        return await fs.lstat(target);
+      } catch (error) {
+        if (error && (error.code === 'ENOENT' || error.code === 'ENOTDIR')) return null;
+        throw error;
+      }
+    }
+    async function realpathOrNull(target) {
+      try {
+        return await fs.realpath(target);
+      } catch (error) {
+        if (error && (error.code === 'ENOENT' || error.code === 'ENOTDIR')) return null;
+        throw error;
+      }
+    }
+    // Resolve the storage root first: every later containment check is against
+    // its real path, never against the lexical configured data root.
+    let storageReal;
+    try {
+      storageReal = await fs.realpath(storage.root);
+    } catch (error) {
+      warnOnce('package-path-escaped', error);
+      return warnings;
+    }
+    const packagesDirectory = storage.filePath(PACKAGES_DIR);
+    const packageRoot = storage.filePath(PACKAGES_DIR, gameId);
+
+    // (1) Ancestor segment: `packages/` itself. A link here would make the game
+    //     directory resolution follow it, so it is never traversed. It is also
+    //     shared with every other game, so it is never moved either.
+    let packagesStat;
+    try {
+      packagesStat = await lstatOrNull(packagesDirectory);
+    } catch (error) {
+      warnOnce('package-list-failed', error);
+      return warnings;
+    }
+    if (!packagesStat) return warnings;
+    if (packagesStat.isSymbolicLink() || !packagesStat.isDirectory()) {
+      warnOnce('package-path-symlink');
+      return warnings;
+    }
+    let packagesReal;
+    try {
+      packagesReal = await realpathOrNull(packagesDirectory);
+    } catch (error) {
+      warnOnce('package-path-escaped', error);
+      return warnings;
+    }
+    if (!packagesReal || !isInside(storageReal, packagesReal)) {
+      warnOnce('package-path-escaped');
+      return warnings;
+    }
+    // Re-read after realpath: a concurrent swap to a link must stop traversal.
+    const packagesAfter = await lstatOrNull(packagesDirectory).catch(() => null);
+    if (!packagesAfter || packagesAfter.isSymbolicLink() || !packagesAfter.isDirectory()) {
+      warnOnce('package-path-symlink');
+      return warnings;
+    }
+
+    // (2) The game directory itself: must be a real directory strictly inside
+    //     the verified `packages/` real path. A link/non-directory is handled as
+    //     a single entry (renamed as a link only), never enumerated.
+    let rootStat;
+    try {
+      rootStat = await lstatOrNull(packageRoot);
+    } catch (error) {
+      warnOnce('package-list-failed', error);
+      return warnings;
+    }
+    if (!rootStat) return warnings;
+    if (rootStat.isSymbolicLink() || !rootStat.isDirectory()) {
+      try {
+        await moveToTrash(packageRoot, gameId);
+      } catch (error) {
+        warnOnce('package-entry-cleanup-failed', error);
+        return warnings;
+      }
+      warnOnce('package-root-not-directory');
+      return warnings;
+    }
+    let rootReal;
+    try {
+      rootReal = await realpathOrNull(packageRoot);
+    } catch (error) {
+      warnOnce('package-path-escaped', error);
+      return warnings;
+    }
+    if (!rootReal || !isInside(packagesReal, rootReal)) {
+      warnOnce('package-path-escaped');
+      return warnings;
+    }
+
+    // (3) Enumerate only after the root was proven to be a real in-boundary
+    //     directory, then re-verify its identity so a swap cannot redirect the
+    //     enumeration into an external tree.
+    let entries;
+    try {
+      entries = await fs.readdir(packageRoot, { withFileTypes: true });
+    } catch (error) {
+      if (error && (error.code === 'ENOENT' || error.code === 'ENOTDIR')) return warnings;
+      warnOnce('package-list-failed', error);
+      return warnings;
+    }
+    const rootAfter = await lstatOrNull(packageRoot).catch(() => null);
+    if (
+      !rootAfter
+      || rootAfter.isSymbolicLink()
+      || !rootAfter.isDirectory()
+      || rootAfter.dev !== rootStat.dev
+      || rootAfter.ino !== rootStat.ino
+    ) {
+      warnOnce('package-path-changed');
+      return warnings;
+    }
+
+    for (const item of entries) {
+      let target;
+      try {
+        // Lexical containment first (validated game id + plain directory entry).
+        target = storage.filePath(PACKAGES_DIR, gameId, item.name);
+      } catch (error) {
+        warnOnce('package-path-rejected', error);
+        continue;
+      }
+      if (item.isSymbolicLink()) {
+        // Rename the link itself; never traverse into its target.
+        try {
+          await moveToTrash(target, gameId);
+        } catch (error) {
+          warnOnce('package-entry-cleanup-failed', error);
+        }
+        continue;
+      }
+      if (item.isDirectory()) {
+        let childReal;
+        try {
+          childReal = await realpathOrNull(target);
+        } catch (error) {
+          warnOnce('package-entry-cleanup-failed', error);
+          continue;
+        }
+        // A directory that resolves outside this game's root is never touched.
+        if (!childReal || !isInside(rootReal, childReal)) {
+          warnOnce('package-path-escaped');
+          continue;
+        }
+        try {
+          // Unseal with a symlink-safe walker, then rename; `moveToTrash` never
+          // follows links while moving/deleting the tree.
+          await unsealVerifiedPackageTree(target);
+          await moveToTrash(target, gameId);
+        } catch (error) {
+          warnOnce('package-entry-cleanup-failed', error);
+        }
+        continue;
+      }
+      try {
+        await moveToTrash(target, gameId);
+      } catch (error) {
+        warnOnce('package-entry-cleanup-failed', error);
+      }
+    }
+    try {
+      await fs.rmdir(packageRoot);
+    } catch (error) {
+      if (error && (error.code === 'ENOENT' || error.code === 'ENOTDIR')) return warnings;
+      warnOnce('package-directory-remove-failed', error);
+    }
+    return warnings;
+  }
+
   async function uninstallLocked({ gameId, deleteData }) {
     const record = await installations.get(gameId);
     if (!record) {
@@ -1509,10 +1761,22 @@ export function createInstallService({
       }
       dataDeleted = true;
     }
-    const versionDirectory = storage.filePath(PACKAGES_DIR, gameId, record.version);
-    await moveVersionDirectoryToTrash(versionDirectory, gameId);
-    await fs.rmdir(storage.filePath(PACKAGES_DIR, gameId)).catch(() => undefined);
-    await installations.remove(gameId);
+    // M2-FIX (§6.4/§6.8): the retained current+1 window exists for upgrade
+    // rollback; uninstall has no reason to keep it, so every version directory
+    // of THIS game (the current one and the retained previous one) is removed.
+    // Order matters: commit the record removal first, then clean the package
+    // trees. A record-write failure must stay a retryable failure with the
+    // package trees untouched, so the UI can never report "uninstalled" while
+    // the game is still registered; a cleanup failure after the record is gone
+    // is surfaced as a warning instead of silently leaking the directories.
+    try {
+      await installations.remove(gameId);
+    } catch (error) {
+      logger?.warn?.('[game-market/host] uninstall-record-failed', `gameId=${gameId}`, `code=${error?.code || 'E_UNKNOWN'}`);
+      if (error && typeof error.code === 'string' && error.code.startsWith('GM-')) throw error;
+      throw fsIoError(error, 'Could not update the installation record');
+    }
+    const warnings = await removeGamePackageDirectories(gameId);
     if (entry && typeof entry.invalidateGame === 'function') entry.invalidateGame(gameId);
     if (preferences && typeof preferences.read === 'function') {
       try {
@@ -1525,7 +1789,15 @@ export function createInstallService({
       }
     }
     logger?.info?.('[game-market/host] uninstalled', `gameId=${gameId}`, `deleteData=${deleteData}`);
-    return { gameId, removed: true, dataDeleted, ignored: false };
+    return {
+      gameId,
+      removed: true,
+      dataDeleted,
+      ignored: false,
+      // Keep the success shape unchanged; warnings are additive and only
+      // present when a post-commit cleanup step failed.
+      ...(warnings.length > 0 ? { warnings: warnings.slice() } : {}),
+    };
   }
 
   function diagnostics() {

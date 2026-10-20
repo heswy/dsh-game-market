@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>轨道信使 · Orbit Courier</title>
+  <link rel="stylesheet" href="styles/game.css">
+</head>
+<body data-phase="ready">
+  <main id="app" aria-label="轨道信使">
+    <div id="stage-wrap">
+      <canvas id="stage" width="720" height="1280" role="img" aria-label="轨道信使游戏画面：三层轨道环绕行星，站门在正上方"></canvas>
+    </div>
+
+    <header id="hud" aria-label="游戏状态">
+      <div class="hud-row hud-main">
+        <div class="chip">
+          <span class="chip-label">分数</span>
+          <strong id="hud-score" aria-live="off">0</strong>
+        </div>
+        <div class="chip">
+          <span class="chip-label">最高分</span>
+          <span id="hud-best">0</span>
+        </div>
+        <div class="chip">
+          <span class="chip-label">剩余</span>
+          <span id="hud-time">2:00</span>
+        </div>
+      </div>
+      <div class="hud-row hud-sub">
+        <div class="chip chip-soft">
+          <span class="chip-label">航段</span>
+          <span id="hud-act">近地轨道</span>
+        </div>
+        <div class="chip chip-soft">
+          <span class="chip-label">连击</span>
+          <span id="hud-combo">x1</span>
+        </div>
+        <div class="chip chip-soft">
+          <span class="chip-label">船体</span>
+          <span id="hud-shield" aria-label="船体 3/3">◆ ◆ ◆</span>
+        </div>
+      </div>
+    </header>
+
+    <div id="act-banner" class="banner" aria-hidden="true"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <div id="controls" aria-label="游戏控制">
+      <button id="btn-pause" type="button" class="round" aria-pressed="false" aria-label="暂停">II</button>
+      <button id="btn-mute" type="button" class="round" aria-pressed="false" aria-label="静音">🔊</button>
+    </div>
+
+    <section id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlay-title" hidden>
+      <div class="panel">
+        <p id="overlay-subtitle" class="eyebrow"></p>
+        <h1 id="overlay-title" tabindex="-1">轨道信使</h1>
+        <div id="overlay-body"></div>
+        <div id="overlay-actions" class="actions"></div>
+      </div>
+    </section>
+
+    <footer id="legend" aria-hidden="true">
+      <span>方向键 / WASD 转向与换轨</span>
+      <span>空格暂停</span>
+      <span>M 静音</span>
+    </footer>
+
+    <noscript>
+      <p class="noscript">轨道信使需要启用 JavaScript 才能运行。</p>
+    </noscript>
+  </main>
+  <script type="module" src="scripts/main.js"></script>
+</body>
+</html>

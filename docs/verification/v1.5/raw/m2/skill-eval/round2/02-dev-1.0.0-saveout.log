@@ -1,0 +1,9 @@
+Game Runtime Simulator: http://127.0.0.1:4411/
+  project: <work>/token-trail-sim
+  format:  asset-zip-v2
+  controls: agent running/waiting-user/completed, pause/resume, before-save, save export/import, clear save, theme, locale
+  save API: /dev/save/export (GET JSON), /dev/save/import (POST {save})
+  save out: <work>/logs/r2-1.0.0.save.json
+  endpoints: / (UI), /wrapper?src=… + /res/… (zip), /game returns 404, /health
+  every bridge message is logged in the page and in the browser console
+Press Ctrl+C to stop.

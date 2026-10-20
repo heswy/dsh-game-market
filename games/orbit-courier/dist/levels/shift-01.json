@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "shift-01",
+  "name": "夜航 · 第一班",
+  "durationSeconds": 120,
+  "geometry": {
+    "width": 720,
+    "height": 1280,
+    "center": { "x": 360, "y": 650 },
+    "rings": [150, 215, 280],
+    "stationAngle": -1.5707963267948966
+  },
+  "ship": {
+    "angularSpeed": 1.85,
+    "ringCooldownMs": 170,
+    "hitAngle": 0.12,
+    "invulnerableMs": 1500
+  },
+  "parcel": {
+    "collectAngle": 0.13,
+    "deliveryAngle": 0.11,
+    "ttlMs": 12000,
+    "score": 10,
+    "fastDeliveryMs": 6000,
+    "fastBonus": 5
+  },
+  "combo": { "max": 5, "windowMs": 4200 },
+  "shield": 3,
+  "completionBonus": { "perDelivery": 2, "perShield": 50 },
+  "acts": [
+    {
+      "id": 1,
+      "label": "近地轨道",
+      "fromSeconds": 0,
+      "spawnIntervalMs": 2300,
+      "maxParcels": 2,
+      "asteroidCount": 1,
+      "asteroidSpeed": 0.85,
+      "actClearBonus": 25
+    },
+    {
+      "id": 2,
+      "label": "碎石带",
+      "fromSeconds": 40,
+      "spawnIntervalMs": 1900,
+      "maxParcels": 3,
+      "asteroidCount": 2,
+      "asteroidSpeed": 1.15,
+      "actClearBonus": 35
+    },
+    {
+      "id": 3,
+      "label": "夜航深空",
+      "fromSeconds": 80,
+      "spawnIntervalMs": 1500,
+      "maxParcels": 3,
+      "asteroidCount": 3,
+      "asteroidSpeed": 1.5,
+      "actClearBonus": 50,
+      "burstEveryMs": 12000,
+      "burstCount": 2,
+      "burstTtlMs": 7000
+    }
+  ]
+}
