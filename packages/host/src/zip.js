@@ -1219,15 +1219,40 @@ export async function extractPackageArchive(options) {
 // Lightweight recovery check (contract §6.5)
 // ---------------------------------------------------------------------------
 
+/** True when `target` is a direct/indirect child of `directory`. */
+function isInsideDirectory(directory, target) {
+  const relative = path.relative(directory, target);
+  return relative.length > 0 && !relative.startsWith('..') && !path.isAbsolute(relative);
+}
+
+/** Stream a file through SHA-256 without buffering it (bounded memory). */
+async function sha256File(filePath) {
+  const hash = createHash('sha256');
+  const stream = createReadStream(filePath, { highWaterMark: CHUNK_BYTES });
+  for await (const chunk of stream) hash.update(chunk);
+  return hash.digest('hex');
+}
+
 /**
- * Verify an installed `asset-zip-v2` version directory without re-extracting:
- * the descriptor must exist and its `fileManifestDigest` must equal the value
- * recorded at install time (§6.5). Never deletes or rewrites anything.
+ * Verify an installed `asset-zip-v2` version directory without re-extracting.
  *
- * @param {{directory: string, record: {fileManifestDigest?: string|null, entry?: string|null}}} options
+ * Default (`verifyContents: false`) is the §6.5 *lightweight* startup-recovery
+ * check: the descriptor must exist, be valid, and its `fileManifestDigest` must
+ * equal the one recorded at install time. The entry file must exist.
+ *
+ * `verifyContents: true` additionally re-hashes every listed file and compares
+ * size/sha256 with the descriptor. That is what an install/rollback uses to
+ * decide whether a retained version directory is byte-equal to the package it
+ * just verified: the manifest digest alone cannot detect a tampered resource
+ * byte (the descriptor would still hash the same).
+ *
+ * Never deletes or rewrites anything.
+ *
+ * @param {{directory: string, record: {fileManifestDigest?: string|null, entry?: string|null},
+ *          verifyContents?: boolean}} options
  * @returns {Promise<{ok:boolean, reason:string|null, fileManifestDigest?:string}>}
  */
-export async function verifyPackageDirectory({ directory, record } = {}) {
+export async function verifyPackageDirectory({ directory, record, verifyContents = false } = {}) {
   const descriptorPath = path.join(directory, DESCRIPTOR_FILE);
   let raw;
   try {
@@ -1251,6 +1276,38 @@ export async function verifyPackageDirectory({ directory, record } = {}) {
   }
   if (typeof record?.entry === 'string' && validated.value.entry !== record.entry) {
     return { ok: false, reason: 'entry-mismatch' };
+  }
+  const entryPath = path.join(directory, validated.value.entry);
+  if (!isInsideDirectory(directory, entryPath)) return { ok: false, reason: 'entry-missing' };
+  let entryStats;
+  try {
+    entryStats = await fs.lstat(entryPath);
+  } catch (_error) {
+    return { ok: false, reason: 'entry-missing' };
+  }
+  if (!entryStats.isFile()) return { ok: false, reason: 'entry-missing' };
+
+  if (verifyContents) {
+    for (const file of validated.value.files) {
+      const absolute = path.join(directory, file.path);
+      if (!isInsideDirectory(directory, absolute)) return { ok: false, reason: 'file-content-mismatch' };
+      let stats;
+      try {
+        stats = await fs.lstat(absolute);
+      } catch (_error) {
+        return { ok: false, reason: 'file-content-mismatch' };
+      }
+      if (!stats.isFile() || stats.size !== file.size) {
+        return { ok: false, reason: 'file-content-mismatch' };
+      }
+      let actual;
+      try {
+        actual = await sha256File(absolute);
+      } catch (_error) {
+        return { ok: false, reason: 'file-content-mismatch' };
+      }
+      if (actual !== file.sha256) return { ok: false, reason: 'file-content-mismatch' };
+    }
   }
   return { ok: true, reason: null, fileManifestDigest: digest };
 }

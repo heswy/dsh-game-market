@@ -1,0 +1,858 @@
+{
+  "id": "CR7-01-same-origin-html-prefix",
+  "title": "CR7-01: same-origin second HTML document must carry the asset CSP (no external egress)",
+  "generatedAt": "2026-10-20T05:11:39.097Z",
+  "command": "node scripts/verification/v1.5/m1/m1-a06b-same-origin-html.mjs --plugin-root=/tmp/m1b-prefix-77c8d0a --label=prefix",
+  "environment": {
+    "dsh": {
+      "dshPackage": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.2"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.2"
+      },
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.2"
+      },
+      "asarExtractedAt": "2026-10-20T02:55:54.473Z"
+    },
+    "chrome": "headless CDP",
+    "pluginRoot": "/tmp/m1b-prefix-77c8d0a",
+    "ports": {
+      "bootstrap": 58310,
+      "host": 58311,
+      "static": 58351,
+      "sink": 58352,
+      "chrome": 9511
+    }
+  },
+  "commands": [],
+  "startedAt": "2026-10-20T05:11:39.097Z",
+  "finishedAt": "2026-10-20T05:11:39.097Z",
+  "passed": false,
+  "failed": [
+    "second-html-has-asset-csp",
+    "second-html-csp-directives-match-asset-policy",
+    "second-html-csp-frame-ancestors-exact-dsh-and-resource-origin",
+    "sink-received-zero-http-requests",
+    "sink-received-zero-websocket-upgrades",
+    "network-layer-zero-external-requests",
+    "chrome-csp-violation-log-recorded",
+    "chrome-connect-src-violation-recorded"
+  ],
+  "checks": [
+    {
+      "name": "dsh-page-loads-and-host-api-answers",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "health": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "data": {
+              "ok": true,
+              "version": "1.2.0",
+              "hostEpoch": "he_a5eb4d059766237b",
+              "devMode": true,
+              "storage": {
+                "ok": true,
+                "root": "/tmp/dsh-v15/home-probe-m1-cr7a-prefix/storages/dsh-game-market",
+                "readOnly": false
+              },
+              "uptimeMs": 4076,
+              "registry": {
+                "state": "fresh",
+                "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+                "fetchedAt": "2026-10-20T05:11:32.711Z",
+                "truncated": false,
+                "count": 0,
+                "lastError": null,
+                "generation": "v1",
+                "registryVersion": 1,
+                "activeSource": "official",
+                "fallback": false,
+                "official": {
+                  "state": "fresh",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+                  "fetchedAt": "2026-10-20T05:11:32.711Z",
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v1",
+                  "registryVersion": 1
+                },
+                "officialV2": {
+                  "state": "missing",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+                  "fetchedAt": null,
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": "GM-5032",
+                  "generation": "v2",
+                  "registryVersion": 2
+                },
+                "officialV1": {
+                  "state": "fresh",
+                  "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+                  "fetchedAt": "2026-10-20T05:11:32.711Z",
+                  "truncated": false,
+                  "count": 0,
+                  "lastError": null,
+                  "generation": "v1",
+                  "registryVersion": 1
+                },
+                "seed": {
+                  "state": "fresh",
+                  "count": 3,
+                  "sourceUrl": "/private/tmp/m1b-prefix-77c8d0a/registry/games.json"
+                }
+              },
+              "installations": {
+                "count": 0,
+                "updateAvailable": 0
+              },
+              "sessions": {
+                "running": 0,
+                "staleRunningPreserved": true
+              },
+              "games": {
+                "builtinCount": 1,
+                "issues": []
+              }
+            },
+            "requestId": "req_f8631704c2219b88",
+            "serverTime": "2026-10-20T05:11:34.060Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "zip-package-installs-through-real-host-api",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "gameId": "m1-cr7a-same-origin-html",
+        "format": "asset-zip-v2",
+        "entry": "index.html",
+        "fileCount": 7,
+        "errorBody": null
+      }
+    },
+    {
+      "name": "launch-info-contract-v2",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "resourceOrigin": "http://127.0.0.1:54067",
+        "resourceBase": "http://127.0.0.1:54067/res/<credential>/<credential>",
+        "entryResourceUrl": "http://127.0.0.1:54067/res/<instance>/<token>/index.html",
+        "wrapperUrl": "http://127.0.0.1:54067/wrapper?src=<redacted-src>",
+        "packageFormat": "asset-zip-v2"
+      }
+    },
+    {
+      "name": "second-page-really-runs",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+        "at": 1792473094607,
+        "event": "second-running",
+        "title": "M1 CR7 Second Document",
+        "marker": "second-marker",
+        "href": "http://127.0.0.1:54067/res/<instance>/<token>/second.html",
+        "origin": "null"
+      }
+    },
+    {
+      "name": "second-page-title-dom-marker-present",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "href": "http://127.0.0.1:54067/res/<instance>/<token>/second.html",
+        "origin": "null",
+        "title": "M1 CR7 Second Document",
+        "hasHud": true,
+        "chromeError": false,
+        "marker": "second-marker",
+        "phase": "done",
+        "state": {
+          "marker": "second-marker",
+          "title": "M1 CR7 Second Document",
+          "href": "http://127.0.0.1:54067/res/<instance>/<token>/second.html",
+          "origin": "null",
+          "phase": "done",
+          "fetch": {
+            "resolved": false,
+            "error": "Failed to fetch"
+          },
+          "image": {
+            "loaded": false,
+            "error": true
+          },
+          "popup": {
+            "opened": false
+          },
+          "ws": {
+            "opened": false,
+            "timeout": true
+          }
+        }
+      }
+    },
+    {
+      "name": "second-page-finished-its-attack-suite",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+        "at": 1792473096214,
+        "event": "second-attacks-complete",
+        "phase": "done",
+        "fetch": {
+          "resolved": false,
+          "error": "Failed to fetch"
+        },
+        "image": {
+          "loaded": false,
+          "error": true
+        },
+        "popup": {
+          "opened": false
+        },
+        "ws": {
+          "opened": false,
+          "timeout": true
+        }
+      }
+    },
+    {
+      "name": "second-html-served-200-with-resource-credential",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "entry-html-still-has-asset-csp",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "entryCsp": "default-src 'none'; script-src http://127.0.0.1:54067; style-src http://127.0.0.1:54067; img-src http://127.0.0.1:54067 data:; media-src http://127.0.0.1:54067; font-src http://127.0.0.1:54067; connect-src http://127.0.0.1:54067; frame-src 'none'; child-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58311 http://127.0.0.1:54067"
+      }
+    },
+    {
+      "name": "second-html-has-asset-csp",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "secondCsp": null
+      }
+    },
+    {
+      "name": "second-html-csp-directives-match-asset-policy",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "mismatches": [
+          {
+            "name": "default-src",
+            "expected": "'none'",
+            "actual": null
+          },
+          {
+            "name": "script-src",
+            "expected": "http://127.0.0.1:54067",
+            "actual": null
+          },
+          {
+            "name": "style-src",
+            "expected": "http://127.0.0.1:54067",
+            "actual": null
+          },
+          {
+            "name": "img-src",
+            "expected": "http://127.0.0.1:54067 data:",
+            "actual": null
+          },
+          {
+            "name": "media-src",
+            "expected": "http://127.0.0.1:54067",
+            "actual": null
+          },
+          {
+            "name": "font-src",
+            "expected": "http://127.0.0.1:54067",
+            "actual": null
+          },
+          {
+            "name": "connect-src",
+            "expected": "http://127.0.0.1:54067",
+            "actual": null
+          },
+          {
+            "name": "frame-src",
+            "expected": "'none'",
+            "actual": null
+          },
+          {
+            "name": "child-src",
+            "expected": "'none'",
+            "actual": null
+          },
+          {
+            "name": "worker-src",
+            "expected": "'none'",
+            "actual": null
+          },
+          {
+            "name": "object-src",
+            "expected": "'none'",
+            "actual": null
+          },
+          {
+            "name": "base-uri",
+            "expected": "'none'",
+            "actual": null
+          },
+          {
+            "name": "form-action",
+            "expected": "'none'",
+            "actual": null
+          }
+        ],
+        "secondDirectives": {}
+      }
+    },
+    {
+      "name": "second-html-csp-frame-ancestors-exact-dsh-and-resource-origin",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "frameAncestors": null
+      }
+    },
+    {
+      "name": "sink-received-zero-http-requests",
+      "ok": false,
+      "required": true,
+      "detail": [
+        {
+          "at": 1792473094711,
+          "method": "GET",
+          "path": "/cr7-01/fetch",
+          "search": "",
+          "origin": "null",
+          "secFetchSite": "cross-site",
+          "referer": null,
+          "bodyPrefix": ""
+        },
+        {
+          "at": 1792473094713,
+          "method": "GET",
+          "path": "/cr7-01/image.png",
+          "search": "",
+          "origin": null,
+          "secFetchSite": "cross-site",
+          "referer": null,
+          "bodyPrefix": ""
+        }
+      ]
+    },
+    {
+      "name": "sink-received-zero-websocket-upgrades",
+      "ok": false,
+      "required": true,
+      "detail": [
+        {
+          "at": 1792473094714,
+          "url": "/cr7-01/ws",
+          "headers": {
+            "origin": "null"
+          }
+        }
+      ]
+    },
+    {
+      "name": "network-layer-zero-external-requests",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "sentExternal": [
+          {
+            "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+            "method": "GET",
+            "url": "http://127.0.0.1:58352/cr7-01/image.png",
+            "rel": null,
+            "resourceType": "Image",
+            "status": 200,
+            "mimeType": "text/plain",
+            "failed": false,
+            "errorText": null,
+            "blockedReason": null,
+            "credentialKind": "other",
+            "responseCsp": null
+          }
+        ],
+        "blockedByCspCount": 0,
+        "externalNetwork": [
+          {
+            "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+            "method": "GET",
+            "url": "http://127.0.0.1:58352/cr7-01/fetch",
+            "rel": null,
+            "resourceType": "Fetch",
+            "status": null,
+            "mimeType": null,
+            "failed": true,
+            "errorText": "net::ERR_FAILED",
+            "blockedReason": null,
+            "credentialKind": "other",
+            "responseCsp": null
+          },
+          {
+            "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+            "method": "GET",
+            "url": "http://127.0.0.1:58352/cr7-01/image.png",
+            "rel": null,
+            "resourceType": "Image",
+            "status": 200,
+            "mimeType": "text/plain",
+            "failed": false,
+            "errorText": null,
+            "blockedReason": null,
+            "credentialKind": "other",
+            "responseCsp": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "second-page-external-fetch-rejected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "resolved": false,
+        "error": "Failed to fetch"
+      }
+    },
+    {
+      "name": "second-page-external-image-not-loaded",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "loaded": false,
+        "error": true
+      }
+    },
+    {
+      "name": "second-page-window-open-blocked-by-sandbox",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "opened": false
+      }
+    },
+    {
+      "name": "chrome-csp-violation-log-recorded",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "total": 0,
+        "sample": []
+      }
+    },
+    {
+      "name": "chrome-connect-src-violation-recorded",
+      "ok": false,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "index-same-origin-fetch-succeeds-200",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "console": {
+          "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+          "at": 1792473094247,
+          "event": "index-fetch",
+          "status": 200,
+          "id": "cr7-01-x"
+        },
+        "network": [
+          {
+            "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+            "method": "GET",
+            "url": "http://127.0.0.1:54067/res/<instance>/<token>/data/x.json",
+            "rel": "data/x.json",
+            "resourceType": "Fetch",
+            "status": 200,
+            "mimeType": "application/json",
+            "failed": false,
+            "errorText": null,
+            "blockedReason": null,
+            "credentialKind": "resource",
+            "responseCsp": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "no-frame-ancestors-framing-violations",
+      "ok": true,
+      "required": true,
+      "detail": []
+    }
+  ],
+  "scenario": {
+    "pluginRoot": "/tmp/m1b-prefix-77c8d0a",
+    "label": "prefix",
+    "ports": {
+      "bootstrap": 58310,
+      "host": 58311,
+      "static": 58351,
+      "sink": 58352,
+      "chrome": 9511
+    },
+    "install": {
+      "status": 200,
+      "gameId": "m1-cr7a-same-origin-html",
+      "format": "asset-zip-v2",
+      "entry": "index.html",
+      "fileCount": 7,
+      "errorBody": null
+    },
+    "launch": {
+      "resourceOrigin": "http://127.0.0.1:54067",
+      "resourceBase": "http://127.0.0.1:54067/res/<credential>/<credential>",
+      "entryResourceUrl": "http://127.0.0.1:54067/res/<instance>/<token>/index.html",
+      "wrapperUrl": "http://127.0.0.1:54067/wrapper?src=<redacted-src>",
+      "packageFormat": "asset-zip-v2"
+    },
+    "index": {
+      "indexRunning": {
+        "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+        "at": 1792473094234,
+        "event": "index-running",
+        "title": "M1 Same-Origin HTML Probe",
+        "marker": "index-marker",
+        "href": "http://127.0.0.1:54067/res/<instance>/<token>/index.html?launch=<redacted>&instance=<instance>&nonce=<launch-nonce>"
+      },
+      "indexFetch": {
+        "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+        "at": 1792473094247,
+        "event": "index-fetch",
+        "status": 200,
+        "id": "cr7-01-x"
+      },
+      "navigating": {
+        "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+        "at": 1792473094599,
+        "event": "index-navigating",
+        "target": "second.html"
+      }
+    },
+    "secondDocument": {
+      "running": {
+        "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+        "at": 1792473094607,
+        "event": "second-running",
+        "title": "M1 CR7 Second Document",
+        "marker": "second-marker",
+        "href": "http://127.0.0.1:54067/res/<instance>/<token>/second.html",
+        "origin": "null"
+      },
+      "attacksComplete": {
+        "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+        "at": 1792473096214,
+        "event": "second-attacks-complete",
+        "phase": "done",
+        "fetch": {
+          "resolved": false,
+          "error": "Failed to fetch"
+        },
+        "image": {
+          "loaded": false,
+          "error": true
+        },
+        "popup": {
+          "opened": false
+        },
+        "ws": {
+          "opened": false,
+          "timeout": true
+        }
+      },
+      "session": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+      "snapshot": {
+        "href": "http://127.0.0.1:54067/res/<instance>/<token>/second.html",
+        "origin": "null",
+        "title": "M1 CR7 Second Document",
+        "hasHud": true,
+        "chromeError": false,
+        "marker": "second-marker",
+        "phase": "done",
+        "state": {
+          "marker": "second-marker",
+          "title": "M1 CR7 Second Document",
+          "href": "http://127.0.0.1:54067/res/<instance>/<token>/second.html",
+          "origin": "null",
+          "phase": "done",
+          "fetch": {
+            "resolved": false,
+            "error": "Failed to fetch"
+          },
+          "image": {
+            "loaded": false,
+            "error": true
+          },
+          "popup": {
+            "opened": false
+          },
+          "ws": {
+            "opened": false,
+            "timeout": true
+          }
+        }
+      }
+    },
+    "headers": {
+      "secondUrl": "http://127.0.0.1:54067/res/<instance>/<token>/second.html",
+      "secondStatus": 200,
+      "secondCsp": null,
+      "secondDirectives": {},
+      "entryStatus": 200,
+      "entryCsp": "default-src 'none'; script-src http://127.0.0.1:54067; style-src http://127.0.0.1:54067; img-src http://127.0.0.1:54067 data:; media-src http://127.0.0.1:54067; font-src http://127.0.0.1:54067; connect-src http://127.0.0.1:54067; frame-src 'none'; child-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors http://127.0.0.1:58311 http://127.0.0.1:54067",
+      "entryDirectives": {
+        "default-src": "'none'",
+        "script-src": "http://127.0.0.1:54067",
+        "style-src": "http://127.0.0.1:54067",
+        "img-src": "http://127.0.0.1:54067 data:",
+        "media-src": "http://127.0.0.1:54067",
+        "font-src": "http://127.0.0.1:54067",
+        "connect-src": "http://127.0.0.1:54067",
+        "frame-src": "'none'",
+        "child-src": "'none'",
+        "worker-src": "'none'",
+        "object-src": "'none'",
+        "base-uri": "'none'",
+        "form-action": "'none'",
+        "frame-ancestors": "http://127.0.0.1:58311 http://127.0.0.1:54067"
+      },
+      "sinkOrigin": "http://127.0.0.1:58352",
+      "resourceOrigin": "http://127.0.0.1:54067",
+      "dshOrigin": "http://127.0.0.1:58311",
+      "directiveMismatches": [
+        {
+          "name": "default-src",
+          "expected": "'none'",
+          "actual": null
+        },
+        {
+          "name": "script-src",
+          "expected": "http://127.0.0.1:54067",
+          "actual": null
+        },
+        {
+          "name": "style-src",
+          "expected": "http://127.0.0.1:54067",
+          "actual": null
+        },
+        {
+          "name": "img-src",
+          "expected": "http://127.0.0.1:54067 data:",
+          "actual": null
+        },
+        {
+          "name": "media-src",
+          "expected": "http://127.0.0.1:54067",
+          "actual": null
+        },
+        {
+          "name": "font-src",
+          "expected": "http://127.0.0.1:54067",
+          "actual": null
+        },
+        {
+          "name": "connect-src",
+          "expected": "http://127.0.0.1:54067",
+          "actual": null
+        },
+        {
+          "name": "frame-src",
+          "expected": "'none'",
+          "actual": null
+        },
+        {
+          "name": "child-src",
+          "expected": "'none'",
+          "actual": null
+        },
+        {
+          "name": "worker-src",
+          "expected": "'none'",
+          "actual": null
+        },
+        {
+          "name": "object-src",
+          "expected": "'none'",
+          "actual": null
+        },
+        {
+          "name": "base-uri",
+          "expected": "'none'",
+          "actual": null
+        },
+        {
+          "name": "form-action",
+          "expected": "'none'",
+          "actual": null
+        }
+      ],
+      "frameAncestors": []
+    },
+    "network": {
+      "sinkRequests": [
+        {
+          "at": 1792473094711,
+          "method": "GET",
+          "path": "/cr7-01/fetch",
+          "search": "",
+          "origin": "null",
+          "secFetchSite": "cross-site",
+          "referer": null,
+          "bodyPrefix": ""
+        },
+        {
+          "at": 1792473094713,
+          "method": "GET",
+          "path": "/cr7-01/image.png",
+          "search": "",
+          "origin": null,
+          "secFetchSite": "cross-site",
+          "referer": null,
+          "bodyPrefix": ""
+        }
+      ],
+      "sinkUpgrades": [
+        {
+          "at": 1792473094714,
+          "url": "/cr7-01/ws",
+          "headers": {
+            "origin": "null"
+          }
+        }
+      ],
+      "externalNetwork": [
+        {
+          "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+          "method": "GET",
+          "url": "http://127.0.0.1:58352/cr7-01/fetch",
+          "rel": null,
+          "resourceType": "Fetch",
+          "status": null,
+          "mimeType": null,
+          "failed": true,
+          "errorText": "net::ERR_FAILED",
+          "blockedReason": null,
+          "credentialKind": "other",
+          "responseCsp": null
+        },
+        {
+          "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+          "method": "GET",
+          "url": "http://127.0.0.1:58352/cr7-01/image.png",
+          "rel": null,
+          "resourceType": "Image",
+          "status": 200,
+          "mimeType": "text/plain",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "credentialKind": "other",
+          "responseCsp": null
+        }
+      ],
+      "sentExternal": [
+        {
+          "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+          "method": "GET",
+          "url": "http://127.0.0.1:58352/cr7-01/image.png",
+          "rel": null,
+          "resourceType": "Image",
+          "status": 200,
+          "mimeType": "text/plain",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "credentialKind": "other",
+          "responseCsp": null
+        }
+      ],
+      "blockedByCspCount": 0
+    },
+    "secondObserved": {
+      "marker": "second-marker",
+      "title": "M1 CR7 Second Document",
+      "href": "http://127.0.0.1:54067/res/<instance>/<token>/second.html",
+      "origin": "null",
+      "phase": "done",
+      "fetch": {
+        "resolved": false,
+        "error": "Failed to fetch"
+      },
+      "image": {
+        "loaded": false,
+        "error": true
+      },
+      "popup": {
+        "opened": false
+      },
+      "ws": {
+        "opened": false,
+        "timeout": true
+      }
+    },
+    "cspViolationLogs": {
+      "total": 0,
+      "connect": [],
+      "img": []
+    },
+    "indexDataFetch": {
+      "console": {
+        "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+        "at": 1792473094247,
+        "event": "index-fetch",
+        "status": 200,
+        "id": "cr7-01-x"
+      },
+      "network": [
+        {
+          "sessionId": "5DD6FD4D2B0A86F7F6FC3AB837C30F48",
+          "method": "GET",
+          "url": "http://127.0.0.1:54067/res/<instance>/<token>/data/x.json",
+          "rel": "data/x.json",
+          "resourceType": "Fetch",
+          "status": 200,
+          "mimeType": "application/json",
+          "failed": false,
+          "errorText": null,
+          "blockedReason": null,
+          "credentialKind": "resource",
+          "responseCsp": null
+        }
+      ]
+    },
+    "framingViolations": [],
+    "screenshots": {
+      "full": "docs/verification/v1.5/raw/m1/screenshots/cr7-01-same-origin-html-prefix.png"
+    }
+  }
+}

@@ -452,6 +452,12 @@ export function reduce(state, action) {
           busy: false,
           fileName: typeof action.fileName === 'string' ? action.fileName : null,
           file: action.file || null,
+          fileSize: typeof action.fileSize === 'number' && Number.isFinite(action.fileSize) ? action.fileSize : null,
+          fileSizeLabel: typeof action.fileSizeLabel === 'string' ? action.fileSizeLabel : null,
+          format:
+            action.format === 'html-v1' || action.format === 'asset-zip-v2' ? action.format : null,
+          formatLabel: typeof action.formatLabel === 'string' ? action.formatLabel : null,
+          overwrite: action.overwrite && typeof action.overwrite === 'object' ? action.overwrite : null,
           returnFocus: action.returnFocus && typeof action.returnFocus === 'object' ? action.returnFocus : null,
         },
       };

@@ -8,6 +8,8 @@
 |---|---|---|---|---|
 | **A02** 真 ZIP 多资源加载 + 断网可玩 | **通过 43/43 必须断言** | `node scripts/verification/v1.5/m1/m1-a02-multiresource.mjs` | **0** | `raw/m1/M1-A02-multiresource-2026-10-20T04-44-56-876Z.json` |
 | **A06** 沙箱/CSP/CORS/ESM 边界 + wrapper 导航 + Bridge 来源校验 | **通过 42/42 必须断言**（另有 1 条非必须断言通过） | `node scripts/verification/v1.5/m1/m1-a06-boundaries.mjs` | **0** | `raw/m1/M1-A06-boundaries-2026-10-20T04-51-00-544Z.json` |
+| **CR7-01**（复核补充）同源第二 HTML 文档必须带 asset CSP、外发 sink 零请求 | **修复后通过 21/21**；修复前快照 13/21 失败（sink 真实收到请求） | `node scripts/verification/v1.5/m1/m1-a06b-same-origin-html.mjs` | 修复后 **0** / 修复前 1 | `raw/m1/CR7-01-same-origin-html-2026-10-20T05-25-33-319Z.json`（后）、`raw/m1/CR7-01-same-origin-html-prefix-2026-10-20T05-11-39-097Z.json`（前） |
+| **CR7-03**（复核补充）真实 Market UI 点击安装本地 `.dshgame.zip`（逐字节一致） | **修复后通过 36/36**；修复前 15/36；中间修复态（format 未转发）23/36 且 415 | `node scripts/verification/v1.5/m1/m1-a06c-market-ui-local-zip.mjs` | 修复后 **0** / 修复前 1 | `raw/m1/CR7-03-market-ui-local-zip-2026-10-20T05-28-04-816Z.json`（后）、`-prefix-`（前）、`-fix1-415-`（中间态） |
 
 结论摘要：
 1. **A02**：真实安装版 DSH `0.2.1-rc.2` 隔离宿主 + 真实 headless Chrome 中，经真实 Host API 安装的 `asset-zip-v2` 包（HTML + 独立 ESM ×2 + CSS + PNG + JSON + WAV）由**真实 RuntimeController → 平台 wrapper → 游戏文档**加载；每种资源逐个 HTTP 200（精确 MIME/CORS/nosniff/no-store/no-referrer），游戏内 `fetch` 解析 JSON、`naturalWidth=64`、`audio.readyState=4`、computed style 生效、SDK 握手 + `storage.save` 成功；**断网（阻断全部非 resourceOrigin 请求 + CDP offline）仍可玩**。
@@ -242,3 +244,99 @@ Cache-Control: no-store; Referrer-Policy: no-referrer; Content-Length: <bytes>
   - 三个 P0 历史证据（保留 A/B 对照与 chrome-error/403 现象）：`blocker-wrapper-frame-ancestors-*.json`、`blocker-about-blank-load-*.json`、`blocker-wrapper-frame-ancestors-wildcard-*.json`。
 - 证据脱敏：`<resourceToken>`/launch nonce/instanceId 以 `<credential>`/`<instance>`/`<token>`/`<launch-nonce>` 替换；`/Users/<real>` 归一为 `/Users/<user>`；`grep` 复核 32-hex/长 base64/`launch=` 明文 = 0。
 - 源码摘要（本次证据对应的稳定基线，供回归比对）：`client.js 9c773bc72c2c68bcfcd23c96ae5b54eee1134be378ffbbde06a02d6f478404b6`、`packages/host/src/plugin.js 72b4d0bcf0c9d8856a0da2b7fc5ba7c755496f9c478ab70a41135d09ea420dcd`、`resources.js 720bc310cc4952968937a779ce8ddb0ce5d7cbba406fe987dddaadf8756880d2`、`entry.js d8fedc853036f84ce2d877564f983f8b3233bbc89016b244c0d5aa578a595f59`、`controller.js 2f7ac905ce9bcc6c86e6030c138ab0047e03e94ec986927999d7751e12a5f9b5`、`index.js 3be5152f02aaafb7a072ccb5a3cae2782470e09cf49b5857d1b8786648b684a5`。
+
+## 11. CR7 复核补充（Codex review of head `77c8d0a`；CR7-01 / CR7-03）
+
+Codex 复核认可 M1 方向（两层 iframe、点对点 relay、祖先链 origin 补全），但指出原 A02/A06 探针未覆盖两个缺口。本小节补**真实浏览器 A/B 证据**：每条缺口都先在同 head 快照（修复前）跑出失败证据，再在修复后工作区跑通；证据文件名带 `-prefix-` 的是**修复前**，不带的是**修复后**。
+
+- 修复后基线：工作树 HEAD `77c8d0a` + CR7 修复未提交改动；`client.js` sha256 `ab54b8eaa421fa10196eb85454f1836fda47b9a5c23fa4a57f57868c9a4c2641`（重建产物）；`packages/host/src/resources.js` `6b6b04bf…`；`packages/client/src/components/panel.js` `aa0461ff…`；`actions.js` `3c110c90…`；`local-install.js` `929c74b5…`；`api-v1.js` `9413c073…`。
+- 修复前快照：`git archive 77c8d0a` 解到 `/tmp/m1b-prefix-77c8d0a`（只读快照 + 指向工作树 `node_modules` 的符号链接），探针以 `--plugin-root=/tmp/m1b-prefix-77c8d0a --label=prefix` 运行。两个探针的**断言集完全相同**，A/B 只差被测代码。
+- 探针纪律：不修改 `packages/**`、不 commit；文件选择器用 CDP 协议事件 + `DOM.setFileInputFiles`（Lead 批准的自动化方式，不是直接调 API 冒充点击）；安装请求只可能来自真实 Client UI，探针仅在安装完成后做只读 `GET /installed`、`GET /game` 观测。
+
+### 11.1 CR7-01（P1）：同源第二 HTML 文档没有 CSP → 新文档可外发
+
+**缺口（修复前实测）**：ZIP 入口 `index.html` 导航到同源 `second.html`（wrapper `frame-src` 允许该导航），旧实现只在**入口文档**回 CSP；`second.html` 作为新文档无策略，其 `fetch`/`Image`/`WebSocket` 直接出网。
+
+**探针** `m1-a06b-same-origin-html.mjs`：真实 ZIP（入口 `index.html` + 同源 `second.html` + ESM 脚本 + JSON + CSS）经真实 Host API 安装 → 真实 `/launch` → 生产 RuntimeController + platform wrapper 加载；入口先验同源 `fetch('./data/x.json')=200`，再自导航到 `second.html`，第二页尝试 `fetch(sink)`、`new Image().src=sink`、`new WebSocket(ws://sink)`、`window.open(sink)`；外部 `sink` origin 独立记录 **HTTP 请求 + WS upgrade**（网络层见证，不只看 console）；用 Node 直接 `GET second.html`（资源凭证 URL）读响应头 CSP 逐指令。
+
+| 断言 | 修复前（`-prefix-`，13/21） | 修复后（21/21） |
+|---|---|---|
+| `second.html` 响应头 asset CSP | **缺失**（`secondCsp=null`） | 完整策略，13 条逐指令与入口一致，0 mismatch |
+| `frame-ancestors` | 无 | `http://127.0.0.1:<dshPort> http://127.0.0.1:<resOrigin>`，无 `*` |
+| 第二页真的运行（title/DOM/JS） | ✅ 正常（`M1 CR7 Second Document`、`#second-hud`、marker、`origin="null"`） | ✅ 同样正常 |
+| **sink HTTP 请求** | **收到 2 条**：`GET /cr7-01/fetch`、`GET /cr7-01/image.png` | **0** |
+| **sink WS upgrade** | **1 条**：`/cr7-01/ws` | **0** |
+| CDP 网络层外部请求 | Image 实际 200（`sentExternal=1`） | 0 条 sent；仅 1 条 `blockedReason=csp` 事件（CSP 在渲染进程内拦截） |
+| Chrome CSP 违规日志（成因证据） | 0 条 | **3 条**：`Connecting to '…/cr7-01/fetch' violates … connect-src`、`Connecting to 'ws://…' violates … connect-src`、`Loading the image '…/cr7-01/image.png' violates … img-src` |
+| 第二页外发结果 | fetch 因 CORS 拒绝、Image **加载成功**、WS **打开** | fetch 被 CSP 拒绝、Image 不加载、WS 不打开 |
+| 对照：入口同源 `fetch('./data/x.json')` | **200** | **200**（策略不误杀同源读取） |
+| `window.open` | 被 sandbox 拦（对照组，前后一致） | 被 sandbox 拦 |
+
+证据：`raw/m1/CR7-01-same-origin-html-prefix-2026-10-20T05-11-39-097Z.json`（修复前，8 条 required 失败：CSP 缺失/无 frame-ancestors/sink 有请求/WS upgrade/CSP 违规缺失）、`raw/m1/CR7-01-same-origin-html-2026-10-20T05-25-33-319Z.json`（修复后 21/21）、截图 `screenshots/cr7-01-same-origin-html*.png`。
+
+结论：缺口真实、修复有效，且**同源子资源读取不回归**；第二页作为 sandboxed opaque-origin 文档仍可运行，但被 asset CSP 限制在 resource origin 内。
+
+### 11.2 CR7-03（P2）：真实 Market UI 点击安装本地 `.dshgame.zip`（逐字节一致）
+
+**缺口（修复前实测）**：Market 面板文件选择器 `accept=".html,text/html"`、`handleFileSelected` 只接受 HTML，ZIP 被拒并弹「这个文件不是受支持的 .html 游戏包」；即使强行进入安装，`api-v1.installLocal` 用 `File.text()` 读取 → ZIP 被 UTF-8 解码损坏（Codex 实测 2384 B → 2474 B），Host 拒绝。本探针把「真实点击路径」作为必测项：**禁止直调 API 冒充**。
+
+**探针** `m1-a06c-market-ui-local-zip.mjs`（真实 `client.js` bundle，隔离 `dsh web` + 真实 Chrome/CDP）：
+1. 关闭启动期「预览版说明」/「添加 API Key」浮层（真实点击）；
+2. 点击侧栏「游戏市场」→ 真实 Client 面板 `.dgm-root[data-page=market]`；
+3. 点击插件自己的「上传游戏」按钮 → 开启 `Page.setInterceptFileChooserDialog`，等 `Page.fileChooserOpened` → `DOM.setFileInputFiles` 选真实磁盘文件（`m1-cr7-local-zip-1.0.0.dshgame.zip`，102 997 B；文件名遵循 `<id>-<version>.dshgame.zip`）；
+4. 断言二次确认对话框（文件名 / 文件大小 101 KB / 包格式「资源包（.dshgame.zip）」/ 本地安装警告 / 「安装」按钮），点击「安装」；
+5. 断言 **UI 自己**发出 `POST /api/game-market/install-local`，`content-type: application/zip`，HTTP 200；**用 CDP `Network.postDataEntries`（base64 原始 body）计算 sha256 与源 ZIP 逐字节比较**（`c07a9f8c0a…`，102 997 B，完全一致），并与 Host 记录的 `installation.sha256`、`sizeBytes=102997` 三方一致；
+6. 断言 UI 成功 toast（「《M1 Multi-Resource Probe》已从本地安装」）、「我的游戏」出现该游戏、`GET /installed` 含该 id、`GET /game?id=` 的 `installed.format=asset-zip-v2` 且 sha256 一致；
+7. 再次选择同一 ZIP → 断言覆盖提示（「将覆盖《M1 Multi-Resource Probe》当前安装的 1.0.0…」）→ 点「取消」不产生第二次安装；
+8. **回归对照**：同流程上传真实 `html-v1` 单文件（内置 Breakout 内容 + 改 manifest id/name，182 561 B）→ 二次确认 → 安装成功（`format=html-v1`、`content-type: text/html`、CDP 原始 body sha256 与源一致、`sizeBytes=182561`）。
+
+**三态 A/B**（同一脚本、同一断言集；中间态=「二进制上传已接上但 `dialog.format` 未转发」的初版修复）：
+
+| 断言 | 修复前 head `77c8d0a`（15/36） | 中间修复态（23/36） | 修复后（36/36） |
+|---|---|---|---|
+| picker accept | `.html,text/html`（**无 ZIP**） | 含 `.dshgame.zip` | 含 `.html` + `.dshgame.zip` |
+| 选 ZIP 后 | 拒绝 toast「这个文件不是受支持的 .html 游戏包」，**无对话框** | 二次确认正常（文件名/101 KB/资源包格式/警告） | 同左 |
+| 安装请求 | **无请求** | `POST install-local` → **415 `GM-4150`** | `POST install-local` → **200** |
+| `content-type` | — | **`text/html; charset=utf-8`**（ZIP 被当文本） | **`application/zip`** |
+| CDP 原始 body 字节 / sha256 | — | **106 118 B**（文本化膨胀），sha256 ≠ 源 | **102 997 B**，sha256 **=== 源 ZIP sha256**（`c07a9f8c0a…`） |
+| Host 记录 | — | 无（415） | `format=asset-zip-v2`、`sizeBytes=102997`、`sha256=源` |
+| UI 成功/列表 | — | 失败 toast，无游戏 | 成功 toast + 「我的游戏」可见 + `/installed` 含该 id |
+| 覆盖提示 | — | 无（未安装成功） | 「将覆盖…当前安装的 1.0.0…」；取消后无第二次安装 |
+| html-v1 回归对照 | 旧版 HTML 本地安装可用（对照本身不是缺口） | ✅ 通过 | ✅ 通过（200 / `text/html` / `format=html-v1` / body sha256=源） |
+| 直调 API 冒充 | — | — | 无（`probeInitiatedInstallApiCalls=0`；POST 均为 UI 发起） |
+
+**探针发现并上报的 latent product-defect（CR7-03 修复的后续缺口）**：初版修复在 `api-v1.js` 接了二进制上传，但 `panel.js confirmDialogAction()` 调 `installLocalGame()` 时**没有转发 `dialog.format`**，`actions.js` 又硬编码 `html-v1` 缺省 → ZIP 被按 `text/html` 上传 → Host 返回 **415 `GM-4150` "ZIP packages must use application/zip"**，且 CDP 原始 body 106 118 B（文本化膨胀）。已按最小复现报 Lead；最终修复由 runtime-client 用 `localInstallOptionsFromDialog(dialog)` 统一转发（`file/format/bytes/fileName`），`actions.js` 再按文件名 `detectLocalInstallFormat` 兜底，`client.js` 重建（sha256 `ab54b8ea…`）。
+
+> 中间态证据说明：发现该 415 缺陷的原始运行发生在「初版修复尚未完成」的工作树上；为让评审可复核，现用**带标签的中间态快照**（= 最终工作树 + 仅回退 `panel.js` 的 format 转发与 `actions.js` 的 filename 兜底，其余修复保留；`client.js` 用仓库构建脚本重建）复现同一现象并留证 `CR7-03-...-fix1-415-...json`。三份证据的断言集完全相同，仅被测代码状态不同。
+
+证据：`raw/m1/CR7-03-market-ui-local-zip-2026-10-20T05-28-04-816Z.json`（修复后 36/36，含 dialog 文本/meta、POST 请求头、原始 body sha256、200 响应、`/installed`/`/game` 记录、UI 截图）、`raw/m1/CR7-03-market-ui-local-zip-prefix-2026-10-20T05-30-49-407Z.json`（修复前 15/36：picker 拒绝 toast、无请求）、`raw/m1/CR7-03-market-ui-local-zip-fix1-415-2026-10-20T05-29-57-771Z.json`（中间态 23/36：415 + text/html + 原始 body 106118 B），截图 `screenshots/cr7-03-market-ui-local-zip*.png`。
+
+**`/installed` 口径说明**：实测 `GET /api/game-market/installed` 的 item 不含 `format` 字段（与 `/games` 的 summary 同构）；`format=asset-zip-v2` 出现在 **install 响应 `installation.format`** 与 **`GET /api/game-market/game?id=<id>` 的 `installed.format`**。探针对「`/installed` 出现该游戏」+「installed record format=asset-zip-v2」两条分别断言，未把不存在字段写成通过。
+
+### 11.3 CR7 复核补充的命令与 exit code
+
+```bash
+# 修复后（当前工作区；client.js 重建后）
+node scripts/verification/v1.5/m1/m1-a06b-same-origin-html.mjs
+# exit 0 — PASSED (21/21 required)
+
+node scripts/verification/v1.5/m1/m1-a06c-market-ui-local-zip.mjs
+# exit 0 — PASSED (36/36 required)
+
+# 修复前（head 77c8d0a 只读快照，留存 A/B 的「before」证据）
+git archive 77c8d0a | tar -x -C /tmp/m1b-prefix-77c8d0a   # + node_modules 符号链接
+node scripts/verification/v1.5/m1/m1-a06b-same-origin-html.mjs --plugin-root=/tmp/m1b-prefix-77c8d0a --label=prefix
+# exit 1 — FAILED (13/21 required)：second.html 无 CSP，sink 收到 fetch/image + WS upgrade
+node scripts/verification/v1.5/m1/m1-a06c-market-ui-local-zip.mjs --plugin-root=/tmp/m1b-prefix-77c8d0a --label=prefix
+# exit 1 — FAILED (15/36 required)：picker 拒 ZIP，无确认对话框/无安装请求
+node scripts/verification/v1.5/m1/m1-a06c-market-ui-local-zip.mjs --plugin-root=/tmp/m1b-fix1-415 --label=fix1-415
+# exit 1 — FAILED (23/36 required)：UI 发出 415（text/html 上传，原始 body 106118 B）
+```
+
+### 11.4 CR7 未验证项（如实）
+
+- **原生文件选择器 UI 的可视化**：headless 下用 CDP `Page.setInterceptFileChooserDialog` 捕获真实的 `fileChooserOpened` 事件并 `DOM.setFileInputFiles` 注入（Lead 批准的自动化方式）；未截取 macOS 原生文件选择器窗口（headless 不渲染系统对话框），但访问路径是真实点击 → 真实 chooser 事件 → 真实 `<input type=file>` change。
+- **真实 Electron 桌面窗口**：仍使用隔离 `dsh web` 宿主（与全报告一致）；未驱动用户 App 窗口。
+- **多文件/超大文件/恶意 ZIP 选择器边界**：由 Host/安装校验用例覆盖，不在本点击路径探针重复。
+- **非 Chromium 引擎**：同上文 §9。
+- 本小节两项的 A/B 证据均来自**真实浏览器 + 真实打包 Client bundle + 真实 Host**；探针脚本、原始 JSON 与截图均在 `scripts/verification/v1.5/m1/`、`docs/verification/v1.5/raw/m1/` 内，可复跑。

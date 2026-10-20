@@ -48,14 +48,14 @@ window.__ModuleLoader__.load({
       'market.seed': '正在显示随包游戏，官方目录暂不可用。',
       'market.seed.retry': '重试',
       'market.localInstall.title': '从本地安装游戏？',
-      'market.localInstall.body': '选择一个自包含的 .html 游戏包。本地文件不经过商店校验，请只安装你信任的来源。',
+      'market.localInstall.body': '选择一个自包含的 .html 游戏包，或一个 .dshgame.zip 资源包。本地文件不经过商店校验，请只安装你信任的来源。',
       'market.localInstall.warning': '本地安装不会校验文件来源。',
       'market.localInstall.tryAgain': '选择其他文件',
       'market.localInstall.confirm': '继续安装',
       'market.localInstall.reading': '正在读取文件…',
       'market.localInstall.done': '《{gameName}》已从本地安装',
       'market.localInstall.failed': '本地安装失败',
-      'market.localInstall.unsupported': '这个文件不是受支持的 .html 游戏包',
+      'market.localInstall.unsupported': '这个文件不是受支持的 .html 或 .dshgame.zip 游戏包',
       'market.localInstall.tooLarge': '文件超过 20 MB，无法安装',
       'market.localInstall.fileLabel': '所选文件：{fileName}',
 
@@ -262,6 +262,11 @@ window.__ModuleLoader__.load({
       'dialog.installLocal.title': '从本地安装《{fileName}》？',
       'dialog.installLocal.body': '本地文件不经过商店校验，请确认来源可信。安装后可以随时卸载，存档会保留。',
       'dialog.installLocal.confirm': '安装',
+      'dialog.installLocal.fileSize': '文件大小',
+      'dialog.installLocal.format': '包格式',
+      'dialog.installLocal.formatHtml': 'HTML 单文件包',
+      'dialog.installLocal.formatZip': '资源包（.dshgame.zip）',
+      'dialog.installLocal.overwrite': '将覆盖《{gameName}》当前安装的 {currentVersion}；实际安装版本以包内声明为准。',
       'dialog.pending': '处理中…',
 
       'menu.a11y': '更多操作',
@@ -504,14 +509,14 @@ window.__ModuleLoader__.load({
       'market.seed': 'Showing bundled games; the official catalog is unavailable.',
       'market.seed.retry': 'Retry',
       'market.localInstall.title': 'Install a game from this device?',
-      'market.localInstall.body': 'Choose a self-contained .html game package. Local files are not verified by the store, so only install sources you trust.',
+      'market.localInstall.body': 'Choose a self-contained .html game package or a .dshgame.zip asset package. Local files are not verified by the store, so only install sources you trust.',
       'market.localInstall.warning': 'Local installs do not verify where the file came from.',
       'market.localInstall.tryAgain': 'Choose another file',
       'market.localInstall.confirm': 'Install anyway',
       'market.localInstall.reading': 'Reading file…',
       'market.localInstall.done': '{gameName} installed from this device',
       'market.localInstall.failed': 'Local install failed',
-      'market.localInstall.unsupported': 'This file is not a supported .html game package',
+      'market.localInstall.unsupported': 'This file is not a supported .html or .dshgame.zip game package',
       'market.localInstall.tooLarge': 'This file is larger than 20 MB and cannot be installed',
       'market.localInstall.fileLabel': 'Selected file: {fileName}',
 
@@ -718,6 +723,11 @@ window.__ModuleLoader__.load({
       'dialog.installLocal.title': 'Install {fileName} from this device?',
       'dialog.installLocal.body': 'Local files are not verified by the store. Only install files you trust. You can uninstall at any time and saves are kept.',
       'dialog.installLocal.confirm': 'Install',
+      'dialog.installLocal.fileSize': 'File size',
+      'dialog.installLocal.format': 'Package format',
+      'dialog.installLocal.formatHtml': 'Single-file HTML package',
+      'dialog.installLocal.formatZip': 'Asset package (.dshgame.zip)',
+      'dialog.installLocal.overwrite': 'This replaces the installed {currentVersion} of {gameName}; the package manifest decides the new version.',
       'dialog.pending': 'Working…',
 
       'menu.a11y': 'More actions',
@@ -1877,6 +1887,12 @@ window.__ModuleLoader__.load({
               busy: false,
               fileName: typeof action.fileName === 'string' ? action.fileName : null,
               file: action.file || null,
+              fileSize: typeof action.fileSize === 'number' && Number.isFinite(action.fileSize) ? action.fileSize : null,
+              fileSizeLabel: typeof action.fileSizeLabel === 'string' ? action.fileSizeLabel : null,
+              format:
+                action.format === 'html-v1' || action.format === 'asset-zip-v2' ? action.format : null,
+              formatLabel: typeof action.formatLabel === 'string' ? action.formatLabel : null,
+              overwrite: action.overwrite && typeof action.overwrite === 'object' ? action.overwrite : null,
               returnFocus: action.returnFocus && typeof action.returnFocus === 'object' ? action.returnFocus : null,
             },
           };
@@ -3138,6 +3154,121 @@ window.__ModuleLoader__.load({
     return { GameMarketApiError, randomOperationId, createApiClient };
     })();
 
+    // module: packages/client/src/local-install.js
+    __mods["packages/client/src/local-install.js"] = (function () {
+    const GAME_ID_PATTERN = __mods["packages/shared/src/constants.js"].GAME_ID_PATTERN;
+    const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+    /**
+     * Local package selection policy (V1.5-CONTRACTS §1.8).
+     *
+     * Local install accepts two carriers with different transports:
+     *   - `html-v1`        — `<id>-<version>.html`, uploaded as `text/html` text;
+     *   - `asset-zip-v2`   — `<id>-<version>.dshgame.zip`, uploaded as raw
+     *                        `application/zip` bytes (never text-decoded).
+     *
+     * The format is decided from the file name first (that is what the Host
+     * re-validates) and from the declared MIME type only as a fallback. Pure helpers
+     * so the picker policy is unit-testable without a React render.
+     */
+
+    /** Same 20 MiB ceiling for both carriers (contract §1.8 / §3). */
+    const MAX_LOCAL_INSTALL_BYTES = LIMITS.packageBytes || 20 * 1024 * 1024;
+
+    /** File picker filter: HTML + ZIP, by extension and MIME. */
+    const LOCAL_INSTALL_ACCEPT = '.html,.htm,.dshgame.zip,text/html,application/zip,application/x-zip-compressed';
+
+    const LOCAL_PACKAGE_FORMATS = Object.freeze(['html-v1', 'asset-zip-v2']);
+
+    const HTML_EXTENSION_RE = /\.html?$/i;
+    const ZIP_EXTENSION_RE = /\.dshgame\.zip$/i;
+    const ZIP_MIME_TYPES = Object.freeze(['application/zip', 'application/x-zip-compressed']);
+
+    function mimeOf(value) {
+      if (typeof value !== 'string') return '';
+      const [mediaType] = value.split(';');
+      return mediaType ? mediaType.trim().toLowerCase() : '';
+    }
+
+    /**
+     * Decide the package format for a picked local file.
+     * @param {{fileName?: string, type?: string}} input
+     * @returns {'html-v1'|'asset-zip-v2'|null}
+     */
+    function detectLocalInstallFormat(input) {
+      const source = input && typeof input === 'object' ? input : {};
+      const fileName = typeof source.fileName === 'string' ? source.fileName : '';
+      const mime = mimeOf(source.type);
+      // Extension wins: the Host's filename rule is authoritative, and a browser
+      // may report an empty/unknown MIME for a `.dshgame.zip` file.
+      if (ZIP_EXTENSION_RE.test(fileName)) return 'asset-zip-v2';
+      if (HTML_EXTENSION_RE.test(fileName)) return 'html-v1';
+      if (ZIP_MIME_TYPES.includes(mime)) return 'asset-zip-v2';
+      if (mime === 'text/html') return 'html-v1';
+      return null;
+    }
+
+    /**
+     * Parse `<id>-<version>.html` / `<id>-<version>.dshgame.zip` so the confirmation
+     * dialog can name the installation record that will be replaced. Returns `null`
+     * for arbitrary local file names (the manifest is only read by the Host).
+     * @returns {{gameId:string, version:string, format:string}|null}
+     */
+    function parseLocalPackageFileName(fileName) {
+      if (typeof fileName !== 'string' || fileName.length === 0 || fileName.length > 255) return null;
+      const match = /^(.+)-((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)\.(html|dshgame\.zip)$/i.exec(
+        fileName
+      );
+      if (!match) return null;
+      const gameId = match[1];
+      if (!GAME_ID_PATTERN.test(gameId)) return null;
+      return {
+        gameId,
+        version: match[2],
+        format: /dshgame\.zip$/i.test(match[3]) ? 'asset-zip-v2' : 'html-v1',
+      };
+    }
+
+    /**
+     * Validate a picked file before the confirmation dialog.
+     * @returns {{ok:true, format:string} | {ok:false, reason:'unsupported'|'tooLarge'}}
+     */
+    function validateLocalInstallSelection(input) {
+      const source = input && typeof input === 'object' ? input : {};
+      const format = detectLocalInstallFormat({ fileName: source.fileName, type: source.type });
+      if (!format) return { ok: false, reason: 'unsupported' };
+      if (typeof source.size === 'number' && Number.isFinite(source.size) && source.size > MAX_LOCAL_INSTALL_BYTES) {
+        return { ok: false, reason: 'tooLarge' };
+      }
+      return { ok: true, format };
+    }
+
+    /**
+     * Match a package file name against the currently installed (non-builtin)
+     * games, so the confirmation can say which version will be replaced.
+     * @returns {{gameId:string, gameName:string, currentVersion:string, version:string}|null}
+     */
+    function findLocalOverwriteTarget(games, fileName) {
+      const parsed = parseLocalPackageFileName(fileName);
+      if (!parsed) return null;
+      const list = Array.isArray(games) ? games : [];
+      for (const game of list) {
+        if (!game || game.id !== parsed.gameId) continue;
+        if (game.builtin === true) return null;
+        if (game.installed === false) return null;
+        if (typeof game.version !== 'string' || game.version.length === 0) return null;
+        return {
+          gameId: parsed.gameId,
+          gameName: typeof game.name === 'string' && game.name.length > 0 ? game.name : parsed.gameId,
+          currentVersion: game.version,
+          version: parsed.version,
+        };
+      }
+      return null;
+    }
+
+    return { MAX_LOCAL_INSTALL_BYTES, LOCAL_INSTALL_ACCEPT, LOCAL_PACKAGE_FORMATS, detectLocalInstallFormat, parseLocalPackageFileName, validateLocalInstallSelection, findLocalOverwriteTarget };
+    })();
+
     // module: packages/client/src/api-v1.js
     __mods["packages/client/src/api-v1.js"] = (function () {
     const API_BASE = __mods["packages/shared/src/constants.js"].API_BASE;
@@ -3145,6 +3276,7 @@ window.__ModuleLoader__.load({
     const GameMarketApiError = __mods["packages/shared/src/api-client.js"].GameMarketApiError;
     const randomOperationId = __mods["packages/shared/src/api-client.js"].randomOperationId;
     const GM = __mods["packages/shared/src/errors.js"].GM;
+    const detectLocalInstallFormat = __mods["packages/client/src/local-install.js"].detectLocalInstallFormat;
     /**
      * V1 Host API client for the Market surfaces (PRD 8.5, V1-CONTRACTS 7).
      *
@@ -3238,6 +3370,72 @@ window.__ModuleLoader__.load({
     }
 
     /**
+     * Read a local file as raw bytes (`ArrayBuffer`) without any text codec.
+     * Uses `File.arrayBuffer()` when present and falls back to
+     * `FileReader.readAsArrayBuffer` (the browser path in DSH).
+     * @returns {Promise<ArrayBuffer>}
+     */
+    function readFileBytes(file, options) {
+      const opts = options && typeof options === 'object' ? options : {};
+      if (!file || typeof file !== 'object') {
+        return Promise.reject(new Error('No file selected'));
+      }
+      function normalizeBytes(value) {
+        if (value instanceof ArrayBuffer) return value;
+        if (ArrayBuffer.isView(value)) {
+          return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
+        }
+        throw new Error('File did not provide raw bytes');
+      }
+      if (typeof file.arrayBuffer === 'function') {
+        return Promise.resolve(file.arrayBuffer()).then(normalizeBytes);
+      }
+      const Reader = opts.FileReader || (typeof globalThis.FileReader === 'function' ? globalThis.FileReader : null);
+      if (!Reader) return Promise.reject(new Error('FileReader is unavailable'));
+      return new Promise(function read(resolve, reject) {
+        let reader = null;
+        try {
+          reader = new Reader();
+        } catch (error) {
+          reject(error);
+          return;
+        }
+        reader.onload = function loaded() {
+          try {
+            resolve(normalizeBytes(reader.result));
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = function failed() {
+          reject(reader.error || new Error('Could not read the file'));
+        };
+        reader.onabort = function aborted() {
+          reject(new Error('File read aborted'));
+        };
+        try {
+          reader.readAsArrayBuffer(file);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }
+
+    /** Resolve the raw ZIP bytes for a local install without any text decoding. */
+    function readLocalZipBytes(body) {
+      const direct = body.bytes;
+      if (direct !== undefined && direct !== null) {
+        if (direct instanceof ArrayBuffer) return Promise.resolve(direct);
+        if (ArrayBuffer.isView(direct)) {
+          return Promise.resolve(direct.buffer.slice(direct.byteOffset, direct.byteOffset + direct.byteLength));
+        }
+        if (typeof direct.arrayBuffer === 'function') return Promise.resolve(direct.arrayBuffer());
+        return Promise.reject(asApiError(GM.INVALID_PARAM, 'Local package bytes must be an ArrayBuffer or Blob'));
+      }
+      return readFileBytes(body.file, { FileReader: body.FileReader });
+    }
+
+    /**
      * @param {{base?: string, fetchImpl?: Function, timeouts?: object}} [options]
      */
     function createMarketApi(options) {
@@ -3252,9 +3450,9 @@ window.__ModuleLoader__.load({
         const method = cfg.method || 'GET';
         const timeoutMs = typeof cfg.timeoutMs === 'number' ? cfg.timeoutMs : timeouts[name] || JSON_TIMEOUT_FALLBACK;
         const url = base + '/' + name + buildQuery(cfg.query);
-        const json = cfg.body !== undefined && cfg.contentType !== 'text/html; charset=utf-8';
-        const body = cfg.body === undefined ? undefined : json ? JSON.stringify(cfg.body) : cfg.body;
-        if (json && body !== undefined && new TextEncoder().encode(body).length > LIMITS.jsonBodyBytes) {
+        const jsonBody = cfg.body !== undefined && (cfg.contentType === undefined || cfg.contentType === 'application/json');
+        const body = cfg.body === undefined ? undefined : jsonBody ? JSON.stringify(cfg.body) : cfg.body;
+        if (jsonBody && body !== undefined && new TextEncoder().encode(body).length > LIMITS.jsonBodyBytes) {
           throw asApiError(GM.INVALID_PARAM, 'Request body is too large');
         }
         const headers = {};
@@ -3362,6 +3560,43 @@ window.__ModuleLoader__.load({
         },
         installLocal: function installLocal(input) {
           const body = input && typeof input === 'object' ? input : {};
+          const operationId = body.operationId || randomOperationId();
+          const detectedFormat = detectLocalInstallFormat({
+            fileName: body.fileName || (body.file && body.file.name) || '',
+            type: body.file && body.file.type,
+          });
+          const format =
+            body.format === 'asset-zip-v2' || body.format === 'html-v1'
+              ? body.format
+              : detectedFormat ||
+                (typeof body.text === 'string'
+                  ? 'html-v1'
+                  : body.bytes !== undefined && body.bytes !== null
+                    ? 'asset-zip-v2'
+                    : null);
+          if (format === null) {
+            return Promise.reject(asApiError(GM.UNSUPPORTED_MEDIA_TYPE, 'Unsupported local package type'));
+          }
+          if (format === 'asset-zip-v2') {
+            // Raw bytes only: text()/readAsText would UTF-8 decode and corrupt the
+            // archive (Codex CR7-03: a 2384 B ZIP became 2474 B).
+            return readLocalZipBytes(body).then(function postZip(bytes) {
+              if (!(bytes instanceof ArrayBuffer)) {
+                throw asApiError(GM.INVALID_PARAM, 'Local package bytes must be raw bytes');
+              }
+              if (bytes.byteLength > LIMITS.packageBytes) {
+                throw asApiError(GM.PACKAGE_TOO_LARGE, 'Local package is too large', { retryable: false });
+              }
+              return request('install-local', {
+                method: 'POST',
+                query: { operationId: operationId },
+                body: bytes,
+                contentType: 'application/zip',
+                timeoutMs: timeouts['install-local'],
+                signal: body.signal,
+              });
+            });
+          }
           const textPromise =
             typeof body.text === 'string'
               ? Promise.resolve(body.text)
@@ -3369,7 +3604,7 @@ window.__ModuleLoader__.load({
           return textPromise.then(function post(text) {
             return request('install-local', {
               method: 'POST',
-              query: { operationId: body.operationId || randomOperationId() },
+              query: { operationId: operationId },
               body: text,
               contentType: 'text/html; charset=utf-8',
               timeoutMs: timeouts['install-local'],
@@ -3415,7 +3650,7 @@ window.__ModuleLoader__.load({
       return buildQuery(query);
     }
 
-    return { V1_TIMEOUTS, readFileText, createMarketApi, buildRequestQuery };
+    return { V1_TIMEOUTS, readFileText, readFileBytes, createMarketApi, buildRequestQuery };
     })();
 
     // module: packages/client/src/api.js
@@ -5343,6 +5578,9 @@ window.__ModuleLoader__.load({
             call: function call(signal) {
               return api.installLocal({
                 file: request.file,
+                fileName: request.fileName,
+                format: request.format,
+                bytes: request.bytes,
                 text: request.text,
                 FileReader: request.FileReader,
                 operationId: operationId,
@@ -5437,6 +5675,7 @@ window.__ModuleLoader__.load({
     const isOfflineError = __mods["packages/client/src/errors-text.js"].isOfflineError;
     const getMarketApi = __mods["packages/client/src/api.js"].getMarketApi;
     const getInstallManager = __mods["packages/client/src/install-manager.js"].getInstallManager;
+    const detectLocalInstallFormat = __mods["packages/client/src/local-install.js"].detectLocalInstallFormat;
     const reportDiagnostic = __mods["packages/client/src/diagnostics.js"].reportDiagnostic;
     /**
      * Coordinated client actions (API + store + navigation-free).
@@ -5792,15 +6031,71 @@ window.__ModuleLoader__.load({
       return manager.cancel(gameId) === true;
     }
 
-    /** Local `.html` install after the explicit confirmation dialog. */
+    /**
+     * Build the install-local action payload from the confirmation dialog state.
+     * The dialog keeps the format decided at file-selection time; passing it on is
+     * what makes the real UI click path upload ZIP bytes with `application/zip`
+     * instead of falling back to the HTML text path (CR7-03 follow-up).
+     *
+     * @param {object} dialog store dialog state
+     * @returns {{file: object|null, fileName: string|null, format: string|null, bytes: unknown}}
+     */
+    function localInstallOptionsFromDialog(dialog) {
+      const source = dialog && typeof dialog === 'object' ? dialog : {};
+      return {
+        file: source.file || null,
+        fileName: typeof source.fileName === 'string' ? source.fileName : null,
+        format:
+          source.format === 'asset-zip-v2' || source.format === 'html-v1' ? source.format : null,
+        bytes: source.bytes,
+      };
+    }
+
+    /**
+     * Local package install (`html-v1` text or `asset-zip-v2` raw bytes) after the
+     * explicit confirmation dialog. Contract §1.8.
+     */
     async function installLocalGame(options) {
       const opts = options && typeof options === 'object' ? options : {};
       const target = opts.store;
       if (!target || !opts.file) return { ok: false, error: uiError(GM.UNSUPPORTED_MEDIA_TYPE) };
       const manager = opts.manager || getInstallManager();
       const api = opts.api || getMarketApi();
-      const fallbackName = typeof opts.fileName === 'string' && opts.fileName.length > 0 ? opts.fileName : 'game.html';
-      const result = await manager.installLocal({ file: opts.file, fileName: fallbackName });
+      const requestedName =
+        typeof opts.fileName === 'string' && opts.fileName.length > 0
+          ? opts.fileName
+          : opts.file && typeof opts.file.name === 'string' && opts.file.name.length > 0
+            ? opts.file.name
+            : '';
+      // Explicit format wins; otherwise recover it from the package file name so a
+      // `.dshgame.zip` never degrades to the html-v1 text path. `html-v1` is the
+      // last resort for legacy callers that only pass text.
+      const detectedFormat = detectLocalInstallFormat({
+        fileName: requestedName,
+        type: opts.file && opts.file.type,
+      });
+      const fileFormat =
+        opts.format === 'asset-zip-v2' || opts.format === 'html-v1'
+          ? opts.format
+          : detectedFormat ||
+            (typeof opts.text === 'string'
+              ? 'html-v1'
+              : opts.bytes !== undefined && opts.bytes !== null
+                ? 'asset-zip-v2'
+                : null);
+      if (fileFormat === null) return { ok: false, error: uiError(GM.UNSUPPORTED_MEDIA_TYPE) };
+      const fallbackName =
+        requestedName.length > 0
+          ? requestedName
+          : fileFormat === 'asset-zip-v2'
+            ? 'game.dshgame.zip'
+            : 'game.html';
+      const result = await manager.installLocal({
+        file: opts.file,
+        fileName: fallbackName,
+        format: fileFormat,
+        bytes: opts.bytes,
+      });
       if (result.ok) {
         const refreshed = await loadCatalog({ store: target, api: api, now: opts.now });
         const gameId = result.data && typeof result.data.gameId === 'string' ? result.data.gameId : null;
@@ -5924,7 +6219,7 @@ window.__ModuleLoader__.load({
       return page === PAGES.MARKET || page === PAGES.MY_GAMES;
     }
 
-    return { loadCatalog, refreshMarket, openDetail, loadDetail, closeDetail, applySearchQuery, pushToast, dismissToast, pushErrorToast, launchModeFor, beginGame, finishLeave, recordPausedGame, acknowledgeCompleted, invalidateMarket, gameNameFromState, startInstall, cancelInstall, installLocalGame, uninstallGame, refreshRegistryAction, applyRuntimeEvent, isPanelPage };
+    return { loadCatalog, refreshMarket, openDetail, loadDetail, closeDetail, applySearchQuery, pushToast, dismissToast, pushErrorToast, launchModeFor, beginGame, finishLeave, recordPausedGame, acknowledgeCompleted, invalidateMarket, gameNameFromState, startInstall, cancelInstall, localInstallOptionsFromDialog, installLocalGame, uninstallGame, refreshRegistryAction, applyRuntimeEvent, isPanelPage };
     })();
 
     // module: packages/client/src/icons.js
@@ -7349,6 +7644,31 @@ window.__ModuleLoader__.load({
     }
     .dgm-dialog-title { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
     .dgm-dialog-body { margin: 0; color: var(--dgm-fg-secondary); font-size: 13px; line-height: 1.55; }
+    .dgm-dialog-meta {
+      display: grid;
+      gap: 4px;
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: color-mix(in srgb, currentColor 6%, transparent);
+      font-size: 13px;
+    }
+
+    .dgm-dialog-meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .dgm-dialog-meta-row dt {
+      opacity: 0.7;
+    }
+
+    .dgm-dialog-meta-row dd {
+      margin: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
     .dgm-dialog-note { margin: 0; color: var(--dgm-fg-tertiary); font-size: 12px; }
     .dgm-dialog-warning { margin: 0; color: var(--dgm-danger); font-size: 12px; font-weight: 600; }
     .dgm-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
@@ -15628,6 +15948,39 @@ window.__ModuleLoader__.load({
           h('h2', { className: 'dgm-dialog-title', id: 'dgm-dialog-title' }, title),
           h('p', { className: 'dgm-dialog-body', id: 'dgm-dialog-body' }, body),
           noteKey ? h('p', { className: 'dgm-dialog-note' }, t(noteKey)) : null,
+          dialog.kind === 'install-local'
+            ? h(
+                'dl',
+                { className: 'dgm-dialog-meta' },
+                dialog.fileSizeLabel
+                  ? h(
+                      'div',
+                      { className: 'dgm-dialog-meta-row' },
+                      h('dt', null, t('dialog.installLocal.fileSize')),
+                      h('dd', null, dialog.fileSizeLabel)
+                    )
+                  : null,
+                dialog.formatLabel
+                  ? h(
+                      'div',
+                      { className: 'dgm-dialog-meta-row' },
+                      h('dt', null, t('dialog.installLocal.format')),
+                      h('dd', null, dialog.formatLabel)
+                    )
+                  : null
+              )
+            : null,
+          dialog.kind === 'install-local' && dialog.overwrite
+            ? h(
+                'p',
+                { className: 'dgm-dialog-note' },
+                t('dialog.installLocal.overwrite', {
+                  gameName: dialog.overwrite.gameName || dialog.overwrite.gameId || '',
+                  currentVersion: dialog.overwrite.currentVersion || '',
+                  version: dialog.overwrite.version || '',
+                })
+              )
+            : null,
           dialog.kind === 'install-local' ? h('p', { className: 'dgm-dialog-warning' }, t('market.localInstall.warning')) : null,
           showCheckbox
             ? h(
@@ -16243,6 +16596,7 @@ window.__ModuleLoader__.load({
     const launchModeFor = __mods["packages/client/src/actions.js"].launchModeFor;
     const loadCatalog = __mods["packages/client/src/actions.js"].loadCatalog;
     const loadDetail = __mods["packages/client/src/actions.js"].loadDetail;
+    const localInstallOptionsFromDialog = __mods["packages/client/src/actions.js"].localInstallOptionsFromDialog;
     const openDetail = __mods["packages/client/src/actions.js"].openDetail;
     const pushToast = __mods["packages/client/src/actions.js"].pushToast;
     const refreshRegistryAction = __mods["packages/client/src/actions.js"].refreshRegistryAction;
@@ -16252,6 +16606,10 @@ window.__ModuleLoader__.load({
     const getMarketApi = __mods["packages/client/src/api.js"].getMarketApi;
     const makeT = __mods["packages/client/src/locale.js"].makeT;
     const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
+    const formatBytes = __mods["packages/client/src/format.js"].formatBytes;
+    const LOCAL_INSTALL_ACCEPT = __mods["packages/client/src/local-install.js"].LOCAL_INSTALL_ACCEPT;
+    const findLocalOverwriteTarget = __mods["packages/client/src/local-install.js"].findLocalOverwriteTarget;
+    const validateLocalInstallSelection = __mods["packages/client/src/local-install.js"].validateLocalInstallSelection;
     const BackIcon = __mods["packages/client/src/icons.js"].BackIcon;
     const MoreIcon = __mods["packages/client/src/icons.js"].MoreIcon;
     const RefreshIcon = __mods["packages/client/src/icons.js"].RefreshIcon;
@@ -16279,7 +16637,6 @@ window.__ModuleLoader__.load({
     /** Game Market main panel: header, Market / My Games / Detail, and the Runtime switch. */
 
     const h = React.createElement;
-    const MAX_LOCAL_BYTES = 20 * 1024 * 1024;
 
     function pageScrollKey(page) {
       return page === PAGES.MY_GAMES ? 'my-games' : 'market';
@@ -16629,11 +16986,12 @@ window.__ModuleLoader__.load({
         if (!dialog) return;
         if (dialog.kind === 'install-local') {
           store.dispatch(dialogBusyChanged(true));
+          // `dialog.format` is decided at file-selection time; dropping it here made
+          // the real click path upload a ZIP as text/html (CR7-03 follow-up).
           await installLocalGame({
             store: store,
             api: api,
-            file: dialog.file,
-            fileName: dialog.fileName,
+            ...localInstallOptionsFromDialog(dialog),
           });
           store.dispatch(dialogBusyChanged(false));
           store.dispatch(dialogClosed());
@@ -16669,18 +17027,29 @@ window.__ModuleLoader__.load({
         if (!file) return;
         const name = typeof file.name === 'string' && file.name.length > 0 ? file.name : 'game.html';
         const type = typeof file.type === 'string' ? file.type : '';
-        if (!/\.html?$/i.test(name) && type !== 'text/html') {
-          pushToast(store, { kind: 'error', textKey: 'market.localInstall.unsupported' });
+        // .html (text/html) and .dshgame.zip (application/zip) are both accepted;
+        // the format is decided by file name/extension, never by sniffing content.
+        const selection = validateLocalInstallSelection({ fileName: name, type: type, size: file.size });
+        if (!selection.ok) {
+          pushToast(store, {
+            kind: 'error',
+            textKey: selection.reason === 'tooLarge' ? 'market.localInstall.tooLarge' : 'market.localInstall.unsupported',
+          });
           return;
         }
-        if (typeof file.size === 'number' && file.size > MAX_LOCAL_BYTES) {
-          pushToast(store, { kind: 'error', textKey: 'market.localInstall.tooLarge' });
-          return;
-        }
+        const overwrite = findLocalOverwriteTarget(state.market.games, name);
         store.dispatch(
           dialogOpened('install-local', null, {
             fileName: name,
             file: file,
+            fileSize: typeof file.size === 'number' ? file.size : null,
+            fileSizeLabel:
+              typeof file.size === 'number' && file.size > 0 ? formatBytes(file.size, locale) : null,
+            format: selection.format,
+            formatLabel: t(
+              selection.format === 'asset-zip-v2' ? 'dialog.installLocal.formatZip' : 'dialog.installLocal.formatHtml'
+            ),
+            overwrite: overwrite,
             returnFocus: { kind: 'local-install' },
           })
         );
@@ -16932,7 +17301,7 @@ window.__ModuleLoader__.load({
         h('input', {
           type: 'file',
           className: 'dgm-sr-only',
-          accept: '.html,text/html',
+          accept: LOCAL_INSTALL_ACCEPT,
           tabIndex: -1,
           ref: fileInputRef,
           onChange: handleFileSelected,

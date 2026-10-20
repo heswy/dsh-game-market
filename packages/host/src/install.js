@@ -51,6 +51,7 @@ import {
   extractPackageArchive,
   sealPackageDirectory,
   unsealPackageDirectory,
+  verifyPackageDirectory,
 } from './zip.js';
 
 const OPERATION_TTL_MS = 10 * 60 * 1000;
@@ -615,14 +616,50 @@ export function createInstallService({
    * Atomically promote an extracted tree to `packages/<id>/<version>/`
    * (§6.1 item 4: directory first, then the record). The tree is sealed
    * read-only afterwards (§6.1 item 1, best effort).
+   * (§6.1 item 4: directory first, then the record).
+   *
+   * CR7-02: a retained **previous** version directory (current + 1 rollback
+   * window) may be the exact package being installed again (rollback or an
+   * idempotent reinstall). In that case the directory is *reused* — never
+   * renamed over, re-extracted or re-sealed — but only after its measured
+   * content equals the freshly verified target:
+   *   - the descriptor must be valid and its `fileManifestDigest` must equal the
+   *     digest of the package we just extracted;
+   *   - every listed file is re-hashed (`verifyContents: true`), so a single
+   *     tampered resource byte is detected even though the manifest digest
+   *     itself would not change.
+   * Anything else (missing/corrupt/format-mismatched/hash-mismatched) remains a
+   * `GM-4094` conflict: same id+version may never silently change bytes.
    */
-  async function placePackageTree({ id, version, treePath, entry }) {
+  async function placePackageTree({ id, version, treePath, entry, fileManifestDigest }) {
     const idDirectory = storage.filePath(PACKAGES_DIR, id);
     const targetDirectory = path.join(idDirectory, version);
     if (await pathExists(targetDirectory)) {
-      throw hostError(GM.INSTALL_VERSION_CONFLICT, 'Installed version conflicts with this install', {
-        retryable: false,
+      const hasDescriptor = await pathExists(path.join(targetDirectory, DESCRIPTOR_FILE));
+      if (!hasDescriptor) {
+        // A directory without a descriptor is either html-v1 (format mismatch)
+        // or corrupt: neither may be reused as an `asset-zip-v2` version.
+        throw hostError(GM.INSTALL_VERSION_CONFLICT, 'Installed version has a different or invalid package format', {
+          retryable: false,
+        });
+      }
+      const verification = await verifyPackageDirectory({
+        directory: targetDirectory,
+        record: { fileManifestDigest, entry },
+        verifyContents: true,
       });
+      if (!verification.ok) {
+        throw hostError(GM.INSTALL_VERSION_CONFLICT, 'Installed version contents differ from this install', {
+          retryable: false,
+        });
+      }
+      return {
+        directory: targetDirectory,
+        entryPath: path.join(targetDirectory, entry),
+        created: false,
+        replaced: false,
+        reused: true,
+      };
     }
     try {
       await fs.mkdir(idDirectory, { recursive: true, mode: 0o755 });
@@ -640,6 +677,7 @@ export function createInstallService({
       entryPath: path.join(targetDirectory, entry),
       created: true,
       replaced: false,
+      reused: false,
     };
   }
 
@@ -647,6 +685,15 @@ export function createInstallService({
     const targetDirectory = storage.filePath(PACKAGES_DIR, id, version);
     const entryPath = path.join(targetDirectory, ENTRY_FILE);
     const directoryExisted = await pathExists(targetDirectory);
+    if (directoryExisted && (await pathExists(path.join(targetDirectory, DESCRIPTOR_FILE)))) {
+      // An `asset-zip-v2` tree cannot be reused as an html-v1 version (and the
+      // reverse is handled in placePackageTree). Format policy for a *recorded*
+      // version is enforced by assertFormatPolicy (GM-4282); a directory holding
+      // the other format is a conflict.
+      throw hostError(GM.INSTALL_VERSION_CONFLICT, 'Installed version has a different package format', {
+        retryable: false,
+      });
+    }
     if (await pathExists(entryPath)) {
       let stats;
       try {
@@ -657,9 +704,15 @@ export function createInstallService({
       if (!stats || stats.isSymbolicLink() || !stats.isFile()) {
         throw hostError(GM.STORE_PATH_ESCAPE, 'Package entry is not a regular file', { retryable: false });
       }
+      // CR7-02 boundary: the record's sha256 may be null (local html-v1
+      // installs keep a non-trust-anchor digest), so compare the bytes we hold
+      // against the bytes already on disk — always possible for html-v1.
       const existing = await hashFile(entryPath);
-      if (existing === sha256) return { entryPath, created: false, replaced: false };
-      throw hostError(GM.INSTALL_VERSION_CONFLICT, 'Installed version conflicts with this install', {
+      const sameSize = !Number.isFinite(sizeBytes) || stats.size === sizeBytes;
+      if (typeof sha256 === 'string' && existing === sha256 && sameSize) {
+        return { entryPath, created: false, replaced: false, reused: true };
+      }
+      throw hostError(GM.INSTALL_VERSION_CONFLICT, 'Installed version contents differ from this install', {
         retryable: false,
       });
     }
@@ -880,10 +933,16 @@ export function createInstallService({
     try {
       await installations.put(record);
     } catch (error) {
-      const cleanupDirectory =
-        placed?.directory || (placed?.entryPath ? path.dirname(placed.entryPath) : null);
-      if (cleanupDirectory) {
-        await moveVersionDirectoryToTrash(cleanupDirectory, id).catch(() => undefined);
+      // CR7-02: only a directory THIS attempt created may be cleaned up. A
+      // `reused` directory is an earlier install's retained rollback version —
+      // deleting it on a record-write failure would destroy user data (and the
+      // still-current record may point at it).
+      if (placed && placed.created === true && placed.reused !== true) {
+        const cleanupDirectory =
+          placed.directory || (placed.entryPath ? path.dirname(placed.entryPath) : null);
+        if (cleanupDirectory) {
+          await moveVersionDirectoryToTrash(cleanupDirectory, id).catch(() => undefined);
+        }
       }
       throw error;
     }
@@ -998,6 +1057,7 @@ export function createInstallService({
           version: targetVersion,
           treePath,
           entry: extraction.entry,
+          fileManifestDigest: extraction.fileManifestDigest,
         });
         return await finaliseInstall({
           jobId,
@@ -1220,6 +1280,7 @@ export function createInstallService({
         version,
         treePath,
         entry: extraction.entry,
+        fileManifestDigest: extraction.fileManifestDigest,
       });
       return await finaliseInstall({
         jobId,

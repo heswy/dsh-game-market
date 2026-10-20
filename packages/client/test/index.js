@@ -16,6 +16,7 @@ import './keyboard.test.js';
 import './debounce.test.js';
 import './errors-text.test.js';
 import './api-v1.test.js';
+import './local-install.test.js';
 import './install-manager.test.js';
 import './market-store.test.js';
 import './actions-v1.test.js';

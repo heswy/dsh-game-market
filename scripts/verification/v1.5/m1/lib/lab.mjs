@@ -111,6 +111,7 @@ export function createCdpCapture(cdp) {
     contexts: [],
     fetchBlocked: [],
     fetchContinued: [],
+    fileChoosers: [],
     gates: new Map(),
     defaultGate: null,
     pausedTargets: [],
@@ -181,6 +182,8 @@ export function createCdpCapture(cdp) {
           at: Date.now(),
           initiator: params.initiator && params.initiator.type,
           requestHeaders: (params.request && params.request.headers) || null,
+          postData: params.request && typeof params.request.postData === 'string' ? params.request.postData : null,
+          postDataEntries: (params.request && Array.isArray(params.request.postDataEntries)) ? params.request.postDataEntries : null,
         };
         state.network.set(`${sessionId}:${params.requestId}`, value);
         state.networkOrder.push(value);
@@ -261,6 +264,16 @@ export function createCdpCapture(cdp) {
           sessionId,
           at: Date.now(),
           text: String(((details.exception && details.exception.description) || details.text || '')).slice(0, 500),
+        });
+        return;
+      }
+      case 'Page.fileChooserOpened': {
+        state.fileChoosers.push({
+          sessionId,
+          at: Date.now(),
+          backendNodeId: params.backendNodeId,
+          mode: params.mode || null,
+          frameId: params.frameId || null,
         });
         return;
       }
@@ -409,6 +422,34 @@ export function createCdpCapture(cdp) {
     },
     networkFor(sessionId) {
       return state.networkOrder.filter((entry) => entry.sessionId === sessionId);
+    },
+    /** Response body for a captured request as text (JSON/text responses). */
+    async responseBody(entry) {
+      if (!entry || typeof entry.requestId !== 'string' || entry.failed === true) return null;
+      const result = await cdp
+        .send('Network.getResponseBody', { requestId: entry.requestId }, entry.sessionId || undefined)
+        .catch(() => null);
+      if (!result) return null;
+      if (result.base64Encoded === true) return null;
+      return typeof result.body === 'string' ? result.body : null;
+    },
+    /** Raw request body for a captured request (text bodies only; null otherwise). */
+    async requestPostData(entry) {
+      if (!entry || typeof entry.requestId !== 'string') return null;
+      const result = await cdp
+        .send('Network.getRequestPostData', { requestId: entry.requestId }, entry.sessionId || undefined)
+        .catch(() => null);
+      return result && typeof result.postData === 'string' ? result.postData : null;
+    },
+    /** Wait for the next native file-chooser event after a real click. */
+    async waitForFileChooser(sinceIndex = state.fileChoosers.length, timeoutMs = 8000) {
+      const deadline = Date.now() + timeoutMs;
+      while (Date.now() < deadline) {
+        const found = state.fileChoosers.slice(sinceIndex)[0];
+        if (found) return found;
+        await sleep(100);
+      }
+      return null;
     },
     logsFor(sessionId) {
       return state.logs.filter((entry) => entry.sessionId === sessionId);
@@ -648,7 +689,7 @@ export function createSinkOrigin({ port = 58332 } = {}) {
  * Boot an isolated `dsh web` host with this worktree's Host plugin injected.
  * Returns the host handle plus the DSH web origin; caller owns cleanup.
  */
-export async function startIsolatedHost({ name, ports }) {
+export async function startIsolatedHost({ name, ports, pluginRoot = REPO_ROOT }) {
   ensureRuntime();
   const home = await makeHome(name, { port: ports.bootstrap });
   if (!home.startsWith(WORK) || home.includes('/.dsh')) {
@@ -656,7 +697,7 @@ export async function startIsolatedHost({ name, ports }) {
   }
   const patchPath = injectProbeRow(home, {
     id: 'dsh-game-market',
-    entry: path.join(REPO_ROOT, 'index.js'),
+    entry: path.join(pluginRoot, 'index.js'),
     config: { devMode: true },
   });
   const host = await startHost(home, { port: ports.host, logName: `${name}-host` });
@@ -1138,6 +1179,143 @@ export async function buildGoodPackage({ gameId = 'm1-a02-multiresource', versio
     'data/level.json': LEVEL_JSON,
     'assets/ship.png': ASSET_SHIP_PNG(),
     'assets/pickup.wav': ASSET_PICKUP_WAV(),
+  });
+  return { ...built, manifest, gameId, version };
+}
+
+const CR7_INDEX_MAIN = String.raw`const state = (window.__M1B_INDEX__ = {
+  marker: 'index-marker',
+  title: document.title,
+  phase: 'boot',
+  fetched: null
+});
+
+function log(event, data) {
+  try { console.log('M1B ' + JSON.stringify(Object.assign({ event: event, at: Date.now() }, data || {}))); } catch (_error) { /* ignore */ }
+}
+
+log('index-running', { title: document.title, marker: state.marker, href: location.href });
+
+fetch('./data/x.json', { cache: 'no-store' })
+  .then(async (response) => {
+    const body = await response.json();
+    state.fetched = { status: response.status, body: body };
+    state.phase = 'fetched';
+    log('index-fetch', { status: response.status, id: body && body.id });
+  })
+  .catch((error) => {
+    state.fetched = { error: String(error && error.message || error) };
+    log('index-fetch-failed', { error: String(error && error.message || error) });
+  })
+  .finally(() => {
+    // Same-origin document navigation inside the game iframe: the wrapper's
+    // frame-src allows it (same resource origin), which is exactly why every
+    // package HTML document must carry the asset CSP itself.
+    setTimeout(() => {
+      log('index-navigating', { target: 'second.html' });
+      window.location.href = 'second.html';
+    }, 350);
+  });
+`;
+
+const CR7_SECOND_MAIN = String.raw`const SINK_ORIGIN = SINK_ORIGIN_PLACEHOLDER;
+const SINK_WS_ORIGIN = SINK_WS_ORIGIN_PLACEHOLDER;
+const state = (window.__M1B_SECOND__ = {
+  marker: 'second-marker',
+  title: document.title,
+  href: location.href,
+  origin: window.origin,
+  phase: 'running',
+  fetch: null,
+  image: null,
+  popup: null,
+  ws: null
+});
+
+function log(event, data) {
+  try { console.log('M1B ' + JSON.stringify(Object.assign({ event: event, at: Date.now() }, data || {}))); } catch (_error) { /* ignore */ }
+}
+
+log('second-running', { title: document.title, marker: state.marker, href: location.href, origin: window.origin });
+
+setTimeout(async () => {
+  try {
+    const response = await fetch(SINK_ORIGIN + '/cr7-01/fetch', { mode: 'cors', cache: 'no-store' });
+    state.fetch = { resolved: true, status: response.status };
+    log('second-fetch', { resolved: true, status: response.status });
+  } catch (error) {
+    state.fetch = { resolved: false, error: String(error && error.message || error) };
+    log('second-fetch', { resolved: false, error: String(error && error.message || error) });
+  }
+
+  const image = new Image();
+  state.image = { loaded: false };
+  image.onload = () => { state.image = { loaded: true, width: image.naturalWidth }; log('second-image', { loaded: true, width: image.naturalWidth }); };
+  image.onerror = () => { state.image = { loaded: false, error: true }; log('second-image', { loaded: false }); };
+  image.src = SINK_ORIGIN + '/cr7-01/image.png';
+
+  try {
+    // Static scan forbids the literal window.open call (§4.7 defence in depth),
+    // so build the reference dynamically; the sandbox (no allow-popups) is the
+    // boundary under test here.
+    const openFn = window['op' + 'en'];
+    const opened = typeof openFn === 'function' ? openFn.call(window, SINK_ORIGIN + '/cr7-01/popup', '_blank') : null;
+    state.popup = { opened: opened !== null };
+    log('second-popup', { opened: opened !== null });
+    if (opened) { try { opened.close(); } catch (_error) { /* ignore */ } }
+  } catch (error) {
+    state.popup = { opened: false, error: String(error && error.message || error) };
+    log('second-popup', { opened: false, error: String(error && error.message || error) });
+  }
+
+  try {
+    const socket = new WebSocket(SINK_WS_ORIGIN + '/cr7-01/ws');
+    let settled = false;
+    socket.onopen = () => { settled = true; state.ws = { opened: true }; log('second-ws', { opened: true }); };
+    socket.onerror = () => { if (!settled) { state.ws = { opened: false, error: true }; log('second-ws', { opened: false }); } };
+    setTimeout(() => { if (!settled) { state.ws = { opened: false, timeout: true }; log('second-ws', { opened: false, timeout: true }); } }, 1200);
+  } catch (error) {
+    state.ws = { opened: false, error: String(error && error.message || error) };
+    log('second-ws', { opened: false, error: String(error && error.message || error) });
+  }
+
+  setTimeout(() => {
+    state.phase = 'done';
+    log('second-attacks-complete', { phase: state.phase, fetch: state.fetch, image: state.image, popup: state.popup, ws: state.ws });
+  }, 1500);
+}, 100);
+`;
+
+/**
+ * CR7-01 fixture: an `asset-zip-v2` package whose entry document navigates
+ * itself to a same-origin `second.html` that then attempts external egress
+ * (fetch / Image / WebSocket / window.open). Used to prove every package HTML
+ * document carries the asset CSP, not just the entry.
+ */
+export function buildSameOriginHtmlPackage({ gameId = 'm1-cr7a-same-origin-html', version = '1.0.0', sinkOrigin, sinkWsOrigin }) {
+  const manifest = {
+    manifestVersion: 1,
+    id: gameId,
+    name: 'M1 Same-Origin HTML Probe',
+    version,
+    author: { name: 'dsh-game-market verification' },
+    description: 'CR7-01 probe: same-origin second document attempts external egress.',
+    categories: ['arcade'],
+    capabilities: [],
+    sdkVersion: '^1.0.0',
+    runtimeVersion: '^1.0.0',
+    save: { schemaVersion: 1 },
+  };
+  const built = buildPackageFiles({
+    'game.json': JSON.stringify(manifest, null, 2),
+    'index.html': '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>M1 Same-Origin HTML Probe</title></head>'
+      + '<body><div id="index-hud">index</div><script type="module" src="scripts/index.mjs"></script></body></html>\n',
+    'second.html': '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>M1 CR7 Second Document</title></head>'
+      + '<body><div id="second-hud">second</div><script type="module" src="scripts/second.mjs"></script></body></html>\n',
+    'scripts/index.mjs': CR7_INDEX_MAIN,
+    'scripts/second.mjs': CR7_SECOND_MAIN.replace('SINK_WS_ORIGIN_PLACEHOLDER', JSON.stringify(sinkWsOrigin)).replace('SINK_ORIGIN_PLACEHOLDER', JSON.stringify(sinkOrigin)),
+    'data/x.json': JSON.stringify({ id: 'cr7-01-x', ok: true }, null, 2),
+    'styles/game.css': 'html, body { margin: 0; background: rgb(9, 12, 18); color: rgb(235, 235, 235); }\n',
   });
   return { ...built, manifest, gameId, version };
 }

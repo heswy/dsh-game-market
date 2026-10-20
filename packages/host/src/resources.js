@@ -796,14 +796,26 @@ export function createResourceService({
       'content-type': file.mime,
       'access-control-allow-methods': 'GET, HEAD',
     };
-    if (isEntry) {
-      // CSP only on the entry document (§7.5); resource responses never repeat it.
+    // CR7-01: any package document can be *navigated to as a document* (a
+    // same-origin navigation inside the game iframe), not just the entry. A
+    // document without a policy can exfiltrate via subresources, and the
+    // wrapper's `frame-src` only constrains cross-origin navigation. HTML pages
+    // and SVG can both run script when loaded as a document, so `asset-zip-v2`
+    // sends the same asset CSP on `text/html` and `image/svg+xml` responses.
+    // Other subresources (`*.js`, `*.css`, `*.json`, images, audio, fonts) never
+    // repeat the CSP — they are not executable documents and stay nosniff/typed.
+    // `html-v1` keeps the V1 entry-only behaviour (it has exactly one file).
+    const isExecutableDocument = typeof file.mime === 'string'
+      && (file.mime.startsWith('text/html') || file.mime === 'image/svg+xml');
+    const sendsAssetCsp = instance.format === ASSET_ZIP_V2 && isExecutableDocument;
+    if (isEntry || sendsAssetCsp) {
       const entryAncestors = webOrigin !== null ? [webOrigin, requireOrigin()] : ancestors;
       headers['content-security-policy'] = instance.format === ASSET_ZIP_V2
         ? buildAssetContentSecurityPolicy({ resourceOrigin: requireOrigin(), frameAncestors: entryAncestors })
         : buildContentSecurityPolicy(requireOrigin(), { frameAncestors: ancestors });
-      headers['x-entry-sha256'] = file.sha256;
     }
+    // The entry hash header keeps its V1 semantics: entry document only.
+    if (isEntry) headers['x-entry-sha256'] = file.sha256;
     writeResponse(res, method, 200, headers, bytes);
     return undefined;
   }

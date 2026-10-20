@@ -118,6 +118,41 @@ async function readRecord(host, id = GAME_ID) {
   return file.games[id] || null;
 }
 
+/** Deterministic `asset-zip-v2` package for one game version (CR7-02 tests). */
+function zipPackageFor(version, { scriptContent } = {}) {
+  const files = defaultFiles();
+  files.set('game.json', Buffer.from(JSON.stringify(buildManifest({ id: GAME_ID, name: 'Orbit Courier', version }), null, 2)));
+  if (scriptContent !== undefined) files.set('scripts/main.js', Buffer.from(scriptContent));
+  return buildPackage(files);
+}
+
+/** Relative path -> sha256 for every file in a published version directory. */
+async function versionTreeHashes(host, version) {
+  const root = host.filePath('packages', GAME_ID, version);
+  const output = new Map();
+  async function walk(current, prefix) {
+    const entries = await fs.readdir(current, { withFileTypes: true });
+    for (const entry of entries) {
+      const relative = prefix === '' ? entry.name : `${prefix}/${entry.name}`;
+      const absolute = path.join(current, entry.name);
+      if (entry.isDirectory()) await walk(absolute, relative);
+      else output.set(relative, sha256Hex(await fs.readFile(absolute)));
+    }
+  }
+  await walk(root, '');
+  return output;
+}
+
+async function saveProgress(host, data) {
+  return host.data(ROUTES.SAVE, {
+    body: { gameId: GAME_ID, key: 'progress', data, operationId: nextOperation('save') },
+  });
+}
+
+async function readProgress(host) {
+  return host.data(ROUTES.SAVE, { query: { gameId: GAME_ID, include: 'data' } });
+}
+
 async function expectInstallRejected(host, request, expectedCode) {
   const { response, payload } = request;
   assert.equal(payload.ok, false);
@@ -565,5 +600,205 @@ export function register() {
     const control = await installLocalZip(host, buildPackage(defaultFiles()).zip);
     assert.equal(control.response.status, 200, JSON.stringify(control.payload.error));
     assert.equal(control.payload.data.installation.format, 'asset-zip-v2');
+  });
+
+  // -------------------------------------------------------------------------
+  // CR7-02: retained version directories are reusable for rollback
+  // -------------------------------------------------------------------------
+
+  test('CR7-02 rollback: a retained asset-zip-v2 directory is reused, bytes untouched', async (t) => {
+    const host = await createHostHarness(t, { config: offlineConfig() });
+    const v100 = zipPackageFor('1.0.0');
+    const v100Digest = fileManifestDigest(v100.descriptor.files, sha256Hex);
+
+    const first = await installLocalZip(host, v100.zip, { operationId: 'cr7-first' });
+    assert.equal(first.response.status, 200, JSON.stringify(first.payload.error));
+    const tree100 = await versionTreeHashes(host, '1.0.0');
+
+    // Save data must survive the whole update -> rollback cycle.
+    await saveProgress(host, { level: 3, score: 120 });
+    const saveBefore = await readProgress(host);
+    assert.deepEqual(saveBefore.values, { progress: { level: 3, score: 120 } });
+
+    // Upgrade to 1.1.0 (new version directory, 1.0.0 kept as previous).
+    const v110 = zipPackageFor('1.1.0', { scriptContent: "document.body.textContent = 'v110';\n" });
+    const upgrade = await installLocalZip(host, v110.zip, { operationId: 'cr7-upgrade' });
+    assert.equal(upgrade.response.status, 200, JSON.stringify(upgrade.payload.error));
+    const upgradedRecord = await readRecord(host);
+    assert.equal(upgradedRecord.version, '1.1.0');
+    assert.equal(upgradedRecord.previousVersion, '1.0.0');
+    assert.equal(upgradedRecord.previousFormat, 'asset-zip-v2');
+    assert.deepEqual(await versionTreeHashes(host, '1.0.0'), tree100, 'upgrade must not touch the retained 1.0.0 tree');
+
+    // Reinstall the ORIGINAL 1.0.0 package: this is the rollback Codex could not do.
+    const rollback = await installLocalZip(host, v100.zip, { operationId: 'cr7-rollback' });
+    assert.equal(rollback.response.status, 200, JSON.stringify(rollback.payload.error));
+    assert.equal(rollback.payload.data.changed, true);
+    assert.equal(rollback.payload.data.version, '1.0.0');
+    assert.equal(rollback.payload.data.sha256, sha256Hex(v100.zip));
+
+    const rolledBack = await readRecord(host);
+    assert.equal(rolledBack.version, '1.0.0');
+    assert.equal(rolledBack.format, 'asset-zip-v2');
+    assert.equal(rolledBack.previousVersion, '1.1.0', 'rollback must keep the replaced version for the next rollback');
+    assert.equal(rolledBack.previousFormat, 'asset-zip-v2');
+    assert.equal(rolledBack.sha256, sha256Hex(v100.zip));
+    assert.equal(rolledBack.fileManifestDigest, v100Digest);
+
+    // The retained directory is reused as-is: same files, same hashes, both
+    // version directories still present (current + 1 previous).
+    assert.deepEqual(await versionTreeHashes(host, '1.0.0'), tree100, 'rollback must not rewrite the reused tree');
+    assert.equal(await host.pathExists('packages/orbit-courier/1.1.0/dsh-package.json'), true);
+    assert.deepEqual(await host.listDataFiles('staging'), []);
+    assert.deepEqual((await readProgress(host)).values, saveBefore.values, 'save data must survive the rollback');
+
+    // Repeating the same rollback is an idempotent no-op.
+    const again = await installLocalZip(host, v100.zip, { operationId: 'cr7-rollback-again' });
+    assert.equal(again.response.status, 200, JSON.stringify(again.payload.error));
+    assert.equal(again.payload.data.changed, false);
+    assert.equal(again.payload.data.version, '1.0.0');
+  });
+
+  test('CR7-02 rollback: tampered retained directory or same-version bytes are still GM-4094', async (t) => {
+    // (a) The retained directory itself was tampered with (one byte changed in a
+    //     resource that the descriptor's file list still claims the old hash for).
+    const host = await createHostHarness(t, { config: offlineConfig() });
+    const v100 = zipPackageFor('1.0.0');
+    const first = await installLocalZip(host, v100.zip, { operationId: 'cr7t-first' });
+    assert.equal(first.response.status, 200, JSON.stringify(first.payload.error));
+    const v101 = zipPackageFor('1.0.1', { scriptContent: "document.body.textContent = 'v101';\n" });
+    const upgrade = await installLocalZip(host, v101.zip, { operationId: 'cr7t-upgrade' });
+    assert.equal(upgrade.response.status, 200, JSON.stringify(upgrade.payload.error));
+
+    const tamperedPath = host.filePath('packages', GAME_ID, '1.0.0', 'scripts/main.js');
+    await fs.chmod(tamperedPath, 0o644);
+    await fs.appendFile(tamperedPath, '\n// tampered\n');
+    const tamperedHash = sha256Hex(await fs.readFile(tamperedPath));
+
+    const tamperedRollback = await installLocalZip(host, v100.zip, { operationId: 'cr7t-tampered' });
+    assert.equal(tamperedRollback.payload.ok, false);
+    assert.equal(tamperedRollback.payload.error.code, GM.INSTALL_VERSION_CONFLICT);
+    assert.equal(tamperedRollback.response.status, httpStatusFor(GM.INSTALL_VERSION_CONFLICT));
+    assert.equal(await host.pathExists('packages/orbit-courier/1.0.0'), true, 'a rejected rollback must not delete the retained tree');
+    assert.equal(sha256Hex(await fs.readFile(tamperedPath)), tamperedHash, 'a rejected rollback must not rewrite the retained tree');
+    assert.equal((await readRecord(host)).version, '1.0.1');
+    assert.deepEqual(await host.listDataFiles('staging'), []);
+
+    // (b) Same id+version with different package bytes against a CLEAN retained
+    //     directory: must be rejected, clean directory preserved.
+    const host2 = await createHostHarness(t, { config: offlineConfig() });
+    const cleanRollback = await installLocalZip(host2, v100.zip, { operationId: 'cr7t2-first' });
+    assert.equal(cleanRollback.response.status, 200);
+    const cleanTree = await versionTreeHashes(host2, '1.0.0');
+    const next = zipPackageFor('1.0.1', { scriptContent: "document.body.textContent = 'v101b';\n" });
+    const upgrade2 = await installLocalZip(host2, next.zip, { operationId: 'cr7t2-upgrade' });
+    assert.equal(upgrade2.response.status, 200, JSON.stringify(upgrade2.payload.error));
+
+    const differentContent = zipPackageFor('1.0.0', { scriptContent: "document.body.textContent = 'not-the-original';\n" });
+    const rejected = await installLocalZip(host2, differentContent.zip, { operationId: 'cr7t2-different' });
+    assert.equal(rejected.payload.ok, false);
+    assert.equal(rejected.payload.error.code, GM.INSTALL_VERSION_CONFLICT);
+    assert.equal(rejected.response.status, 409);
+    assert.deepEqual(await versionTreeHashes(host2, '1.0.0'), cleanTree, 'rejected same-version install must not touch the directory');
+    assert.equal((await readRecord(host2)).version, '1.0.1');
+    assert.deepEqual(await host2.listDataFiles('staging'), []);
+
+    // (c) html-v1 same-version different bytes are rejected the same way.
+    const host3 = await createHostHarness(t, { config: offlineConfig() });
+    const html100 = htmlPackage({ version: '1.0.0' });
+    assert.equal((await installLocalHtml(host3, html100)).response.status, 200);
+    const html101 = htmlPackage({ version: '1.0.1' });
+    assert.equal((await installLocalHtml(host3, html101)).response.status, 200);
+    const htmlTree = await versionTreeHashes(host3, '1.0.0');
+    const differentHtml = Buffer.from(html100.toString('utf8').replace('<div id="app"></div>', '<div id="app">changed</div>'));
+    const htmlRejected = await installLocalHtml(host3, differentHtml);
+    assert.equal(htmlRejected.payload.ok, false);
+    assert.equal(htmlRejected.payload.error.code, GM.INSTALL_VERSION_CONFLICT);
+    assert.equal(htmlRejected.response.status, 409);
+    assert.deepEqual(await versionTreeHashes(host3, '1.0.0'), htmlTree);
+    assert.equal((await readRecord(host3)).version, '1.0.1');
+  });
+
+  test('CR7-02 rollback: local html-v1 with a null record sha256 still rolls back', async (t) => {
+    const host = await createHostHarness(t, { config: offlineConfig() });
+    const v100 = htmlPackage({ version: '1.0.0' });
+    const first = await installLocalHtml(host, v100);
+    assert.equal(first.response.status, 200, JSON.stringify(first.payload.error));
+    const firstRecord = await readRecord(host);
+    assert.equal(firstRecord.format, 'html-v1');
+    // Local html-v1 installs keep the V1 non-trust-anchor semantics.
+    assert.equal(firstRecord.sha256, null);
+    const tree100 = await versionTreeHashes(host, '1.0.0');
+
+    const v101 = htmlPackage({ version: '1.0.1' });
+    const upgrade = await installLocalHtml(host, v101);
+    assert.equal(upgrade.response.status, 200, JSON.stringify(upgrade.payload.error));
+    assert.equal((await readRecord(host)).version, '1.0.1');
+    assert.equal((await readRecord(host)).previousVersion, '1.0.0');
+
+    // Reuse decision is made from the bytes on disk vs the bytes in hand, not
+    // from the (null) recorded sha256.
+    const rollback = await installLocalHtml(host, v100);
+    assert.equal(rollback.response.status, 200, JSON.stringify(rollback.payload.error));
+    assert.equal(rollback.payload.data.changed, true);
+    assert.equal(rollback.payload.data.version, '1.0.0');
+    const record = await readRecord(host);
+    assert.equal(record.version, '1.0.0');
+    assert.equal(record.sha256, null);
+    assert.equal(record.previousVersion, '1.0.1');
+    assert.equal(record.previousFormat, 'html-v1');
+    assert.deepEqual(await versionTreeHashes(host, '1.0.0'), tree100);
+    assert.equal(sha256Hex(await fs.readFile(host.filePath('packages', GAME_ID, '1.0.0', 'entry.html'))), sha256Hex(v100));
+    assert.deepEqual(await host.listDataFiles('staging'), []);
+  });
+
+  test('CR7-02 failure: record-write failure keeps reused bytes and cleans only new directories', async (t) => {
+    // (a) A brand-new placement whose record write fails must be cleaned up: no
+    //     orphan version directory may be left behind.
+    const freshHost = await createHostHarness(t, { config: offlineConfig() });
+    const store = freshHost.host.installations;
+    const originalPut = store.put;
+    store.put = async () => {
+      throw new Error('injected record-write failure');
+    };
+    try {
+      const failed = await installLocalZip(freshHost, zipPackageFor('1.0.0').zip, { operationId: 'cr7f-new' });
+      assert.equal(failed.payload.ok, false);
+      assert.equal(failed.response.status, 500);
+      assert.equal(await freshHost.pathExists('packages/orbit-courier/1.0.0'), false, 'a failed new install must not leave a version directory');
+      assert.deepEqual(await freshHost.listDataFiles('staging'), []);
+    } finally {
+      store.put = originalPut;
+    }
+
+    // (b) A reused rollback directory belongs to an earlier install: a record
+    //     write failure must NOT move it to trash (data destruction).
+    const host = await createHostHarness(t, { config: offlineConfig() });
+    const v100 = zipPackageFor('1.0.0');
+    assert.equal((await installLocalZip(host, v100.zip)).response.status, 200);
+    const tree100 = await versionTreeHashes(host, '1.0.0');
+    const v101 = zipPackageFor('1.0.1', { scriptContent: "document.body.textContent = 'v101';\n" });
+    assert.equal((await installLocalZip(host, v101.zip)).response.status, 200);
+    const recordBefore = await readRecord(host);
+    assert.equal(recordBefore.version, '1.0.1');
+
+    const reuseStore = host.host.installations;
+    const originalReusePut = reuseStore.put;
+    reuseStore.put = async () => {
+      throw new Error('injected record-write failure');
+    };
+    try {
+      const failedRollback = await installLocalZip(host, v100.zip, { operationId: 'cr7f-reuse' });
+      assert.equal(failedRollback.payload.ok, false);
+      assert.equal(failedRollback.response.status, 500);
+      assert.equal(await host.pathExists('packages/orbit-courier/1.0.0'), true, 'reused rollback directory must survive a record-write failure');
+      assert.deepEqual(await versionTreeHashes(host, '1.0.0'), tree100, 'reused directory bytes must be untouched');
+      const recordAfter = await readRecord(host);
+      assert.equal(recordAfter.version, '1.0.1');
+      assert.equal(recordAfter.previousVersion, '1.0.0');
+      assert.deepEqual(await host.listDataFiles('staging'), []);
+    } finally {
+      reuseStore.put = originalReusePut;
+    }
   });
 }

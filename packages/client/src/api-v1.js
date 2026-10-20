@@ -9,6 +9,7 @@
 import { API_BASE, LIMITS } from '../../shared/src/constants.js';
 import { GameMarketApiError, randomOperationId } from '../../shared/src/api-client.js';
 import { GM } from '../../shared/src/errors.js';
+import { detectLocalInstallFormat } from './local-install.js';
 
 export const V1_TIMEOUTS = Object.freeze({
   health: 3000,
@@ -94,6 +95,72 @@ export function readFileText(file, options) {
 }
 
 /**
+ * Read a local file as raw bytes (`ArrayBuffer`) without any text codec.
+ * Uses `File.arrayBuffer()` when present and falls back to
+ * `FileReader.readAsArrayBuffer` (the browser path in DSH).
+ * @returns {Promise<ArrayBuffer>}
+ */
+export function readFileBytes(file, options) {
+  const opts = options && typeof options === 'object' ? options : {};
+  if (!file || typeof file !== 'object') {
+    return Promise.reject(new Error('No file selected'));
+  }
+  function normalizeBytes(value) {
+    if (value instanceof ArrayBuffer) return value;
+    if (ArrayBuffer.isView(value)) {
+      return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
+    }
+    throw new Error('File did not provide raw bytes');
+  }
+  if (typeof file.arrayBuffer === 'function') {
+    return Promise.resolve(file.arrayBuffer()).then(normalizeBytes);
+  }
+  const Reader = opts.FileReader || (typeof globalThis.FileReader === 'function' ? globalThis.FileReader : null);
+  if (!Reader) return Promise.reject(new Error('FileReader is unavailable'));
+  return new Promise(function read(resolve, reject) {
+    let reader = null;
+    try {
+      reader = new Reader();
+    } catch (error) {
+      reject(error);
+      return;
+    }
+    reader.onload = function loaded() {
+      try {
+        resolve(normalizeBytes(reader.result));
+      } catch (error) {
+        reject(error);
+      }
+    };
+    reader.onerror = function failed() {
+      reject(reader.error || new Error('Could not read the file'));
+    };
+    reader.onabort = function aborted() {
+      reject(new Error('File read aborted'));
+    };
+    try {
+      reader.readAsArrayBuffer(file);
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+/** Resolve the raw ZIP bytes for a local install without any text decoding. */
+function readLocalZipBytes(body) {
+  const direct = body.bytes;
+  if (direct !== undefined && direct !== null) {
+    if (direct instanceof ArrayBuffer) return Promise.resolve(direct);
+    if (ArrayBuffer.isView(direct)) {
+      return Promise.resolve(direct.buffer.slice(direct.byteOffset, direct.byteOffset + direct.byteLength));
+    }
+    if (typeof direct.arrayBuffer === 'function') return Promise.resolve(direct.arrayBuffer());
+    return Promise.reject(asApiError(GM.INVALID_PARAM, 'Local package bytes must be an ArrayBuffer or Blob'));
+  }
+  return readFileBytes(body.file, { FileReader: body.FileReader });
+}
+
+/**
  * @param {{base?: string, fetchImpl?: Function, timeouts?: object}} [options]
  */
 export function createMarketApi(options) {
@@ -108,9 +175,9 @@ export function createMarketApi(options) {
     const method = cfg.method || 'GET';
     const timeoutMs = typeof cfg.timeoutMs === 'number' ? cfg.timeoutMs : timeouts[name] || JSON_TIMEOUT_FALLBACK;
     const url = base + '/' + name + buildQuery(cfg.query);
-    const json = cfg.body !== undefined && cfg.contentType !== 'text/html; charset=utf-8';
-    const body = cfg.body === undefined ? undefined : json ? JSON.stringify(cfg.body) : cfg.body;
-    if (json && body !== undefined && new TextEncoder().encode(body).length > LIMITS.jsonBodyBytes) {
+    const jsonBody = cfg.body !== undefined && (cfg.contentType === undefined || cfg.contentType === 'application/json');
+    const body = cfg.body === undefined ? undefined : jsonBody ? JSON.stringify(cfg.body) : cfg.body;
+    if (jsonBody && body !== undefined && new TextEncoder().encode(body).length > LIMITS.jsonBodyBytes) {
       throw asApiError(GM.INVALID_PARAM, 'Request body is too large');
     }
     const headers = {};
@@ -218,6 +285,43 @@ export function createMarketApi(options) {
     },
     installLocal: function installLocal(input) {
       const body = input && typeof input === 'object' ? input : {};
+      const operationId = body.operationId || randomOperationId();
+      const detectedFormat = detectLocalInstallFormat({
+        fileName: body.fileName || (body.file && body.file.name) || '',
+        type: body.file && body.file.type,
+      });
+      const format =
+        body.format === 'asset-zip-v2' || body.format === 'html-v1'
+          ? body.format
+          : detectedFormat ||
+            (typeof body.text === 'string'
+              ? 'html-v1'
+              : body.bytes !== undefined && body.bytes !== null
+                ? 'asset-zip-v2'
+                : null);
+      if (format === null) {
+        return Promise.reject(asApiError(GM.UNSUPPORTED_MEDIA_TYPE, 'Unsupported local package type'));
+      }
+      if (format === 'asset-zip-v2') {
+        // Raw bytes only: text()/readAsText would UTF-8 decode and corrupt the
+        // archive (Codex CR7-03: a 2384 B ZIP became 2474 B).
+        return readLocalZipBytes(body).then(function postZip(bytes) {
+          if (!(bytes instanceof ArrayBuffer)) {
+            throw asApiError(GM.INVALID_PARAM, 'Local package bytes must be raw bytes');
+          }
+          if (bytes.byteLength > LIMITS.packageBytes) {
+            throw asApiError(GM.PACKAGE_TOO_LARGE, 'Local package is too large', { retryable: false });
+          }
+          return request('install-local', {
+            method: 'POST',
+            query: { operationId: operationId },
+            body: bytes,
+            contentType: 'application/zip',
+            timeoutMs: timeouts['install-local'],
+            signal: body.signal,
+          });
+        });
+      }
       const textPromise =
         typeof body.text === 'string'
           ? Promise.resolve(body.text)
@@ -225,7 +329,7 @@ export function createMarketApi(options) {
       return textPromise.then(function post(text) {
         return request('install-local', {
           method: 'POST',
-          query: { operationId: body.operationId || randomOperationId() },
+          query: { operationId: operationId },
           body: text,
           contentType: 'text/html; charset=utf-8',
           timeoutMs: timeouts['install-local'],

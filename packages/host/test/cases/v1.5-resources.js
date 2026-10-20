@@ -561,6 +561,125 @@ test('credentials are repeatable GET/HEAD for every manifest file, with exact MI
   }
 });
 
+test('asset-zip-v2 sends the same CSP on every package document (HTML + SVG), not just the entry (CR7-01)', async (t) => {
+  // A package with a second HTML page that can be navigated to from the entry.
+  // Same-origin navigation is allowed by the wrapper's frame-src, so the second
+  // page is a fresh document and must not be policy-free (CR7-01).
+  const files = {
+    ...zipGameFiles(),
+    'second.html':
+      '<!doctype html><html><head><meta charset="utf-8">' +
+      '<link rel="stylesheet" href="styles/game.css"></head>' +
+      '<body data-test-page="second"><script src="second.js"></script></body></html>',
+    'second.js': 'window.__SECOND__ = true;',
+    // SVG is executable when loaded as a document, so it is the other
+    // document-shaped asset that must carry the same policy (CR7-01 follow-up).
+    'second.svg':
+      '<svg xmlns="http://www.w3.org/2000/svg" width="2" height="2">' +
+      '<script>window.__SECOND_SVG__ = true;</script></svg>',
+  };
+  const stack = await createStack(t, { games: [{ record: zipRecord('demo', '1.0.0'), files }] });
+  const info = await stack.launch('demo');
+
+  // Positive control: the nested page really is served as an HTML document.
+  const second = await rawRequest(info.resourceOrigin, resourcePath(info, 'second.html'));
+  assert.equal(second.status, 200);
+  assert.equal(second.headers['content-type'], 'text/html; charset=utf-8');
+  const secondCsp = second.headers['content-security-policy'];
+  assert.ok(secondCsp, 'second.html must carry the asset CSP');
+
+  const entry = await rawRequest(info.resourceOrigin, resourcePath(info, 'index.html'));
+  const entryCsp = entry.headers['content-security-policy'];
+  assert.ok(entry.headers['x-entry-sha256'], 'the entry keeps the V1 entry hash header');
+  assert.equal(second.headers['x-entry-sha256'], undefined, 'x-entry-sha256 stays entry-only');
+  assert.equal(
+    secondCsp,
+    entryCsp,
+    'every package HTML document must get the exact same policy as the entry (except x-entry-sha256)'
+  );
+
+  // Directive-by-directive assertion on the non-entry document.
+  const directives = [
+    "default-src 'none'",
+    `script-src ${info.resourceOrigin}`,
+    `style-src ${info.resourceOrigin}`,
+    `img-src ${info.resourceOrigin} data:`,
+    `media-src ${info.resourceOrigin}`,
+    `font-src ${info.resourceOrigin}`,
+    `connect-src ${info.resourceOrigin}`,
+    "frame-src 'none'",
+    "child-src 'none'",
+    "worker-src 'none'",
+    "object-src 'none'",
+    "base-uri 'none'",
+    "form-action 'none'",
+    `frame-ancestors ${DSH_ORIGIN} ${info.resourceOrigin}`,
+  ];
+  for (const directive of directives) {
+    assert.ok(secondCsp.includes(directive), `second.html CSP must include "${directive}"; got: ${secondCsp}`);
+  }
+  assert.ok(!secondCsp.includes("'self'"), 'the document CSP must use the explicit resource origin');
+  assert.ok(!secondCsp.includes("'unsafe-inline'"), 'asset-zip-v2 must not allow inline script/style');
+  assert.ok(!secondCsp.includes('upgrade-insecure-requests'));
+
+  // Same-origin subresources referenced by the second page still load: the CSP
+  // authorizes the resource origin instead of killing in-package reads.
+  const secondScript = await rawRequest(info.resourceOrigin, resourcePath(info, 'second.js'));
+  assert.equal(secondScript.status, 200);
+  assert.equal(secondScript.headers['content-type'], 'text/javascript; charset=utf-8');
+  assert.equal(secondScript.headers['content-security-policy'], undefined, 'non-document resources never repeat the CSP');
+  assert.equal(new URL(`http://placeholder${resourcePath(info, 'second.js')}`).search, '');
+  const stylesheet = await rawRequest(info.resourceOrigin, resourcePath(info, 'styles/game.css'));
+  assert.equal(stylesheet.status, 200);
+  const levelJson = await rawRequest(info.resourceOrigin, resourcePath(info, 'levels/level-01.json'));
+  assert.equal(levelJson.status, 200, "same-origin fetch('./levels/…json') must stay readable");
+
+  // SVG is the other document-shaped asset: loaded directly it can run script,
+  // so it must carry the exact same asset CSP as the entry/HTML pages.
+  const secondSvg = await rawRequest(info.resourceOrigin, resourcePath(info, 'second.svg'));
+  assert.equal(secondSvg.status, 200);
+  assert.equal(secondSvg.headers['content-type'], 'image/svg+xml');
+  const secondSvgCsp = secondSvg.headers['content-security-policy'];
+  assert.ok(secondSvgCsp, 'second.svg must carry the asset CSP when requested as a document');
+  assert.equal(secondSvgCsp, entryCsp, 'SVG documents get the same policy as HTML documents');
+  assert.equal(secondSvg.headers['x-entry-sha256'], undefined);
+  for (const directive of directives) {
+    assert.ok(secondSvgCsp.includes(directive), `second.svg CSP must include "${directive}"; got: ${secondSvgCsp}`);
+  }
+  for (const forbidden of ["'self'", "'unsafe-inline'", 'upgrade-insecure-requests']) {
+    assert.ok(!secondSvgCsp.includes(forbidden), `second.svg CSP must not contain ${forbidden}`);
+  }
+
+  // Control: non-document static assets must NOT be over-hardened with a CSP.
+  assert.equal(secondScript.headers['content-security-policy'], undefined);
+  assert.equal(levelJson.headers['content-security-policy'], undefined, 'JSON/level data stays CSP-free');
+  assert.equal(stylesheet.headers['content-security-policy'], undefined, 'CSS stays CSP-free');
+  assert.equal(
+    (await rawRequest(info.resourceOrigin, resourcePath(info, 'assets/pixel.png'))).headers['content-security-policy'],
+    undefined,
+    'images stay CSP-free'
+  );
+
+  // The page is repeatable (no credential consumed by navigating documents).
+  assert.equal((await rawRequest(info.resourceOrigin, resourcePath(info, 'second.html'))).status, 200);
+
+  // Fallback path: without a known dshWebOrigin the same document policy uses
+  // the configured allowlist + resource origin (identical to the entry logic).
+  const fallback = await createStack(t, {
+    games: [{ record: zipRecord('demo', '1.0.0'), files }],
+    dshWebOrigin: null,
+    frameAncestors: ['http://127.0.0.1:19387'],
+  });
+  const fallbackInfo = await fallback.launch('demo');
+  const fallbackSecond = await rawRequest(fallbackInfo.resourceOrigin, resourcePath(fallbackInfo, 'second.html'));
+  assert.ok(
+    fallbackSecond.headers['content-security-policy'].includes(
+      `frame-ancestors http://127.0.0.1:19387 ${fallbackInfo.resourceOrigin}`
+    ),
+    'non-entry HTML must use the same frame-ancestors fallback as the entry'
+  );
+});
+
 test('credential lifecycle: renew extends TTL, release invalidates immediately, expiry returns 403', async (t) => {
   const stack = await createStack(t, { games: [{ record: zipRecord('demo', '1.0.0'), files: zipGameFiles() }] });
   const info = await stack.launch('demo');

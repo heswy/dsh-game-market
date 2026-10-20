@@ -99,7 +99,7 @@ function makeContext(overrides = {}) {
   const clock = createClock();
   const doc = createFakeDocument();
   const win = createFakeWindow(doc);
-  const container = createFakeElement('div');
+  const container = overrides.container || createFakeElement('div');
   const api = overrides.api || makeApi();
   const events = [];
   const controller = createGameRuntime({
@@ -425,6 +425,75 @@ test('a wrapper iframe load error surfaces a real error and never falls back', a
   // Still the wrapper URL; no direct game navigation happened.
   const src = frameSrc(iframe);
   assert.ok(src.startsWith(`${RESOURCE_ORIGIN}/wrapper?`));
+});
+
+test('an insertion-time initial load is ignored: no GM-5013, no release, nav still works', async function () {
+  // Chrome may dispatch a `load` for the iframe's initial empty document while
+  // the element is being inserted. In the M1 A02 browser probe that load was
+  // mistaken for an unexpected navigation, released the Host instance and then
+  // the real wrapper navigation got 403. The fix: the initial `src` is written
+  // before insertion and insertion-time loads are ignored.
+  const container = createFakeElement('div');
+  const originalAppend = container.appendChild.bind(container);
+  let insertionLoads = 0;
+  container.appendChild = function appendWithInitialLoad(child) {
+    const appended = originalAppend(child);
+    insertionLoads += 1;
+    child.dispatchEvent('load', {});
+    return appended;
+  };
+  const context = makeContext({ container });
+  const info = makeZipLaunchInfo();
+  await context.controller.launch(info);
+
+  assert.equal(insertionLoads, 1, 'the simulated insertion-time load fired');
+  assert.equal(context.events.filter((event) => event.type === 'error').length, 0, 'no GM-5013 on the initial load');
+  assert.equal(context.api.released.length, 0, 'the Host instance must not be released during insertion');
+  assert.equal(context.controller.getState().state, 'loading');
+
+  // The real wrapper navigation still completes normally.
+  const iframe = frameOf(context);
+  await handshakeWithLoad(context, iframe, info);
+  assert.equal(context.controller.getState().state, 'playing');
+  assert.equal(context.api.released.length, 0);
+});
+
+test('an about:blank load before any committed navigation is ignored', async function () {
+  const context = makeContext();
+  const info = makeZipLaunchInfo();
+  await context.controller.launch(info);
+  const iframe = frameOf(context);
+  const wrapperSrc = frameSrc(iframe);
+
+  iframe.setAttribute('src', 'about:blank');
+  iframe.dispatchEvent('load', {});
+  assert.equal(context.events.filter((event) => event.type === 'error').length, 0);
+  assert.equal(context.api.released.length, 0);
+  assert.equal(context.controller.getState().state, 'loading');
+
+  // Restore the wrapper target and finish the normal handshake.
+  iframe.setAttribute('src', wrapperSrc);
+  await handshakeWithLoad(context, iframe, info);
+  assert.equal(context.controller.getState().state, 'playing');
+});
+
+test('a real unexpected navigation after ready still revokes and releases', async function () {
+  const context = makeContext();
+  const info = makeZipLaunchInfo();
+  await context.controller.launch(info);
+  const iframe = frameOf(context);
+  await handshakeWithLoad(context, iframe, info);
+  assert.equal(context.controller.getState().state, 'playing');
+  assert.equal(context.api.released.length, 0);
+
+  // Something moved the wrapper frame to a foreign origin: this is a genuine
+  // non-ours navigation and MUST stay fail-closed.
+  iframe.setAttribute('src', 'https://evil.example/');
+  iframe.dispatchEvent('load', {});
+  assert.equal(context.controller.getState().state, 'error');
+  assert.ok(context.events.some((event) => event.type === 'error' && event.error.code === GM.IFRAME_CRASHED));
+  assert.equal(context.api.released.length, 1, 'revocation releases the Host instance');
+  assert.equal(context.container.children.length, 0, 'teardown removes the frame (no leak)');
 });
 
 test('legacy html-v1 LaunchInfo keeps the V1 direct entry navigation and init shape', async function () {

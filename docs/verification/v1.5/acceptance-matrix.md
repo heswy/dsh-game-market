@@ -137,13 +137,30 @@ PRD D-040 限定例外，只允许 `packages/host/src/zip.js` 引入；`scripts/
 | 历史不可变 / 格式策略 | automated | 同 id/version 字节不可变、版本回退拒绝、`html-v1→asset-zip-v2` 必须升版本（`GM-4281`/`GM-4282`），发布工具 dry-run 在**下载前**拒绝 | 通过 |
 | 完整 ZIP 发布链路（升级版本的 ZIP 提交） | — | `prepare.mjs` 的包内容校验仍只认 HTML 单文件；接 `zip.js` 属 M2 | **未完成（M2）** |
 
+## 7b. CR7 复核修正轮（基于固定 head `77c8d0a`）
+
+Codex 复核提出 3 项，均为「契约说了、实现没做到」的缺口（非契约被推翻）。逐项状态：
+
+| ID | 问题 | 级别 | 修复 | 证据 | 状态 |
+|---|---|---|---|---|---|
+| CR7-01 | 只有入口文档带 CSP；包内其他 HTML/SVG 作为**同源文档**被导航后无策略，可外发 | P1 | `asset-zip-v2` 对所有 `text/html` 与 `image/svg+xml` 响应发送与入口**完全相同**的 asset CSP；`.js/.css/.json/图片/音频/字体` 仍不带 CSP；`x-entry-sha256` 仅入口；`html-v1` 不变 | 修复前：`raw/m1/CR7-01-same-origin-html-prefix-*.json`（`secondCsp=null`，外部 sink **实际收到** HTTP 请求 + WS upgrade，8 项 required 失败）；修复后：`raw/m1/CR7-01-same-origin-html-*.json`（21/21，sink 零请求，`second.html` CSP 与入口逐指令一致，第二页真实运行） | **通过** |
+| CR7-02 | 保留的上一版 ZIP 目录无法回滚（重装旧版本 → 409 `GM-4094`） | P2 | `placePackageTree`/`placePackage` 按**实测内容**判定目录等价（zip 逐文件 sha256 + `fileManifestDigest`；html 实测 `entry.html` sha256+size，不依赖可能为 null 的 `record.sha256`）；一致 → 复用目录（不重命名/不重解压/不重封存）；不一致仍 409；记录写失败**不得**删复用目录 | 回滚 1.0.0→1.1.0→1.0.0 = 200 `changed:true`/`previousVersion=1.1.0`、目录字节未改写、**save 前后一致**；目录篡改 / 同版本不同内容 = 409 且旧目录完好；注入 `installations.put` 失败 = 新装清理、复用目录完好；本地 html `sha256:null` 回滚成功 | **通过** |
+| CR7-03 | Market UI 本地 ZIP 安装未接通，且文本路径把 2384 B ZIP 变成 2474 B | P2 | 文件选择接受 `.dshgame.zip`（扩展名优先、MIME 兜底）、统一二次确认（文件名/大小/格式/覆盖版本）、**ArrayBuffer 原始字节 + `application/zip`** 上传、零文本编解码；`html-v1` 路径不变 | 客户端单测：2384 B 含高位字节样本 source/uploaded sha256 **逐字节相等**、`content-type: application/zip`、`body` 为 ArrayBuffer；`html` 对照仍 `text/html` 字符串零回归。**真实 Market UI 点击路径**（侧栏→上传游戏→真实 fileChooser→`DOM.setFileInputFiles`→二次确认→安装，全程 `probeInitiatedInstallApiCalls=0`）：`raw/m1/CR7-03-market-ui-local-zip-2026-10-20T05-28-04-816Z.json` **36/36**，`POST /install-local` 200 + `application/zip`，CDP `Network.postDataEntries` 原始 body **102 997 B / sha256 `c07a9f8c…` = 源**，`installation.format=asset-zip-v2`、`entry=index.html`、`fileCount=9`；HTML 对照 200 + `format=html-v1` 零回归。三态 A/B：修复前 15/36（无对话框无请求）、中间态 23/36（**415 且 body 膨胀为 106 118 B**）、修复后 36/36 | **通过** |
+
+CR7-01 的修复同时收紧了 §7.5 的一条边界：**「可文档化资源」不等于「所有资源」**——
+只对 `text/html` 与 `image/svg+xml` 发 CSP，其余静态子资源保持不带 CSP（避免过度修复掩盖真实边界）。
+
 ## 8. 已知项与未验证项（不写成通过）
 
 1. **`html-v1` 未 wrapper 化**：M1 只为 `asset-zip-v2` 引入 wrapper，`html-v1` 仍走 V1 `/entry` 直嵌，
    §7.5.1 的「包外导航阻断」对 `html-v1` **尚未生效**。属已知项；覆盖它需要 M2/M4 的兼容性决策。
-2. **`dshWebOrigin` 未从 DSH 接线**：wrapper/入口 CSP 的 `frame-ancestors` 走
-   `settings.security.frameAncestors` allowlist 回退（`'self' + http://127.0.0.1:* + http://localhost:*`，
-   覆盖当前 loopback GUI，但非精确 origin）。非 loopback DSH Web UI **未验证**。
+2. **`dshWebOrigin` 已接线（本项已关闭）**：`packages/host/src/plugin.js` 从 DSH
+   `webServer.getOrigin()` 读取精确页面 origin，并传入 `createHost({ http: { dshWebOrigin } })`；
+   wrapper 与入口文档的 `frame-ancestors` 实测为**精确 origin、不含 `*`**
+   （`raw/m1/M1-A02-multiresource-*.json` 的 `wrapper-csp-frame-ancestors-no-wildcard-at-all`）。
+   仅在**宿主没有 `webServer` 服务**（或尚未 `listen`）时回退
+   `settings.security.frameAncestors` allowlist（`'self' + http://127.0.0.1:* + http://localhost:*`）——
+   该回退路径**未在真实无 web 宿主上验证**（当前产品形态不涉及）。
 3. **非 Chromium 引擎**（WebKit/Firefox）的导航阻断与资源加载**未验证**（浏览器证据为 Chrome headless via CDP）。
 3b. **真实打包 Client UI 路径未驱动**：A02/A06 以生产 `packages/runtime/src`（真实 controller/bridge）+ 真实 SDK + 真实 DSH 页面为证据级别，未经打包后的 Market UI 点击路径；真实 Electron 桌面窗口亦未驱动。
 4. `@font-face` 经资源 origin 加载**未测**（服务端按 woff/woff2 魔数+MIME 提供）。

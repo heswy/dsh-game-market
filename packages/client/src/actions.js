@@ -12,6 +12,7 @@ import { normalizeUiError, uiError } from './ui-errors.js';
 import { errorTextKey, isOfflineError } from './errors-text.js';
 import { getMarketApi } from './api.js';
 import { getInstallManager } from './install-manager.js';
+import { detectLocalInstallFormat } from './local-install.js';
 import { reportDiagnostic } from './diagnostics.js';
 
 let toastCounter = 0;
@@ -361,15 +362,71 @@ export function cancelInstall(gameId, options) {
   return manager.cancel(gameId) === true;
 }
 
-/** Local `.html` install after the explicit confirmation dialog. */
+/**
+ * Build the install-local action payload from the confirmation dialog state.
+ * The dialog keeps the format decided at file-selection time; passing it on is
+ * what makes the real UI click path upload ZIP bytes with `application/zip`
+ * instead of falling back to the HTML text path (CR7-03 follow-up).
+ *
+ * @param {object} dialog store dialog state
+ * @returns {{file: object|null, fileName: string|null, format: string|null, bytes: unknown}}
+ */
+export function localInstallOptionsFromDialog(dialog) {
+  const source = dialog && typeof dialog === 'object' ? dialog : {};
+  return {
+    file: source.file || null,
+    fileName: typeof source.fileName === 'string' ? source.fileName : null,
+    format:
+      source.format === 'asset-zip-v2' || source.format === 'html-v1' ? source.format : null,
+    bytes: source.bytes,
+  };
+}
+
+/**
+ * Local package install (`html-v1` text or `asset-zip-v2` raw bytes) after the
+ * explicit confirmation dialog. Contract §1.8.
+ */
 export async function installLocalGame(options) {
   const opts = options && typeof options === 'object' ? options : {};
   const target = opts.store;
   if (!target || !opts.file) return { ok: false, error: uiError(GM.UNSUPPORTED_MEDIA_TYPE) };
   const manager = opts.manager || getInstallManager();
   const api = opts.api || getMarketApi();
-  const fallbackName = typeof opts.fileName === 'string' && opts.fileName.length > 0 ? opts.fileName : 'game.html';
-  const result = await manager.installLocal({ file: opts.file, fileName: fallbackName });
+  const requestedName =
+    typeof opts.fileName === 'string' && opts.fileName.length > 0
+      ? opts.fileName
+      : opts.file && typeof opts.file.name === 'string' && opts.file.name.length > 0
+        ? opts.file.name
+        : '';
+  // Explicit format wins; otherwise recover it from the package file name so a
+  // `.dshgame.zip` never degrades to the html-v1 text path. `html-v1` is the
+  // last resort for legacy callers that only pass text.
+  const detectedFormat = detectLocalInstallFormat({
+    fileName: requestedName,
+    type: opts.file && opts.file.type,
+  });
+  const fileFormat =
+    opts.format === 'asset-zip-v2' || opts.format === 'html-v1'
+      ? opts.format
+      : detectedFormat ||
+        (typeof opts.text === 'string'
+          ? 'html-v1'
+          : opts.bytes !== undefined && opts.bytes !== null
+            ? 'asset-zip-v2'
+            : null);
+  if (fileFormat === null) return { ok: false, error: uiError(GM.UNSUPPORTED_MEDIA_TYPE) };
+  const fallbackName =
+    requestedName.length > 0
+      ? requestedName
+      : fileFormat === 'asset-zip-v2'
+        ? 'game.dshgame.zip'
+        : 'game.html';
+  const result = await manager.installLocal({
+    file: opts.file,
+    fileName: fallbackName,
+    format: fileFormat,
+    bytes: opts.bytes,
+  });
   if (result.ok) {
     const refreshed = await loadCatalog({ store: target, api: api, now: opts.now });
     const gameId = result.data && typeof result.data.gameId === 'string' ? result.data.gameId : null;

@@ -1,5 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+import { createMarketApi } from '../src/api-v1.js';
+import { createInstallManager } from '../src/install-manager.js';
 import { createStore } from '../src/store.js';
 import { PAGES } from '../src/constants.js';
 import {
@@ -8,6 +14,7 @@ import {
   dismissToast,
   installLocalGame,
   loadCatalog,
+  localInstallOptionsFromDialog,
   loadDetail,
   openDetail,
   pushErrorToast,
@@ -351,6 +358,184 @@ test('local installs toast the game name and clear both job keys', async functio
   assert.deepEqual(store.getState().toasts[0].params, { gameName: 'Mine' });
   assert.equal(store.getState().installJobs['local:1'], undefined);
   assert.equal(store.getState().installJobs.mine, undefined);
+});
+
+test('local zip installs forward format and raw bytes to the manager', async function () {
+  const store = createStore();
+  let captured = null;
+  const manager = {
+    installLocal: async function installLocal(input) {
+      captured = input;
+      return { ok: false, error: { code: 'GM-5000', retryable: false } };
+    },
+  };
+  const bytes = new ArrayBuffer(6);
+  new Uint8Array(bytes).set([0x50, 0x4b, 0x03, 0x04, 0xff, 0x80]);
+  const result = await installLocalGame({
+    store: store,
+    api: fakeApi(),
+    manager: manager,
+    file: { name: 'orbit-courier-1.0.0.dshgame.zip', size: 6, type: 'application/zip' },
+    fileName: 'orbit-courier-1.0.0.dshgame.zip',
+    format: 'asset-zip-v2',
+    bytes: bytes,
+  });
+  assert.equal(result.ok, false);
+  assert.equal(captured.format, 'asset-zip-v2');
+  assert.equal(captured.bytes, bytes);
+  assert.equal(captured.fileName, 'orbit-courier-1.0.0.dshgame.zip');
+  assert.equal(store.getState().toasts[0].kind, 'error');
+});
+
+test('local html installs keep the default html-v1 format when none is given', async function () {
+  const store = createStore();
+  let captured = null;
+  const manager = {
+    installLocal: async function installLocal(input) {
+      captured = input;
+      return { ok: false, error: { code: 'GM-5000', retryable: false } };
+    },
+  };
+  await installLocalGame({
+    store: store,
+    api: fakeApi(),
+    manager: manager,
+    file: { name: 'mine.html', size: 10 },
+    fileName: 'mine.html',
+  });
+  assert.equal(captured.format, 'html-v1');
+  assert.equal(captured.fileName, 'mine.html');
+});
+
+test('the install-local confirmation passes the selected format to the manager', async function () {
+  const store = createStore();
+  let captured = null;
+  const manager = {
+    installLocal: async function installLocal(input) {
+      captured = input;
+      return { ok: false, error: { code: 'GM-5000', retryable: false } };
+    },
+  };
+  const bytes = new ArrayBuffer(6);
+  new Uint8Array(bytes).set([0x50, 0x4b, 0x03, 0x04, 0xff, 0x80]);
+  const file = { name: 'orbit-courier-1.0.0.dshgame.zip', size: 6, type: 'application/zip' };
+  // This is exactly what panel.js#confirmDialogAction feeds into the action.
+  const dialog = {
+    kind: 'install-local',
+    file: file,
+    fileName: 'orbit-courier-1.0.0.dshgame.zip',
+    format: 'asset-zip-v2',
+    bytes: bytes,
+  };
+  const dialogOptions = localInstallOptionsFromDialog(dialog);
+  assert.equal(dialogOptions.format, 'asset-zip-v2');
+  assert.equal(dialogOptions.file, file);
+  assert.equal(dialogOptions.fileName, 'orbit-courier-1.0.0.dshgame.zip');
+
+  await installLocalGame({ store: store, api: fakeApi(), manager: manager, ...dialogOptions });
+  assert.equal(captured.format, 'asset-zip-v2', 'ZIP must not degrade to the html-v1 text path');
+  assert.equal(captured.file, file);
+  assert.equal(captured.bytes, bytes);
+  assert.equal(captured.fileName, 'orbit-courier-1.0.0.dshgame.zip');
+});
+
+test('without an explicit format a .dshgame.zip name is detected as asset-zip-v2', async function () {
+  const store = createStore();
+  let captured = null;
+  const manager = {
+    installLocal: async function installLocal(input) {
+      captured = input;
+      return { ok: false, error: { code: 'GM-5000', retryable: false } };
+    },
+  };
+  const file = { name: 'orbit-courier-1.0.0.dshgame.zip', size: 6, type: '' };
+  await installLocalGame({ store: store, api: fakeApi(), manager: manager, file: file });
+  assert.equal(captured.format, 'asset-zip-v2');
+  assert.equal(captured.fileName, 'orbit-courier-1.0.0.dshgame.zip');
+});
+
+test('the Market panel confirm action uses the dialog format helper (source guard)', function () {
+  const panelPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'src', 'components', 'panel.js');
+  const source = fs.readFileSync(panelPath, 'utf8');
+  const installBlock = source.slice(source.indexOf('function confirmDialogAction'));
+  assert.match(
+    installBlock,
+    /installLocalGame\(\{[\s\S]*?localInstallOptionsFromDialog\(dialog\)[\s\S]*?\}\);/,
+    'panel must forward the dialog format payload into installLocalGame'
+  );
+  assert.equal(
+    /installLocalGame\(\{[\s\S]*?file: dialog\.file/.test(installBlock),
+    false,
+    'panel must not rebuild the install payload without the format'
+  );
+});
+
+test('dialog format travels through the real install manager to an application/zip upload', async function () {
+  // End-to-end (minus React): dialog payload -> installLocalGame -> real
+  // install-manager -> market API client -> fetch(init.body). This is the chain
+  // the real Market UI click uses, and the one that regressed in CR7-03.
+  const calls = [];
+  const fetchImpl = async function fetchImpl(url, init) {
+    calls.push({ url: url, init: init });
+    return {
+      status: 200,
+      json: async function json() {
+        return { ok: true, data: { gameId: 'orbit-courier', version: '1.0.0', source: 'local' } };
+      },
+    };
+  };
+  const marketApi = createMarketApi({ fetchImpl: fetchImpl });
+  const store = createStore();
+  const manager = createInstallManager({
+    store: store,
+    getApi: function getApi() {
+      return marketApi;
+    },
+    scheduler: { setTimeout: setTimeout, clearTimeout: clearTimeout },
+    stageHintMs: 5000,
+    retryDelays: [0, 0],
+  });
+
+  const size = 2384;
+  const bytes = new Uint8Array(size);
+  for (let index = 0; index < size; index += 1) bytes[index] = (index * 37 + 0x5a) & 0xff;
+  bytes.set([0x50, 0x4b, 0x03, 0x04], 0);
+  bytes.set([0xff, 0xfe, 0x80, 0xc3, 0x28, 0x00, 0xf0, 0x9f, 0x92, 0xa9], 32);
+  const source = bytes.buffer;
+  const sha = function sha(buffer) {
+    return createHash('sha256').update(Buffer.from(new Uint8Array(buffer))).digest('hex');
+  };
+
+  const file = {
+    name: 'orbit-courier-1.0.0.dshgame.zip',
+    type: 'application/zip',
+    size: source.byteLength,
+    arrayBuffer: async function arrayBuffer() {
+      return source;
+    },
+  };
+  // Exactly what the confirmation dialog stores and panel.js forwards.
+  const dialog = {
+    kind: 'install-local',
+    file: file,
+    fileName: file.name,
+    format: 'asset-zip-v2',
+    fileSize: source.byteLength,
+  };
+  const result = await installLocalGame({
+    store: store,
+    api: fakeApi(),
+    manager: manager,
+    ...localInstallOptionsFromDialog(dialog),
+  });
+  assert.equal(result.ok, true);
+  assert.equal(calls.length, 1);
+  const init = calls[0].init;
+  assert.equal(init.headers['content-type'], 'application/zip');
+  assert.ok(init.body instanceof ArrayBuffer);
+  assert.equal(init.body.byteLength, size);
+  assert.equal(sha(init.body), sha(source), 'uploaded bytes sha256 must equal the source file sha256');
+  assert.equal(typeof init.body, 'object');
 });
 
 test('local install failures surface the mapped GM message', async function () {
