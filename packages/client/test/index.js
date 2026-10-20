@@ -20,3 +20,8 @@ import './local-install.test.js';
 import './install-manager.test.js';
 import './market-store.test.js';
 import './actions-v1.test.js';
+import './update-state.test.js';
+import './update-api.test.js';
+import './update-identity.test.js';
+import './update-manager.test.js';
+import './update-copy.test.js';

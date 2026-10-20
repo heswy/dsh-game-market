@@ -1996,6 +1996,124 @@ export const CSS = `
   .dgm-card:focus-visible .dgm-card-cover,
   .dgm-preview-btn:hover { transform: none !important; }
 }
+
+/* ---------- V1.5 M3: version & updates ---------- */
+
+.dgm-update { border-top: 1px solid var(--dgm-border); padding-top: 26px; margin-top: 40px; }
+.dgm-update-note { margin: 0 0 16px; color: var(--dgm-fg-tertiary); font-size: 12px; max-width: 640px; }
+.dgm-update-identities { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.dgm-update-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border: 1px solid var(--dgm-border);
+  border-radius: var(--dgm-radius-md);
+  background: var(--dgm-surface);
+  min-width: 0;
+}
+.dgm-update-identity-label { color: var(--dgm-fg-tertiary); font-size: 11px; letter-spacing: 0.02em; }
+.dgm-update-identity-version { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.dgm-update-identity-commit { color: var(--dgm-fg-secondary); font-family: var(--dgm-mono); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dgm-update-identity-hint { color: var(--dgm-fg-tertiary); font-size: 11px; }
+.dgm-update-discovery {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--dgm-border);
+  border-radius: var(--dgm-radius-md);
+  background: var(--dgm-bg);
+}
+.dgm-update-discovery-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--dgm-fg-tertiary);
+}
+.dgm-update-discovery[data-tone="positive"] .dgm-update-discovery-dot { background: var(--dgm-success); }
+.dgm-update-discovery[data-tone="info"] .dgm-update-discovery-dot { background: var(--dgm-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--dgm-brand) 18%, transparent); }
+.dgm-update-discovery[data-tone="warn"] .dgm-update-discovery-dot { background: var(--dgm-danger); }
+.dgm-update-discovery-text { flex: 1 1 auto; min-width: 0; }
+.dgm-update-discovery-line { margin: 0; font-size: 13px; }
+.dgm-update-discovery-meta { margin: 3px 0 0; color: var(--dgm-fg-tertiary); font-size: 11px; }
+.dgm-update-refresh { flex: none; height: 26px; }
+.dgm-update-offer { margin-top: 12px; }
+.dgm-update-error {
+  margin: 12px 0 0;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--dgm-danger) 32%, transparent);
+  border-radius: var(--dgm-radius-sm);
+  background: color-mix(in srgb, var(--dgm-danger) 7%, transparent);
+  color: var(--dgm-danger);
+  font-size: 12px;
+}
+.dgm-update-blocked {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--dgm-fg) 12%, transparent);
+  border-radius: var(--dgm-radius-md);
+  background: color-mix(in srgb, var(--dgm-fg) 3%, transparent);
+}
+.dgm-update-blocked-title { margin: 0; font-size: 13px; font-weight: 600; }
+.dgm-update-blocked-body { margin: 4px 0 0; color: var(--dgm-fg-secondary); font-size: 12px; }
+.dgm-update-recovery { margin: 8px 0 0; color: var(--dgm-fg-tertiary); font-size: 11px; }
+.dgm-update-coordination { margin: 12px 0 0; color: var(--dgm-fg-secondary); font-size: 12px; }
+.dgm-update-coordination[data-status="failed"] { color: var(--dgm-danger); }
+.dgm-update-operation {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--dgm-border);
+  border-radius: var(--dgm-radius-md);
+  background: var(--dgm-bg);
+  animation: dgm-fade 140ms ease-out;
+}
+.dgm-update-operation[data-state="updated"] { border-color: color-mix(in srgb, var(--dgm-success) 38%, transparent); }
+.dgm-update-operation[data-state="failed"],
+.dgm-update-operation[data-state="verification-failed"],
+.dgm-update-operation[data-state="stale-runtime"] { border-color: color-mix(in srgb, var(--dgm-danger) 32%, transparent); }
+.dgm-update-operation-head { display: flex; align-items: center; gap: 9px; }
+.dgm-update-operation-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dgm-brand);
+  animation: dgm-pulse 1.6s ease-in-out infinite;
+}
+.dgm-update-operation-dot[data-state="updated"] { background: var(--dgm-success); animation: none; }
+.dgm-update-operation-dot[data-state="failed"],
+.dgm-update-operation-dot[data-state="verification-failed"],
+.dgm-update-operation-dot[data-state="stale-runtime"] { background: var(--dgm-danger); animation: none; }
+.dgm-update-operation-dot[data-state="cancelled"],
+.dgm-update-operation-dot[data-state="pending-restart"],
+.dgm-update-operation-dot[data-state="already-at-target"] { background: var(--dgm-fg-tertiary); animation: none; }
+.dgm-update-operation-title { margin: 0; font-size: 14px; font-weight: 600; }
+.dgm-update-operation-body { margin: 6px 0 0; color: var(--dgm-fg-secondary); font-size: 12px; }
+.dgm-update-operation-code { margin: 6px 0 0; color: var(--dgm-fg-tertiary); font-family: var(--dgm-mono); font-size: 11px; }
+.dgm-update-operation-actions { margin-top: 12px; display: flex; gap: 8px; }
+.dgm-update-stages { display: flex; gap: 14px; margin: 12px 0 0; padding: 0; list-style: none; flex-wrap: wrap; }
+.dgm-update-stage { display: inline-flex; align-items: center; gap: 6px; color: var(--dgm-fg-tertiary); font-size: 11px; }
+.dgm-update-stage-dot { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--dgm-fg) 22%, transparent); }
+.dgm-update-stage[data-status="done"] { color: var(--dgm-fg-secondary); }
+.dgm-update-stage[data-status="done"] .dgm-update-stage-dot { background: var(--dgm-success); }
+.dgm-update-stage[data-status="current"] { color: var(--dgm-fg); font-weight: 600; }
+.dgm-update-stage[data-status="current"] .dgm-update-stage-dot { background: var(--dgm-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--dgm-brand) 20%, transparent); }
+.dgm-update-footnote { margin: 12px 0 0; color: var(--dgm-fg-tertiary); font-size: 11px; }
+.dgm-update-banner .dgm-dot { background: var(--dgm-brand); }
+.dgm-update-dialog { width: min(440px, 100%); }
+.dgm-update-dialog-meta { margin: 2px 0 0; }
+.dgm-update-dialog-commit { font-family: var(--dgm-mono); font-size: 11px; word-break: break-all; text-align: right; }
+.dgm-update-dialog-warnings { margin: 2px 0 0; padding-left: 18px; color: var(--dgm-fg-secondary); font-size: 12px; }
+.dgm-update-dialog-warnings li + li { margin-top: 3px; }
+
+@container (max-width: 520px) {
+  .dgm-update-identities { grid-template-columns: minmax(0, 1fr); }
+  .dgm-update-discovery { flex-wrap: wrap; }
+}
 `;
 
 /** Inline style tag; removed with the component subtree. */

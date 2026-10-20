@@ -11,6 +11,7 @@ import { getApiClient } from '../api.js';
 import { MAIN_PANEL_KEY } from '../constants.js';
 import { isRuntimeLoadingState, isTerminalResourceError, shouldReloadRuntime, shouldReleaseRuntimeInstance, validateLaunchInfo } from '../runtime-utils.js';
 import { createRuntimeController, destroyRuntime, forwardAgentState, pauseRuntimeBounded, reloadRuntime, resumeRuntime } from '../runtime-adapter.js';
+import { registerRuntimeInstance } from '../runtime-registry.js';
 import { normalizeUiError, runtimeErrorBodyKey, runtimeErrorRetryable, runtimeErrorTitleKey, uiError } from '../ui-errors.js';
 import { derivePresenceState } from '../presence.js';
 import { makeT, detectLocale } from '../locale.js';
@@ -213,6 +214,7 @@ export function RuntimeView(props) {
     function bootRuntime() {
       let mounted = true;
       let controller = null;
+      let unregisterInstance = null;
       store.dispatch(surfaceChanged('runtime', true));
       setSlow(false);
       setResumeConfirmed(false);
@@ -305,6 +307,13 @@ export function RuntimeView(props) {
           destroyRuntime(controller);
           return;
         }
+        // V1.5 M3: publish this live controller so the update coordinator can
+        // pause+save the running game when the Host enters coordination.
+        unregisterInstance = registerRuntimeInstance({
+          instanceId: info.instanceId,
+          gameId: gameId,
+          controller: controller,
+        });
         forwardAgentState(controller, store.getState().agent);
         try {
           await controller.launch(info);
@@ -317,6 +326,10 @@ export function RuntimeView(props) {
 
       return function teardown() {
         mounted = false;
+        if (unregisterInstance !== null) {
+          unregisterInstance();
+          unregisterInstance = null;
+        }
         store.dispatch(surfaceChanged('runtime', false));
         const current = controller;
         controller = null;
