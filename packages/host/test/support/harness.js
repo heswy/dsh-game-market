@@ -269,6 +269,9 @@ export async function createHostHarness(
     hostEpoch,
     prepareDataRoot,
     useDefaultRegistry = false,
+    pluginManager = null,
+    pluginManagerResolver = null,
+    hmrResolver = null,
   } = {}
 ) {
   const directory = await fs.mkdtemp(path.join(tmpdir(), 'dsh-gm-host-v1-'));
@@ -297,6 +300,9 @@ export async function createHostHarness(
     http: httpOptions,
     ...(now ? { now } : {}),
     ...(hostEpoch ? { hostEpoch } : {}),
+    ...(pluginManager === null ? {} : { pluginManager }),
+    ...(pluginManagerResolver === null ? {} : { pluginManagerResolver }),
+    ...(hmrResolver === null ? {} : { hmrResolver }),
   });
   for (const route of host.routes) {
     fake.routes.set(route.path, {

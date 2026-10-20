@@ -151,11 +151,15 @@ export function discoverProfile({ env = process.env, settings = {}, bundleRoot =
     if (profilePatchMentions(profile.dir, bundleRoot)) {
       const spec = profile.dependencies[BUNDLE_ID] ?? null;
       const shape = profileDependencySpecShape(spec);
+      // A dev row means the profile loads the running checkout by `file:` URL;
+      // whether or not a package dependency is also declared, the running code
+      // is a development source and must never be silently migrated.
       return {
         dir: profile.dir,
         source: 'dev-row',
         dependencies: profile.dependencies,
-        devSource: shape === 'path' || shape === 'file' || true,
+        devSource: true,
+        specShapeHint: shape,
       };
     }
   }

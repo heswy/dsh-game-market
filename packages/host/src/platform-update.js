@@ -429,8 +429,14 @@ export function createPlatformUpdateService({
     autoCheck = runCheck().catch(() => undefined);
   }
 
+  /** Wait only for the cache load (never for the silent startup network check). */
+  async function whenReady() {
+    if (cacheReady === null) cacheReady = loadCache();
+    await cacheReady.catch(() => undefined);
+  }
+
   async function ready() {
-    if (cacheReady !== null) await cacheReady.catch(() => undefined);
+    await whenReady();
     if (autoCheck !== null) await autoCheck.catch(() => undefined);
   }
 
@@ -519,6 +525,7 @@ export function createPlatformUpdateService({
   return {
     start,
     ready,
+    whenReady,
     stop,
     refresh,
     inspect,

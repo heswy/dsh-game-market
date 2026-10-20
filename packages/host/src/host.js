@@ -26,6 +26,7 @@ import { createSavesService } from './saves.js';
 import { createScoresService } from './scores.js';
 import { createSessionsService } from './sessions.js';
 import { createStorage } from './storage.js';
+import { createPlatformUpdateAdapter } from './update-adapter.js';
 import { createUpdateOperationService } from './update-operations.js';
 import { createAgentAdapter } from './agent-adapter.js';
 
@@ -59,6 +60,7 @@ export function createHost({
   version = readBundleVersion(),
   http = {},
   pluginManager = null,
+  pluginManagerResolver = null,
   hmrResolver = null,
 } = {}) {
   const settings = normaliseConfig(config, env);
@@ -144,9 +146,21 @@ export function createHost({
     now,
   });
   const agent = createAgentAdapter({ hostEpoch, now, logger });
-  // V1.5 platform update adapter/operations are wired here; H1 ships the route
-  // surface with fail-closed capability while H2 fills the native adapter.
-  let adapter = null;
+  // V1.5 platform update adapter/operations. The native plugin manager is
+  // resolved LAZILY on every adapter call: DSH registers services
+  // asynchronously, so an activation-time `null` must not disable the feature
+  // forever (M0 measured exactly that race for the `hmr` service).
+  const resolvePluginManager =
+    typeof pluginManagerResolver === 'function' ? pluginManagerResolver : () => pluginManager;
+  const adapter = createPlatformUpdateAdapter({
+    pluginManagerResolver: resolvePluginManager,
+    hmrResolver,
+    identity,
+    hostEpoch,
+    logger,
+    now,
+    timing: settings.platformUpdate,
+  });
   let updates = null;
   const platformUpdate = createPlatformUpdateService({
     storage,
@@ -206,7 +220,13 @@ export function createHost({
     hostEpoch,
     logger,
     now,
-    timing: settings.platformUpdate,
+    // Test/probe-only timing seam; production uses the frozen contract timing.
+    timing: {
+      ...(settings.platformUpdate || {}),
+      ...(http.updateOperationTiming !== undefined && typeof http.updateOperationTiming === 'object'
+        ? http.updateOperationTiming
+        : {}),
+    },
   });
   services.updates = updates;
   const routes = createRouteTable({ services, devMode: settings.devMode });
@@ -217,6 +237,11 @@ export function createHost({
   // block activation or game/market routes (m3-decisions §3).
   const platformUpdateReady = platformUpdate.start().catch((error) => {
     logger?.warn?.('[game-market/host] platform-update-start-failed', `code=${error?.code || 'E_UNKNOWN'}`);
+  });
+  // Recovery of a persisted update record (HMR dispose / client refresh / RPC
+  // loss / process restart) is background work; it never blocks activation.
+  const updatesReady = updates.start().catch((error) => {
+    logger?.warn?.('[game-market/host] platform-update-recovery-start-failed', `code=${error?.code || 'E_UNKNOWN'}`);
   });
   return {
     settings,
@@ -255,5 +280,7 @@ export function createHost({
     },
     /** Settles discovery cache load / silent startup check (bounded by caller). */
     platformUpdateReady,
+    /** Settles persisted update-record recovery (bounded by caller). */
+    updatesReady,
   };
 }

@@ -263,13 +263,17 @@ export function apply(ctx, config) {
     // them. They are read here (the plugin's own context), not imported from a
     // private module. Production discovery uses the global `fetch`; the Host
     // transport seam exists only so tests/probes can inject a fixture.
-    const pluginManager = readOptionalService(ctx, 'pluginManager');
+    // Lazy resolvers: DSH registers services asynchronously (M0: `hmr` missing
+    // at t=0, present ≈0.5s later). Reading the manager once at activation would
+    // freeze a transient `null` and disable one-click update forever, so the
+    // adapter re-reads these on every call and fails closed until present.
+    const pluginManagerResolver = () => readOptionalService(ctx, 'pluginManager');
     const hmrResolver = () => readOptionalService(ctx, 'hmr');
     const fetchImpl = typeof globalThis.fetch === 'function' ? globalThis.fetch.bind(globalThis) : null;
     const host = createHost({
       config,
       logger,
-      pluginManager,
+      pluginManagerResolver,
       hmrResolver,
       http: {
         ...(dshWebOrigin === null ? {} : { dshWebOrigin }),

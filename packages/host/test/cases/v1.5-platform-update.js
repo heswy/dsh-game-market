@@ -20,8 +20,10 @@ import { GM } from '../../../shared/src/errors.js';
 import { PLATFORM_UPDATE_INDEX_URL } from '../../../shared/src/platform-update.js';
 import { readBundleVersion } from '../../src/config.js';
 import { createHost } from '../../src/host.js';
+import { discoverProfile } from '../../src/host-identity.js';
 import { deriveUpdateCapability } from '../../src/platform-update.js';
 import { createHarness, createHostHarness, FIXTURE_ROOT } from '../support/harness.js';
+import { createFakePluginManager } from '../support/platform-update-harness.js';
 import {
   COMMIT_A,
   COMMIT_B,
@@ -327,10 +329,12 @@ export function register() {
     const host = await createHarness(t);
     const targetId = 'tgt_0123456789abcdef';
 
+    // No validated discovery record yet: the id cannot match, so the adapter
+    // rejects it before any capability probe (GM-4090).
     const begin = await host.requestJson(ROUTES.PLATFORM_UPDATE_BEGIN, { body: { targetId } });
-    assert.equal(begin.response.status, 503);
+    assert.equal(begin.response.status, 409);
     assert.equal(begin.payload.ok, false);
-    assert.equal(begin.payload.error.code, GM.UPDATE_ADAPTER_UNAVAILABLE);
+    assert.equal(begin.payload.error.code, GM.UPDATE_TARGET_INVALID);
 
     const missingTargetId = await host.requestJson(ROUTES.PLATFORM_UPDATE_BEGIN, { body: {} });
     assert.equal(missingTargetId.response.status, 400);
@@ -343,18 +347,21 @@ export function register() {
     const observeUnknown = await host.requestJson(ROUTES.PLATFORM_UPDATE_OBSERVE, {
       query: { operationId: 'upd_0123456789abcdef' },
     });
-    assert.equal(observeUnknown.response.status, 503);
-    assert.equal(observeUnknown.payload.error.code, GM.UPDATE_ADAPTER_UNAVAILABLE);
+    assert.equal(observeUnknown.response.status, 400);
+    assert.equal(observeUnknown.payload.error.code, GM.INVALID_PARAM);
 
+    // Cancel/coordinate with no live operation answer "not-running"/"idle"
+    // instead of inventing an operation.
     const cancel = await host.requestJson(ROUTES.PLATFORM_UPDATE_CANCEL, {
       body: { operationId: 'upd_0123456789abcdef' },
     });
-    assert.equal(cancel.response.status, 503);
-
+    assert.equal(cancel.response.status, 200);
+    assert.equal(cancel.payload.data.status, 'not-running');
     const coordinate = await host.requestJson(ROUTES.PLATFORM_UPDATE_COORDINATE, {
       body: { windowId: 'w1', idle: true, instances: [] },
     });
-    assert.equal(coordinate.response.status, 503);
+    assert.equal(coordinate.response.status, 200);
+    assert.equal(coordinate.payload.data.accepted, false);
 
     const report = await host.requestJson(ROUTES.PLATFORM_UPDATE_CLIENT_REPORT, {
       body: {
@@ -380,6 +387,107 @@ export function register() {
     const getRefresh = await host.requestJson(ROUTES.PLATFORM_UPDATE_REFRESH);
     assert.equal(getRefresh.response.status, 400);
     assert.equal(getRefresh.payload.error.code, GM.UNKNOWN_METHOD);
+  });
+
+  test('begin fails closed with GM-5038 when a validated target exists but no plugin manager is reachable', async (t) => {
+    const host = await createHostHarness(t, {
+      prepareDataRoot: async (dataRoot) => {
+        await writeDiscoveryCache(dataRoot, makeCacheDocument());
+      },
+    });
+    const begin = await host.requestJson(ROUTES.PLATFORM_UPDATE_BEGIN, {
+      body: { targetId: makeCacheTarget().id },
+    });
+    assert.equal(begin.response.status, 503);
+    assert.equal(begin.payload.error.code, GM.UPDATE_ADAPTER_UNAVAILABLE);
+    const inspect = await host.data(ROUTES.PLATFORM_UPDATE);
+    assert.equal(inspect.target.version, '1.2.9');
+    assert.equal(inspect.capability.canBeginUpdate, false);
+    assert.equal(inspect.capability.reasonKey, 'update.reason.adapterUnavailable');
+  });
+
+  test('the plugin manager is re-resolved after activation (t0-missing → later present)', async (t) => {
+    const fake = createFakePluginManager({ hmr: { runExclusive: async (task) => task() } });
+    const managerRef = { current: null };
+    const host = await createHostHarness(t, {
+      config: { platformUpdate: { startupCheck: false } },
+      pluginManagerResolver: () => managerRef.current,
+      hmrResolver: () => fake.state.hmr,
+      prepareDataRoot: async (dataRoot) => {
+        await writeDiscoveryCache(dataRoot, makeCacheDocument());
+      },
+    });
+    const before = await host.data(ROUTES.PLATFORM_UPDATE);
+    assert.equal(before.capability.canBeginUpdate, false);
+    assert.equal(before.capability.reasonKey, 'update.reason.adapterUnavailable');
+    managerRef.current = fake.manager;
+    const after = await host.data(ROUTES.PLATFORM_UPDATE);
+    assert.equal(after.capability.hmr, 'present');
+    assert.equal(after.capability.canBeginUpdate, true);
+    assert.equal(after.capability.reasonKey, null);
+    assert.equal(after.installed.enabled, true);
+    assert.equal(after.installed.version, '1.2.0');
+  });
+
+  test('profile discovery handles multiple profiles and dev-row shadowing without guessing', async (t) => {
+    const directory = await fs.mkdtemp(path.join(tmpdir(), 'dsh-gm-profiles-'));
+    const home = path.join(directory, 'home');
+    const profilesRoot = path.join(home, 'profiles');
+    const writeProfileManifest = async (name, dependencies) => {
+      const dir = path.join(profilesRoot, name);
+      await fs.mkdir(dir, { recursive: true });
+      await fs.writeFile(
+        path.join(dir, 'package.json'),
+        JSON.stringify({ name: `profile-${name}`, dependencies }, null, 2)
+      );
+      return dir;
+    };
+    const bundleRoot = path.join(directory, 'running-bundle');
+    await fs.mkdir(bundleRoot, { recursive: true });
+    t.after(async () => {
+      await fs.rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 20 });
+    });
+    const spec = `github:heswy/dsh-game-market#${COMMIT_A}`;
+    const profileA = await writeProfileManifest('alpha', { 'dsh-game-market': spec });
+    const profileB = await writeProfileManifest('beta', { 'dsh-game-market': spec });
+
+    // Ambiguous: no profile's installed copy matches the running bundle.
+    const ambiguous = discoverProfile({ env: { DSH_HOME: home }, bundleRoot });
+    assert.equal(ambiguous.dir, null);
+    assert.equal(ambiguous.source, 'unknown');
+
+    // The profile that really carries the running bundle wins by realpath.
+    await fs.mkdir(path.join(profileB, 'node_modules'), { recursive: true });
+    await fs.symlink(bundleRoot, path.join(profileB, 'node_modules', 'dsh-game-market'), 'dir');
+    const installed = discoverProfile({ env: { DSH_HOME: home }, bundleRoot });
+    assert.equal(installed.dir, profileB);
+    assert.equal(installed.source, 'installed');
+    assert.equal(installed.devSource, false);
+
+    // Two profiles: a dev row that mentions the running checkout identifies the
+    // profile without pretending the installed package is the running code.
+    await fs.rm(path.join(profileB, 'node_modules'), { recursive: true, force: true });
+    await fs.writeFile(
+      path.join(profileA, 'cordis.patch.yml'),
+      `- insert:\n    - id: dsh-game-market\n      name: 'file://${bundleRoot}/index.js'\n`
+    );
+    const dev = discoverProfile({ env: { DSH_HOME: home }, bundleRoot });
+    assert.equal(dev.dir, profileA);
+    assert.equal(dev.source, 'dev-row');
+    assert.equal(dev.devSource, true);
+
+    // Single profile with a local dependency spec is a dev source too.
+    const soloHome = path.join(directory, 'solo-home');
+    const soloDir = path.join(soloHome, 'profiles', 'web');
+    await fs.mkdir(soloDir, { recursive: true });
+    await fs.writeFile(
+      path.join(soloDir, 'package.json'),
+      JSON.stringify({ name: 'profile-web', dependencies: { 'dsh-game-market': `link:${bundleRoot}` } }, null, 2)
+    );
+    const solo = discoverProfile({ env: { DSH_HOME: soloHome }, bundleRoot });
+    assert.equal(solo.dir, soloDir);
+    assert.equal(solo.source, 'single-profile');
+    assert.equal(solo.devSource, true);
   });
 
   test('derived capability matrix follows the frozen HMR/dev/anomaly rules', () => {
