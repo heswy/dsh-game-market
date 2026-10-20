@@ -1,0 +1,459 @@
+{
+  "id": "M2-visual-responsive",
+  "title": "M2 visual: builtin orbit-courier at 375px / dark / prefers-reduced-motion",
+  "generatedAt": "2026-10-20T07:34:15.454Z",
+  "command": "node scripts/verification/v1.5/m2/m2-visual-responsive.mjs",
+  "environment": {
+    "dsh": {
+      "dshPackage": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.2"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.2"
+      },
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.2"
+      },
+      "asarExtractedAt": "2026-10-20T02:55:54.473Z"
+    },
+    "chrome": "headless CDP",
+    "gameId": "orbit-courier",
+    "ports": {
+      "bootstrap": 58440,
+      "host": 58441,
+      "chrome": 9524
+    }
+  },
+  "commands": [],
+  "startedAt": "2026-10-20T07:34:15.454Z",
+  "finishedAt": "2026-10-20T07:34:15.454Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "dsh-page-loads-and-host-api-answers",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "health": {
+          "status": 200
+        }
+      }
+    },
+    {
+      "name": "orbit-courier-launches-from-my-games-row",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "play": {
+          "label": "row-play:orbit-courier",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "开始",
+            "className": "dgm-btn dgm-row-play",
+            "rect": {
+              "x": 1214,
+              "y": 233,
+              "width": 92,
+              "height": 40
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 1214,
+            "y": 233,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "runtime": {
+          "state": "launching",
+          "stage": true,
+          "savePill": null,
+          "controls": [
+            {
+              "label": "返回市场",
+              "disabled": false
+            },
+            {
+              "label": "暂停菜单",
+              "disabled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "orbit-courier-instance-booted",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "phase": "ready",
+        "score": 0
+      }
+    },
+    {
+      "name": "game-document-is-opaque-origin",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "origin": "null"
+      }
+    },
+    {
+      "name": "page-viewport-is-375x667",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "width": 375,
+        "height": 667,
+        "scrollWidth": 375
+      }
+    },
+    {
+      "name": "game-viewport-fits-inside-375px-stage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "width": 319,
+        "height": 667
+      }
+    },
+    {
+      "name": "375px-layout-has-no-horizontal-overflow",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "horizontalOverflow": 0,
+        "scrollWidthNote": 0
+      }
+    },
+    {
+      "name": "375px-compact-hud-layout-active",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "compactHud": true
+      }
+    },
+    {
+      "name": "375px-key-chrome-inside-viewport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "rects": {
+          "hud": {
+            "x": 0,
+            "y": 120,
+            "width": 319,
+            "height": 107
+          },
+          "stage": {
+            "x": 0,
+            "y": 50,
+            "width": 319,
+            "height": 567
+          },
+          "controls": {
+            "x": 223,
+            "y": 120,
+            "width": 86,
+            "height": 40
+          },
+          "app": {
+            "x": 0,
+            "y": 0,
+            "width": 319,
+            "height": 667
+          }
+        },
+        "inside": {
+          "hud": true,
+          "stage": true,
+          "controls": true
+        },
+        "viewport": {
+          "width": 319,
+          "height": 667
+        }
+      }
+    },
+    {
+      "name": "dark-scheme-active",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "darkScheme": true,
+        "bodyBackground": "rgb(4, 6, 15)"
+      }
+    },
+    {
+      "name": "dark-background-is-dark",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "bodyBackground": "rgb(4, 6, 15)",
+        "luminance": 0.002
+      }
+    },
+    {
+      "name": "dark-hud-text-readable-contrast",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "hudColor": "rgb(246, 241, 228)",
+        "bodyBackground": "rgb(4, 6, 15)",
+        "contrast": 17.94
+      }
+    },
+    {
+      "name": "reduced-motion-media-query-matches",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reducedMotion": true
+      }
+    },
+    {
+      "name": "reduced-motion-collapses-css-animation-and-transition",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reduceToast": "0s",
+        "reduceToastMaxSeconds": 0
+      }
+    },
+    {
+      "name": "no-preference-control-shows-media-diff",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reducedMotion": false
+      }
+    },
+    {
+      "name": "reduced-motion-differs-from-no-preference",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reduceTransition": "0s",
+        "noPreferenceTransition": "0.2s, 0.2s"
+      }
+    },
+    {
+      "name": "light-scheme-can-be-emulated-and-stays-laid-out",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "darkScheme": false,
+        "inside": {
+          "hud": true,
+          "stage": true,
+          "controls": true
+        }
+      }
+    },
+    {
+      "name": "zero-csp-violations-during-visual-run",
+      "ok": true,
+      "required": true,
+      "detail": []
+    }
+  ],
+  "scenario": {
+    "launch": {
+      "play": true,
+      "runtime": {
+        "state": "launching",
+        "stage": true,
+        "savePill": null,
+        "controls": [
+          {
+            "label": "返回市场",
+            "disabled": false
+          },
+          {
+            "label": "暂停菜单",
+            "disabled": true
+          }
+        ]
+      }
+    },
+    "layout375": {
+      "viewport": {
+        "width": 319,
+        "height": 667
+      },
+      "origin": "null",
+      "readyState": "complete",
+      "bodyBackground": "rgb(4, 6, 15)",
+      "bodyColor": "rgb(246, 241, 228)",
+      "bodyBgLuminance": 0.002,
+      "hudColor": "rgb(246, 241, 228)",
+      "hudContrast": 17.94,
+      "compactHud": true,
+      "reducedMotion": true,
+      "darkScheme": true,
+      "horizontalOverflow": 0,
+      "verticalOverflow": 0,
+      "rects": {
+        "hud": {
+          "x": 0,
+          "y": 120,
+          "width": 319,
+          "height": 107
+        },
+        "stage": {
+          "x": 0,
+          "y": 50,
+          "width": 319,
+          "height": 567
+        },
+        "controls": {
+          "x": 223,
+          "y": 120,
+          "width": 86,
+          "height": 40
+        },
+        "app": {
+          "x": 0,
+          "y": 0,
+          "width": 319,
+          "height": 667
+        }
+      },
+      "inside": {
+        "hud": true,
+        "stage": true,
+        "controls": true
+      },
+      "animationCount": 0,
+      "toastTransition": "0s",
+      "actBannerAnimation": "0s",
+      "reducedMotionClass": true
+    },
+    "pageMetrics375": {
+      "width": 375,
+      "height": 667,
+      "scrollWidth": 375
+    },
+    "reducedMotionDurations": {
+      "reduceToast": "0s",
+      "reduceToastMaxSeconds": 0
+    },
+    "layoutNoPreference": {
+      "viewport": {
+        "width": 319,
+        "height": 667
+      },
+      "origin": "null",
+      "readyState": "complete",
+      "bodyBackground": "rgb(4, 6, 15)",
+      "bodyColor": "rgb(246, 241, 228)",
+      "bodyBgLuminance": 0.002,
+      "hudColor": "rgb(246, 241, 228)",
+      "hudContrast": 17.94,
+      "compactHud": true,
+      "reducedMotion": false,
+      "darkScheme": true,
+      "horizontalOverflow": 0,
+      "verticalOverflow": 0,
+      "rects": {
+        "hud": {
+          "x": 0,
+          "y": 120,
+          "width": 319,
+          "height": 107
+        },
+        "stage": {
+          "x": 0,
+          "y": 50,
+          "width": 319,
+          "height": 567
+        },
+        "controls": {
+          "x": 223,
+          "y": 120,
+          "width": 86,
+          "height": 40
+        },
+        "app": {
+          "x": 0,
+          "y": 0,
+          "width": 319,
+          "height": 667
+        }
+      },
+      "inside": {
+        "hud": true,
+        "stage": true,
+        "controls": true
+      },
+      "animationCount": 0,
+      "toastTransition": "0.2s, 0.2s",
+      "actBannerAnimation": "0s",
+      "reducedMotionClass": false
+    },
+    "layoutLight": {
+      "viewport": {
+        "width": 319,
+        "height": 667
+      },
+      "origin": "null",
+      "readyState": "complete",
+      "bodyBackground": "rgb(4, 6, 15)",
+      "bodyColor": "rgb(246, 241, 228)",
+      "bodyBgLuminance": 0.002,
+      "hudColor": "rgb(246, 241, 228)",
+      "hudContrast": 17.94,
+      "compactHud": true,
+      "reducedMotion": false,
+      "darkScheme": false,
+      "horizontalOverflow": 0,
+      "verticalOverflow": 0,
+      "rects": {
+        "hud": {
+          "x": 0,
+          "y": 120,
+          "width": 319,
+          "height": 107
+        },
+        "stage": {
+          "x": 0,
+          "y": 50,
+          "width": 319,
+          "height": 567
+        },
+        "controls": {
+          "x": 223,
+          "y": 120,
+          "width": 86,
+          "height": 40
+        },
+        "app": {
+          "x": 0,
+          "y": 0,
+          "width": 319,
+          "height": 667
+        }
+      },
+      "inside": {
+        "hud": true,
+        "stage": true,
+        "controls": true
+      },
+      "animationCount": 0,
+      "toastTransition": "0.2s, 0.2s",
+      "actBannerAnimation": "0s",
+      "reducedMotionClass": false
+    },
+    "screenshots": {
+      "mobile375DarkReduced": "docs/verification/v1.5/raw/m2/screenshots/m2-visual-375-dark-reduced.png",
+      "mobile375Light": "docs/verification/v1.5/raw/m2/screenshots/m2-visual-375-light.png"
+    },
+    "cspViolations": []
+  }
+}

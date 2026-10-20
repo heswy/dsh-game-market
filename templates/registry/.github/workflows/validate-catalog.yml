@@ -32,6 +32,15 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
+      - name: Install trusted toolchain dependencies
+        working-directory: .toolchain
+        # `asset-zip-v2` package validation reuses the Host ZIP reader
+        # (`packages/host/src/zip.js`, yauzl@3.4.0) from the locked platform
+        # commit. Repositories that only publish `html-v1` do not need it, but
+        # installing the locked closure keeps both generations validated with
+        # the same code path; `--ignore-scripts` matches the dependency policy.
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
       - name: Checkout trusted base revision
         if: github.event_name == 'pull_request'
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2

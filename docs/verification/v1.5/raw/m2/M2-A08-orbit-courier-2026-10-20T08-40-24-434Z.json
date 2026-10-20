@@ -1,0 +1,894 @@
+{
+  "id": "M2-A08-orbit-courier",
+  "title": "M2 A08: builtin orbit-courier played for real (~120 s run + >= 5 min active wall-clock play)",
+  "generatedAt": "2026-10-20T08:40:24.435Z",
+  "command": "node scripts/verification/v1.5/m2/m2-a08-orbit-courier.mjs",
+  "environment": {
+    "dsh": {
+      "dshPackage": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.2"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.2"
+      },
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.2"
+      },
+      "asarExtractedAt": "2026-10-20T02:55:54.473Z"
+    },
+    "chrome": "headless CDP",
+    "gameId": "orbit-courier",
+    "ports": {
+      "bootstrap": 58480,
+      "host": 58481,
+      "chrome": 9527
+    }
+  },
+  "commands": [],
+  "startedAt": "2026-10-20T08:40:24.434Z",
+  "finishedAt": "2026-10-20T08:40:24.435Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "dsh-page-loads-and-host-api-answers",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "orbit-courier-launches-from-my-games-row",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "play": true,
+        "runtime": {
+          "state": "launching",
+          "stage": true,
+          "savePill": null,
+          "controls": [
+            {
+              "label": "返回市场",
+              "disabled": false
+            },
+            {
+              "label": "暂停菜单",
+              "disabled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "orbit-probe-shell-ready-signal",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sessionId": "49CFAE8B234A2B7A1B206068FCF96CE7"
+      }
+    },
+    {
+      "name": "game-instance-boots",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "phase": "ready"
+      }
+    },
+    {
+      "name": "orbit-readonly-snapshot-hook-available",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "available": true,
+        "sample": {
+          "probeVersion": 1,
+          "at": 200.5,
+          "phase": "ready",
+          "endReason": null,
+          "levelId": "shift-01",
+          "elapsedMs": 0,
+          "timeLeftMs": 120000,
+          "durationMs": 120000,
+          "score": 0,
+          "finalScore": null,
+          "deliveries": 0,
+          "combo": 1,
+          "hull": 3,
+          "maxHull": 3,
+          "invulnerableMs": 0,
+          "lane": 1,
+          "laneCount": 3,
+          "stationAngle": -1.5707963267948966,
+          "ship": {
+            "lane": 1,
+            "angle": 1.5707963267948966,
+            "carrying": false
+          },
+          "cargo": [],
+          "asteroids": [],
+          "best": 0,
+          "audio": {
+            "muted": false,
+            "unlocked": false,
+            "supported": true
+          }
+        }
+      }
+    },
+    {
+      "name": "audio-locked-before-first-gesture",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "unlocked": false,
+        "supported": true,
+        "playResult": false
+      }
+    },
+    {
+      "name": "audio-silent-before-unlock",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "unlocked": false,
+        "supported": true,
+        "playResult": false
+      }
+    },
+    {
+      "name": "run-starts-after-real-keyboard-gesture",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "phase": "playing"
+      }
+    },
+    {
+      "name": "audio-unlocked-after-first-gesture",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "unlocked": true,
+        "playResult": true,
+        "muted": false
+      }
+    },
+    {
+      "name": "audio-playable-after-unlock",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "unlocked": true,
+        "playResult": true,
+        "muted": false
+      }
+    },
+    {
+      "name": "score-grows-during-real-play",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "score": 40,
+        "elapsedMs": 22128
+      }
+    },
+    {
+      "name": "space-pauses-the-real-run",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "pausedAt": 22160,
+        "afterSleep": 22160,
+        "phase": "paused"
+      }
+    },
+    {
+      "name": "clock-stops-while-paused",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "pausedAt": 22160,
+        "afterSleep": 22160,
+        "phase": "paused"
+      }
+    },
+    {
+      "name": "space-resumes-the-real-run",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "phase": "playing",
+        "elapsedMs": 22208
+      }
+    },
+    {
+      "name": "m-key-mutes-audio",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "unlocked": true,
+        "muted": true,
+        "supported": true
+      }
+    },
+    {
+      "name": "m-key-unmutes-audio",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "unlocked": true,
+        "muted": false,
+        "supported": true
+      }
+    },
+    {
+      "name": "mute-state-marked-for-persistence",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "muted": true
+      }
+    },
+    {
+      "name": "runtime-back-control-leaves-the-game",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "click": {
+          "label": "runtime-back",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "",
+            "className": "dgm-control-btn",
+            "rect": {
+              "x": 317,
+              "y": 33,
+              "width": 32,
+              "height": 32
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 317,
+            "y": 33,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "left": true
+      }
+    },
+    {
+      "name": "host-save-exists-after-real-exit",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exists": true,
+        "revision": 15,
+        "hasSave": true,
+        "savedAt": "2026-10-20T08:34:17.118Z",
+        "runPhase": "paused",
+        "runElapsedMs": 43120,
+        "runScore": 200,
+        "savedAtInRun": "2026-10-20T08:34:17.113Z"
+      }
+    },
+    {
+      "name": "continue-offered-after-exit",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "kind": "my-games-row",
+        "row": {
+          "id": "orbit-courier",
+          "playText": "继续",
+          "menu": true
+        }
+      }
+    },
+    {
+      "name": "continue-launch-shows-continue-action",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "overlay": {
+          "continueButton": true,
+          "overlayHidden": false
+        },
+        "snapshot": {
+          "phase": "ready",
+          "elapsedMs": 0,
+          "score": 0,
+          "best": 0
+        }
+      }
+    },
+    {
+      "name": "continue-frame-is-new-instance",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "play": true
+      }
+    },
+    {
+      "name": "continue-restores-elapsed-time-and-score",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "continue": {
+          "elapsedMs": 43200,
+          "score": 200,
+          "muted": true
+        },
+        "beforeExit": {
+          "phase": "playing",
+          "elapsedMs": 43120,
+          "score": 200,
+          "deliveries": 7
+        }
+      }
+    },
+    {
+      "name": "mute-persists-across-continue",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "muted": true
+      }
+    },
+    {
+      "name": "frame-rate-recorded-during-real-play",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "frames": 4577,
+        "ms": 76365,
+        "avg": 59.9
+      }
+    },
+    {
+      "name": "run-ends-naturally",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ended": {
+          "endReason": "shift-complete",
+          "elapsedMs": 120000,
+          "attempts": 1
+        },
+        "attempts": 1
+      }
+    },
+    {
+      "name": "run-really-lasted-about-120s-of-game-time",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "elapsedMs": 120000
+      }
+    },
+    {
+      "name": "run-score-positive",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "score": 280
+      }
+    },
+    {
+      "name": "run-had-real-deliveries",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "deliveries": 10
+      }
+    },
+    {
+      "name": "best-score-updated-after-run",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "gameBest": 400,
+        "hudBest": "400",
+        "score": 280
+      }
+    },
+    {
+      "name": "host-best-score-persisted",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "bestScore": 400
+      }
+    },
+    {
+      "name": "at-least-5-minutes-active-wall-clock-play",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "activePlayMs": 351934,
+        "minActiveMs": 300000,
+        "sessions": 5
+      }
+    },
+    {
+      "name": "wall-clock-is-real-not-accelerated",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "activePlayMs": 351934,
+        "wallMs": 419803
+      }
+    },
+    {
+      "name": "zero-csp-violations-during-real-play",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "no-direct-api-install-from-probe-or-score-forgery",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "note": "probe only clicked the real UI and dispatched real keyboard events; no Host write API was called directly"
+      }
+    }
+  ],
+  "scenario": {
+    "sessions": [
+      {
+        "phase": "segment1",
+        "activeMs": 21648,
+        "wallMs": 22025,
+        "fps": {
+          "frames": 1308,
+          "ms": 21939,
+          "avg": 59.6
+        },
+        "state": {
+          "phase": "playing",
+          "elapsedMs": 22128,
+          "score": 40,
+          "deliveries": 2
+        }
+      },
+      {
+        "phase": "segment2",
+        "activeMs": 19106,
+        "fps": {
+          "frames": 1184,
+          "ms": 19939,
+          "avg": 59.4
+        },
+        "state": {
+          "elapsedMs": 43088,
+          "score": 200,
+          "deliveries": 7,
+          "timeLeftMs": 76912
+        }
+      },
+      {
+        "phase": "finish-attempt-1",
+        "activeMs": 75357,
+        "fps": {
+          "frames": 4577,
+          "ms": 76365,
+          "avg": 59.9
+        },
+        "ended": {
+          "endReason": "shift-complete",
+          "elapsedMs": 120000,
+          "score": 280,
+          "deliveries": 10,
+          "best": 400
+        }
+      },
+      {
+        "phase": "extra-1",
+        "activeMs": 117898,
+        "fps": {
+          "frames": 6676,
+          "ms": 119938,
+          "avg": 55.7
+        },
+        "state": {
+          "phase": "ended",
+          "endReason": "shift-complete",
+          "elapsedMs": 120000,
+          "score": 590,
+          "deliveries": 16
+        }
+      },
+      {
+        "phase": "extra-2",
+        "activeMs": 117925,
+        "fps": {
+          "frames": 7057,
+          "ms": 119849,
+          "avg": 58.9
+        },
+        "state": {
+          "phase": "ended",
+          "endReason": "shift-complete",
+          "elapsedMs": 120000,
+          "score": 260,
+          "deliveries": 10
+        }
+      }
+    ],
+    "audio": {
+      "preGesture": {
+        "unlocked": false,
+        "supported": true,
+        "playResult": false
+      },
+      "afterGesture": {
+        "unlocked": true,
+        "playResult": true,
+        "muted": false
+      },
+      "mutedAfterToggle": {
+        "unlocked": true,
+        "muted": true,
+        "supported": true
+      }
+    },
+    "saves": {
+      "mutedBeforeExit": true,
+      "beforeExit": {
+        "phase": "playing",
+        "elapsedMs": 43120,
+        "score": 200,
+        "deliveries": 7
+      },
+      "pausedBeforeExit": true,
+      "hostSaveAfterExit": {
+        "exists": true,
+        "revision": 15,
+        "hasSave": true,
+        "savedAt": "2026-10-20T08:34:17.118Z",
+        "runPhase": "paused",
+        "runElapsedMs": 43120,
+        "runScore": 200,
+        "savedAtInRun": "2026-10-20T08:34:17.113Z"
+      },
+      "continueAffordance": {
+        "kind": "my-games-row",
+        "row": {
+          "id": "orbit-courier",
+          "playText": "继续",
+          "menu": true
+        }
+      },
+      "exit1": {
+        "continueOffered": true,
+        "lastState": null
+      },
+      "continueOverlay": {
+        "continueButton": true,
+        "overlayHidden": false
+      },
+      "continueSnapshotBeforeResume": {
+        "phase": "ready",
+        "elapsedMs": 0,
+        "score": 0,
+        "best": 0
+      },
+      "continuedPlaying": {
+        "phase": "playing",
+        "source": "orbit-probe-hook"
+      },
+      "continue": {
+        "elapsedMs": 43200,
+        "score": 200,
+        "muted": true
+      }
+    },
+    "fps": {
+      "frames": 4577,
+      "ms": 76365,
+      "avg": 59.9
+    },
+    "wallClock": {
+      "activePlayMs": 351934,
+      "startedAt": "2026-10-20T08:33:23.102Z",
+      "endedAt": "2026-10-20T08:40:22.905Z"
+    },
+    "storageRoot": "/tmp/dsh-v15/home-probe-m2-a08-mvgfeqhq/storages/dsh-game-market",
+    "orbitProbeHook": {
+      "available": true,
+      "sample": {
+        "probeVersion": 1,
+        "at": 200.5,
+        "phase": "ready",
+        "endReason": null,
+        "levelId": "shift-01",
+        "elapsedMs": 0,
+        "timeLeftMs": 120000,
+        "durationMs": 120000,
+        "score": 0,
+        "finalScore": null,
+        "deliveries": 0,
+        "combo": 1,
+        "hull": 3,
+        "maxHull": 3,
+        "invulnerableMs": 0,
+        "lane": 1,
+        "laneCount": 3,
+        "stationAngle": -1.5707963267948966,
+        "ship": {
+          "lane": 1,
+          "angle": 1.5707963267948966,
+          "carrying": false
+        },
+        "cargo": [],
+        "asteroids": [],
+        "best": 0,
+        "audio": {
+          "muted": false,
+          "unlocked": false,
+          "supported": true
+        }
+      }
+    },
+    "readStateSource": "orbit-probe-hook",
+    "focus": {
+      "gesture": "Input.dispatchKeyEvent on the game iframe session"
+    },
+    "snapshots": {
+      "playingStart": {
+        "source": "orbit-probe-hook",
+        "phase": "playing",
+        "endReason": null,
+        "elapsedMs": 112,
+        "timeLeftMs": 119888,
+        "score": 0,
+        "deliveries": 0,
+        "shield": 3,
+        "maxShield": 3,
+        "lane": 1,
+        "angle": 1.571,
+        "carrying": false,
+        "cargo": 0,
+        "asteroids": [
+          {
+            "lane": 1,
+            "angle": 1.825,
+            "dir": 1
+          }
+        ],
+        "best": 0,
+        "audio": {
+          "unlocked": true,
+          "muted": false,
+          "supported": true
+        },
+        "hud": {
+          "score": "0",
+          "best": "0",
+          "time": "2:00",
+          "act": "近地轨道"
+        }
+      },
+      "beforeExit": {
+        "source": "orbit-probe-hook",
+        "phase": "playing",
+        "endReason": null,
+        "elapsedMs": 43088,
+        "timeLeftMs": 76912,
+        "score": 200,
+        "deliveries": 7,
+        "shield": 3,
+        "maxShield": 3,
+        "lane": 1,
+        "angle": 4.805,
+        "carrying": false,
+        "cargo": 0,
+        "asteroids": [
+          {
+            "lane": 1,
+            "angle": 3.515,
+            "dir": 1
+          },
+          {
+            "lane": 0,
+            "angle": 3.108,
+            "dir": 1
+          }
+        ],
+        "best": 0,
+        "audio": {
+          "unlocked": true,
+          "muted": true,
+          "supported": true
+        },
+        "hud": {
+          "score": "200",
+          "best": "0",
+          "time": "1:17",
+          "act": "碎石带"
+        }
+      },
+      "afterContinueResume": {
+        "source": "orbit-probe-hook",
+        "phase": "playing",
+        "endReason": null,
+        "elapsedMs": 43200,
+        "timeLeftMs": 76800,
+        "score": 200,
+        "deliveries": 7,
+        "shield": 3,
+        "maxShield": 3,
+        "lane": 1,
+        "angle": 4.805,
+        "carrying": false,
+        "cargo": 0,
+        "asteroids": [
+          {
+            "lane": 0,
+            "angle": 4.095,
+            "dir": 1
+          },
+          {
+            "lane": 2,
+            "angle": 5.825,
+            "dir": 1
+          }
+        ],
+        "best": 0,
+        "audio": {
+          "unlocked": true,
+          "muted": true,
+          "supported": true
+        },
+        "hud": {
+          "score": "200",
+          "best": "0",
+          "time": "1:17",
+          "act": "碎石带"
+        }
+      },
+      "naturalRunEnded": {
+        "source": "orbit-probe-hook",
+        "phase": "ended",
+        "endReason": "shift-complete",
+        "elapsedMs": 120000,
+        "timeLeftMs": 0,
+        "score": 280,
+        "deliveries": 10,
+        "shield": 2,
+        "maxShield": 3,
+        "lane": 1,
+        "angle": 3.169,
+        "carrying": false,
+        "cargo": 3,
+        "asteroids": [
+          {
+            "lane": 0,
+            "angle": 3.08,
+            "dir": 1
+          },
+          {
+            "lane": 2,
+            "angle": 4.243,
+            "dir": 1
+          },
+          {
+            "lane": 2,
+            "angle": 4.503,
+            "dir": -1
+          },
+          {
+            "lane": 2,
+            "angle": 0.62,
+            "dir": 1
+          },
+          {
+            "lane": 1,
+            "angle": 5.998,
+            "dir": -1
+          }
+        ],
+        "best": 400,
+        "audio": {
+          "unlocked": true,
+          "muted": false,
+          "supported": true
+        },
+        "hud": {
+          "score": "400",
+          "best": "0",
+          "time": "0:00",
+          "act": "夜航深空"
+        }
+      },
+      "afterFiveMinutes": {
+        "source": "orbit-probe-hook",
+        "phase": "ended",
+        "endReason": "shift-complete",
+        "elapsedMs": 120000,
+        "timeLeftMs": 0,
+        "score": 260,
+        "deliveries": 10,
+        "shield": 1,
+        "maxShield": 3,
+        "lane": 0,
+        "angle": 4.598,
+        "carrying": false,
+        "cargo": 2,
+        "asteroids": [
+          {
+            "lane": 0,
+            "angle": 5.871,
+            "dir": -1
+          },
+          {
+            "lane": 1,
+            "angle": 3.675,
+            "dir": -1
+          },
+          {
+            "lane": 0,
+            "angle": 5.139,
+            "dir": -1
+          },
+          {
+            "lane": 2,
+            "angle": 5.697,
+            "dir": 1
+          },
+          {
+            "lane": 1,
+            "angle": 0.054,
+            "dir": -1
+          }
+        ],
+        "best": 400,
+        "audio": {
+          "unlocked": true,
+          "muted": false,
+          "supported": true
+        },
+        "hud": {
+          "score": "260",
+          "best": "400",
+          "time": "0:01",
+          "act": "夜航深空"
+        }
+      }
+    },
+    "pauseMethod": "keyboard-space",
+    "pause": {
+      "pausedAt": 22160,
+      "afterSleep": 22160,
+      "phase": "paused"
+    },
+    "steps": [
+      {
+        "step": "leave-1",
+        "clicked": true,
+        "left": true
+      }
+    ],
+    "finishAttempts": 1,
+    "best": {
+      "gameBest": 400,
+      "hudBest": "400",
+      "score": 280
+    },
+    "hostBest": {
+      "status": 200,
+      "bestScore": 400
+    },
+    "extraRuns": 2
+  }
+}

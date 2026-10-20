@@ -1,0 +1,10 @@
+
+> token-trail@1.0.0 build
+> node scripts/build.mjs
+
+built <work>/token-trail/dist (8 files, 124977 bytes)
+  format:   asset-zip-v2
+  entry:    index.html
+  digest:   aef54d0aea76fbf85d41369ac8c464ec6d75e6a1faeb52b8a69d7af17eee2442
+  manifest: token-trail@1.0.0
+EXIT:0

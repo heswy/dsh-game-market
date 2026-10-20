@@ -1,0 +1,30 @@
+### determinism build #1
+built <work>/token-trail/dist (12 files, 145718 bytes)
+  format:   asset-zip-v2
+  entry:    index.html
+  digest:   64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e
+  manifest: token-trail@1.0.0
+EXIT:0
+tree1=a9f71da40e53a43b89bfd93808b8d2882f4d0bcd9839de3aa9846add8d85253e
+### determinism build #2
+built <work>/token-trail/dist (12 files, 145718 bytes)
+  format:   asset-zip-v2
+  entry:    index.html
+  digest:   64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e
+  manifest: token-trail@1.0.0
+EXIT:0
+tree2=a9f71da40e53a43b89bfd93808b8d2882f4d0bcd9839de3aa9846add8d85253e
+BUILD_DETERMINISTIC=YES
+### pack #1
+sha256 0543f98935f48f2e06b2459a6ea9cd8e61ce706c06645d618220249f576611e4
+filesDigest 64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e
+bytes 147108
+zip1=0543f98935f48f2e06b2459a6ea9cd8e61ce706c06645d618220249f576611e4
+### pack #2
+sha256 0543f98935f48f2e06b2459a6ea9cd8e61ce706c06645d618220249f576611e4
+filesDigest 64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e
+bytes 147108
+zip2=0543f98935f48f2e06b2459a6ea9cd8e61ce706c06645d618220249f576611e4
+PACK_DETERMINISTIC=YES
+final sha256 file:
+0543f98935f48f2e06b2459a6ea9cd8e61ce706c06645d618220249f576611e4  token-trail-1.0.0.dshgame.zip

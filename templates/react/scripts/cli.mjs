@@ -1,9 +1,10 @@
 /**
  * Bridge between this project and the zero-dependency `dsh-game` CLI.
  *
- * The CLI path is recorded in `dsh-game.config.json` by `create-dsh-game`.
- * Override it with the `DSH_GAME_CLI` environment variable when the project is
- * moved to another machine, or when using a newer checkout.
+ * Resolution order: `DSH_GAME_CLI` env var → `cli` field in
+ * `dsh-game.config.json` → repository-template fallback. `create-dsh-game` does
+ * not record an absolute path (generated projects stay portable), so set
+ * `DSH_GAME_CLI` (or a relative `cli` in the config) when you move the project.
  */
 
 import { spawnSync } from 'node:child_process';

@@ -1,0 +1,40 @@
+### PD-6: developer-guide ZIP /game documentation
+39:node scripts/cli/create-dsh-game.mjs my-game --template vanilla --dir /tmp/games
+41:cd /tmp/games/my-game
+70:dist/registry-entry.json             可直接粘进 registry/games.json 的条目
+296:npm run dev -- --save-out /tmp/game.save.json   # 每次存档写一份 JSON（dev only）
+297:npm run dev -- --seed-save /tmp/game.save.json  # 从该 JSON 启动 fake storage（dev only）
+303:- **`html-v1`**：单层 iframe 加载 `dist/index.html`，可用 `curl http://127.0.0.1:4321/game` 取到构建产物；
+306:  包内文件通过 `/res/<instance>/<token>/<path>` 提供；该模式下 `/game` **故意返回 404**。
+327:9. **升级路径（1.0.0 → 1.0.1）**：在 1.0.0 上 `--save-out /tmp/game.save.json`、触发一次 before-save；
+328:   切到 1.0.1 后用 `--seed-save /tmp/game.save.json` 启动，验证 Continue/deserialize 与 schemaVersion 升级。
+358:`--registry-dir <dir>` 直接合并到本地 `registry/games.json`。
+376:2. 把 `dist/registry-entry.json` 合并进 `registry/games.json`（`registryVersion:1`），
+458:| `build` | `dist/index.html`（内联） | `dist/` 目录树 + `dist/dsh-package.json`（files[] 按 UTF-8 排序，size/sha256）+ `dist/game.json` |
+
+### New issue candidate: validate --json error code for missing deps
+node:internal/modules/cjs/loader:1459
+  throw err;
+  ^
+
+Error: Cannot find module '<work>/w/repo-nodeps/scripts/cli/dsh-game.mjs'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1456:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1066:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1071:22)
+    at Module._load (node:internal/modules/cjs/loader:1242:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v24.14.0
+EXIT:1
+
+### Skill text says: (grep from updated SKILL.md)
+29:   `E_ZIP_INVALID (GM-5000)` / a module-not-found error and ZIP `pack` exits 3.
+
+### Skill VERSION and mtime:
+1.1.0
+-rw-r--r--@ 1 orange  staff  28545 Oct 20 16:30 <repo>/skills/dsh-game-developer/SKILL.md

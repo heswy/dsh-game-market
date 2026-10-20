@@ -86,7 +86,11 @@ export async function main(argv = process.argv.slice(2)) {
       console.log(`  repo: ${result.repo}`);
       console.log(`  release tag: ${result.plan.tag}`);
       console.log(`  package asset: ${result.plan.assetPlan.packageName} (${result.plan.assetPlan.hashes.package})`);
-      console.log(`  format: ${result.plan.catalogEntry && result.plan.catalogEntry.schemaVersion === 2 ? 'asset-zip-v2-capable' : 'html-v1'} (catalog schemaVersion ${result.plan.catalogEntry ? result.plan.catalogEntry.schemaVersion : '?'})`);
+      console.log(`  package format: ${result.plan.package ? result.plan.package.format : 'html-v1'}`);
+      if (result.plan.package && result.plan.package.filesDigest) {
+        console.log(`  file manifest digest: ${result.plan.package.filesDigest} (${result.plan.package.fileCount} files)`);
+      }
+      console.log(`  catalog schemaVersion: ${result.plan.catalogEntry ? result.plan.catalogEntry.schemaVersion : '?'}`);
       console.log(`  assets: ${[result.plan.assetPlan.coverName, ...result.plan.assetPlan.screenshotNames].join(', ')}`);
       console.log(`  files: ${Object.values(result.plan.files).join(', ')}`);
       console.log('  next: re-run with --execute after reviewing this plan');

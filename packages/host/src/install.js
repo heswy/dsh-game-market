@@ -1457,6 +1457,74 @@ export function createInstallService({
     return result;
   }
 
+  /**
+   * Remove every on-disk package entry owned by one game: `packages/<gameId>/`
+   * may hold the current version, the retained previous version, and (after a
+   * crash or manual tampering) unexpected files/symlinks. All of them belong to
+   * this game and are moved to trash one by one.
+   *
+   * Safety (§6.4): paths are re-derived through `storage.filePath` so every
+   * entry is containment-checked beneath `packages/<gameId>/`; symlink entries
+   * are renamed as links only — their targets are never followed or deleted;
+   * other game ids are never enumerated. Failures are reported through
+   * `logger.warn` + the caller's `warnings[]` (the record is already gone, so
+   * the uninstall still succeeds and maintenance can retry the cleanup).
+   */
+  async function removeGamePackageDirectories(gameId) {
+    const warnings = [];
+    const seen = new Set();
+    function warnOnce(token, error) {
+      if (!seen.has(token)) {
+        seen.add(token);
+        warnings.push(token);
+      }
+      logger?.warn?.(
+        '[game-market/host] uninstall-package-cleanup-failed',
+        `gameId=${gameId}`,
+        `token=${token}`,
+        `code=${error && typeof error.code === 'string' ? error.code : 'E_UNKNOWN'}`,
+      );
+    }
+    const packageRoot = storage.filePath(PACKAGES_DIR, gameId);
+    let entries;
+    try {
+      entries = await fs.readdir(packageRoot, { withFileTypes: true });
+    } catch (error) {
+      if (error && (error.code === 'ENOENT' || error.code === 'ENOTDIR')) return warnings;
+      warnOnce('package-list-failed', error);
+      return warnings;
+    }
+    for (const item of entries) {
+      let target;
+      try {
+        // Containment: always inside this game's own package directory.
+        target = storage.filePath(PACKAGES_DIR, gameId, item.name);
+      } catch (error) {
+        warnOnce('package-path-rejected', error);
+        continue;
+      }
+      try {
+        if (item.isSymbolicLink()) {
+          // Rename the link itself; never traverse into its target.
+          await moveToTrash(target, gameId);
+        } else if (item.isDirectory()) {
+          await moveVersionDirectoryToTrash(target, gameId);
+        } else {
+          await moveToTrash(target, gameId);
+        }
+      } catch (error) {
+        warnOnce('package-entry-cleanup-failed', error);
+      }
+    }
+    try {
+      await fs.rmdir(packageRoot);
+    } catch (error) {
+      if (error && (error.code === 'ENOENT' || error.code === 'ENOTDIR')) return warnings;
+      warnOnce('package-directory-remove-failed', error);
+    }
+    return warnings;
+  }
+
   async function uninstallLocked({ gameId, deleteData }) {
     const record = await installations.get(gameId);
     if (!record) {
@@ -1509,10 +1577,22 @@ export function createInstallService({
       }
       dataDeleted = true;
     }
-    const versionDirectory = storage.filePath(PACKAGES_DIR, gameId, record.version);
-    await moveVersionDirectoryToTrash(versionDirectory, gameId);
-    await fs.rmdir(storage.filePath(PACKAGES_DIR, gameId)).catch(() => undefined);
-    await installations.remove(gameId);
+    // M2-FIX (§6.4/§6.8): the retained current+1 window exists for upgrade
+    // rollback; uninstall has no reason to keep it, so every version directory
+    // of THIS game (the current one and the retained previous one) is removed.
+    // Order matters: commit the record removal first, then clean the package
+    // trees. A record-write failure must stay a retryable failure with the
+    // package trees untouched, so the UI can never report "uninstalled" while
+    // the game is still registered; a cleanup failure after the record is gone
+    // is surfaced as a warning instead of silently leaking the directories.
+    try {
+      await installations.remove(gameId);
+    } catch (error) {
+      logger?.warn?.('[game-market/host] uninstall-record-failed', `gameId=${gameId}`, `code=${error?.code || 'E_UNKNOWN'}`);
+      if (error && typeof error.code === 'string' && error.code.startsWith('GM-')) throw error;
+      throw fsIoError(error, 'Could not update the installation record');
+    }
+    const warnings = await removeGamePackageDirectories(gameId);
     if (entry && typeof entry.invalidateGame === 'function') entry.invalidateGame(gameId);
     if (preferences && typeof preferences.read === 'function') {
       try {
@@ -1525,7 +1605,15 @@ export function createInstallService({
       }
     }
     logger?.info?.('[game-market/host] uninstalled', `gameId=${gameId}`, `deleteData=${deleteData}`);
-    return { gameId, removed: true, dataDeleted, ignored: false };
+    return {
+      gameId,
+      removed: true,
+      dataDeleted,
+      ignored: false,
+      // Keep the success shape unchanged; warnings are additive and only
+      // present when a post-commit cleanup step failed.
+      ...(warnings.length > 0 ? { warnings: warnings.slice() } : {}),
+    };
   }
 
   function diagnostics() {

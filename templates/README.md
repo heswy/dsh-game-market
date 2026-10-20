@@ -38,3 +38,22 @@ repository (`node scripts/cli/dsh-game.mjs build templates/vanilla`), while
 
 See `docs/developer-guide.md` for the full tutorial and `docs/developer-cli.md`
 for command reference.
+
+## V1.5: two package formats
+
+Both templates support two formats through the same CLI:
+
+- `html-v1` (default): one self-contained `dist/index.html` → `dist/<id>-<version>.html`;
+- `asset-zip-v2`: a resource package laid out as `dist/` + `dist/dsh-package.json`
+  (entry HTML + external `scripts/`, `styles/`, `assets/`, `levels/`, `audio/`) packed
+  into a deterministic `<id>-<version>.dshgame.zip`. `templates/*/zip/` holds the
+  format-specific overlay (`README`, entry HTML, build/validate wrappers; React also
+  gets a relative-base `vite.config.ts` + `public/dsh-sdk.js`).
+
+```bash
+dsh-game create my-game --template vanilla --format asset-zip-v2
+dsh-game create my-game --template react   --format asset-zip-v2
+```
+
+Omitting `--format` keeps the M1 single-file behavior exactly. See
+`docs/developer-guide.md` §10 for the full dual-format contract.

@@ -1,0 +1,33 @@
+Created token-trail (vanilla, asset-zip-v2) at <work>/token-trail
+  .gitignore
+  README.md
+  assets/README.txt
+  audio/README.txt
+  dsh-game.config.json
+  index.html
+  levels/level-01.json
+  manifest.json
+  package.json
+  scripts/build.mjs
+  scripts/cli.mjs
+  scripts/dev.mjs
+  scripts/pack.mjs
+  scripts/publish.mjs
+  scripts/validate.mjs
+  sdk/VERSION
+  sdk/index.d.ts
+  src/i18n.js
+  src/main.js
+  src/render.js
+  src/storage.js
+  src/styles.css
+
+Next steps:
+  cd <work>/token-trail
+  export DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs
+  npm run build
+  npm run validate
+  npm run dev
+  npm run pack
+  npm run publish -- --url https://github.com/<you>/<repo>/releases/download/v1.0.0/token-trail-1.0.0.dshgame.zip --cover https://example.com/cover.png
+EXIT:0

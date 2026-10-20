@@ -1,0 +1,105 @@
+{
+  "url": "http://127.0.0.1:4401/",
+  "startedAt": "2026-10-20T07:31:44.949Z",
+  "steps": [
+    {
+      "event": "ui-ready",
+      "ready": {
+        "status": "ready",
+        "meta": "token-trail@1.0.0 · Token Trail · instance d2110a29…"
+      }
+    }
+  ],
+  "console": [
+    "[simulator] · simulator ready select states on the right; every bridge message also appears in the console ",
+    "[simulator] · iframe loading http://127.0.0.1:4401/wrapper?src=%2Fres%2F<instance>%2F<nonce>%2Findex.html ",
+    "[simulator] ← hello  Object",
+    "[simulator] → init  Object",
+    "[simulator] → agent-status  Object",
+    "[simulator] → theme  Object",
+    "[simulator] → viewport  Object",
+    "[simulator] · wrapper loaded relaying bridge traffic ",
+    "[simulator] · iframe loaded  ",
+    "[simulator] ← ready  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← score.getBest  Object",
+    "[simulator] → res ok ",
+    "[simulator] ← storage.load  Object",
+    "[simulator] → res ok ",
+    "[simulator] ← session.start  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← storage.save  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← storage.save  Object",
+    "[simulator] → res ok Object",
+    "[simulator] → before-save  Object",
+    "[simulator] ← storage.save  Object",
+    "[simulator] → res ok Object"
+  ],
+  "config": {
+    "game": {
+      "id": "token-trail",
+      "name": "Token Trail",
+      "version": "1.0.0",
+      "capabilities": [
+        "storage",
+        "score"
+      ],
+      "description": "Collect glowing tokens while dodging rocks. A short keyboard arcade run."
+    },
+    "theme": "dark",
+    "locale": "zh-CN",
+    "format": "asset-zip-v2",
+    "wrapperUrl": "/wrapper?src=%2Fres%2F<instance>%2F<nonce>%2Findex.html",
+    "instanceId": "<hex32>",
+    "nonce": "<hex32>"
+  },
+  "metaBefore": "token-trail@1.0.0 · Token Trail · instance d2110a29…",
+  "statusBefore": "ready",
+  "playKeyEvents": 13,
+  "statusAfterPause": "ready",
+  "saveList": "current {\"saveVersion\":1,\"score\":20,\"pickups\":2,\"lives\":1,\"elapsed\":9.549526000000025,\"lane\":0,\"objects\":[{\"lane\":2,\"y\":1.135993279544707,\"kind\":\"token\"},{\"lane\":1,\"y\":…",
+  "kv": {
+    "revision": "2",
+    "best": "—",
+    "session": "ps_a1faae6b6ae91c0aa6702485 (active)",
+    "agent": "idle · Agent 空闲",
+    "bytes": "371",
+    "locale": "zh-CN",
+    "theme": "dark"
+  },
+  "logTail": [
+    "[15:31:45] → game  res  ok",
+    "          null",
+    "[15:31:47] ← game  session.start",
+    "          {}",
+    "[15:31:47] → game  res  ok",
+    "          {\"playSessionId\":\"ps_a1faae6b6ae91c0aa6702485\",\"startedAt\":\"2026-10-20T07:31:47.468Z\",\"adopted\":false}",
+    "[15:31:52] ← game  storage.save",
+    "          {\"key\":\"current\",\"data\":{\"saveVersion\":1,\"score\":0,\"pickups\":0,\"lives\":3,\"elapsed\":4.999726000000007,\"lane\":0,\"objects\":[{\"lane\":2,\"y\":1.038335268096585,\"kind\":\"token\"},{\"lane\":0,\"y\":0.7128505329135519,\"kind\":\"token\"},{\"lane\":0,\"y\":0.379651…",
+    "[15:31:52] → game  res  ok",
+    "          {\"key\":\"current\",\"bytes\":367,\"revision\":1,\"updatedAt\":\"2026-10-20T07:31:52.465Z\"}",
+    "[15:31:57] ← game  storage.save",
+    "          {\"key\":\"current\",\"data\":{\"saveVersion\":1,\"score\":20,\"pickups\":2,\"lives\":1,\"elapsed\":9.549526000000025,\"lane\":0,\"objects\":[{\"lane\":2,\"y\":1.135993279544707,\"kind\":\"token\"},{\"lane\":1,\"y\":0.7890924677376159,\"kind\":\"token\"},{\"lane\":0,\"y\":0.44334…",
+    "[15:31:57] → game  res  ok",
+    "          {\"key\":\"current\",\"bytes\":371,\"revision\":2,\"updatedAt\":\"2026-10-20T07:31:57.032Z\"}"
+  ],
+  "beforeSaveClick": {
+    "clicked": true,
+    "label": "before-save"
+  },
+  "saveListAfterBeforeSave": "current {\"saveVersion\":1,\"score\":20,\"pickups\":2,\"lives\":1,\"elapsed\":9.549526000000025,\"lane\":0,\"objects\":[{\"lane\":2,\"y\":1.135993279544707,\"kind\":\"token\"},{\"lane\":1,\"y\":…",
+  "logTailAfter": [
+    "[15:31:57] ← game  storage.save",
+    "          {\"key\":\"current\",\"data\":{\"saveVersion\":1,\"score\":20,\"pickups\":2,\"lives\":1,\"elapsed\":9.549526000000025,\"lane\":0,\"objects\":[{\"lane\":2,\"y\":1.135993279544707,\"kind\":\"token\"},{\"lane\":1,\"y\":0.7890924677376159,\"kind\":\"token\"},{\"lane\":0,\"y\":0.44334…",
+    "[15:31:57] → game  res  ok",
+    "          {\"key\":\"current\",\"bytes\":371,\"revision\":2,\"updatedAt\":\"2026-10-20T07:31:57.032Z\"}",
+    "[15:31:58] → game  before-save",
+    "          {\"reason\":\"interval\",\"deadlineMs\":800}",
+    "[15:31:58] ← game  storage.save",
+    "          {\"key\":\"current\",\"data\":{\"saveVersion\":1,\"score\":20,\"pickups\":2,\"lives\":1,\"elapsed\":9.549526000000025,\"lane\":0,\"objects\":[{\"lane\":2,\"y\":1.135993279544707,\"kind\":\"token\"},{\"lane\":1,\"y\":0.7890924677376159,\"kind\":\"token\"},{\"lane\":0,\"y\":0.44334…",
+    "[15:31:58] → game  res  ok",
+    "          {\"key\":\"current\",\"bytes\":371,\"revision\":3,\"updatedAt\":\"2026-10-20T07:31:58.001Z\"}"
+  ],
+  "finishedAt": "2026-10-20T07:31:58.848Z"
+}

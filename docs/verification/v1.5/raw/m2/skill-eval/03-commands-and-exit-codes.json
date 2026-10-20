@@ -1,0 +1,165 @@
+[
+  {
+    "step": "create",
+    "command": "node \"<repo>/scripts/cli/dsh-game.mjs\" create token-trail --dir . --template vanilla --format asset-zip-v2 --name \"Token Trail\" --description \"\u2026\" --author \"Independent Author\"",
+    "exitCode": 0,
+    "evidence": "01-create.log"
+  },
+  {
+    "step": "build 1.0.0",
+    "command": "npm run build",
+    "exitCode": 0,
+    "evidence": "03-build-1.0.0.log"
+  },
+  {
+    "step": "validate project 1.0.0",
+    "command": "node \"$DSH_GAME_CLI\" validate . --format asset-zip-v2 --json",
+    "exitCode": 0,
+    "evidence": "04-gate-1.0.0.log"
+  },
+  {
+    "step": "validate dist 1.0.0",
+    "command": "node \"$DSH_GAME_CLI\" validate dist --json",
+    "exitCode": 0,
+    "evidence": "04-gate-1.0.0.log"
+  },
+  {
+    "step": "pack 1.0.0",
+    "command": "node \"$DSH_GAME_CLI\" pack . --format asset-zip-v2 --json",
+    "exitCode": 0,
+    "evidence": "30-pack-1.0.0.json"
+  },
+  {
+    "step": "validate packed zip 1.0.0",
+    "command": "node \"$DSH_GAME_CLI\" validate dist/token-trail-1.0.0.dshgame.zip --json",
+    "exitCode": 0,
+    "evidence": "33-validate-zip-1.0.0.json"
+  },
+  {
+    "step": "determinism 1.0.0",
+    "command": "npm run build \u00d72; node \"$DSH_GAME_CLI\" pack \u00d72 (compare sha256/filesDigest)",
+    "exitCode": 0,
+    "evidence": "05-determinism-1.0.0.log"
+  },
+  {
+    "step": "illegal A (inline script, build stage)",
+    "command": "npm run build",
+    "exitCode": 1,
+    "evidence": "06-illegal-a-inline-script.log"
+  },
+  {
+    "step": "fix A + build",
+    "command": "npm run build",
+    "exitCode": 0,
+    "evidence": "07-illegal-a-fix.log"
+  },
+  {
+    "step": "illegal B (external stylesheet, build stage)",
+    "command": "npm run build",
+    "exitCode": 1,
+    "evidence": "08-illegal-b-external-css.log"
+  },
+  {
+    "step": "illegal C (stale descriptor GM-4278)",
+    "command": "node \"$DSH_GAME_CLI\" validate dist",
+    "exitCode": 1,
+    "evidence": "09-illegal-c-stale-descriptor.log"
+  },
+  {
+    "step": "fix C + validate dist",
+    "command": "npm run build; node \"$DSH_GAME_CLI\" validate dist --json",
+    "exitCode": 0,
+    "evidence": "10-illegal-c-fix.log"
+  },
+  {
+    "step": "illegal D (archive inline GM-4283)",
+    "command": "node \"$DSH_GAME_CLI\" validate dist",
+    "exitCode": 1,
+    "evidence": "11-illegal-d-archive-inline.log"
+  },
+  {
+    "step": "fix D + full gate 1.0.0",
+    "command": "npm run build; validate .; pack; validate zip",
+    "exitCode": 0,
+    "evidence": "12-restore-gate-1.0.0.log"
+  },
+  {
+    "step": "upgrade 1.0.0\u21921.0.1 gate",
+    "command": "npm run build; validate .; validate dist; pack; validate zip",
+    "exitCode": 0,
+    "evidence": "14-gate-determinism-1.0.1.log"
+  },
+  {
+    "step": "npm wrappers 1.0.1",
+    "command": "npm run validate; npm run pack",
+    "exitCode": 0,
+    "evidence": "29-npm-wrappers-1.0.1.log"
+  },
+  {
+    "step": "save migration (node, 1.0.1 vs frozen 1.0.0 payload)",
+    "command": "node save-migration assertions",
+    "exitCode": 0,
+    "evidence": "28-save-migration-node-assertions.json"
+  },
+  {
+    "step": "dev 1.0.0 (long-running)",
+    "command": "node \"$DSH_GAME_CLI\" dev . --format asset-zip-v2 --port 4401",
+    "exitCode": "running (stopped by operator)",
+    "evidence": "15-dev-1.0.0.log"
+  },
+  {
+    "step": "browser 1.0.0 run",
+    "command": "CDP: real keyboard play, P pause, before-save control",
+    "exitCode": 0,
+    "evidence": "16-sim-1.0.0-run-evidence.json"
+  },
+  {
+    "step": "dev 1.0.1 (long-running)",
+    "command": "node \"$DSH_GAME_CLI\" dev . --format asset-zip-v2 --port 4402",
+    "exitCode": "running (stopped by operator)",
+    "evidence": "20-dev-1.0.1.log"
+  },
+  {
+    "step": "dev health 1.0.1",
+    "command": "curl -s http://127.0.0.1:4402/health",
+    "exitCode": 0,
+    "evidence": "21-dev-health-1.0.1.json"
+  },
+  {
+    "step": "browser migration 1.0.0 save \u2192 1.0.1",
+    "command": "CDP: seed recorded 1.0.0 save, Reload game, Continue, pause-save; corrupt payload fresh start",
+    "exitCode": 0,
+    "evidence": "18-browser-save-migration-evidence.json"
+  },
+  {
+    "step": "browser presentation matrix",
+    "command": "CDP: 375px stage, light theme, reduced motion, pause/resume timing, network capture",
+    "exitCode": 0,
+    "evidence": "19-browser-presentation-matrix-evidence.json"
+  },
+  {
+    "step": "publish --dry-run",
+    "command": "node \"$DSH_GAME_CLI\" publish . --format asset-zip-v2 --dry-run --url <github zip> --cover <raw url>",
+    "exitCode": 0,
+    "evidence": "22-publish-1.0.1.log"
+  },
+  {
+    "step": "publish (offline)",
+    "command": "node \"$DSH_GAME_CLI\" publish . --format asset-zip-v2 --url <github zip> --cover <raw url>",
+    "exitCode": 0,
+    "evidence": "22-publish-1.0.1.log"
+  },
+  {
+    "step": "submission draft validation",
+    "command": "node validate-submission.mjs (validateSubmission, mode=draft)",
+    "exitCode": 0,
+    "evidence": "27-submission-validation.json"
+  },
+  {
+    "step": "submission final-mode negative",
+    "command": "validateSubmission(mode=final) on draft",
+    "exitCode": 0,
+    "evidence": "27-submission-validation.json",
+    "note": "script exits 0 because draft validation passed; validateSubmission(mode=\"final\") returned ok:false with the 8 pending remote fields (recorded in 27-submission-validation.json)"
+  }
+]

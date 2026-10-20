@@ -1,0 +1,8 @@
+### C fixed: rebuild -> validate dist
+  format:   asset-zip-v2
+  entry:    index.html
+  digest:   64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e
+  manifest: token-trail@1.0.0
+EXIT:0
+ok True fileCount 12
+EXIT:0

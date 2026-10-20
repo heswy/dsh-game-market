@@ -12,15 +12,19 @@
  */
 
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 import { extractManifest, packageFileName } from '../../../packages/shared/src/manifest.js';
+import { PACKAGE_ZIP_EXTENSION } from '../../../packages/shared/src/constants.js';
 import { DEFAULT_ALLOWED_HOSTS, validateRegistry, validateRegistryGame } from '../../../packages/shared/src/registry.js';
 import { ValidationFailure, usageError } from './cli-error.mjs';
 import { fileExists, readText, sha256Hex, writeText } from './fs-utils.mjs';
 import { makeReport } from './issues.mjs';
 import { resolvePackInput } from './pack.mjs';
 import { loadProjectManifest } from './project.mjs';
+import { ASSET_ZIP_V2, DEFAULT_FORMAT, isZipFormat, normalizeFormat } from './formats.mjs';
+import { loadHostZipModule, packPackageV2 } from './package-v2.mjs';
 import { validateFile } from './validator.mjs';
 
 function nowIso() {
@@ -112,10 +116,11 @@ function shellQuote(value) {
   return `'${String(value).replaceAll("'", "'\\''")}'`;
 }
 
-function uploadPlan({ manifest, info, entry, files }) {
+function uploadPlan({ manifest, info, entry, files, format }) {
   const tag = `v${manifest.version}`;
   return `# Upload plan — ${manifest.name} (${manifest.id}@${manifest.version})
 
+Package format: ${format || 'html-v1'}
 Package file: \`${info.fileName}\`
 Package size: ${info.bytes} bytes
 SHA-256: \`${info.sha256}\`
@@ -149,13 +154,22 @@ Append \`${files.entry}\` to the \`games\` array of \`registry/games.json\`
 `;
 }
 
-function reviewChecklist({ manifest, info, entry, digest, report }) {
+function reviewChecklist({ manifest, info, entry, digest, report, format }) {
+  const packageChecks =
+    format === ASSET_ZIP_V2
+      ? `- [x] Package validates as an **asset-zip-v2 resource package** (deterministic ZIP, descriptor + file manifest).
+- [x] \`dsh-package.json\` lists every file in sorted order with size/sha256; entry is \`index.html\`.
+- [x] Entry HTML has no inline scripts/styles/handlers and no external URLs (contract D-C).
+- [x] No inline manifest: \`game.json\` is the only authoritative manifest.
+- [x] \`filesDigest\` matches the descriptor digest: \`${info.filesDigest}\`.
+- [x] ZIP entries use fixed order/timestamp/STORED and 0444 semantics; the Host archive reader extracted it.`
+      : `- [x] Package validates as a single-file, self-contained HTML package.
+- [x] Inline manifest parses and matches manifest v1.`;
   return `# Review checklist — ${manifest.name} (${manifest.id}@${manifest.version})
 
 ## Automated checks (run by \`dsh-game publish\`)
 
-- [x] Package validates as a single-file, self-contained HTML package.
-- [x] Inline manifest parses and matches manifest v1.
+${packageChecks}
 - [x] \`id\` / \`version\` are valid and match the package file name (\`${info.fileName}\`).
 - [x] Runtime/SDK ranges are compatible with the current platform (1.0.0).
 - [x] Size ${info.bytes} bytes is within the 20 MiB limit.
@@ -239,6 +253,23 @@ function mergeRegistry(registryDir, entry, sourceType, generatedAt, allowedHosts
  */
 export async function publishProject(projectDir, options = {}) {
   const root = path.resolve(projectDir);
+  let format = normalizeFormat(options.format);
+  if (format === null) {
+    const inputRef = options.input ? String(options.input) : '';
+    const targetRef = String(projectDir || '');
+    if (inputRef.toLowerCase().endsWith(PACKAGE_ZIP_EXTENSION) || targetRef.toLowerCase().endsWith(PACKAGE_ZIP_EXTENSION)) {
+      format = ASSET_ZIP_V2;
+    } else {
+      // Project directory: honour dsh-game.config.json like build/validate do.
+      try {
+        const { loadConfig } = await import('./project.mjs');
+        format = normalizeFormat(loadConfig(root).format) || DEFAULT_FORMAT;
+      } catch (_error) {
+        format = DEFAULT_FORMAT;
+      }
+    }
+  }
+  if (isZipFormat(format)) return publishPackageV2(root, { ...options, format });
   if (!options.url) throw usageError('publish requires --url <package URL>', 'The URL must end with <id>-<version>.html.');
   if (!options.cover) throw usageError('publish requires --cover <https cover image URL>', 'Registry entries require a cover preview URL.');
   if (options.fileRegistry && /^https?:/i.test(options.url)) {
@@ -345,10 +376,10 @@ export async function publishProject(projectDir, options = {}) {
   if (options.write !== false) {
     const entryText = `${JSON.stringify(entry, null, 2)}\n`;
     writeText(files.entry, entryText);
-    writeText(files.upload, uploadPlan({ manifest, info, entry, files }));
+    writeText(files.upload, uploadPlan({ manifest, info, entry, files, format: 'html-v1' }));
     writeText(
       files.checklist,
-      reviewChecklist({ manifest, info, entry, digest: info.digest, report })
+      reviewChecklist({ manifest, info, entry, digest: info.digest, report, format: 'html-v1' })
     );
   }
 
@@ -369,5 +400,221 @@ export async function publishProject(projectDir, options = {}) {
     files,
     registryPath,
     warnings: report.warnings,
+  };
+}
+
+
+// ---------------------------------------------------------------------------
+// asset-zip-v2 publishing (M2-D content-repo tooling is a separate workstream)
+// ---------------------------------------------------------------------------
+
+function zipPublishUploadPlan({ manifest, info, entry }) {
+  const tag = `v${manifest.version}`;
+  return `# Upload plan — ${manifest.name} (${manifest.id}@${manifest.version}, asset-zip-v2)
+
+Package format: asset-zip-v2
+Package file: \`${info.fileName}\`
+Package size: ${info.bytes} bytes
+SHA-256: \`${info.sha256}\`
+File-count: ${info.fileCount}
+filesDigest: \`${info.filesDigest}\`
+Registry URL: ${entry.package.url}
+Release tag: \`${tag}\`
+
+## 1. Upload the package
+
+\`\`\`bash
+gh release create ${tag} \
+  ${shellQuote(info.outFile)} \
+  ${shellQuote(info.digestFile)} \
+  --title ${shellQuote(manifest.name + ' ' + manifest.version)}
+\`\`\`
+
+## 2. Publish the registry entry
+
+Submit \`registry-entry.json\` through the content-repository submission flow
+(M2-D tooling: \`scripts/registry/prepare.mjs\`). The entry declares
+\`package.format: "asset-zip-v2"\` and \`package.filesDigest\`; the catalog/registry
+v2 projection is built by that flow — this CLI step performs **no remote writes**
+and no catalog rebuild.
+
+## 3. Verify
+
+1. \`sha256sum\` matches the registry entry;
+2. the downloaded archive still passes \`dsh-game validate <file> --format asset-zip-v2\`;
+3. the entry's \`package.filesDigest\` equals \`filesDigest\` in this plan and the extracted descriptor digest
+   (registry-entry / upload-plan / submission all use the same \`filesDigest\` field name; html-v1 has no filesDigest).
+`;
+}
+
+/** Publish a packed `asset-zip-v2` package (offline: entry + plans only). */
+export async function publishPackageV2(projectDir, options = {}) {
+  const root = path.resolve(projectDir);
+  const opts = options && typeof options === 'object' ? options : {};
+  if (!opts.url) {
+    throw usageError('publish requires --url <package URL>', 'The URL must end with <id>-<version>.dshgame.zip.');
+  }
+  if (!opts.cover) throw usageError('publish requires --cover <https cover image URL>', 'Registry entries require a cover preview URL.');
+  if (opts.fileRegistry && /^https?:/i.test(opts.url)) {
+    throw usageError('--file-registry expects a relative package URL inside the registry directory.');
+  }
+  if (!opts.fileRegistry && !/^https:\/\//i.test(opts.url)) {
+    throw usageError('publish --url must be an absolute https URL (or pass --file-registry with a relative path).');
+  }
+  if (opts.registryDir) {
+    // Dependency: the v2 content-repository merge is owned by M2-D
+    // (`scripts/registry/**`). Until it lands, keep this command dry/offline
+    // instead of half-merging a v2 catalog.
+    throw usageError(
+      '--registry-dir is not wired for asset-zip-v2 yet (M2-D content-repo tooling)',
+      'Run publish without --registry-dir, then submit registry-entry.json through scripts/registry/prepare.mjs.'
+    );
+  }
+
+  let input = opts.input ? path.resolve(opts.input) : null;
+  if (!input) {
+    let manifestForName = null;
+    try {
+      manifestForName = loadProjectManifest(root).manifest;
+    } catch (_error) {
+      manifestForName = null;
+    }
+    const packedName = manifestForName
+      ? `${manifestForName.id}-${manifestForName.version}${PACKAGE_ZIP_EXTENSION}`
+      : null;
+    const candidates = [
+      packedName ? path.join(root, 'dist', packedName) : null,
+      packedName ? path.join(root, packedName) : null,
+    ].filter(Boolean);
+    input = candidates.find((candidate) => fileExists(candidate)) || null;
+    if (!input) {
+      const pack = await packPackageV2(root, { format: ASSET_ZIP_V2, write: true });
+      input = pack.outFile;
+    }
+  }
+  if (!fileExists(input)) throw usageError(`Package file does not exist: ${input}`, 'Run `dsh-game pack` first.');
+  if (!input.toLowerCase().endsWith(PACKAGE_ZIP_EXTENSION)) {
+    throw usageError(`publish --format asset-zip-v2 expects a ${PACKAGE_ZIP_EXTENSION} package`, 'Run `dsh-game pack --format asset-zip-v2`.');
+  }
+
+  const { extractPackageArchive } = await loadHostZipModule();
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-game-publish-'));
+  let archive;
+  try {
+    archive = await extractPackageArchive({ zipPath: input, outDir: path.join(tempRoot, 'unpacked') });
+  } catch (error) {
+    throw new ValidationFailure(
+      makeReport({
+        errors: [{ code: error.code || 'E_ZIP_INVALID', message: error.message || 'package archive is not installable', field: 'package' }],
+        source: input,
+      }),
+      input
+    );
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 20 });
+  }
+
+  const manifest = archive.manifest;
+  const fileName = `${manifest.id}-${manifest.version}${PACKAGE_ZIP_EXTENSION}`;
+  if (path.basename(input) !== fileName) {
+    throw usageError(`publish expects the packed package ${fileName}, got ${path.basename(input)}`, `Run \`dsh-game pack\` first.`);
+  }
+  const expectedUrlSuffix = `/${fileName}`;
+  if (!opts.url.endsWith(expectedUrlSuffix) && opts.url !== fileName && !opts.fileRegistry) {
+    throw usageError(`--url must end with ${expectedUrlSuffix}`, 'The package URL file name must match the packed archive.');
+  }
+  if (/\.html$/i.test(opts.url)) {
+    throw usageError('asset-zip-v2 package URL must not end with .html', 'Use the .dshgame.zip URL.');
+  }
+  const expectedDigestName = `${input}.sha256`;
+  const bytes = fs.statSync(input).size;
+  const digest = sha256Hex(fs.readFileSync(input));
+  if (!fileExists(expectedDigestName) && !opts.rehash) {
+    throw usageError(`Missing sha256 sidecar: ${expectedDigestName}`, 'Run `dsh-game pack` (or pass --rehash).');
+  }
+  if (fileExists(expectedDigestName)) {
+    const sidecar = readDigest(expectedDigestName, digest, fileName);
+    if (!sidecar.fileNameMatches) throw usageError(`sha256 sidecar file name does not match ${fileName}`);
+  } else {
+    writeText(expectedDigestName, `${digest}  ${fileName}\n`);
+  }
+
+  const releasedAt = opts.releasedAt || nowIso();
+  const publishedAt = opts.publishedAt || releasedAt;
+  const updatedAt = opts.updatedAt || publishedAt;
+  const dates = { releasedAt, publishedAt, updatedAt };
+  for (const [name, value] of Object.entries(dates)) {
+    if (Number.isNaN(Date.parse(value))) throw usageError(`--${name} must be an ISO timestamp`);
+  }
+  const info = {
+    outFile: input,
+    digestFile: expectedDigestName,
+    fileName,
+    sha256: digest,
+    bytes,
+    fileCount: archive.fileCount,
+    filesDigest: archive.fileManifestDigest,
+    digest: { digest, fileName, fileNameMatches: true },
+  };
+  const base = buildEntry(manifest, info, {
+    url: opts.url,
+    cover: opts.cover,
+    releasedAt,
+    publishedAt,
+    updatedAt,
+    changelog: opts.changelog,
+    featured: opts.featured,
+    quickPlay: opts.quickPlay,
+    fileRegistry: opts.fileRegistry,
+    homepage: opts.homepage,
+    repository: opts.repository,
+    license: opts.license,
+  });
+  const entry = {
+    ...base.entry,
+    package: {
+      ...base.entry.package,
+      format: ASSET_ZIP_V2,
+      filesDigest: archive.fileManifestDigest,
+    },
+  };
+  // Same registry-entry policy as html-v1: schema + package host allowlist.
+  // (M2-D/content-repo may add more checks, but the CLI must not accept an
+  // entry it would reject for html packages.)
+  const allowedHosts = opts.allowedHosts && opts.allowedHosts.length > 0 ? opts.allowedHosts : [...DEFAULT_ALLOWED_HOSTS];
+  const entryCheck = validateRegistryGame(entry, { sourceType: base.sourceType, allowedHosts });
+  if (!entryCheck.ok) {
+    throw new ValidationFailure(
+      makeReport({ errors: entryCheck.errors, warnings: entryCheck.warnings, source: 'registry entry' }),
+      'registry entry'
+    );
+  }
+  const outDir = opts.outDir ? path.resolve(opts.outDir) : path.dirname(input);
+  const files = {
+    entry: path.join(outDir, 'registry-entry.json'),
+    upload: path.join(outDir, 'upload-plan.md'),
+    checklist: path.join(outDir, 'review-checklist.md'),
+  };
+  const report = makeReport({ errors: [], warnings: [], manifest, bytes, source: input });
+  if (opts.write !== false) {
+    writeText(files.entry, `${JSON.stringify(entry, null, 2)}\n`);
+    writeText(files.upload, zipPublishUploadPlan({ manifest, info, entry }));
+    writeText(
+      files.checklist,
+      reviewChecklist({ manifest, info, entry, digest: info.digest, report, format: ASSET_ZIP_V2 })
+    );
+  }
+  return {
+    ok: true,
+    id: manifest.id,
+    version: manifest.version,
+    format: ASSET_ZIP_V2,
+    entry,
+    info,
+    dates,
+    sourceType: base.sourceType,
+    files,
+    registryPath: null,
+    warnings: [],
   };
 }

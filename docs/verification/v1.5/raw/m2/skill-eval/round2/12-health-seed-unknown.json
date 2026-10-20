@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "simulator": true,
+  "build": true,
+  "format": "asset-zip-v2",
+  "saveApi": true,
+  "hasSeedSave": true,
+  "saveOut": null,
+  "fileCount": 12,
+  "game": {
+    "id": "token-trail",
+    "name": "Token Trail",
+    "version": "1.0.1"
+  }
+}

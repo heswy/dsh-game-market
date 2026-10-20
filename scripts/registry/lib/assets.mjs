@@ -3,7 +3,11 @@
  * Reuses the Host's bounded downloader and the shared package validators.
  */
 import { createHash } from 'node:crypto';
+import { promises as fs } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
+import { ASSET_ZIP_V2 } from '../../../packages/shared/src/constants.js';
 import { validatePackageHtml } from '../../../packages/shared/src/manifest.js';
 import { validatePackageUrl } from '../../../packages/shared/src/registry.js';
 import { checkCompatibility } from '../../../packages/host/src/semver.js';
@@ -109,7 +113,18 @@ function imageDimensions(type, bytes) {
   return null;
 }
 
-export function validatePackageBytes({ bytes, manifest, id, version }) {
+function assertCompatible(manifest) {
+  try {
+    checkCompatibility(manifest);
+  } catch (error) {
+    throw publishError('E_PUBLISH_INCOMPATIBLE', 'package is not compatible with this Runtime', {
+      code: error && error.code ? error.code : null,
+      reason: error && error.message ? error.message : 'incompatible',
+    });
+  }
+}
+
+async function validateHtmlPackageBytes({ bytes, id, version }) {
   let html;
   try {
     html = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
@@ -124,15 +139,85 @@ export function validatePackageBytes({ bytes, manifest, id, version }) {
   if (built.id !== id || built.version !== version) {
     throw publishError('E_PUBLISH_MANIFEST_MISMATCH', 'package manifest id/version does not match the submission', { expected: `${id}@${version}`, actual: `${built.id}@${built.version}` });
   }
+  assertCompatible(built);
+  return { format: 'html-v1', manifest: built, filesDigest: null, fileCount: null, unpackedBytes: null, entry: 'entry.html' };
+}
+
+/**
+ * `asset-zip-v2` package content validation for publishing.
+ *
+ * Reuses the Host archive pipeline (`packages/host/src/zip.js`) instead of
+ * keeping a second ZIP reader: the same limits/path/type/content-scan/CRC/
+ * local-header/manifest rules that `Host /install` enforces run here, over the
+ * exact bytes the author published. The returned `filesDigest` is the
+ * `fileManifestDigest` (§1.5 item 5) that the catalog v2 release must bind
+ * alongside the outer ZIP sha256.
+ *
+ * The Host pipeline is imported lazily so content repositories that publish
+ * only `html-v1` games keep validating without installed runtime dependencies
+ * (the ZIP pipeline needs `yauzl`).
+ */
+async function validateZipPackageBytes({ bytes, id, version, tempRoot }) {
+  let extractPackageArchive;
   try {
-    checkCompatibility(built);
+    ({ extractPackageArchive } = await import('../../../packages/host/src/zip.js'));
   } catch (error) {
-    throw publishError('E_PUBLISH_INCOMPATIBLE', 'package is not compatible with this Runtime', {
-      code: error && error.code ? error.code : null,
-      reason: error && error.message ? error.message : 'incompatible',
-    });
+    throw publishError(
+      'E_PUBLISH_PACKAGE_INVALID',
+      'asset-zip-v2 validation is unavailable: install the trusted toolchain dependencies (npm ci) first',
+      { reason: error && error.code ? error.code : 'missing-zip-reader' },
+    );
   }
-  return built;
+  const directory = await fs.mkdtemp(path.join(tempRoot || os.tmpdir(), 'dsh-publish-zip-'));
+  try {
+    const zipPath = path.join(directory, 'package.dshgame.zip');
+    const treePath = path.join(directory, 'tree');
+    await fs.writeFile(zipPath, bytes, { mode: 0o600 });
+    let extraction;
+    try {
+      extraction = await extractPackageArchive({ zipPath, outDir: treePath, expected: { id, version } });
+    } catch (error) {
+      const gm = error && typeof error.code === 'string' && /^GM-/.test(error.code) ? error.code : null;
+      if (gm === 'GM-4095') {
+        throw publishError('E_PUBLISH_MANIFEST_MISMATCH', 'package game.json id/version does not match the submission', {
+          expected: `${id}@${version}`,
+          gm,
+        });
+      }
+      throw publishError('E_PUBLISH_PACKAGE_INVALID', 'package failed the Host archive validator', {
+        gm,
+        reason: error && typeof error.message === 'string' ? error.message : 'invalid archive',
+      });
+    }
+    assertCompatible(extraction.manifest);
+    return {
+      format: ASSET_ZIP_V2,
+      manifest: extraction.manifest,
+      filesDigest: extraction.fileManifestDigest,
+      fileCount: extraction.fileCount,
+      unpackedBytes: extraction.unpackedBytes,
+      entry: extraction.entry,
+    };
+  } finally {
+    await fs.rm(directory, { recursive: true, force: true, maxRetries: 3, retryDelay: 20 }).catch(() => undefined);
+  }
+}
+
+/**
+ * Validate one published package's exact bytes for its declared format.
+ *
+ * @param {{bytes:Buffer, id:string, version:string,
+ *          format?:'html-v1'|'asset-zip-v2', tempRoot?:string}} options
+ * @returns {Promise<{format:string, manifest:object, filesDigest:string|null,
+ *                    fileCount:number|null, unpackedBytes:number|null, entry:string}>}
+ */
+export async function validatePackageBytes({ bytes, id, version, format = 'html-v1', tempRoot }) {
+  const payload = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes || new Uint8Array(0));
+  if (format === ASSET_ZIP_V2) return validateZipPackageBytes({ bytes: payload, id, version, tempRoot });
+  if (format !== undefined && format !== null && format !== 'html-v1') {
+    throw publishError('E_FORMAT_POLICY', `unsupported package format: ${String(format)}`);
+  }
+  return validateHtmlPackageBytes({ bytes: payload, id, version });
 }
 
 export function validateMediaBytes({ bytes, media, label }) {

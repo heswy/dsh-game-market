@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "submissionType": "new",
+  "game": {
+    "id": "orbit-catch",
+    "name": "Orbit Catch",
+    "version": "2.0.0",
+    "description": "A tiny multi-file arcade game used as a non-production ZIP submission example.",
+    "categories": [
+      "arcade"
+    ],
+    "tags": [
+      "example",
+      "zip"
+    ],
+    "capabilities": [
+      "storage",
+      "score"
+    ],
+    "sdkVersion": "^1.0.0",
+    "runtimeVersion": "^1.0.0",
+    "license": "MIT"
+  },
+  "author": {
+    "login": "example-author",
+    "githubUserId": 123456,
+    "sourceRepo": "https://github.com/example-author/orbit-catch",
+    "sourceCommit": "0123456789abcdef0123456789abcdef01234567",
+    "buildInstructions": "npm run build && dsh-game pack"
+  },
+  "package": {
+    "format": "asset-zip-v2",
+    "url": "https://github.com/example-author/orbit-catch/releases/download/orbit-catch-v2.0.0/orbit-catch-2.0.0.dshgame.zip",
+    "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "sha256Url": "https://github.com/example-author/orbit-catch/releases/download/orbit-catch-v2.0.0/orbit-catch-2.0.0.dshgame.zip.sha256",
+    "size": 640000,
+    "filesDigest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  },
+  "media": {
+    "cover": {
+      "url": "https://github.com/example-author/orbit-catch/releases/download/orbit-catch-v2.0.0/cover-2.0.0.png",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "size": 50000,
+      "type": "png"
+    },
+    "screenshots": [
+      {
+        "url": "https://github.com/example-author/orbit-catch/releases/download/orbit-catch-v2.0.0/screenshot-1-2.0.0.png",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size": 40000,
+        "type": "png"
+      }
+    ]
+  },
+  "licensing": {
+    "codeLicense": "MIT",
+    "assetLicense": "CC-BY-4.0",
+    "archivePermission": true
+  },
+  "selfTest": {
+    "ready": true,
+    "pauseResume": true,
+    "beforeSave": true,
+    "continuePlay": true,
+    "keyboard": true,
+    "narrowWindow": true,
+    "theme": true,
+    "fullBleed": true,
+    "safeArea": true,
+    "noNetwork": true
+  }
+}

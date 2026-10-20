@@ -1,0 +1,107 @@
+{
+  "label": "r2-1.0.0",
+  "url": "http://127.0.0.1:4411/",
+  "health": {
+    "ok": true,
+    "simulator": true,
+    "build": true,
+    "format": "asset-zip-v2",
+    "saveApi": true,
+    "hasSeedSave": false,
+    "saveOut": "<work>/logs/r2-1.0.0.save.json",
+    "fileCount": 12,
+    "game": {
+      "id": "token-trail",
+      "name": "Token Trail",
+      "version": "1.0.0"
+    }
+  },
+  "meta": "token-trail@1.0.0 · Token Trail · instance 78907f8b…",
+  "status0": "ready",
+  "playKeyEvents": 9,
+  "saveList": "current {\"saveVersion\":1,\"score\":20,\"pickups\":2,\"lives\":3,\"elapsed\":6.549699999998535,\"lane\":0,\"objects\":[{\"lane\":2,\"y\":0.735048949090746,\"kind\":\"token\"},{\"lane\":2,\"y\":…",
+  "logTail": [
+    "[16:27:26] ← game  score.getBest",
+    "          {}",
+    "[16:27:26] → game  res  ok",
+    "          null",
+    "[16:27:26] ← game  storage.load",
+    "          {\"key\":\"current\"}",
+    "[16:27:26] → game  res  ok",
+    "          null",
+    "[16:27:29] ← game  session.start",
+    "          {}",
+    "[16:27:29] → game  res  ok",
+    "          {\"playSessionId\":\"ps_f12d3c0b931ea3a3daa352e7\",\"startedAt\":\"2026-10-20T08:27:29.198Z\",\"adopted\":false}",
+    "[16:27:34] ← game  storage.save",
+    "          {\"key\":\"current\",\"data\":{\"saveVersion\":1,\"score\":10,\"pickups\":1,\"lives\":3,\"elapsed\":4.983199999998519,\"lane\":0,\"objects\":[{\"lane\":2,\"y\":1.0311536676071165,\"kind\":\"token\"},{\"lane\":2,\"y\":0.7056280012565678,\"kind\":\"token\"},{\"lane\":0,\"y\":0.3723…",
+    "[16:27:34] → game  res  ok",
+    "          {\"key\":\"current\",\"bytes\":371,\"revision\":1,\"updatedAt\":\"2026-10-20T08:27:34.179Z\"}",
+    "[16:27:35] ← game  storage.save",
+    "          {\"key\":\"current\",\"data\":{\"saveVersion\":1,\"score\":20,\"pickups\":2,\"lives\":3,\"elapsed\":6.549699999998535,\"lane\":0,\"objects\":[{\"lane\":2,\"y\":0.735048949090746,\"kind\":\"token\"},{\"lane\":2,\"y\":0.4430102635666456,\"kind\":\"rock\"},{\"lane\":1,\"y\":0.074997…",
+    "[16:27:35] → game  res  ok",
+    "          {\"key\":\"current\",\"bytes\":318,\"revision\":2,\"updatedAt\":\"2026-10-20T08:27:35.742Z\"}"
+  ],
+  "exportStatus": 200,
+  "export": {
+    "ok": true,
+    "game": {
+      "id": "token-trail",
+      "version": "1.0.0"
+    },
+    "savedAt": "2026-10-20T08:27:37.134Z",
+    "save": {
+      "current": {
+        "saveVersion": 1,
+        "score": 20,
+        "pickups": 2,
+        "lives": 3,
+        "elapsed": 6.549699999998535,
+        "lane": 0,
+        "objects": [
+          {
+            "lane": 2,
+            "y": 0.735048949090746,
+            "kind": "token"
+          },
+          {
+            "lane": 2,
+            "y": 0.4430102635666456,
+            "kind": "rock"
+          },
+          {
+            "lane": 1,
+            "y": 0.07499792978866154,
+            "kind": "rock"
+          }
+        ],
+        "spawnIn": 0.36270320000001816,
+        "speed": 0.4537963596046603,
+        "gameOver": false
+      }
+    }
+  },
+  "console": [
+    "[simulator] · simulator ready select states on the right; every bridge message also appears in the console ",
+    "[simulator] · iframe loading http://127.0.0.1:4411/wrapper?src=%2Fres%2F<instance>%2F<nonce>%2Findex.html ",
+    "[simulator] ← hello  Object",
+    "[simulator] → init  Object",
+    "[simulator] → agent-status  Object",
+    "[simulator] → theme  Object",
+    "[simulator] → viewport  Object",
+    "[simulator] · iframe loaded  ",
+    "[simulator] · wrapper loaded relaying bridge traffic ",
+    "[simulator] ← ready  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← score.getBest  Object",
+    "[simulator] → res ok ",
+    "[simulator] ← storage.load  Object",
+    "[simulator] → res ok ",
+    "[simulator] ← session.start  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← storage.save  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← storage.save  Object",
+    "[simulator] → res ok Object"
+  ]
+}

@@ -31,7 +31,10 @@ sdk/index.d.ts           @dsh-game/sdk v1 public typings
 
 ## Quick start
 
-Generated projects are portable: set the CLI path once (or use the CLI directly).
+Generated projects are portable: `npm run *` scripts resolve the CLI via the
+`DSH_GAME_CLI` env var, then `cli` in `dsh-game.config.json`, then the
+repository-template fallback (run `export DSH_GAME_CLI=/path/to/scripts/cli/dsh-game.mjs`
+once per shell, or add a relative `"cli"` to the config).
 
 ```bash
 export DSH_GAME_CLI=/path/to/dsh-game-market/scripts/cli/dsh-game.mjs

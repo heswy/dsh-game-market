@@ -1,0 +1,115 @@
+{
+  "command": "node save-migration assertions (1.0.1 storage.js vs recorded 1.0.0 payload)",
+  "ok": true,
+  "checks": {
+    "restored is not null": true,
+    "old score preserved (20)": true,
+    "old pickups preserved (2)": true,
+    "old lives preserved (1)": true,
+    "old elapsed preserved (9.549526...)": true,
+    "old lane preserved (0)": true,
+    "old objects preserved (3)": true,
+    "new key rocksDodged defaults to 0": true,
+    "serialize emits saveVersion 2": true,
+    "serialize keeps score": true,
+    "serialize keeps old keys, adds rocksDodged": true,
+    "unknown schema rejected (null)": true,
+    "finished run rejected (null)": true,
+    "zero lives rejected (null)": true,
+    "non-object rejected (null)": true,
+    "empty rejected (null)": true
+  },
+  "oldPayload": {
+    "saveVersion": 1,
+    "score": 20,
+    "pickups": 2,
+    "lives": 1,
+    "elapsed": 9.549526000000025,
+    "lane": 0,
+    "objects": [
+      {
+        "lane": 2,
+        "y": 1.135993279544707,
+        "kind": "token"
+      },
+      {
+        "lane": 1,
+        "y": 0.7890924677376159,
+        "kind": "token"
+      },
+      {
+        "lane": 0,
+        "y": 0.4433,
+        "kind": "rock"
+      }
+    ],
+    "spawnIn": 0.5,
+    "speed": 0.45,
+    "gameOver": false
+  },
+  "restored": {
+    "saveVersion": 2,
+    "score": 20,
+    "pickups": 2,
+    "rocksDodged": 0,
+    "lives": 1,
+    "elapsed": 9.549526000000025,
+    "lane": 0,
+    "objects": [
+      {
+        "lane": 2,
+        "y": 1.135993279544707,
+        "kind": "token"
+      },
+      {
+        "lane": 1,
+        "y": 0.7890924677376159,
+        "kind": "token"
+      },
+      {
+        "lane": 0,
+        "y": 0.4433,
+        "kind": "rock"
+      }
+    ],
+    "spawnIn": 0.5,
+    "speed": 0.45,
+    "gameOver": false
+  },
+  "newShape": {
+    "saveVersion": 2,
+    "score": 20,
+    "pickups": 2,
+    "rocksDodged": 0,
+    "lives": 1,
+    "elapsed": 9.549526000000025,
+    "lane": 0,
+    "objects": [
+      {
+        "lane": 2,
+        "y": 1.135993279544707,
+        "kind": "token"
+      },
+      {
+        "lane": 1,
+        "y": 0.7890924677376159,
+        "kind": "token"
+      },
+      {
+        "lane": 0,
+        "y": 0.4433,
+        "kind": "rock"
+      }
+    ],
+    "spawnIn": 0.5,
+    "speed": 0.45,
+    "gameOver": false
+  },
+  "corruptResults": {
+    "unknownSchema": null,
+    "finishedRun": null,
+    "zeroLives": null,
+    "notAnObject": null,
+    "empty": null
+  }
+}

@@ -1,0 +1,11 @@
+### D fixed: rebuild + full gate
+  format:   asset-zip-v2
+  entry:    index.html
+  digest:   64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e
+  manifest: token-trail@1.0.0
+build EXIT:0
+validate project EXIT:0
+pack EXIT:0
+validate zip EXIT:0
+0543f98935f48f2e06b2459a6ea9cd8e61ce706c06645d618220249f576611e4  dist/token-trail-1.0.0.dshgame.zip
+pack sha256 0543f98935f48f2e06b2459a6ea9cd8e61ce706c06645d618220249f576611e4 bytes 147108 fileCount 12 filesDigest 64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e

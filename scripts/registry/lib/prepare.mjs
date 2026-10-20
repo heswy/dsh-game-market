@@ -123,24 +123,16 @@ function submissionFormat(submission) {
   if (!url.endsWith(`/${expectedFileName}`)) {
     return { ok: false, format, message: `package URL file name must be ${expectedFileName}` };
   }
+  const declaredFilesDigest = pkg && pkg.filesDigest;
+  if (declaredFilesDigest !== undefined && declaredFilesDigest !== null) {
+    if (format !== ASSET_ZIP_V2) {
+      return { ok: false, format, message: 'package.filesDigest only applies to asset-zip-v2 packages' };
+    }
+    if (typeof declaredFilesDigest !== 'string' || !/^[a-f0-9]{64}$/.test(declaredFilesDigest)) {
+      return { ok: false, format, message: 'package.filesDigest must be 64 lowercase hex characters' };
+    }
+  }
   return { ok: true, format, message: 'ok' };
-}
-
-/**
- * The shared V1.2 submission validator only knows `.html` package URLs. For a
- * ZIP submission we validate every other field with the same validator against
- * an html-named URL view; the real URL/format consistency is checked above
- * with the V1.5 rules (`E_FORMAT_POLICY`). This keeps one validator dialect
- * without weakening anything else in the submission.
- */
-function submissionValidationView(submission, format) {
-  if (format !== ASSET_ZIP_V2 || !submission || !submission.package) return submission;
-  const url = typeof submission.package.url === 'string' ? submission.package.url : '';
-  if (!url.endsWith('.dshgame.zip')) return submission;
-  return {
-    ...submission,
-    package: { ...submission.package, url: `${url.slice(0, -'.dshgame.zip'.length)}.html` },
-  };
 }
 
 /** Every published release of a catalog (V1.2 single release or V1.5 releases[]). */
@@ -180,7 +172,7 @@ async function loadExistingCatalog(root) {
   return result;
 }
 
-async function downloadSubmissionAssets(submission, http) {
+async function downloadSubmissionAssets(submission, http, format) {
   const packageResult = await downloadVerified(submission.package.url, { sha256: submission.package.sha256, size: submission.package.size }, http, 'package');
   await downloadShaFile(submission.package.sha256Url, submission.package.sha256, http);
   const coverResult = await downloadVerified(submission.media.cover.url, submission.media.cover, http, 'cover');
@@ -188,19 +180,37 @@ async function downloadSubmissionAssets(submission, http) {
   for (let index = 0; index < submission.media.screenshots.length; index += 1) {
     screenshots.push(await downloadVerified(submission.media.screenshots[index].url, submission.media.screenshots[index], http, `screenshot-${index + 1}`));
   }
-  const packageManifest = validatePackageBytes({
+  // §1.4/§1.5: ZIP packages are validated by the same archive pipeline the Host
+  // install uses; the returned filesDigest binds the inner file manifest.
+  const packageValidation = await validatePackageBytes({
     bytes: packageResult.bytes,
     id: submission.game.id,
     version: submission.game.version,
+    format,
   });
+  const declaredFilesDigest = submission.package && submission.package.filesDigest;
+  if (typeof declaredFilesDigest === 'string' && declaredFilesDigest !== packageValidation.filesDigest) {
+    throw cleanError(
+      'E_PUBLISH_FILES_DIGEST',
+      'package.filesDigest does not match the archive file manifest',
+      { declared: declaredFilesDigest, actual: packageValidation.filesDigest },
+    );
+  }
   validateMediaBytes({ bytes: coverResult.bytes, media: submission.media.cover, label: 'cover' });
   for (let index = 0; index < screenshots.length; index += 1) {
     validateMediaBytes({ bytes: screenshots[index].bytes, media: submission.media.screenshots[index], label: `screenshot-${index + 1}` });
   }
-  return { packageBytes: packageResult.bytes, packageManifest, coverBytes: coverResult.bytes, screenshotBytes: screenshots.map((item) => item.bytes) };
+  return {
+    packageBytes: packageResult.bytes,
+    packageManifest: packageValidation.manifest,
+    packageValidation,
+    filesDigest: packageValidation.filesDigest,
+    coverBytes: coverResult.bytes,
+    screenshotBytes: screenshots.map((item) => item.bytes),
+  };
 }
 
-function buildCatalogV2FromPlan({ submission, review, release, format, existingEntry, existingReviewText, nowIso }) {
+function buildCatalogV2FromPlan({ submission, review, release, format, filesDigest, existingEntry, existingReviewText, historicalReviewText, nowIso }) {
   const game = submission.game;
   const reviewText = `${JSON.stringify(review, null, 2)}\n`;
   const reviewDigest = sha256(Buffer.from(reviewText, 'utf8'));
@@ -212,9 +222,7 @@ function buildCatalogV2FromPlan({ submission, review, release, format, existingE
       url: release.packageUrl,
       sha256: submission.package.sha256,
       size: submission.package.size,
-      ...(format === ASSET_ZIP_V2 && typeof submission.package.filesDigest === 'string'
-        ? { filesDigest: submission.package.filesDigest }
-        : {}),
+      ...(format === ASSET_ZIP_V2 && typeof filesDigest === 'string' ? { filesDigest } : {}),
     },
     media: {
       cover: {
@@ -248,8 +256,15 @@ function buildCatalogV2FromPlan({ submission, review, release, format, existingE
     } else {
       const upgraded = upgradeCatalogV1ToV2(existingEntry);
       if (upgraded) {
-        const existingReviewDigest = typeof existingReviewText === 'string'
-          ? sha256(Buffer.from(existingReviewText, 'utf8'))
+        // V1 has no V2 `reviewSha256`: derive it from the stored review of the
+        // *historical* release version (not the new one, whose review file does
+        // not exist yet). Falling back to a fabricated digest would make the
+        // upgraded release fail the E_REVIEW_BINDING check.
+        const storedHistoricalReview = typeof historicalReviewText === 'string'
+          ? historicalReviewText
+          : (isCatalogV2(existingEntry) ? null : existingReviewText);
+        const existingReviewDigest = typeof storedHistoricalReview === 'string'
+          ? sha256(Buffer.from(storedHistoricalReview, 'utf8'))
           : null;
         priorReleases = upgraded.releases.map((item) => ({
           ...item,
@@ -270,6 +285,7 @@ function buildCatalogV2FromPlan({ submission, review, release, format, existingE
     }
   }
 
+  const replaying = priorReleases.some((item) => item.version === newRelease.version);
   return {
     schemaVersion: CATALOG_V2_SCHEMA_VERSION,
     gameId: game.id,
@@ -290,14 +306,21 @@ function buildCatalogV2FromPlan({ submission, review, release, format, existingE
       ...(game.repository ? { repository: game.repository } : {}),
       ...(game.license ? { license: game.license } : {}),
     },
-    releases: [...priorReleases, newRelease],
+    // Idempotent replay of an already-published version/bytes: the historical
+    // release record is append-only, so keep it untouched instead of appending a
+    // duplicate version (catalog validation forbids duplicate versions).
+    releases: replaying ? priorReleases : [...priorReleases, newRelease],
     withdrawnAt,
     createdAt,
-    updatedAt: nowIso,
+    // A replay must not perturb the generated indexes either: keep the recorded
+    // updatedAt so re-running the same publish is byte-deterministic.
+    updatedAt: replaying && existingEntry && typeof existingEntry.updatedAt === 'string'
+      ? existingEntry.updatedAt
+      : nowIso,
   };
 }
 
-function buildPlan({ repo, submission, review, assets, existingEntry, existingReviewText, baseBranch, format = 'html-v1', catalogSchema = 1 }) {
+function buildPlan({ repo, submission, review, assets, existingEntry, existingReviewText, historicalReviewText, baseBranch, format = 'html-v1', catalogSchema = 1 }) {
   const id = submission.game.id;
   const version = submission.game.version;
   const tag = `${id}-v${version}`;
@@ -322,7 +345,7 @@ function buildPlan({ repo, submission, review, assets, existingEntry, existingRe
     updatedAt: nowIso,
   };
   const catalogEntry = catalogSchema === 2
-    ? buildCatalogV2FromPlan({ submission, review, release, format, existingEntry, existingReviewText, nowIso })
+    ? buildCatalogV2FromPlan({ submission, review, release, format, filesDigest: assets.filesDigest, existingEntry, existingReviewText, historicalReviewText, nowIso })
     : catalogEntryFromSubmissionSafe({ submission, review, release });
   assert(catalogEntry, 'E_PUBLISH_INTERNAL', 'could not build the catalog entry');
   return {
@@ -336,6 +359,13 @@ function buildPlan({ repo, submission, review, assets, existingEntry, existingRe
     files: planFiles(id, version),
     existingEntry,
     manifest: assets.packageManifest,
+    package: {
+      format,
+      filesDigest: assets.filesDigest || null,
+      fileCount: assets.packageValidation ? assets.packageValidation.fileCount : null,
+      unpackedBytes: assets.packageValidation ? assets.packageValidation.unpackedBytes : null,
+      entry: assets.packageValidation ? assets.packageValidation.entry : null,
+    },
     selfTest: submission.selfTest,
     review: { reviewedAt: review.reviewedAt, reviewer: review.reviewer, sourceCommit: review.sourceCommit },
   };
@@ -508,10 +538,14 @@ export async function preparePublish(options) {
   const submissionFormatResult = submissionFormat(submission);
   if (!submissionFormatResult.ok) throw cleanError('E_FORMAT_POLICY', submissionFormatResult.message);
   const format = submissionFormatResult.format;
-  const validationSubmission = submissionValidationView(submission, format);
-  const submissionResult = validateSubmission(validationSubmission);
+  // M2: `validateSubmission` understands both formats natively (it honours
+  // `package.format` for the file-name suffix, size ceiling and filesDigest),
+  // so the submission is validated exactly as the author wrote it. The previous
+  // "validation view" rewrote a `.dshgame.zip` URL to `.html` to satisfy an
+  // HTML-only validator; that shim would now hide a real format mismatch.
+  const submissionResult = validateSubmission(submission);
   if (!submissionResult.ok) throw cleanError('E_PUBLISH_SUBMISSION', 'submission failed validation', submissionResult.errors);
-  const reviewResult = validateReview(review, { submission: validationSubmission });
+  const reviewResult = validateReview(review, { submission });
   if (!reviewResult.ok) throw cleanError('E_PUBLISH_REVIEW', 'review failed validation/binding', reviewResult.errors);
 
   const registryDir = path.resolve(options.registryDir);
@@ -594,8 +628,21 @@ export async function preparePublish(options) {
   if (existingReview) {
     assert(JSON.stringify(existingReview) === JSON.stringify(review), 'E_PUBLISH_REVIEW_IMMUTABLE', 'review record already exists with different content');
   }
+  // Upgrading a V1 (single `release`) catalog to V2 needs the stored review of
+  // the historical release to derive its `reviewSha256` binding.
+  let historicalReviewText = null;
+  if (existingSource && !isCatalogV2(existingSource) && existingLatest) {
+    try {
+      historicalReviewText = await fs.readFile(
+        path.join(registryDir, 'reviews', id, `${existingLatest.version}.json`),
+        'utf8',
+      );
+    } catch (_error) {
+      historicalReviewText = null;
+    }
+  }
 
-  const assets = await downloadSubmissionAssets(submission, options.http || {});
+  const assets = await downloadSubmissionAssets(submission, options.http || {}, format);
   const plan = buildPlan({
     repo,
     submission,
@@ -603,6 +650,7 @@ export async function preparePublish(options) {
     assets,
     existingEntry,
     existingReviewText,
+    historicalReviewText,
     baseBranch,
     format,
     catalogSchema,
@@ -751,6 +799,7 @@ export async function preparePublish(options) {
         '',
         `- Source: ${submission.author.sourceRepo}@${submission.author.sourceCommit}`,
         `- Package SHA-256: \`${submission.package.sha256}\` (${submission.package.size} bytes)`,
+        ...(format === ASSET_ZIP_V2 ? [`- File manifest digest: \`${plan.package.filesDigest}\``] : []),
         `- Cover SHA-256: \`${submission.media.cover.sha256}\``,
         `- Screenshots: ${submission.media.screenshots.map((shot) => `\`${shot.sha256}\``).join(', ')}`,
         `- Review: ${review.reviewer.login} at ${review.reviewedAt}`,

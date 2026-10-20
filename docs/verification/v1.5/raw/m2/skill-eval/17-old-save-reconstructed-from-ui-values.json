@@ -1,0 +1,28 @@
+{
+  "saveVersion": 1,
+  "score": 20,
+  "pickups": 2,
+  "lives": 1,
+  "elapsed": 9.549526000000025,
+  "lane": 0,
+  "objects": [
+    {
+      "lane": 2,
+      "y": 1.135993279544707,
+      "kind": "token"
+    },
+    {
+      "lane": 1,
+      "y": 0.7890924677376159,
+      "kind": "token"
+    },
+    {
+      "lane": 0,
+      "y": 0.4433,
+      "kind": "rock"
+    }
+  ],
+  "spawnIn": 0.5,
+  "speed": 0.45,
+  "gameOver": false
+}

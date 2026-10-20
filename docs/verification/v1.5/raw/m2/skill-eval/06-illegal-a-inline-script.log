@@ -1,0 +1,15 @@
+### ILLEGAL A: inline <script> block in index.html
+16:    <!-- INVALID ON PURPOSE (violation A): inline script block -->
+17-    <script>
+18-      window.__illegalInline = true;
+19-    </script>
+20-  </body>
+
+--- build:
+
+> token-trail@1.0.0 build
+> node scripts/build.mjs
+
+error: asset-zip-v2 packages must not contain inline <script> blocks (contract D-C)
+  hint: Move the code to the project entry file; the CLI emits scripts/main.js.
+EXIT:1

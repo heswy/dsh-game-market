@@ -1,0 +1,25 @@
+{
+  "producedAt": "2026-10-20",
+  "files": [
+    "dist/assets/README.txt",
+    "dist/assets/rock.png",
+    "dist/assets/token.png",
+    "dist/audio/README.txt",
+    "dist/audio/hit.wav",
+    "dist/audio/pickup.wav",
+    "dist/dsh-package.json",
+    "dist/dsh-sdk.js",
+    "dist/game.json",
+    "dist/index.html",
+    "dist/levels/level-01.json",
+    "dist/registry-entry.json",
+    "dist/review-checklist.md",
+    "dist/scripts/main.js",
+    "dist/styles/styles.css",
+    "dist/token-trail-1.0.0.dshgame.zip",
+    "dist/token-trail-1.0.0.dshgame.zip.sha256",
+    "dist/token-trail-1.0.1.dshgame.zip",
+    "dist/token-trail-1.0.1.dshgame.zip.sha256",
+    "dist/upload-plan.md"
+  ]
+}

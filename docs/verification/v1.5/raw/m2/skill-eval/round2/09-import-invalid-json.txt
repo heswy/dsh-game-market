@@ -1,0 +1,8 @@
+{
+  "ok": false,
+  "error": "bad_request",
+  "message": "Request body is not valid JSON: Unexpected token 'o', \"not json\" is not valid JSON",
+  "hint": null
+}
+
+status=400

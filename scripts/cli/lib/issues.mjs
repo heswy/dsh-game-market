@@ -62,7 +62,7 @@ const HINTS = Object.freeze({
   E_COMPAT_RUNTIME: 'Lower runtimeVersion (V1 platform is 1.0.0) or target the current Runtime with ^1.0.0.',
   E_CLI_IO: 'Check that the path exists and is readable/writable.',
   E_CLI_PATH_ESCAPE: 'Only reference files inside the game project directory.',
-  E_REGISTRY_INVALID: 'Fix the registry entry/package URL: it must be https, end with <id>-<version>.html and use an allowed host.',
+  E_REGISTRY_INVALID: 'Fix the registry entry/package URL: it must be https, end with the exact package file name (<id>-<version>.html or <id>-<version>.dshgame.zip) and use an allowed host.',
   E_REGISTRY_FIELD_MISSING: 'Fill in the required registry field (cover is mandatory).',
   E_REGISTRY_FIELD_TYPE: 'Use the documented Registry field type.',
   E_REGISTRY_FIELD_RANGE: 'Use https URLs and valid ISO timestamps for Registry metadata.',
@@ -131,13 +131,17 @@ export function makeReport({ errors = [], warnings = [], manifest = null, bytes 
 
 export function formatReport(report, options = {}) {
   const lines = [];
+  // Never print "(0 bytes)" for a failed validation: 0 means "not measured",
+  // not an empty package (e.g. a build/in-memory validation failure).
+  const sizeSuffix =
+    report.ok || (Number.isFinite(report.bytes) && report.bytes > 0) ? ` (${report.bytes} bytes)` : ' (size not measured)';
   if (report.ok) {
-    lines.push(`OK  ${report.source || 'package'} (${report.bytes} bytes)`);
+    lines.push(`OK  ${report.source || 'package'}${sizeSuffix}`);
     if (report.manifest && report.manifest.id) {
       lines.push(`    manifest: ${report.manifest.id}@${report.manifest.version} (${report.manifest.name})`);
     }
   } else {
-    lines.push(`FAIL  ${report.source || 'package'} (${report.bytes} bytes)`);
+    lines.push(`FAIL  ${report.source || 'package'}${sizeSuffix}`);
   }
   for (const [index, error] of report.errors.entries()) {
     lines.push(`  ${index + 1}. ${error.code} (${error.gm}) ${error.path}: ${error.message}`);

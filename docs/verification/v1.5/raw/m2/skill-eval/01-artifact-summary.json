@@ -1,0 +1,67 @@
+{
+  "game": {
+    "id": "token-trail",
+    "name": "Token Trail",
+    "format": "asset-zip-v2"
+  },
+  "v1.0.0": {
+    "zip": "token-trail-1.0.0.dshgame.zip",
+    "sha256": "0543f98935f48f2e06b2459a6ea9cd8e61ce706c06645d618220249f576611e4",
+    "size": 147108,
+    "fileCount": 12,
+    "filesDigest": "64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e",
+    "note": "preserved for the upgrade comparison; never replaced after 1.0.1 work started"
+  },
+  "v1.0.1": {
+    "zip": "token-trail-1.0.1.dshgame.zip",
+    "sha256": "29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a",
+    "size": 147769,
+    "fileCount": 12,
+    "filesDigest": "def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1",
+    "permissions": "0444 for every archive entry (pack printout)",
+    "selfTest": "extracted OK (13 entries @0444)"
+  },
+  "determinism": {
+    "buildTreeHashes": [
+      "tree1=a9f71da40e53a43b89bfd93808b8d2882f4d0bcd9839de3aa9846add8d85253e",
+      "tree2=a9f71da40e53a43b89bfd93808b8d2882f4d0bcd9839de3aa9846add8d85253e",
+      "BUILD_DETERMINISTIC=YES",
+      "zip1=0543f98935f48f2e06b2459a6ea9cd8e61ce706c06645d618220249f576611e4",
+      "zip2=0543f98935f48f2e06b2459a6ea9cd8e61ce706c06645d618220249f576611e4",
+      "PACK_DETERMINISTIC=YES"
+    ],
+    "packDeterminism1_0_0": "PACK_DETERMINISTIC=YES (0543f989\u2026 twice)",
+    "packDeterminism1_0_1": [
+      "PACK_1.0.1_DETERMINISTIC=YES"
+    ]
+  },
+  "registryEntryPackage": {
+    "url": "https://github.com/independent-author/token-trail/releases/download/token-trail-v1.0.1/token-trail-1.0.1.dshgame.zip",
+    "sha256": "29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a",
+    "size": 147769,
+    "releasedAt": "2026-10-20T07:37:52Z",
+    "format": "asset-zip-v2",
+    "filesDigest": "def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1"
+  },
+  "submissionPackageBlock": {
+    "format": "asset-zip-v2",
+    "url": "",
+    "sha256": "29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a",
+    "size": 147769,
+    "sha256Url": "",
+    "filesDigest": "def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1"
+  },
+  "registryEntryMatchesSubmissionPackage": true,
+  "devHealth": {
+    "ok": true,
+    "simulator": true,
+    "build": true,
+    "format": "asset-zip-v2",
+    "fileCount": 12,
+    "game": {
+      "id": "token-trail",
+      "name": "Token Trail",
+      "version": "1.0.1"
+    }
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "url": "http://127.0.0.1:4412/",
+  "health": {
+    "ok": true,
+    "simulator": true,
+    "build": true,
+    "format": "asset-zip-v2",
+    "saveApi": true,
+    "hasSeedSave": true,
+    "saveOut": null,
+    "fileCount": 12,
+    "game": {
+      "id": "token-trail",
+      "name": "Token Trail",
+      "version": "1.0.1"
+    }
+  },
+  "iframeSrc": "http://127.0.0.1:4412/wrapper?src=%2Fres%2F<instance>%2F<nonce>%2Findex.html",
+  "stateSaveBefore": "{\"current\":{\"saveVersion\":1,\"score\":20,\"pickups\":2,\"lives\":3,\"elapsed\":6.549699999998535,\"lane\":0,\"objects\":[{\"lane\":2,\"y\":0.735048949090746,\"kind\":\"token\"},{\"lane\":2,\"y\":0.4430102635666456,\"kind\":\"rock\"},{\"lane\":1,\"y\":0.07499792978866154,\"kind\":\"rock\"}],\"spawnIn\":0.36270320000001816,\"speed\":0.4537963596046603,\"gameOver\":false}}",
+  "logBefore": [
+    "[16:28:50] → game  viewport",
+    "          {\"width\":858,\"height\":538,\"dpr\":1}",
+    "[16:28:50] ·       iframe loaded",
+    "[16:28:50] ·       wrapper loaded  relaying bridge traffic",
+    "[16:28:50] ← game  ready",
+    "          {\"sdkVersion\":\"1.0.0\",\"protocolVersion\":1}",
+    "[16:28:50] → game  res  ok",
+    "          {\"sdkVersion\":\"1.0.0\",\"protocolVersion\":1,\"runtimeVersion\":\"1.0.0\",\"gameId\":\"token-trail\",\"gameVersion\":\"1.0.1\",\"locale\":\"zh-CN\",\"theme\":\"dark\",\"reducedMotion\":false,\"capabilities\":[\"storage\",\"score\"],\"viewport\":{\"width\":858,\"height\":538,\"d…",
+    "[16:28:50] ← game  score.getBest",
+    "          {}",
+    "[16:28:50] → game  res  ok",
+    "          null",
+    "[16:28:50] ← game  storage.load",
+    "          {\"key\":\"current\"}",
+    "[16:28:50] → game  res  ok",
+    "          {\"key\":\"current\",\"data\":{\"saveVersion\":1,\"score\":20,\"pickups\":2,\"lives\":3,\"elapsed\":6.549699999998535,\"lane\":0,\"objects\":[{\"lane\":2,\"y\":0.735048949090746,\"kind\":\"token\"},{\"lane\":2,\"y\":0.4430102635666456,\"kind\":\"rock\"},{\"lane\":1,\"y\":0.074997…"
+  ],
+  "exportAfterContinue": {
+    "ok": true,
+    "game": {
+      "id": "token-trail",
+      "version": "1.0.1"
+    },
+    "savedAt": "2026-10-20T08:29:01.536Z",
+    "save": {
+      "current": {
+        "saveVersion": 2,
+        "score": 40,
+        "pickups": 4,
+        "rocksDodged": 1,
+        "lives": 0,
+        "elapsed": 11.649469999998502,
+        "lane": 1,
+        "objects": [
+          {
+            "lane": 2,
+            "y": 0.4392928018275757,
+            "kind": "token"
+          },
+          {
+            "lane": 1,
+            "y": 0.10148365329784088,
+            "kind": "rock"
+          }
+        ],
+        "spawnIn": 0.3015059600000185,
+        "speed": 0.5149936305442399,
+        "gameOver": true
+      }
+    }
+  },
+  "corruptImport": {
+    "ok": true,
+    "imported": true,
+    "bytes": 42
+  },
+  "reloadClicked": true,
+  "logAfterCorrupt": [
+    "[16:29:01] ·       wrapper loaded  relaying bridge traffic",
+    "[16:29:01] ·       iframe loaded",
+    "[16:29:01] ← game  ready",
+    "          {\"sdkVersion\":\"1.0.0\",\"protocolVersion\":1}",
+    "[16:29:01] → game  res  ok",
+    "          {\"sdkVersion\":\"1.0.0\",\"protocolVersion\":1,\"runtimeVersion\":\"1.0.0\",\"gameId\":\"token-trail\",\"gameVersion\":\"1.0.1\",\"locale\":\"zh-CN\",\"theme\":\"dark\",\"reducedMotion\":false,\"capabilities\":[\"storage\",\"score\"],\"viewport\":{\"width\":858,\"height\":538,\"d…",
+    "[16:29:01] ← game  score.getBest",
+    "          {}",
+    "[16:29:01] → game  res  ok",
+    "          {\"score\":40,\"achievedAt\":\"2026-10-20T08:28:59.883Z\",\"meta\":{\"seconds\":12}}",
+    "[16:29:01] ← game  storage.load",
+    "          {\"key\":\"current\"}",
+    "[16:29:01] → game  res  ok",
+    "          {\"key\":\"current\",\"data\":{\"saveVersion\":2,\"score\":40,\"pickups\":4,\"rocksDodged\":1,\"lives\":0,\"elapsed\":11.649469999998502,\"lane\":1,\"objects\":[{\"lane\":2,\"y\":0.4392928018275757,\"kind\":\"token\"},{\"lane\":1,\"y\":0.10148365329784088,\"kind\":\"rock\"}],\"s…"
+  ],
+  "exportCorruptRun": {
+    "ok": true,
+    "game": {
+      "id": "token-trail",
+      "version": "1.0.1"
+    },
+    "savedAt": "2026-10-20T08:29:07.018Z",
+    "save": {
+      "current": {
+        "saveVersion": 2,
+        "score": 0,
+        "pickups": 0,
+        "rocksDodged": 0,
+        "lives": 3,
+        "elapsed": 1.0832000000000004,
+        "lane": 1,
+        "objects": [
+          {
+            "lane": 1,
+            "y": 0.07293580382863823,
+            "kind": "token"
+          }
+        ],
+        "spawnIn": 0.32959999999999984,
+        "speed": 0.3885364402096731,
+        "gameOver": false
+      }
+    }
+  },
+  "console": [
+    "[simulator] · seeded save from CONFIG.initialSave 1 key(s) ",
+    "[simulator] · simulator ready select states on the right; every bridge message also appears in the console ",
+    "[simulator] · iframe loading http://127.0.0.1:4412/wrapper?src=%2Fres%2F<instance>%2F<nonce>%2Findex.html ",
+    "[simulator] ← hello  Object",
+    "[simulator] → init  Object",
+    "[simulator] → agent-status  Object",
+    "[simulator] → theme  Object",
+    "[simulator] → viewport  Object",
+    "[simulator] · iframe loaded  ",
+    "[simulator] · wrapper loaded relaying bridge traffic ",
+    "[simulator] ← ready  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← score.getBest  Object",
+    "[simulator] → res ok ",
+    "[simulator] ← storage.load  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← session.start  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← storage.save  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← score.submit  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← session.end  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← storage.save  Object",
+    "[simulator] → res ok Object",
+    "[simulator] · iframe loading http://127.0.0.1:4412/wrapper?src=%2Fres%2F<instance>%2F<nonce>%2Findex.html ",
+    "[simulator] ← hello  Object",
+    "[simulator] → init  Object",
+    "[simulator] → agent-status  Object",
+    "[simulator] → theme  Object",
+    "[simulator] → viewport  Object",
+    "[simulator] · wrapper loaded relaying bridge traffic ",
+    "[simulator] · iframe loaded  ",
+    "[simulator] ← ready  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← score.getBest  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← storage.load  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← session.start  Object",
+    "[simulator] → res ok Object",
+    "[simulator] ← storage.save  Object",
+    "[simulator] → res ok Object"
+  ]
+}

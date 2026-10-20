@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "game": {
+    "id": "token-trail",
+    "version": "1.0.1"
+  },
+  "savedAt": "2026-10-20T08:28:33.027Z",
+  "save": {
+    "current": {
+      "saveVersion": 1,
+      "score": 20,
+      "pickups": 2,
+      "lives": 3,
+      "elapsed": 6.549699999998535,
+      "lane": 0,
+      "objects": [
+        {
+          "lane": 2,
+          "y": 0.735048949090746,
+          "kind": "token"
+        },
+        {
+          "lane": 2,
+          "y": 0.4430102635666456,
+          "kind": "rock"
+        },
+        {
+          "lane": 1,
+          "y": 0.07499792978866154,
+          "kind": "rock"
+        }
+      ],
+      "spawnIn": 0.36270320000001816,
+      "speed": 0.4537963596046603,
+      "gameOver": false
+    }
+  }
+}

@@ -199,19 +199,6 @@ export const PAUSE_REASONS = Object.freeze(['user', 'hidden', 'leave', 'waiting-
 export const SAVE_REASONS = Object.freeze(['interval', 'pause', 'hidden', 'leave', 'agent-complete']);
 export const SESSION_OUTCOMES = Object.freeze(['completed', 'lost', 'abandoned', 'quit']);
 
-/** V0/V1 built-in games. Paths are relative to the bundle root. */
-export const BUILTIN_GAMES = Object.freeze([
-  Object.freeze({
-    id: 'snake',
-    name: 'Snake',
-    version: '1.0.0',
-    dir: 'games/snake',
-    manifestFile: 'game.json',
-    entryFile: 'dist/index.html',
-    viewport: Object.freeze({ width: 960, height: 540, fit: 'contain' }),
-  }),
-]);
-
 export const AGENT_ACK_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**

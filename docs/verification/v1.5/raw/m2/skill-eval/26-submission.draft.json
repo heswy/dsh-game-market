@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "submissionType": "update",
+  "game": {
+    "id": "token-trail",
+    "name": "Token Trail",
+    "version": "1.0.1",
+    "description": "Collect glowing tokens while dodging rocks in a three-lane keyboard arcade run.",
+    "categories": [
+      "arcade"
+    ],
+    "tags": [
+      "arcade",
+      "keyboard",
+      "zip"
+    ],
+    "capabilities": [
+      "storage",
+      "score"
+    ],
+    "sdkVersion": "^1.0.0",
+    "runtimeVersion": "^1.0.0",
+    "license": "MIT"
+  },
+  "author": {
+    "login": "",
+    "githubUserId": 0,
+    "sourceRepo": "",
+    "sourceCommit": "71de6a4fe8b63e8f7ff56b70f0352e3287d1ebfd",
+    "buildInstructions": "npm run build && npm run validate && npm run pack && npm run validate"
+  },
+  "package": {
+    "format": "asset-zip-v2",
+    "url": "",
+    "sha256": "29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a",
+    "size": 147769,
+    "sha256Url": "",
+    "filesDigest": "def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1"
+  },
+  "media": {
+    "cover": {
+      "url": "",
+      "sha256": "f566477b5369ec27f0fea028bcfd86745e62dcf1ccc6b7d0901cc7e5284bd0bc",
+      "size": 170789,
+      "type": "png"
+    },
+    "screenshots": [
+      {
+        "url": "",
+        "sha256": "c6bdc7fa2d1a2df6beb16f206b8afc27ec85bd853853494d8cbbb54191dcb5eb",
+        "size": 177050,
+        "type": "png"
+      },
+      {
+        "url": "",
+        "sha256": "a8a9a0f39c3d9cc4ad4a0b0622cac5cb830495fec8cbc7b65ef6f5390a5122f0",
+        "size": 174007,
+        "type": "png"
+      }
+    ]
+  },
+  "licensing": {
+    "codeLicense": "MIT",
+    "assetLicense": "MIT",
+    "archivePermission": true
+  },
+  "selfTest": {
+    "ready": true,
+    "pauseResume": true,
+    "beforeSave": true,
+    "continuePlay": true,
+    "keyboard": true,
+    "narrowWindow": true,
+    "theme": true,
+    "fullBleed": true,
+    "safeArea": true,
+    "noNetwork": true
+  },
+  "update": {
+    "changelog": "1.0.1: adds a dodged-rocks counter (save schema 2, migrates 1.0.0 saves), tuned spawn curve, and package-relative token/rock art plus two WAV effects.",
+    "saveCompatibility": "compatible",
+    "breakingChanges": ""
+  },
+  "pending": [
+    "author.login (numeric GitHub user id not available to this isolated author environment)",
+    "author.githubUserId",
+    "author.sourceRepo (public repository hosting pending)",
+    "package.url (public HTTPS hosting pending)",
+    "package.sha256Url",
+    "media.cover.url",
+    "media.screenshots[].url"
+  ]
+}

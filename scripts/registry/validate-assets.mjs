@@ -10,11 +10,12 @@
  *     old HTML release and a newer ZIP release are both re-downloaded and
  *     re-hashed on every PR.
  *
- * `html-v1` packages are validated with the shared single-file validator.
- * `asset-zip-v2` packages are verified at the outer layer here (exact sha256 /
- * size / ZIP magic); the descriptor + per-file manifest validation is the Host
- * ZIP pipeline's job (§1.4/§1.5, M1-A) — this script must not keep a second
- * ZIP reader.
+ * Both package formats are validated with the same code the Host install uses:
+ * `html-v1` through the shared single-file validator, `asset-zip-v2` through
+ * the Host archive pipeline (`packages/host/src/zip.js`, §1.4/§1.5/§3/§4) —
+ * limits, path/type/content rules, CRC, inner file manifest and
+ * `fileManifestDigest`. A ZIP release must also still match its recorded
+ * `package.filesDigest`; an outer sha256 match alone is not sufficient.
  *
  *   node scripts/registry/validate-assets.mjs --registry-dir .
  */
@@ -29,9 +30,6 @@ import {
   validatePackageBytes,
 } from './lib/assets.mjs';
 import { classifyPackageFormat } from './lib/catalog.mjs';
-
-const ZIP_MAGIC = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
-const ZIP_EMPTY_MAGIC = Buffer.from([0x50, 0x4b, 0x05, 0x06]);
 
 async function listCatalog(root) {
   const directory = path.join(root, 'catalog');
@@ -66,21 +64,6 @@ function releasesOf(entry) {
   }];
 }
 
-function assertZipOuter({ bytes, label }) {
-  if (bytes.length > LIMITS.zip.zipOuterBytes) {
-    const error = new Error(`${label} exceeds zipOuterBytes`);
-    error.code = 'E_PUBLISH_TOO_LARGE';
-    throw error;
-  }
-  const magic = bytes.subarray(0, 4);
-  const ok = magic.equals(ZIP_MAGIC) || (bytes.length >= 22 && magic.equals(ZIP_EMPTY_MAGIC));
-  if (!ok) {
-    const error = new Error(`${label} is not a ZIP archive (bad magic)`);
-    error.code = 'E_PUBLISH_PACKAGE_INVALID';
-    throw error;
-  }
-}
-
 async function verifyRelease({ id, release, http }) {
   const label = `${id}@${release.version}`;
   const format = release.format || classifyPackageFormat(release.package && release.package.url);
@@ -88,8 +71,21 @@ async function verifyRelease({ id, release, http }) {
     sha256: release.package.sha256,
     size: release.package.size,
   }, http, `${label} package`);
-  if (format === 'asset-zip-v2') assertZipOuter({ bytes: pkg.bytes, label: `${label} package` });
-  else validatePackageBytes({ bytes: pkg.bytes, id, version: release.version });
+  const validation = await validatePackageBytes({ bytes: pkg.bytes, id, version: release.version, format });
+  if (format === 'asset-zip-v2') {
+    if (pkg.bytes.length > LIMITS.zip.zipOuterBytes) {
+      const error = new Error(`${label} package exceeds zipOuterBytes`);
+      error.code = 'E_PUBLISH_TOO_LARGE';
+      throw error;
+    }
+    const recorded = release.package && release.package.filesDigest;
+    if (typeof recorded === 'string' && recorded !== validation.filesDigest) {
+      const error = new Error(`${label} package.filesDigest does not match the archive file manifest`);
+      error.code = 'E_PUBLISH_FILES_DIGEST';
+      error.details = { recorded, actual: validation.filesDigest };
+      throw error;
+    }
+  }
 
   // Media can only be authenticated when the approved digest + size are
   // recorded. V1.2 catalog records always carry them; a minimal V1.5 catalog may
@@ -116,7 +112,13 @@ async function verifyRelease({ id, release, http }) {
       validateMediaBytes({ bytes: downloaded.bytes, media: shot, label: `${label} screenshot ${index + 1}` });
     }
   }
-  return { gameId: id, version: release.version, format };
+  return {
+    gameId: id,
+    version: release.version,
+    format,
+    filesDigest: validation.filesDigest,
+    fileCount: validation.fileCount,
+  };
 }
 
 export async function validateAssets(registryDir, http = {}) {

@@ -752,6 +752,72 @@ export function register() {
     assert.deepEqual(await host.listDataFiles('staging'), []);
   });
 
+  // -------------------------------------------------------------------------
+  // M2-FIX: uninstall must prune the retained previous ZIP version directory
+  // -------------------------------------------------------------------------
+
+  test('M2-FIX uninstall removes current and retained previous ZIP directories', async (t) => {
+    const host = await createHostHarness(t, { config: offlineConfig() });
+    assert.equal(
+      (await installLocalZip(host, zipPackageFor('1.0.0').zip, { operationId: 'unzip-first' })).response.status,
+      200
+    );
+    assert.equal(
+      (await installLocalZip(host, zipPackageFor('1.0.1', { scriptContent: "document.body.textContent = '1.0.1';\n" }).zip, { operationId: 'unzip-upgrade' })).response.status,
+      200
+    );
+    const record = await readRecord(host);
+    assert.equal(record.version, '1.0.1');
+    assert.equal(record.previousVersion, '1.0.0');
+    assert.equal(await host.pathExists('packages/orbit-courier/1.0.0/dsh-package.json'), true);
+    assert.equal(await host.pathExists('packages/orbit-courier/1.0.1/dsh-package.json'), true);
+    await saveProgress(host, { level: 7 });
+    const savesBefore = (await readProgress(host)).values;
+    const savePath = host.filePath('saves', GAME_ID, 'current.json');
+    const saveBytesBefore = await fs.readFile(savePath);
+    assert.equal((await versionTreeHashes(host, '1.0.0')).size > 0, true);
+
+    const removed = await host.data(ROUTES.UNINSTALL, {
+      body: { gameId: GAME_ID, operationId: nextOperation('unzip-uninstall') },
+    });
+    assert.deepEqual(removed, { gameId: GAME_ID, removed: true, dataDeleted: false, ignored: false });
+    assert.equal(await host.pathExists('packages/orbit-courier'), false, 'all version directories must be pruned');
+    assert.equal(await host.pathExists('packages/1.0.0'), false);
+    assert.equal(await readRecord(host), null);
+    // deleteData:false keeps the save data (existing semantics unchanged). The
+    // save API is unavailable once the game is uninstalled, so assert the file.
+    assert.equal(await host.pathExists(`saves/${GAME_ID}/current.json`), true);
+    assert.deepEqual(await fs.readFile(savePath), saveBytesBefore);
+    const saveJson = JSON.parse(await fs.readFile(savePath, 'utf8'));
+    assert.deepEqual(saveJson.values, savesBefore);
+
+    const again = await host.data(ROUTES.UNINSTALL, {
+      body: { gameId: GAME_ID, operationId: nextOperation('unzip-uninstall-again') },
+    });
+    assert.equal(again.removed, false);
+    assert.equal(again.ignored, true);
+  });
+
+  test('M2-FIX deleteData:true uninstall removes both versions and the save data', async (t) => {
+    const host = await createHostHarness(t, { config: offlineConfig() });
+    assert.equal((await installLocalZip(host, zipPackageFor('1.0.0').zip, { operationId: 'unzip-del-first' })).response.status, 200);
+    assert.equal((await installLocalZip(host, zipPackageFor('1.0.1').zip, { operationId: 'unzip-del-upgrade' })).response.status, 200);
+    await saveProgress(host, { level: 9 });
+
+    const removed = await host.data(ROUTES.UNINSTALL, {
+      body: {
+        gameId: GAME_ID,
+        deleteData: true,
+        confirmDataDeletion: true,
+        operationId: nextOperation('unzip-delete'),
+      },
+    });
+    assert.equal(removed.dataDeleted, true);
+    assert.equal(await host.pathExists('packages/orbit-courier'), false);
+    assert.equal(await host.pathExists(`saves/${GAME_ID}`), false);
+    assert.equal(await host.pathExists('saves'), true);
+  });
+
   test('CR7-02 failure: record-write failure keeps reused bytes and cleans only new directories', async (t) => {
     // (a) A brand-new placement whose record write fails must be cleaned up: no
     //     orphan version directory may be left behind.

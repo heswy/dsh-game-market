@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "errors": [],
+  "warnings": [],
+  "truncated": false,
+  "manifest": {
+    "id": "token-trail",
+    "name": "Token Trail",
+    "version": "1.0.1"
+  },
+  "bytes": 147769,
+  "source": "<work>/token-trail/dist/token-trail-1.0.1.dshgame.zip",
+  "format": "asset-zip-v2",
+  "entry": "index.html",
+  "fileCount": 12,
+  "filesDigest": "def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1"
+}

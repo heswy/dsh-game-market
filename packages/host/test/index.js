@@ -24,6 +24,7 @@ import { register as v1Maintenance } from './cases/v1-maintenance.js';
 import { register as v15InstallZip } from './cases/v1.5-install-zip.js';
 import { register as v15RegistryV2 } from './cases/v1.5-registry-v2.js';
 import { register as v15Resources } from './cases/v1.5-resources.js';
+import { register as v15BuiltinPackage } from './cases/v1.5-builtin-package.js';
 
 health();
 games();
@@ -42,3 +43,4 @@ v1Maintenance();
 v15InstallZip();
 v15RegistryV2();
 v15Resources();
+v15BuiltinPackage();

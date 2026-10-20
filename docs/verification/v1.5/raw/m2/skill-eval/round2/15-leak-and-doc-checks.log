@@ -1,0 +1,19 @@
+### production route/endpoint leak check
+-- /dev/save in packages/host:
+-- /dev/save in whole non-CLI source:
+-- where dev save API is defined:
+<repo>/scripts/cli/test/dev-save.test.js
+<repo>/scripts/cli/dev-server.mjs
+<repo>/scripts/cli/lib/dev-harness.mjs
+<repo>/scripts/cli/lib/cli.mjs
+
+### PD-6 guide /game fixed:
+39:node scripts/cli/create-dsh-game.mjs my-game --template vanilla --dir /tmp/games
+41:cd /tmp/games/my-game
+70:dist/registry-entry.json             可直接粘进 registry/games.json 的条目
+296:npm run dev -- --save-out /tmp/game.save.json   # 每次存档写一份 JSON（dev only）
+297:npm run dev -- --seed-save /tmp/game.save.json  # 从该 JSON 启动 fake storage（dev only）
+303:- **`html-v1`**：单层 iframe 加载 `dist/index.html`，可用 `curl http://127.0.0.1:4321/game` 取到构建产物；
+
+### PD-5 template residual 'Orbit Catch':
+-- generated project check later.

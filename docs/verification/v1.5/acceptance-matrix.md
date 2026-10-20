@@ -182,3 +182,128 @@ CR7-01 的修复同时收紧了 §7.5 的一条边界：**「可文档化资源�
 | Runtime/SDK/Client | `packages/runtime/test/wrapper.test.js`、`tests/v1.5-runtime-resources.test.js`、`packages/client/test/bundle-lib.test.js` |
 | 浏览器 | `docs/verification/v1.5/m1-browser.md`、`docs/verification/v1.5/raw/m1/*.json`（A02/A06 最终 + 3 份 P0 阻断证据 + 6 张截图）；探针 `scripts/verification/v1.5/m1/**` |
 | 契约落地 | `docs/V1.5-CONTRACTS.md` §15（实现↔契约对照）、§7.5.2（两层沙箱模型） |
+
+---
+
+# V1.5 M2 验收矩阵（内置资源包游戏 + 双格式工具链）
+
+> 记录日期：2026-10-20。分支 `feat/v1.5-game-and-tooling`，基线 `origin/main` `9388b37`（M1 已合入）。
+> 契约落地见 `docs/V1.5-CONTRACTS.md` §16；证据目录 `docs/verification/v1.5/raw/m2/`。
+> 证据级别同 §0：`automated` / `isolated-browser`（CDP + 真实 DSH 页面）/ `not-run`。
+
+## 10. 门禁总表
+
+| 项 | 命令 | 结果 |
+|---|---|---|
+| 完整门禁 | `npm install && npm run verify` | **1149/1149 pass，exit 0**；`CHECK OK (42)` |
+| 新游戏自带测试 | `node --test "games/orbit-courier/test/*.test.js"` | 27/27（18 规则 + 9 包契约，含真 ZIP → `extractPackageArchive` 往返） |
+| 内置资源包 Host | `node --test "packages/host/test/index.js"` | 225/225（含 11 条 builtin `asset-zip-v2` 用例） |
+| 双格式 CLI | `node --test "scripts/cli/test/*.test.js"` | 68/68（含 `format-v2.test.js` 双格式 + 确定性 + 非法包拒绝） |
+| ZIP 投稿发布链 | `node --test tests/v1.5-publish-zip.test.js` | 10/10 |
+| 双格式投稿校验 | `node --test tests/v1.5-submission-format.test.js` | 6/6 |
+| 构建可复现 | `node scripts/build.mjs` ×2 + `shasum -a 256` | `client.js`、四个 HTML 游戏 dist + orbit-courier dist、两代 registry 均字节一致 |
+
+## 11. M2 交付逐项
+
+### 11.1 新内置游戏 `orbit-courier`（A08 对应）
+
+| 子项 | 级别 | 证据 | 结论 |
+|---|---|---|---|
+| 真实使用独立 ESM/CSS/图片/关卡 JSON/本地音效 | automated | `dist/` 23 条目（22 files + descriptor）：`scripts/*.js`(8) + `styles/game.css` + 3 PNG + `levels/shift-01.json` + 6 WAV，`dsh-package.json` 清单绑定 | **通过** |
+| 确定性构建 | automated | 两次构建描述符 sha256 一致；逐文件字节一致（`build.test.js`） | **通过** |
+| 约 120 秒一局 / 键盘 / 计分 / 暂停 / 自动保存 / Continue | isolated-browser | `raw/m2/M2-A08-orbit-courier-2026-10-20T08-40-24-434Z.json` **34/34 required**（见 §11.1.1） | **通过** |
+| 音效手势解锁 + 可静音 | isolated-browser | A08 证据：`audio-locked-before-first-gesture` / `audio-unlocked-after-first-gesture` / `M` 键静音 + `mute-persists-across-continue` | **通过** |
+| 与现有四款共存、builtin 不可卸载、复用资源包校验器与资源服务 | automated | builtin 用例：`/uninstall` → `GM-4038`；catalog 列出 5 款；资源 origin/凭证/CSP 与安装包同路径 | **通过** |
+| 375px / 深色 / reduced-motion | isolated-browser | `raw/m2/M2-visual-responsive-2026-10-20T07-34-15-454Z.json` **18/18 required** | **通过** |
+| 多资源真实加载（ESM/CSS/PNG/JSON/WAV 逐个 200 + 精确 MIME + 两层 iframe） | isolated-browser | `raw/m2/M2-A02-orbit-multiresource-2026-10-20T07-36-13-978Z.json` **21/21 required** | **通过** |
+
+#### 11.1.1 A08 真实时长与 Continue
+
+**`raw/m2/M2-A08-orbit-courier-2026-10-20T08-40-24-434Z.json` → 34/34 required（35 checks，1 条非 required），exit 0。**
+
+| 断言 | 实测 |
+|---|---|
+| `run-really-lasted-about-120s-of-game-time` | `elapsedMs = 120000`（一局真实打满 120 秒游戏时间） |
+| `run-ends-naturally` | `endReason = "shift-complete"`，`attempts = 1`，score 280 / deliveries 10（不是撞毁提前结束） |
+| `at-least-5-minutes-active-wall-clock-play` | `activePlayMs = 351934`（≈5.87 分钟墙钟），`sessions = 5`；区间墙钟 419,803 ms，活动 ≤ 墙钟 |
+| `continue-offered-after-exit` | 真实 UI「我的游戏」行 `playText = "继续"` |
+| `continue-launch-shows-continue-action` | 菜单 `#btn-continue` 存在（`continueButton:true`） |
+| `continue-restores-elapsed-time-and-score` | 退出前 `elapsedMs 43120 / score 200 / muted=true`（Host `current.json` + meta revision 15 实测落盘）→ Continue 后 `43200 / 200 / true` |
+| `mute-persists-across-continue` | `muted = true` 跨 Continue 保持 |
+| `score-grows-during-real-play` / `space-pauses-the-real-run` / `clock-stops-while-paused` | 真实键盘驱动，暂停时 `elapsedMs` 冻结 |
+| 音效 | 首次手势前 `unlocked:false` 且 `playResult:false`；手势后 `unlocked:true` 且可播放；`M` 静音/恢复 |
+
+**M2 期间发现并修复的游戏缺陷（都有回归测试）**：
+1. `storage.load()` 返回的是 V1 envelope `{key,data,revision,updatedAt}`，旧代码把 envelope 当 payload → Continue/静音/最高分全部失效（`resume.test.js` 用真实 envelope 覆盖）。
+2. 从「继续」重开时 host 先发 `pause` lifecycle，旧代码把**菜单态 elapsed=0** 写回、覆盖有效存档（A08 的 112ms/score 0 即此因）→ `shouldPersistRun()` 只允许 playing/paused 且 `elapsed≥500ms` 落盘。
+3. 自动化验收需要**只读**观察面 → 新增 `window.__ORBIT_PROBE__.snapshot()`（冻结副本、无 setter、无输入注入、不改状态），README 已说明不影响游戏行为。
+
+### 11.2 双格式开发工具
+
+| 子项 | 级别 | 证据 | 结论 |
+|---|---|---|---|
+| CLI `create/build/validate/pack/publish` 显式 `--format`；不带时与 M1 一致 | automated | `scripts/cli/test/**` 68/68；旧 55 条 html-v1 测试未改且通过 | **通过** |
+| `asset-zip-v2` 产物确定性 + sha256/size/fileCount/权限/自测 | automated | 样例：`sha256 2c849455…`、125,895 B、fileCount 8（+descriptor 共 9 entries @0444）、`filesDigest 22499aa7…`；两次 pack 同 sha | **通过** |
+| React 资源包用相对 `base`（非 singlefile）并校验最终 ZIP | automated | `templates/react/zip/vite.config.ts` `base:'./'` + 外部 `assets/*.js|css`；真实 `tsc --noEmit` + vite 构建 + `pack` + `validate`（探针用真实 `npm install` 环境验证） | **通过**（真实依赖链由探针验证，见 §12） |
+| Simulator 支持按格式加载 | automated | `dev` 对 zip 走 wrapper + `/res/<instance>/<token>/…`，`/health` 报 `format/fileCount`；html-v1 单文件路径不变 | **通过** |
+
+### 11.3 ZIP 投稿发布工具链
+
+| 子项 | 级别 | 证据 | 结论 |
+|---|---|---|---|
+| prepare/validate-assets/模板/CI 认识两种包 | automated | `tests/v1.5-publish-zip.test.js` 10/10 + `scripts/registry/test/*` 31/31 | **通过** |
+| 复用 M1 归档校验，绑定外层 ZIP SHA + 内部清单摘要 | automated | `validatePackageBytes()` 动态 import `zip.js#extractPackageArchive`；catalog v2 写 `sha256`+`size`+`filesDigest` 三重绑定 | **通过** |
+| 下载→归档校验→catalog v2→两代索引 完整流程 | automated | publish-zip 第 2 条：真实 ZIP 下载→校验→catalog v2→双索引；再生成字节一致 | **通过** |
+| dry-run 零远端写入、历史不可变、同版本禁换字节/格式、双投影撤下、失败恢复、审核边界 | automated | publish-zip 第 1/3/4/5/6/7 条逐项断言（`git.calls==0`/`github.calls==0`/快照不变；`E_PUBLISH_VERSION_IMMUTABLE`/`E_FORMAT_POLICY`；撤下双移除保留审计；下载/上传/commit/history 失败无半成品） | **通过** |
+| 不自行更新生产 pin/资产/合并内容 PR | — | 未执行（按纪律） | 合规 |
+
+### 11.4 Skill
+
+| 子项 | 级别 | 证据 | 结论 |
+|---|---|---|---|
+| 独立 AI 仅凭 Skill 完成资源包开发/验证/投稿材料 | 独立 AI 评估（隔离目录） | `docs/verification/v1.5/m2-skill-eval.md` + `raw/m2/skill-eval/**`（46 份原始证据） | **核心链路 PASS**；首轮暴露 3×P1 + 4×P2 + 6×P3 Skill 缺陷与 6 个产品缺陷，已按清单修复（见 §11.4.1） |
+| 非法包 → 修复 → 重验 | 同上 + Skill 内实测输出 | 评估者在隔离目录真跑 4 类：构建期内联 `<script>`、外链 CSS（exit 1）、归档期 `GM-4278` 陈旧描述符、`GM-4283` 归档内联；修复后回到原 sha256 | **通过** |
+| 1.0.0 → 1.0.1 旧 save 兼容 | 同上 | 评估者实操：`save.schemaVersion 1→2` + 双版本 `deserialize`，1.0.0 存档载入 1.0.1 → Continue 恢复 score 20/pickups 2 并写回 v2、损坏档安全重开；node 断言 16/16 | **通过** |
+| 命令可执行、可移植、无本机路径 | automated | `scripts/check.mjs` 扫描 `/Users/` 零命中；Skill 命令逐条实测 exit 0 | **通过** |
+
+#### 11.4.1 评估暴露缺陷的修复
+
+**Skill（`skills/dsh-game-developer/**`）**
+- P1：① 「零 npm 依赖/离线」错误陈述 → 改为明确 `npm install` 前置（M2 起 `yauzl@3.4.0` 是 `validate/pack` 的依赖）；② 1.0.0→1.0.1 旧存档的 Simulator 步骤不可执行 → CLI 新增 dev-only `--seed-save/--save-out` 与 `/dev/save/export|import`，Skill 按实际 flag 写可执行步骤；③ 投稿材料缺生成步骤 → 补 `submission.draft.json` 生成、`pending[]` 白名单与 `validateSubmission(draft)` 调用命令。
+- P2：ZIP publish `--url` 约束；`filesDigest` 命名统一；`dev` 的端口/health/停止；`save.schemaVersion` 升级语义。
+- P3：模板文案、`styles/` 路径、`package.json` 版本一致性、ZIP 两层 iframe 说明。
+
+**产品（`scripts/cli/**`、`templates/**`、`docs/developer-guide.md`）**
+- PD-1 `publish` 的 review-checklist 按格式措辞；PD-2 upload-plan/registry-entry/submission 统一 `filesDigest`；PD-3 `validate` 失败不再误报 `(0 bytes)`；PD-4 `dev --help` 补齐专属选项与两层 iframe 说明；PD-5 模板去除残留示例名；PD-6 developer-guide §5 按格式说明 `/game`（ZIP 故意 404）。
+- P1-A 无 `node_modules` 时 `E_TOOLCHAIN_DEPS_MISSING`（exit 2 + `npm install` hint），不再裸模块错误。
+- P1-B 新增 dev-only 存档导出/导入（`--seed-save`/`--save-out`、`/dev/save/export|import`），生产 Host 不暴露。
+
+验证：CLI **74/74**、全仓 **1163/1163**；Skill 命令逐条实测（评估者首轮报告 + 修复后复验）。
+
+### 11.5 CR7 回归（M1 已修，不得回归）
+
+| 子项 | 级别 | 证据 | 结论 |
+|---|---|---|---|
+| 所有 HTML/SVG 文档带 asset CSP，同源第二页外发 sink 零请求 | isolated-browser | `raw/m2/M2-CR7-document-csp-2026-10-20T08-01-43-798Z.json` **21/21 required**（响应头逐指令 + sink 0 请求/0 upgrade + 同源读取 200 正对照） | **通过** |
+| 历史目录复用与失败保护 | automated + isolated-browser | host 用例（回滚/同版本不同内容 409/记录写失败不删复用目录）+ 生命周期证据（回滚后目录 inode+mtime 证明复用） | **通过** |
+| ZIP 原始字节上传 | isolated-browser | 生命周期证据：UI 点击 → `application/zip` → CDP 原始 body sha256 = 源 ZIP | **通过** |
+| 旧 HTML 对照 | isolated-browser | 生命周期证据：同流程 HTML 安装 200 + `format=html-v1` | **通过** |
+| **卸载清理保留的 previous 版本目录（M2 新发现并修复）** | automated + isolated-browser | `raw/m2/M2-lifecycle-zip-*.json`（47/47）；host 用例 225/225 含 6 条新卸载用例 | **通过** |
+
+### 11.6 非内置 ZIP 全生命周期（真实 UI 点击）
+
+| 子项 | 级别 | 证据 | 结论 |
+|---|---|---|---|
+| 安装 → 启动 → 存档 → 退出 Continue → 升级 1.0.1 → 回滚 1.0.0 → 旧 save Continue → 同版本不同内容 409 → 记录写失败恢复 → 重启恢复 → 卸载 | isolated-browser | `raw/m2/M2-lifecycle-zip-2026-10-20T07-39-01-494Z.json` **47/47 required，exit 0** | **通过** |
+
+## 12. M2 已知项与未验证项（不写成通过）
+
+1. **`html-v1` 仍未 wrapper 化**：M2 不改变其服务路径；迁移方案见
+   `docs/V1.5-HTML-V1-WRAPPER-MIGRATION.md`，交 Codex 裁决。**不得宣称所有格式均已实现包外导航阻断。**
+2. **React 真实依赖链**（`npm install` + vite）：本仓库环境不跑；由独立验收探针在真实
+   `npm install` 工程里验证过（`tsc`/vite/pack/validate），但**不是**在 CI 里自动执行。
+3. **GitHub Actions 未在真实 CI 执行**：workflow 静态断言 + 模板生成测试覆盖。
+4. **CLI `publish --registry-dir` 对 ZIP**：指向维护者工具 `scripts/registry/prepare.mjs`（权限边界，非缺失）。
+5. **真实 Electron 桌面窗口 / 非 Chromium 引擎 / 触摸设备**：未验证（证据为 Chrome headless + CDP）。
+6. **`@font-face` 经资源 origin、多窗口并发 renew/release**：沿用 M1 未验证项。
+7. **磁盘满 ENOSPC 与 `zipExtractMs` 挂钟上限**：无夹具，未验证。

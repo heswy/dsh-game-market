@@ -1,0 +1,5 @@
+### ILLEGAL C: dist edited after build (stale descriptor) -> validate dist
+FAIL  <work>/token-trail/dist (0 bytes)
+  1. E_DESCRIPTOR_MISMATCH (GM-4278) files: descriptor file manifest does not match the package
+  2. E_DESCRIPTOR_MISMATCH (GM-4278) files: size mismatch for scripts/main.js
+EXIT:1

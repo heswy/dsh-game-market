@@ -1,0 +1,136 @@
+### validate project (--json)
+{
+  "ok": true,
+  "errors": [],
+  "warnings": [],
+  "truncated": false,
+  "manifest": {
+    "id": "token-trail",
+    "name": "Token Trail",
+    "version": "1.0.0"
+  },
+  "bytes": 147108,
+  "source": "<work>/token-trail (built in memory)",
+  "format": "asset-zip-v2",
+  "entry": "index.html",
+  "fileCount": 12,
+  "filesDigest": "64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e"
+}
+EXIT:0
+
+### validate dist
+{
+  "ok": true,
+  "errors": [],
+  "warnings": [],
+  "truncated": false,
+  "manifest": {
+    "id": "token-trail",
+    "name": "Token Trail",
+    "version": "1.0.0"
+  },
+  "bytes": 147108,
+  "source": "<work>/token-trail/dist",
+  "format": "asset-zip-v2",
+  "entry": "index.html",
+  "fileCount": 12,
+  "filesDigest": "64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e"
+}
+EXIT:0
+
+### pack
+{
+  "ok": true,
+  "format": "asset-zip-v2",
+  "id": "token-trail",
+  "version": "1.0.0",
+  "file": "<work>/token-trail/dist/token-trail-1.0.0.dshgame.zip",
+  "digestFile": "<work>/token-trail/dist/token-trail-1.0.0.dshgame.zip.sha256",
+  "sha256": "0543f98935f48f2e06b2459a6ea9cd8e61ce706c06645d618220249f576611e4",
+  "bytes": 147108,
+  "fileCount": 12,
+  "filesDigest": "64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e",
+  "permissions": [
+    {
+      "path": "assets/README.txt",
+      "mode": "444"
+    },
+    {
+      "path": "assets/rock.png",
+      "mode": "444"
+    },
+    {
+      "path": "assets/token.png",
+      "mode": "444"
+    },
+    {
+      "path": "audio/README.txt",
+      "mode": "444"
+    },
+    {
+      "path": "audio/hit.wav",
+      "mode": "444"
+    },
+    {
+      "path": "audio/pickup.wav",
+      "mode": "444"
+    },
+    {
+      "path": "dsh-package.json",
+      "mode": "444"
+    },
+    {
+      "path": "dsh-sdk.js",
+      "mode": "444"
+    },
+    {
+      "path": "game.json",
+      "mode": "444"
+    },
+    {
+      "path": "index.html",
+      "mode": "444"
+    },
+    {
+      "path": "levels/level-01.json",
+      "mode": "444"
+    },
+    {
+      "path": "scripts/main.js",
+      "mode": "444"
+    },
+    {
+      "path": "styles/styles.css",
+      "mode": "444"
+    }
+  ],
+  "selfTest": {
+    "ok": true,
+    "entry": "index.html",
+    "fileCount": 12,
+    "filesDigest": "64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e",
+    "matchesBuild": true
+  },
+  "warnings": []
+}
+EXIT:0
+
+### validate packed zip
+{
+  "ok": true,
+  "errors": [],
+  "warnings": [],
+  "truncated": false,
+  "manifest": {
+    "id": "token-trail",
+    "name": "Token Trail",
+    "version": "1.0.0"
+  },
+  "bytes": 147108,
+  "source": "<work>/token-trail/dist/token-trail-1.0.0.dshgame.zip",
+  "format": "asset-zip-v2",
+  "entry": "index.html",
+  "fileCount": 12,
+  "filesDigest": "64a5e859b309ecb624230ef069b98e74bc4f5af4bb25c7b383ac9839e7fd7f2e"
+}
+EXIT:0

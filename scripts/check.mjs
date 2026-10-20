@@ -14,8 +14,16 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { BUNDLE_ID, LIMITS } from '../packages/shared/src/constants.js';
-import { validatePackageHtml } from '../packages/shared/src/manifest.js';
+import { BUNDLE_ID, DESCRIPTOR_FILE, LIMITS } from '../packages/shared/src/constants.js';
+import { validateManifest, validatePackageHtml } from '../packages/shared/src/manifest.js';
+import {
+  checkCssContent,
+  checkHtmlContent,
+  checkManifestConflict,
+  checkPathConflicts,
+  fileManifestDigest,
+  validateDescriptor,
+} from '../packages/shared/src/package-v2.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
@@ -102,7 +110,17 @@ if (fs.existsSync(clientAbs)) {
   requiredFile('client.js');
 }
 
-// 4. V1 single-file game packages (games/<id>/game.json + dist/index.html)
+// 4. Game packages: `games/<id>/game.json` + a dist tree
+//
+// Two shapes ship side by side since V1.5 M2:
+//   - `html-v1`     : one self-contained `dist/index.html` carrying the inline
+//                     manifest (V1 rules, validated exactly as before);
+//   - `asset-zip-v2`: a `dist/` *package directory* — `dsh-package.json` with a
+//                     sorted file manifest, an external `game.json`, and
+//                     external scripts/styles/assets. The directory is what the
+//                     Host serves for a builtin asset package, so validating it
+//                     here is the same gate an install would apply.
+const sha256Hex = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const gamesDir = path.join(root, 'games');
 if (!fs.existsSync(gamesDir)) {
   fail('missing games/ directory');
@@ -111,7 +129,6 @@ if (!fs.existsSync(gamesDir)) {
     if (!entry.isDirectory()) continue;
     const dir = path.join(gamesDir, entry.name);
     const manifestPath = path.join(dir, 'game.json');
-    const distPath = path.join(dir, 'dist/index.html');
     const relManifest = `games/${entry.name}/game.json`;
     if (!fs.existsSync(manifestPath)) {
       fail(`missing ${relManifest}`);
@@ -128,6 +145,100 @@ if (!fs.existsSync(gamesDir)) {
       if (source[field] === undefined) fail(`${relManifest} missing field: ${field}`);
     }
     if (source.id !== entry.name) fail(`${relManifest} id must match directory name "${entry.name}"`);
+
+    const distDir = path.join(dir, 'dist');
+    const descriptorPath = path.join(distDir, DESCRIPTOR_FILE);
+
+    if (fs.existsSync(descriptorPath)) {
+      // ---------------- asset-zip-v2 package directory ----------------
+      const manifestResult = validateManifest(source);
+      if (!manifestResult.ok) {
+        for (const error of manifestResult.errors.slice(0, 5)) {
+          fail(`${relManifest} invalid: ${error.code} ${error.message}`);
+        }
+        continue;
+      }
+      let descriptorRaw;
+      try {
+        descriptorRaw = JSON.parse(fs.readFileSync(descriptorPath, 'utf8'));
+      } catch (error) {
+        fail(`games/${entry.name}/dist/${DESCRIPTOR_FILE} invalid JSON: ${error.message}`);
+        continue;
+      }
+      const descriptor = validateDescriptor(descriptorRaw);
+      if (!descriptor.ok) {
+        fail(`games/${entry.name}/dist/${DESCRIPTOR_FILE} invalid: ${descriptor.code}`);
+        continue;
+      }
+      const distPaths = descriptor.value.files.map((file) => file.path);
+      const conflicts = checkPathConflicts(distPaths);
+      if (!conflicts.ok) fail(`games/${entry.name}/dist path conflict: ${conflicts.code}`);
+      // Every declared file must be on disk with the declared size and hash, and
+      // nothing else may be in the tree (the manifest is the whole package).
+      let unpacked = 0;
+      let treeOk = true;
+      for (const file of descriptor.value.files) {
+        const filePath = path.join(distDir, file.path);
+        if (!fs.existsSync(filePath)) {
+          fail(`games/${entry.name}/dist missing declared file: ${file.path}`);
+          treeOk = false;
+          continue;
+        }
+        const bytes = fs.readFileSync(filePath);
+        unpacked += bytes.length;
+        if (bytes.length !== file.size) {
+          fail(`games/${entry.name}/dist size mismatch: ${file.path}`);
+        }
+        if (sha256Hex(bytes) !== file.sha256) {
+          fail(`games/${entry.name}/dist sha256 mismatch: ${file.path}`);
+        }
+      }
+      if (!treeOk) continue;
+      if (unpacked > LIMITS.zip.zipUnpackedBytes) {
+        fail(`games/${entry.name}/dist unpacked size ${unpacked} exceeds limit`);
+      }
+      // The packaged manifest is authoritative for install/launch: it must agree
+      // with the build source, or the game would advertise a different version
+      // than the one the Host serves.
+      const packagedManifestPath = path.join(distDir, descriptor.value.gameManifest);
+      let packaged;
+      try {
+        packaged = JSON.parse(fs.readFileSync(packagedManifestPath, 'utf8'));
+      } catch (error) {
+        fail(`games/${entry.name}/dist packaged manifest unreadable: ${error.message}`);
+        continue;
+      }
+      for (const field of ['id', 'version', 'name']) {
+        if (packaged[field] !== source[field]) {
+          fail(`games/${entry.name}/dist packaged manifest ${field} mismatch`);
+        }
+      }
+      // Static content policy for resource packages: no inline script/style,
+      // no event handlers, no javascript: URLs, no external references.
+      for (const file of descriptor.value.files) {
+        const ext = path.extname(file.path).toLowerCase();
+        if (ext !== '.html' && ext !== '.svg' && ext !== '.css') continue;
+        const text = fs.readFileSync(path.join(distDir, file.path), 'utf8');
+        if (ext === '.css') {
+          const css = checkCssContent(text);
+          if (!css.ok) fail(`games/${entry.name}/dist/${file.path}: ${css.code}`);
+          continue;
+        }
+        const html = checkHtmlContent(text, { inlineForbidden: true });
+        if (!html.ok) fail(`games/${entry.name}/dist/${file.path}: ${html.code}`);
+        const conflict = checkManifestConflict(text);
+        if (!conflict.ok) fail(`games/${entry.name}/dist/${file.path}: ${conflict.code}`);
+      }
+      const digest = fileManifestDigest(descriptor.value.files, sha256Hex);
+      ok(
+        `games/${entry.name}/dist (${descriptor.value.files.length} files, ${unpacked} bytes, `
+        + `asset-zip-v2, filesDigest ${digest.slice(0, 12)}…)`,
+      );
+      continue;
+    }
+
+    // ---------------- html-v1 single-file package (unchanged V1 rules) ----------------
+    const distPath = path.join(distDir, 'index.html');
     if (!fs.existsSync(distPath)) {
       fail(`missing games/${entry.name}/dist/index.html (run npm run build)`);
       continue;

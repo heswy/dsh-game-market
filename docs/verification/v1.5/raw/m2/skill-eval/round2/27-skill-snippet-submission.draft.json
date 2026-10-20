@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "submissionType": "new",
+  "game": {
+    "id": "token-trail",
+    "name": "Token Trail",
+    "version": "1.0.1",
+    "description": "Collect glowing tokens while dodging rocks. A short keyboard arcade run.",
+    "categories": [
+      "arcade"
+    ],
+    "capabilities": [
+      "storage",
+      "score"
+    ],
+    "sdkVersion": "^1.0.0",
+    "runtimeVersion": "^1.0.0"
+  },
+  "author": {
+    "login": "PENDING",
+    "githubUserId": 1,
+    "sourceRepo": "https://example.invalid/PENDING",
+    "sourceCommit": "0000000",
+    "buildInstructions": "npm run build && npm run pack"
+  },
+  "package": {
+    "format": "asset-zip-v2",
+    "url": "https://github.com/independent-author/token-trail/releases/download/token-trail-v1.0.1/token-trail-1.0.1.dshgame.zip",
+    "sha256": "29a3f8a5361946c3e2ce7bca77b56f61f4c4fab57e1333a3e1000f67fa1d167a",
+    "size": 147769,
+    "sha256Url": "https://github.com/independent-author/token-trail/releases/download/token-trail-v1.0.1/token-trail-1.0.1.dshgame.zip.sha256",
+    "filesDigest": "def50059c425af29fb02b68b87d70140cef8f04c352ddb5879feb8f2b3ae94e1"
+  },
+  "media": {
+    "cover": {
+      "url": "https://example.invalid/PENDING/cover.png",
+      "sha256": "f566477b5369ec27f0fea028bcfd86745e62dcf1ccc6b7d0901cc7e5284bd0bc",
+      "size": 170789,
+      "type": "png"
+    },
+    "screenshots": [
+      {
+        "url": "https://example.invalid/PENDING/screenshot-1.png",
+        "sha256": "c6bdc7fa2d1a2df6beb16f206b8afc27ec85bd853853494d8cbbb54191dcb5eb",
+        "size": 177050,
+        "type": "png"
+      },
+      {
+        "url": "https://example.invalid/PENDING/screenshot-2.png",
+        "sha256": "a8a9a0f39c3d9cc4ad4a0b0622cac5cb830495fec8cbc7b65ef6f5390a5122f0",
+        "size": 174007,
+        "type": "png"
+      }
+    ]
+  },
+  "licensing": {
+    "codeLicense": "MIT",
+    "assetLicense": "CC-BY-4.0",
+    "archivePermission": true
+  },
+  "selfTest": {
+    "ready": true,
+    "pauseResume": true,
+    "beforeSave": true,
+    "continuePlay": true,
+    "keyboard": true,
+    "narrowWindow": true,
+    "theme": true,
+    "fullBleed": true,
+    "safeArea": true,
+    "noNetwork": true
+  },
+  "pending": [
+    "author.login",
+    "author.githubUserId",
+    "author.sourceRepo",
+    "package.url",
+    "package.sha256Url",
+    "media.cover.url",
+    "media.screenshots[].url"
+  ]
+}
