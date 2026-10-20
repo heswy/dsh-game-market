@@ -390,6 +390,9 @@ const sdk = (function () {
     UPDATE_TARGET_INVALID: 'GM-4090',
     UPDATE_ADAPTER_UNAVAILABLE: 'GM-5038',
     UPDATE_OBSERVE_TIMEOUT: 'GM-5040',
+    // V1.5 official update index: unreachable, oversized, malformed or not bound
+    // to the official repository (m3-decisions §3; contracts §8.1).
+    UPDATE_INDEX_UNAVAILABLE: 'GM-5039',
   });
 
   const DEFAULT_MESSAGES = Object.freeze({
@@ -500,6 +503,7 @@ const sdk = (function () {
     [GM.UPDATE_TARGET_INVALID]: 'Update target is not acceptable to the plugin manager',
     [GM.UPDATE_ADAPTER_UNAVAILABLE]: 'Plugin update capability is unavailable',
     [GM.UPDATE_OBSERVE_TIMEOUT]: 'Plugin update state could not be confirmed in time',
+    [GM.UPDATE_INDEX_UNAVAILABLE]: 'The official plugin update index is unavailable',
   });
 
   /** HTTP status for a GM code (PRD §8.5 mapping). */
@@ -514,6 +518,9 @@ const sdk = (function () {
     // instance and 410 for a replayed launch URL. The numeric rule would give 401.
     if (gmCode === GM.RESOURCE_CREDENTIAL_EXPIRED) return 403;
     if (gmCode === GM.ENTRY_LAUNCH_CONSUMED) return 410;
+    // V1.5 update observation timeout keeps the documented 504 (contract §8.3);
+    // the generic 5xxx band would otherwise report 503.
+    if (gmCode === GM.UPDATE_OBSERVE_TIMEOUT) return 504;
     // Package/manifest semantics (GM-422x–424x) are 422, size/quota (413x–414x) are 413.
     if (num >= 4220 && num <= 4249) return 422;
     if (num >= 4130 && num <= 4149) return 413;
@@ -610,6 +617,7 @@ const sdk = (function () {
     E_UPDATE_TARGET_INVALID: GM.UPDATE_TARGET_INVALID,
     E_UPDATE_ADAPTER_UNAVAILABLE: GM.UPDATE_ADAPTER_UNAVAILABLE,
     E_UPDATE_OBSERVE_TIMEOUT: GM.UPDATE_OBSERVE_TIMEOUT,
+    E_UPDATE_INDEX_UNAVAILABLE: GM.UPDATE_INDEX_UNAVAILABLE,
   });
 
   /** Translate an internal `E_*` code to its public `GM-*` code (fallback: GM-5000). */

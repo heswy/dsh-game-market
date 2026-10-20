@@ -115,8 +115,8 @@
     },
     {
       "path": "scripts/vendor/dsh-sdk.js",
-      "size": 89113,
-      "sha256": "d730ce6d6cba825bca7dcb1c4b062f9e3063b55d5b4778856dfa2034b3dfa78a"
+      "size": 89651,
+      "sha256": "c30c99968210f7e19a380fc4a6d650dc1c0fb379448bc587bbee0567fa4dbb38"
     },
     {
       "path": "styles/game.css",
