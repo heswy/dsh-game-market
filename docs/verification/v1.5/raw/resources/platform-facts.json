@@ -1,0 +1,6 @@
+{
+  "runtimeSandboxAttribute": "allow-scripts",
+  "runtimeUsesAllowSameOrigin": false,
+  "iframeAllowAttribute": true,
+  "referrerPolicyAttribute": true
+}

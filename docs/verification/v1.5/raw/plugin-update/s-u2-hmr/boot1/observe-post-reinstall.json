@@ -1,0 +1,309 @@
+{
+  "observedAt": "2026-10-19T12:52:13.021Z",
+  "bootTag": "su2-boot1",
+  "pid": 28673,
+  "selfFiberUid": 48,
+  "capability": {
+    "at": "2026-10-19T12:52:13.021Z",
+    "probeScopeHmr": true,
+    "managerContextHmr": true,
+    "managerContextHmrCtor": "Hmr",
+    "managerContextHmrHasRunExclusive": true,
+    "hmrLoaderRow": {
+      "id": "hmr",
+      "name": "@deepseek-ai/dsh-hmr",
+      "disabled": {
+        "__jsExpr": "!ctx.get('profileContext')"
+      },
+      "hasFiber": true,
+      "fiberState": 2,
+      "fiberUid": 110
+    },
+    "samplesSinceBoot": 2
+  },
+  "managerInternal": {
+    "ownerEntryId": "include:plugin-manager",
+    "ownerContextIsProbeContext": false,
+    "ctor": "PluginManager",
+    "hasInstallBundle": true,
+    "hasWaitForInstall": true,
+    "hasCancelInstall": true,
+    "hasRemoveBundle": true,
+    "hasListBundles": true,
+    "installedCount": 0
+  },
+  "profile": {
+    "dir": "/tmp/dsh-v15/home-su2-hmr/profiles/web",
+    "packageJson": {
+      "name": "dsh-profile-web",
+      "dependencies": {
+        "dsh-game-market": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      },
+      "profileBundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app",
+        "dsh-game-market"
+      ]
+    },
+    "dependency": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+    "diskPackage": {
+      "name": "dsh-game-market",
+      "version": "1.2.0"
+    },
+    "diskPackagePath": "/tmp/dsh-v15/home-su2-hmr/profiles/web/node_modules/dsh-game-market/package.json",
+    "diskPackageRealPath": "/private/tmp/dsh-v15/home-su2-hmr/profiles/web/node_modules/dsh-game-market"
+  },
+  "bundles": [
+    {
+      "name": "dsh-game-market",
+      "version": "1.2.0",
+      "enabled": true,
+      "installed": true,
+      "removable": true,
+      "availability": "profile",
+      "error": null
+    }
+  ],
+  "bundlesError": null,
+  "loader": {
+    "available": true,
+    "scope": "probeScope",
+    "rows": [
+      {
+        "id": "hmr",
+        "name": "@deepseek-ai/dsh-hmr",
+        "disabled": {
+          "__jsExpr": "!ctx.get('profileContext')"
+        },
+        "hasFiber": true,
+        "fiberState": 2,
+        "fiberUid": 110
+      },
+      {
+        "id": "v15-plugin-update-probe",
+        "name": "file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-m0/scripts/verification/v1.5/plugin-update/probe-plugin-host.js",
+        "disabled": null,
+        "hasFiber": true,
+        "fiberState": 2,
+        "fiberUid": 48
+      },
+      {
+        "id": "dsh-game-market",
+        "name": "dsh-game-market",
+        "disabled": null,
+        "hasFiber": true,
+        "fiberState": 2,
+        "fiberUid": 341
+      }
+    ],
+    "totalEntries": 195
+  },
+  "health": {
+    "available": true,
+    "connectionScope": "probeScope",
+    "routeRegistered": true,
+    "status": 200,
+    "envelope": {
+      "ok": true,
+      "requestId": "req_0c7e104977863c56",
+      "serverTime": "2026-10-19T12:52:13.022Z"
+    },
+    "body": {
+      "ok": true,
+      "version": "1.2.0",
+      "hostEpoch": "he_0b050a97c3928e11",
+      "devMode": false,
+      "uptimeMs": 309,
+      "storage": {
+        "ok": true,
+        "root": "/tmp/dsh-v15/home-su2-hmr/storages/dsh-game-market",
+        "readOnly": false
+      },
+      "installRegistries": {
+        "state": "fresh",
+        "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+        "fetchedAt": "2026-10-19T12:52:07.340Z",
+        "truncated": false,
+        "count": 0,
+        "lastError": null,
+        "activeSource": "official",
+        "fallback": false,
+        "official": {
+          "state": "fresh",
+          "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+          "fetchedAt": "2026-10-19T12:52:07.340Z",
+          "truncated": false,
+          "count": 0,
+          "lastError": null
+        },
+        "seed": {
+          "state": "fresh",
+          "count": 3,
+          "sourceUrl": "/private/tmp/dsh-v15/home-su2-hmr/profiles/web/node_modules/dsh-game-market/registry/games.json"
+        }
+      },
+      "installations": {
+        "count": 0,
+        "updateAvailable": 0
+      },
+      "error": null
+    },
+    "bodyText": "{\"ok\":true,\"data\":{\"ok\":true,\"version\":\"1.2.0\",\"hostEpoch\":\"he_0b050a97c3928e11\",\"devMode\":false,\"storage\":{\"ok\":true,\"root\":\"/tmp/dsh-v15/home-su2-hmr/storages/dsh-game-market\",\"readOnly\":false},\"uptimeMs\":309,\"registry\":{\"state\":\"fresh\",\"sourceUrl\":\"https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json\",\"fetchedAt\":\"2026-10-19T12:52:07.340Z\",\"truncated\":false,\"count\":0,\"lastError\":null,\"activeSource\":\"official\",\"fallback\":false,\"official\":{\"state\":\"fresh\",\"sourceUrl\":\"https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json\",\"fetchedAt\":\"2026-10-19T12:52:07.340Z\",\"truncated\":false,\"count\":0,\"lastError\":null},\"seed\":{\"state\":\"fresh\",\"count\":3,\"sourceUrl\":\"/private/tmp/dsh-v15/home-su2-hmr/profiles/web/node_modules/dsh-game-market/registry/games.json\"}},\"installations\":{\"count\":0,\"updateAvailable\":0},\"sessions\":{\"running\":0,\"staleRunningPreserved\":true},\"games\":{\"builtinCount\":1,\"issues\":[]}},\"requestId\":\"req_0c7e104977863c56\",\"serverTime\":\"2026-10-19T12:52:13.022Z\"}"
+  },
+  "storage": {
+    "configured": true,
+    "root": "/tmp/dsh-v15/home-su2-hmr/storages/dsh-game-market",
+    "exists": true,
+    "entries": [
+      "registry-cache.json",
+      "registry-cache.json.bak",
+      "saves/",
+      "su2-boot1-update-marker.json"
+    ],
+    "markers": [],
+    "saves": [
+      "snake"
+    ],
+    "markerPath": "/tmp/dsh-v15/home-su2-hmr/storages/dsh-game-market/su2-boot1-update-marker.json",
+    "markerPresent": true,
+    "markerContent": {
+      "marker": "v1.5-m0-plugin-update-storage-marker",
+      "bootTag": "su2-boot1",
+      "writtenAt": "2026-10-19T12:51:40.282Z",
+      "note": "probe fixture standing in for user data outside the bundle directory"
+    }
+  },
+  "installStateEvents": [
+    {
+      "at": "2026-10-19T12:51:42.627Z",
+      "kind": "install-state",
+      "payload": {
+        "requestId": "su2-a-req",
+        "phase": "installing",
+        "attempt": {
+          "registry": null,
+          "index": 1,
+          "total": 1
+        }
+      }
+    },
+    {
+      "at": "2026-10-19T12:51:45.030Z",
+      "kind": "install-state",
+      "payload": {
+        "requestId": "su2-a-req",
+        "phase": "applying"
+      }
+    },
+    {
+      "at": "2026-10-19T12:51:47.598Z",
+      "kind": "install-state",
+      "payload": {
+        "requestId": "su2-b-req",
+        "phase": "installing",
+        "attempt": {
+          "registry": null,
+          "index": 1,
+          "total": 1
+        }
+      }
+    },
+    {
+      "at": "2026-10-19T12:51:49.624Z",
+      "kind": "install-state",
+      "payload": {
+        "requestId": "su2-b-req",
+        "phase": "applying"
+      }
+    },
+    {
+      "at": "2026-10-19T12:51:52.322Z",
+      "kind": "install-state",
+      "payload": {
+        "requestId": "su2-b-again-req",
+        "phase": "installing",
+        "attempt": {
+          "registry": null,
+          "index": 1,
+          "total": 1
+        }
+      }
+    },
+    {
+      "at": "2026-10-19T12:51:56.511Z",
+      "kind": "install-state",
+      "payload": {
+        "requestId": "su2-c-req",
+        "phase": "installing",
+        "attempt": {
+          "registry": null,
+          "index": 1,
+          "total": 1
+        }
+      }
+    },
+    {
+      "at": "2026-10-19T12:51:58.293Z",
+      "kind": "install-state",
+      "payload": {
+        "requestId": "su2-c-req",
+        "phase": "applying"
+      }
+    },
+    {
+      "at": "2026-10-19T12:51:59.681Z",
+      "kind": "install-state",
+      "payload": {
+        "requestId": "su2-cancel-req",
+        "phase": "cancelling"
+      }
+    },
+    {
+      "at": "2026-10-19T12:52:02.848Z",
+      "kind": "install-state",
+      "payload": {
+        "requestId": "su2-tooLate-req",
+        "phase": "installing",
+        "attempt": {
+          "registry": null,
+          "index": 1,
+          "total": 1
+        }
+      }
+    },
+    {
+      "at": "2026-10-19T12:52:06.726Z",
+      "kind": "install-state",
+      "payload": {
+        "requestId": "su2-tooLate-req",
+        "phase": "applying"
+      }
+    },
+    {
+      "at": "2026-10-19T12:52:10.714Z",
+      "kind": "install-state",
+      "payload": {
+        "requestId": "su2-reinstall-req",
+        "phase": "installing",
+        "attempt": {
+          "registry": null,
+          "index": 1,
+          "total": 1
+        }
+      }
+    },
+    {
+      "at": "2026-10-19T12:52:12.577Z",
+      "kind": "install-state",
+      "payload": {
+        "requestId": "su2-reinstall-req",
+        "phase": "applying"
+      }
+    }
+  ],
+  "eventCounts": {
+    "installState": 12,
+    "installLog": 41,
+    "changed": 10
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "hostOrigin": "http://127.0.0.1:58261",
+  "cookiePresent": true,
+  "platformFence": "DSH client-connection isTrustedApiRequest: trusted Host + Origin must equal the listener authority",
+  "cases": [
+    {
+      "name": "authenticated-same-origin-get",
+      "method": "GET",
+      "path": "/api/game-market/health",
+      "origin": "http://127.0.0.1:58261",
+      "authenticated": true,
+      "status": 200,
+      "ok": true,
+      "bodyPrefix": "{\"ok\":true,\"data\":{\"ok\":true,\"version\":\"1.2.0\",\"hostEpoch\":\""
+    },
+    {
+      "name": "authenticated-no-origin-get",
+      "method": "GET",
+      "path": "/api/game-market/health",
+      "origin": null,
+      "authenticated": true,
+      "status": 200,
+      "ok": true,
+      "bodyPrefix": "{\"ok\":true,\"data\":{\"ok\":true,\"version\":\"1.2.0\",\"hostEpoch\":\""
+    },
+    {
+      "name": "reject-origin-null-get",
+      "method": "GET",
+      "path": "/api/game-market/health",
+      "origin": "null",
+      "authenticated": true,
+      "status": 403,
+      "ok": true,
+      "bodyPrefix": "forbidden"
+    },
+    {
+      "name": "reject-third-party-origin-get",
+      "method": "GET",
+      "path": "/api/game-market/health",
+      "origin": "http://evil.example",
+      "authenticated": true,
+      "status": 403,
+      "ok": true,
+      "bodyPrefix": "forbidden"
+    },
+    {
+      "name": "reject-origin-null-write",
+      "method": "POST",
+      "path": "/api/game-market/preferences",
+      "origin": "null",
+      "authenticated": true,
+      "status": 403,
+      "ok": true,
+      "bodyPrefix": "forbidden"
+    },
+    {
+      "name": "reject-unauthenticated-same-origin-write",
+      "method": "POST",
+      "path": "/api/game-market/preferences",
+      "origin": "http://127.0.0.1:58261",
+      "authenticated": false,
+      "status": 401,
+      "ok": true,
+      "bodyPrefix": "unauthorized"
+    },
+    {
+      "name": "accept-authenticated-same-origin-write",
+      "method": "POST",
+      "path": "/api/game-market/preferences",
+      "origin": "http://127.0.0.1:58261",
+      "authenticated": true,
+      "status": 200,
+      "ok": true,
+      "bodyPrefix": "{\"ok\":true,\"data\":{\"schemaVersion\":1,\"lastPlayedGameId\":null"
+    }
+  ]
+}

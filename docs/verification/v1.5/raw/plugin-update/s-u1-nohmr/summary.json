@@ -1,0 +1,1001 @@
+{
+  "runtime": {
+    "dshPackage": {
+      "name": "@deepseek-ai/dsh-desktop-runtime",
+      "version": "0.2.1-rc.2"
+    },
+    "pluginManager": {
+      "name": "@deepseek-ai/dsh-plugin-manager",
+      "version": "0.2.1-rc.2"
+    },
+    "electronApp": {
+      "name": "@deepseek-ai/dsh-desktop",
+      "version": "0.2.1-rc.2"
+    },
+    "asarExtractedAt": "2026-10-19T12:00:52.172Z"
+  },
+  "home": "/tmp/dsh-v15/home-su1-nohmr",
+  "note": "isolated non-HMR profile; NOT the real Desktop default path",
+  "networkEnvUsedForPnpm": {
+    "HTTPS_PROXY": "http://127.0.0.1:7897",
+    "HTTP_PROXY": "http://127.0.0.1:7897",
+    "ALL_PROXY": "http://127.0.0.1:7897",
+    "npm_config_https_proxy": "http://127.0.0.1:7897",
+    "npm_config_http_proxy": "http://127.0.0.1:7897",
+    "npm_config_proxy": "http://127.0.0.1:7897",
+    "NO_PROXY": "127.0.0.1,localhost"
+  },
+  "id": "s-u1-nohmr",
+  "title": "S-U1 (isolated non-HMR profile)",
+  "commands": [
+    "node scripts/verification/v1.5/plugin-update/run-su1-nohmr.mjs"
+  ],
+  "startedAt": "2026-10-19T12:53:16.372Z",
+  "finishedAt": "2026-10-19T12:54:34.690Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "dump-config exits 0",
+      "ok": true,
+      "required": true,
+      "detail": 0
+    },
+    {
+      "name": "profile user layer contains the hmr disable override",
+      "ok": true,
+      "required": true,
+      "detail": [
+        "  name: '@deepseek-ai/cordis-plugin-timer'\n# == @deepseek-ai/dsh-base, patched by /tmp/dsh-v15/home-su1-nohmr/profiles/web/cordis.patch.yml\n- id: hmr\n  name: '@deepseek-ai/dsh-hmr'\n  disabled: true\n  config:\n    root: []\n# == @deepseek-ai/dsh-base\n- id: llm\n  name: '@deepseek-ai/dsh-llm'"
+      ]
+    },
+    {
+      "name": "non-HMR profile: manager-context hmr is absent after 15s sampling",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "at": "2026-10-19T12:53:41.391Z",
+        "probeScopeHmr": false,
+        "managerContextHmr": false,
+        "managerContextHmrCtor": null,
+        "managerContextHmrHasRunExclusive": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        },
+        "samplesSinceBoot": 30
+      }
+    },
+    {
+      "name": "non-HMR capability samples",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": [
+          {
+            "at": "2026-10-19T12:53:24.819Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:25.321Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:25.822Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:26.324Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:26.826Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:27.327Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:27.829Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:28.332Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:28.836Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:29.338Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:29.840Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:30.342Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:30.845Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:31.346Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:31.872Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:32.373Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:32.873Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:33.375Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:33.878Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:34.379Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:34.880Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:35.380Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:35.881Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:36.382Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:36.884Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:37.386Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:37.886Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:38.387Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:38.888Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          },
+          {
+            "at": "2026-10-19T12:53:39.389Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": true,
+              "hasFiber": false,
+              "fiberState": null,
+              "fiberUid": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "non-HMR: /health route is absent before the bundle loads",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "available": false,
+        "connectionService": true,
+        "connectionScope": "probeScope",
+        "routeRegistered": false
+      }
+    },
+    {
+      "name": "non-HMR overwrite install A returned a Remote Result",
+      "ok": true,
+      "required": true,
+      "detail": [
+        "application",
+        "bundle",
+        "changed",
+        "enabled",
+        "packageResult",
+        "registries",
+        "restartReason",
+        "stage",
+        "target",
+        "version",
+        "warnings"
+      ]
+    },
+    {
+      "name": "non-HMR install A: application=restart-required + restartReason=no-hmr",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "application": "restart-required",
+        "restartReason": "no-hmr"
+      }
+    },
+    {
+      "name": "non-HMR install A reports bundle/version and changed=true",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "bundle": "dsh-game-market",
+        "version": "1.1.0",
+        "changed": true
+      }
+    },
+    {
+      "name": "install A waitForInstall(active) equals settled result",
+      "ok": true,
+      "required": true,
+      "detail": true
+    },
+    {
+      "name": "after install A disk package version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.1.0"
+      }
+    },
+    {
+      "name": "after install A declared dependency",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f"
+      }
+    },
+    {
+      "name": "after install A the bundle row is NOT running before restart",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "after install A /health is still absent (new code not loaded)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "available": false,
+        "connectionService": true,
+        "connectionScope": "probeScope",
+        "routeRegistered": false
+      }
+    },
+    {
+      "name": "after restart the same non-HMR profile still reports hmr absent",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "at": "2026-10-19T12:54:06.637Z",
+        "probeScopeHmr": false,
+        "managerContextHmr": false,
+        "managerContextHmrCtor": null,
+        "managerContextHmrHasRunExclusive": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        },
+        "samplesSinceBoot": 30
+      }
+    },
+    {
+      "name": "boot2 running version (loadedVersion from /health)",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.1.0"
+      }
+    },
+    {
+      "name": "boot2: loaded version is 1.1.0 while disk also holds 1.1.0",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "running": "1.1.0",
+        "disk": "1.1.0"
+      }
+    },
+    {
+      "name": "boot2: declared dependency is the exact commit A spec",
+      "ok": true,
+      "required": true,
+      "detail": "github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f"
+    },
+    {
+      "name": "boot2: storage marker and save fixture written before the update are still present",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "root": "/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market",
+        "exists": true,
+        "marker": {
+          "marker": "v1.5-m0-plugin-update-storage-marker",
+          "bootTag": "su1-boot1",
+          "writtenAt": "2026-10-19T12:53:47.315Z",
+          "note": "probe fixture standing in for user data outside the bundle directory"
+        },
+        "save": {
+          "schemaVersion": 1,
+          "gameId": "snake",
+          "playSessionId": "probe-su1-boot1",
+          "score": 42,
+          "state": {
+            "snake": [
+              [
+                3,
+                3
+              ]
+            ],
+            "direction": "right"
+          },
+          "updatedAt": "2026-10-19T12:53:47.316Z",
+          "marker": "v1.5-m0-plugin-update-save-fixture"
+        },
+        "entries": [
+          "registry-cache.json",
+          "saves",
+          "su1-boot1-update-marker.json"
+        ],
+        "markerPresent": true,
+        "savePresent": true
+      }
+    },
+    {
+      "name": "boot2: probe-side storage listing (entry names only)",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": [
+          "registry-cache.json",
+          "saves/",
+          "su1-boot1-update-marker.json"
+        ]
+      }
+    },
+    {
+      "name": "overwrite install A->B returned a Remote Result",
+      "ok": true,
+      "required": true,
+      "detail": [
+        "application",
+        "bundle",
+        "changed",
+        "enabled",
+        "packageResult",
+        "registries",
+        "restartReason",
+        "stage",
+        "target",
+        "version"
+      ]
+    },
+    {
+      "name": "overwrite install A->B: application=restart-required + restartReason=no-hmr",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "application": "restart-required",
+        "restartReason": "no-hmr"
+      }
+    },
+    {
+      "name": "overwrite install reports version 1.2.0 and changed=true",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.2.0",
+        "changed": true
+      }
+    },
+    {
+      "name": "after overwrite: disk package version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.2.0"
+      }
+    },
+    {
+      "name": "after overwrite: declared dependency",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      }
+    },
+    {
+      "name": "after overwrite: running version (old Host keeps running)",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.1.0"
+      }
+    },
+    {
+      "name": "after overwrite disk holds 1.2.0",
+      "ok": true,
+      "required": true,
+      "detail": "1.2.0"
+    },
+    {
+      "name": "after overwrite declared dependency records commit B",
+      "ok": true,
+      "required": true,
+      "detail": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+    },
+    {
+      "name": "old Host keeps running 1.1.0 code (same pid/hostEpoch)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "runningAfterInstall": "1.1.0",
+        "hostEpoch": "he_7275349ee89ead23",
+        "hostEpoch1": "he_7275349ee89ead23"
+      }
+    },
+    {
+      "name": "after overwrite the bundle row still is the previous running fiber",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "dsh-game-market",
+        "name": "dsh-game-market",
+        "disabled": null,
+        "hasFiber": true,
+        "fiberState": 2,
+        "fiberUid": 182
+      }
+    },
+    {
+      "name": "after overwrite /health still reports 1.1.0",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "version": "1.1.0",
+        "hostEpoch": "he_7275349ee89ead23",
+        "devMode": false,
+        "uptimeMs": 22201,
+        "storage": {
+          "ok": true,
+          "root": "/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market",
+          "readOnly": false
+        },
+        "installRegistries": {
+          "state": "fresh",
+          "sourceUrl": "/private/tmp/dsh-v15/home-su1-nohmr/profiles/web/node_modules/dsh-game-market/registry/games.json",
+          "fetchedAt": "2026-10-19T12:53:50.218Z",
+          "truncated": false,
+          "count": 3,
+          "lastError": null
+        },
+        "installations": {
+          "count": 0,
+          "updateAvailable": 0
+        },
+        "error": null
+      }
+    },
+    {
+      "name": "storage preserved across the on-disk overwrite",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "root": "/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market",
+        "exists": true,
+        "marker": {
+          "marker": "v1.5-m0-plugin-update-storage-marker",
+          "bootTag": "su1-boot1",
+          "writtenAt": "2026-10-19T12:53:47.315Z",
+          "note": "probe fixture standing in for user data outside the bundle directory"
+        },
+        "save": {
+          "schemaVersion": 1,
+          "gameId": "snake",
+          "playSessionId": "probe-su1-boot1",
+          "score": 42,
+          "state": {
+            "snake": [
+              [
+                3,
+                3
+              ]
+            ],
+            "direction": "right"
+          },
+          "updatedAt": "2026-10-19T12:53:47.316Z",
+          "marker": "v1.5-m0-plugin-update-save-fixture"
+        },
+        "entries": [
+          "registry-cache.json",
+          "saves",
+          "su1-boot1-update-marker.json"
+        ],
+        "markerPresent": true,
+        "savePresent": true
+      }
+    },
+    {
+      "name": "boot3 loadedVersion (/health)",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.2.0"
+      }
+    },
+    {
+      "name": "boot3 hostEpoch",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "he_abb72bea56308021"
+      }
+    },
+    {
+      "name": "boot3 disk package version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.2.0"
+      }
+    },
+    {
+      "name": "boot3 declared dependency",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      }
+    },
+    {
+      "name": "after restart the running version is 1.2.0",
+      "ok": true,
+      "required": true,
+      "detail": "1.2.0"
+    },
+    {
+      "name": "after restart disk package version is 1.2.0",
+      "ok": true,
+      "required": true,
+      "detail": "1.2.0"
+    },
+    {
+      "name": "after restart the bundle row is running",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "dsh-game-market",
+        "name": "dsh-game-market",
+        "disabled": null,
+        "hasFiber": true,
+        "fiberState": 2,
+        "fiberUid": 182
+      }
+    },
+    {
+      "name": "after restart /health route is registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "available": true,
+        "connectionScope": "probeScope",
+        "routeRegistered": true,
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "requestId": "req_838b6b2032451397",
+          "serverTime": "2026-10-19T12:54:33.205Z"
+        },
+        "body": {
+          "ok": true,
+          "version": "1.2.0",
+          "hostEpoch": "he_abb72bea56308021",
+          "devMode": false,
+          "uptimeMs": 17326,
+          "storage": {
+            "ok": true,
+            "root": "/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market",
+            "readOnly": false
+          },
+          "installRegistries": {
+            "state": "fresh",
+            "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+            "fetchedAt": "2026-10-19T12:54:16.280Z",
+            "truncated": false,
+            "count": 0,
+            "lastError": null,
+            "activeSource": "official",
+            "fallback": false,
+            "official": {
+              "state": "fresh",
+              "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+              "fetchedAt": "2026-10-19T12:54:16.280Z",
+              "truncated": false,
+              "count": 0,
+              "lastError": null
+            },
+            "seed": {
+              "state": "fresh",
+              "count": 3,
+              "sourceUrl": "/private/tmp/dsh-v15/home-su1-nohmr/profiles/web/node_modules/dsh-game-market/registry/games.json"
+            }
+          },
+          "installations": {
+            "count": 0,
+            "updateAvailable": 0
+          },
+          "error": null
+        },
+        "bodyText": "{\"ok\":true,\"data\":{\"ok\":true,\"version\":\"1.2.0\",\"hostEpoch\":\"he_abb72bea56308021\",\"devMode\":false,\"storage\":{\"ok\":true,\"root\":\"/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market\",\"readOnly\":false},\"uptimeMs\":17326,\"registry\":{\"state\":\"fresh\",\"sourceUrl\":\"https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json\",\"fetchedAt\":\"2026-10-19T12:54:16.280Z\",\"truncated\":false,\"count\":0,\"lastError\":null,\"activeSource\":\"official\",\"fallback\":false,\"official\":{\"state\":\"fresh\",\"sourceUrl\":\"https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json\",\"fetchedAt\":\"2026-10-19T12:54:16.280Z\",\"truncated\":false,\"count\":0,\"lastError\":null},\"seed\":{\"state\":\"fresh\",\"count\":3,\"sourceUrl\":\"/private/tmp/dsh-v15/home-su1-nohmr/profiles/web/node_modules/dsh-game-market/registry/games.json\"}},\"installations\":{\"count\":0,\"updateAvailable\":0},\"sessions\":{\"running\":0,\"staleRunningPreserved\":true},\"games\":{\"builtinCount\":1,\"issues\":[]}},\"requestId\":\"req_838b6b2032451397\",\"serverTime\":\"2026-10-19T12:54:33.205Z\"}"
+      }
+    },
+    {
+      "name": "storage marker and save survive the version change",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "root": "/tmp/dsh-v15/home-su1-nohmr/storages/dsh-game-market",
+        "exists": true,
+        "marker": {
+          "marker": "v1.5-m0-plugin-update-storage-marker",
+          "bootTag": "su1-boot1",
+          "writtenAt": "2026-10-19T12:53:47.315Z",
+          "note": "probe fixture standing in for user data outside the bundle directory"
+        },
+        "save": {
+          "schemaVersion": 1,
+          "gameId": "snake",
+          "playSessionId": "probe-su1-boot1",
+          "score": 42,
+          "state": {
+            "snake": [
+              [
+                3,
+                3
+              ]
+            ],
+            "direction": "right"
+          },
+          "updatedAt": "2026-10-19T12:53:47.316Z",
+          "marker": "v1.5-m0-plugin-update-save-fixture"
+        },
+        "entries": [
+          "registry-cache.json",
+          "registry-cache.json.bak",
+          "saves",
+          "su1-boot1-update-marker.json"
+        ],
+        "markerPresent": true,
+        "savePresent": true
+      }
+    },
+    {
+      "name": "profile dependency still records the exact commit B",
+      "ok": true,
+      "required": true,
+      "detail": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+    },
+    {
+      "name": "probe profile patch keeps the explicit hmr disable",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ],
+  "requiredChecks": 30,
+  "optionalChecks": 12,
+  "requiredPassed": 30,
+  "failedRequired": [],
+  "failedOptional": []
+}

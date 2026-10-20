@@ -1,0 +1,30 @@
+{
+  "probeVersion": 1,
+  "bootTag": "su2-boot1",
+  "commandIndex": 13,
+  "command": {
+    "id": "su2-cancel-during-install",
+    "action": "cancel-during-install",
+    "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+    "requestId": "su2-cancel-req",
+    "afterMs": 400
+  },
+  "startedAt": "2026-10-19T12:51:59.279Z",
+  "finishedAt": "2026-10-19T12:51:59.694Z",
+  "ok": true,
+  "action": "cancel-during-install",
+  "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+  "requestId": "su2-cancel-req",
+  "cancelResult": {
+    "status": "cancelled"
+  },
+  "result": {
+    "stage": "install",
+    "target": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+    "enabled": true,
+    "changed": false,
+    "application": "cancelled",
+    "registries": []
+  },
+  "elapsedMs": 415
+}

@@ -1,0 +1,73 @@
+/*
+ * Independent stylesheet of the probe package.
+ * Loading it proves a cross-origin <link rel=stylesheet> applies in an
+ * opaque-origin sandbox (CSSOM stays unreadable; computed style is the proof).
+ * The ::after background-image adds a CSS-relative url() resource request.
+ */
+
+:root {
+  --probe-bg: rgb(18, 24, 38);
+  --probe-accent: rgb(120, 220, 255);
+}
+
+body {
+  margin: 0;
+  background-color: var(--probe-bg);
+  color: rgb(230, 240, 255);
+  font: 14px/1.4 system-ui, sans-serif;
+}
+
+#game {
+  position: relative;
+  box-sizing: border-box;
+  padding: 12px;
+  min-height: 100vh;
+}
+
+#game::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 64px;
+  height: 64px;
+  background-image: url("../assets/ship.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.9;
+}
+
+#title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: var(--probe-accent);
+}
+
+#board {
+  display: block;
+  width: 320px;
+  height: 180px;
+  border: 2px solid var(--probe-accent);
+  border-radius: 8px;
+  image-rendering: pixelated;
+}
+
+#hud {
+  margin: 8px 0;
+  color: rgb(255, 196, 92);
+  font-variant-numeric: tabular-nums;
+}
+
+#ship,
+#ship-nocors {
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+#unlock {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--probe-accent);
+  background: rgb(30, 48, 72);
+  color: inherit;
+}

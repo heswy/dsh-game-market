@@ -1,7 +1,7 @@
 node_modules/
 .DS_Store
 *.log
-# M3 verification evidence is intentionally tracked (must be readable from a
+# Verification evidence is intentionally tracked (must be readable from a
 # fresh clone); keep it sanitized via scripts/verification/sanitize-logs.mjs.
 !docs/verification/v1/logs/
 !docs/verification/v1/logs/*.log
@@ -9,6 +9,13 @@ node_modules/
 !docs/verification/community-publishing/logs/*.log
 !docs/verification/community-publishing/artifacts/m4/
 !docs/verification/community-publishing/artifacts/m4/*.log
+# V1.5 M0 evidence: probe stdout logs are cited by docs/verification/v1.5/*.md,
+# so they must survive a fresh clone. scripts/check.mjs asserts that every
+# evidence file referenced from that directory exists, is not ignored, and is
+# tracked, which keeps this exception honest.
+!docs/verification/v1.5/raw/
+!docs/verification/v1.5/raw/**
+!docs/verification/v1.5/raw/**/*.log
 .prd-draft/
 worktrees/
 coverage/

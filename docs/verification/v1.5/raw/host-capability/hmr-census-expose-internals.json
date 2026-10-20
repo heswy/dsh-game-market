@@ -1,0 +1,158 @@
+{
+  "profile": "expose",
+  "dshVersion": null,
+  "execArgv": [
+    "--expose-internals"
+  ],
+  "samples": [
+    {
+      "at": "2026-10-19T12:09:11.469Z",
+      "probeScope": {
+        "hmr": false,
+        "connection": false,
+        "userQuestions": true,
+        "sessions": true
+      },
+      "managerContext": {
+        "hmr": false,
+        "hmrCtor": null,
+        "profileContext": true,
+        "pluginPackages": true,
+        "loaderInternal": true
+      },
+      "hmrRow": {
+        "disabledOption": {
+          "__jsExpr": "!ctx.get('profileContext')"
+        },
+        "hasFiber": true,
+        "fiberState": 1,
+        "fiberError": null
+      }
+    },
+    {
+      "at": "2026-10-19T12:09:13.471Z",
+      "probeScope": {
+        "hmr": true,
+        "connection": true,
+        "userQuestions": true,
+        "sessions": true
+      },
+      "managerContext": {
+        "hmr": true,
+        "hmrCtor": "Hmr",
+        "profileContext": true,
+        "pluginPackages": true,
+        "loaderInternal": true
+      },
+      "hmrRow": {
+        "disabledOption": {
+          "__jsExpr": "!ctx.get('profileContext')"
+        },
+        "hasFiber": true,
+        "fiberState": 2,
+        "fiberError": null
+      }
+    },
+    {
+      "at": "2026-10-19T12:09:15.473Z",
+      "probeScope": {
+        "hmr": true,
+        "connection": true,
+        "userQuestions": true,
+        "sessions": true
+      },
+      "managerContext": {
+        "hmr": true,
+        "hmrCtor": "Hmr",
+        "profileContext": true,
+        "pluginPackages": true,
+        "loaderInternal": true
+      },
+      "hmrRow": {
+        "disabledOption": {
+          "__jsExpr": "!ctx.get('profileContext')"
+        },
+        "hasFiber": true,
+        "fiberState": 2,
+        "fiberError": null
+      }
+    },
+    {
+      "at": "2026-10-19T12:09:19.475Z",
+      "probeScope": {
+        "hmr": true,
+        "connection": true,
+        "userQuestions": true,
+        "sessions": true
+      },
+      "managerContext": {
+        "hmr": true,
+        "hmrCtor": "Hmr",
+        "profileContext": true,
+        "pluginPackages": true,
+        "loaderInternal": true
+      },
+      "hmrRow": {
+        "disabledOption": {
+          "__jsExpr": "!ctx.get('profileContext')"
+        },
+        "hasFiber": true,
+        "fiberState": 2,
+        "fiberError": null
+      }
+    },
+    {
+      "at": "2026-10-19T12:09:26.478Z",
+      "probeScope": {
+        "hmr": true,
+        "connection": true,
+        "userQuestions": true,
+        "sessions": true
+      },
+      "managerContext": {
+        "hmr": true,
+        "hmrCtor": "Hmr",
+        "profileContext": true,
+        "pluginPackages": true,
+        "loaderInternal": true
+      },
+      "hmrRow": {
+        "disabledOption": {
+          "__jsExpr": "!ctx.get('profileContext')"
+        },
+        "hasFiber": true,
+        "fiberState": 2,
+        "fiberError": null
+      }
+    }
+  ],
+  "error": null,
+  "managerMethods": [
+    "@deepseek-ai/dsh-typert-protocol/remote-methods",
+    "bundleRows",
+    "cancelInstall",
+    "change",
+    "configure",
+    "declaredRows",
+    "diskState",
+    "inspect",
+    "installBundle",
+    "listBundles",
+    "listPlugins",
+    "listVersionExemptions",
+    "protectsManager",
+    "publishAndReload",
+    "readRestoredFiles",
+    "refreshPackages",
+    "registries",
+    "reload",
+    "removeBundle",
+    "restoreFiles",
+    "runPnpm",
+    "selectBundle",
+    "setBundleEnabled",
+    "setPluginEnabled",
+    "setVersionExemption",
+    "waitForInstall"
+  ]
+}

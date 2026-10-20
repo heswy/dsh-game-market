@@ -1,0 +1,1280 @@
+{
+  "runtime": {
+    "dshPackage": {
+      "name": "@deepseek-ai/dsh-desktop-runtime",
+      "version": "0.2.1-rc.2"
+    },
+    "pluginManager": {
+      "name": "@deepseek-ai/dsh-plugin-manager",
+      "version": "0.2.1-rc.2"
+    },
+    "electronApp": {
+      "name": "@deepseek-ai/dsh-desktop",
+      "version": "0.2.1-rc.2"
+    },
+    "asarExtractedAt": "2026-10-19T12:00:52.172Z"
+  },
+  "home": "/tmp/dsh-v15/home-su2-hmr",
+  "note": "HMR profile == real Desktop default (dsh-base hmr row enabled); raw probe output in the isolated work dir, this copy is sanitised",
+  "networkEnvUsedForPnpm": {
+    "HTTPS_PROXY": "http://127.0.0.1:7897",
+    "HTTP_PROXY": "http://127.0.0.1:7897",
+    "ALL_PROXY": "http://127.0.0.1:7897",
+    "npm_config_https_proxy": "http://127.0.0.1:7897",
+    "npm_config_http_proxy": "http://127.0.0.1:7897",
+    "npm_config_proxy": "http://127.0.0.1:7897",
+    "NO_PROXY": "127.0.0.1,localhost"
+  },
+  "id": "s-u2-hmr",
+  "title": "S-U2 (HMR profile, independent operator)",
+  "commands": [
+    "node scripts/verification/v1.5/plugin-update/run-su2-hmr.mjs"
+  ],
+  "startedAt": "2026-10-19T12:51:34.905Z",
+  "finishedAt": "2026-10-19T12:52:14.342Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "hmr service detected through the manager context after stabilisation",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "at": "2026-10-19T12:51:40.227Z",
+        "probeScopeHmr": true,
+        "managerContextHmr": true,
+        "managerContextHmrCtor": "Hmr",
+        "managerContextHmrHasRunExclusive": true,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": {
+            "__jsExpr": "!ctx.get('profileContext')"
+          },
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 110
+        },
+        "samplesSinceBoot": 2
+      }
+    },
+    {
+      "name": "hmr capability samples (async Service.init race)",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": [
+          {
+            "at": "2026-10-19T12:51:38.225Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": {
+                "__jsExpr": "!ctx.get('profileContext')"
+              },
+              "hasFiber": true,
+              "fiberState": 1,
+              "fiberUid": 110
+            }
+          },
+          {
+            "at": "2026-10-19T12:51:38.726Z",
+            "managerContextHmr": true,
+            "probeScopeHmr": true,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": {
+                "__jsExpr": "!ctx.get('profileContext')"
+              },
+              "hasFiber": true,
+              "fiberState": 2,
+              "fiberUid": 110
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "manager context hmr is the Hmr service with runExclusive",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "at": "2026-10-19T12:51:40.227Z",
+        "probeScopeHmr": true,
+        "managerContextHmr": true,
+        "managerContextHmrCtor": "Hmr",
+        "managerContextHmrHasRunExclusive": true,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": {
+            "__jsExpr": "!ctx.get('profileContext')"
+          },
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 110
+        },
+        "samplesSinceBoot": 2
+      }
+    },
+    {
+      "name": "operation holder is the plugin-manager row, not the updated bundle",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ownerEntryId": "include:plugin-manager",
+        "ownerContextIsProbeContext": false,
+        "ctor": "PluginManager",
+        "methods": [
+          "@deepseek-ai/dsh-typert-protocol/remote-methods",
+          "bundleRows",
+          "cancelInstall",
+          "change",
+          "configure",
+          "declaredRows",
+          "diskState",
+          "inspect",
+          "installBundle",
+          "listBundles",
+          "listPlugins",
+          "listVersionExemptions",
+          "protectsManager",
+          "publishAndReload",
+          "readRestoredFiles",
+          "refreshPackages",
+          "registries",
+          "reload",
+          "removeBundle",
+          "restoreFiles",
+          "runPnpm",
+          "selectBundle",
+          "setBundleEnabled",
+          "setPluginEnabled",
+          "setVersionExemption",
+          "waitForInstall"
+        ]
+      }
+    },
+    {
+      "name": "pre: dsh-game-market is not a profile dependency",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "pre: /health route not registered (bundle not loaded)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "available": false,
+        "connectionService": true,
+        "connectionScope": "probeScope",
+        "routeRegistered": false
+      }
+    },
+    {
+      "name": "pre: hmr loader row",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": {
+            "__jsExpr": "!ctx.get('profileContext')"
+          },
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 110
+        }
+      }
+    },
+    {
+      "name": "first-install-A-1.1.0.application",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "applied"
+      }
+    },
+    {
+      "name": "first-install-A-1.1.0.restartReason",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "first-install-A-1.1.0.changed",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": true
+      }
+    },
+    {
+      "name": "first-install-A-1.1.0.bundle",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "dsh-game-market"
+      }
+    },
+    {
+      "name": "first-install-A-1.1.0.version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.1.0"
+      }
+    },
+    {
+      "name": "first-install-A-1.1.0.error",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "first-install-A-1.1.0.packageResult",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": {
+          "exitCode": 0,
+          "timedOut": null,
+          "truncated": false,
+          "kind": null
+        }
+      }
+    },
+    {
+      "name": "first install (URL+commit spec, package absent) is applied by HMR",
+      "ok": true,
+      "required": true,
+      "detail": "applied"
+    },
+    {
+      "name": "first install reports bundle/version 1.1.0",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "bundle": "dsh-game-market",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "name": "first install reports changed=true",
+      "ok": true,
+      "required": true,
+      "detail": true
+    },
+    {
+      "name": "waitForInstall(active requestId) resolves to the same result",
+      "ok": true,
+      "required": true,
+      "detail": true
+    },
+    {
+      "name": "waitForInstall after settle returns null (results are not retained)",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "first-install-A: reported applied => live /health reports the installed version without restart",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "running": "1.1.0",
+        "installedVersion": "1.1.0"
+      }
+    },
+    {
+      "name": "first-install-A: disk package holds the installed version",
+      "ok": true,
+      "required": true,
+      "detail": "1.1.0"
+    },
+    {
+      "name": "first install: bundle row is running",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "dsh-game-market",
+        "name": "dsh-game-market",
+        "disabled": null,
+        "hasFiber": true,
+        "fiberState": 2,
+        "fiberUid": 337
+      }
+    },
+    {
+      "name": "first install: recorded dependency string (verbatim)",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f"
+      }
+    },
+    {
+      "name": "recorded-spec-A.application",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "failed"
+      }
+    },
+    {
+      "name": "recorded-spec-A.restartReason",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "recorded-spec-A.changed",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": false
+      }
+    },
+    {
+      "name": "recorded-spec-A.bundle",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "recorded-spec-A.version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "recorded-spec-A.error",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": {
+          "code": "already-installed"
+        }
+      }
+    },
+    {
+      "name": "recorded-spec-A.packageResult",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "HMR + dependency + exact recorded spec => failed/already-installed",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "application": "failed",
+        "error": {
+          "code": "already-installed"
+        }
+      }
+    },
+    {
+      "name": "already-installed runs no pnpm and leaves changed=false",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "changed": false,
+        "packageResult": null
+      }
+    },
+    {
+      "name": "update-A-to-B-1.2.0.application",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "applied"
+      }
+    },
+    {
+      "name": "update-A-to-B-1.2.0.restartReason",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "update-A-to-B-1.2.0.changed",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": true
+      }
+    },
+    {
+      "name": "update-A-to-B-1.2.0.bundle",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "dsh-game-market"
+      }
+    },
+    {
+      "name": "update-A-to-B-1.2.0.version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.2.0"
+      }
+    },
+    {
+      "name": "update-A-to-B-1.2.0.error",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "update-A-to-B-1.2.0.packageResult",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": {
+          "exitCode": 0,
+          "timedOut": null,
+          "truncated": false,
+          "kind": null
+        }
+      }
+    },
+    {
+      "name": "URL+commit spec update to B is not blocked by already-installed",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "update to B reports applied by HMR",
+      "ok": true,
+      "required": true,
+      "detail": "applied"
+    },
+    {
+      "name": "update to B reports version 1.2.0 and the bundle row",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.2.0",
+        "bundle": "dsh-game-market"
+      }
+    },
+    {
+      "name": "update-A-to-B: reported applied => live /health reports the installed version without restart",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "running": "1.2.0",
+        "installedVersion": "1.2.0"
+      }
+    },
+    {
+      "name": "update-A-to-B: disk package holds the installed version",
+      "ok": true,
+      "required": true,
+      "detail": "1.2.0"
+    },
+    {
+      "name": "update A->B: recorded dependency string (verbatim)",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      }
+    },
+    {
+      "name": "update A->B: recorded dependency string is the pnpm hosted-git form",
+      "ok": true,
+      "required": true,
+      "detail": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+    },
+    {
+      "name": "update A->B: bundle row fiber identity",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": {
+          "id": "dsh-game-market",
+          "name": "dsh-game-market",
+          "disabled": null,
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 338
+        }
+      }
+    },
+    {
+      "name": "update A->B: the updated bundle row was disposed and restarted with a new fiber",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": {
+          "id": "dsh-game-market",
+          "name": "dsh-game-market",
+          "disabled": null,
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 337
+        },
+        "after": {
+          "id": "dsh-game-market",
+          "name": "dsh-game-market",
+          "disabled": null,
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 338
+        }
+      }
+    },
+    {
+      "name": "recorded-spec-B.application",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "failed"
+      }
+    },
+    {
+      "name": "recorded-spec-B.restartReason",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "recorded-spec-B.changed",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": false
+      }
+    },
+    {
+      "name": "recorded-spec-B.bundle",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "recorded-spec-B.version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "recorded-spec-B.error",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": {
+          "code": "already-installed"
+        }
+      }
+    },
+    {
+      "name": "recorded-spec-B.packageResult",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "same-version repeat click with the exact recorded spec => already-installed",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "application": "failed",
+        "error": {
+          "code": "already-installed"
+        },
+        "changed": false
+      }
+    },
+    {
+      "name": "duplicate-URL-spec-B.application",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "failed"
+      }
+    },
+    {
+      "name": "duplicate-URL-spec-B.restartReason",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "duplicate-URL-spec-B.changed",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": false
+      }
+    },
+    {
+      "name": "duplicate-URL-spec-B.bundle",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "duplicate-URL-spec-B.version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "duplicate-URL-spec-B.error",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": {
+          "code": "ambiguous-install"
+        }
+      }
+    },
+    {
+      "name": "duplicate-URL-spec-B.packageResult",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": {
+          "exitCode": 0,
+          "timedOut": null,
+          "truncated": false,
+          "kind": null
+        }
+      }
+    },
+    {
+      "name": "duplicate URL-form install returns a definitive Remote Result",
+      "ok": true,
+      "required": true,
+      "detail": [
+        "application",
+        "changed",
+        "enabled",
+        "error",
+        "packageResult",
+        "registries",
+        "stage",
+        "target"
+      ]
+    },
+    {
+      "name": "duplicate URL-form install is NOT caught by the already-installed gate (string-exact rule)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "error": {
+          "code": "ambiguous-install"
+        },
+        "application": "failed"
+      }
+    },
+    {
+      "name": "duplicate URL-form install does not change the recorded dependency",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "declared": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "result": "failed",
+        "error": {
+          "code": "ambiguous-install"
+        }
+      }
+    },
+    {
+      "name": "duplicate URL-form install leaves the live version untouched",
+      "ok": true,
+      "required": true,
+      "detail": "1.2.0"
+    },
+    {
+      "name": "update-B-to-C-1.0.0.application",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "applied"
+      }
+    },
+    {
+      "name": "update-B-to-C-1.0.0.restartReason",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "update-B-to-C-1.0.0.changed",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": true
+      }
+    },
+    {
+      "name": "update-B-to-C-1.0.0.bundle",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "dsh-game-market"
+      }
+    },
+    {
+      "name": "update-B-to-C-1.0.0.version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.0.0"
+      }
+    },
+    {
+      "name": "update-B-to-C-1.0.0.error",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "update-B-to-C-1.0.0.packageResult",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": {
+          "exitCode": 0,
+          "timedOut": null,
+          "truncated": false,
+          "kind": null
+        }
+      }
+    },
+    {
+      "name": "second consecutive URL+commit update is also applied by HMR",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "application": "applied",
+        "version": "1.0.0",
+        "error": null
+      }
+    },
+    {
+      "name": "update-B-to-C: reported applied => live /health reports the installed version without restart",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "running": "1.0.0",
+        "installedVersion": "1.0.0"
+      }
+    },
+    {
+      "name": "update-B-to-C: disk package holds the installed version",
+      "ok": true,
+      "required": true,
+      "detail": "1.0.0"
+    },
+    {
+      "name": "update B->C: recorded dependency string points at commit C",
+      "ok": true,
+      "required": true,
+      "detail": "github:heswy/dsh-game-market#611c0ed0083432fc7b471e1d1351b90bc15f81ff"
+    },
+    {
+      "name": "update B->C: the bundle row was disposed and restarted again",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": {
+          "id": "dsh-game-market",
+          "name": "dsh-game-market",
+          "disabled": null,
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 338
+        },
+        "after": {
+          "id": "dsh-game-market",
+          "name": "dsh-game-market",
+          "disabled": null,
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 339
+        }
+      }
+    },
+    {
+      "name": "cancelInstall(unknown requestId) => not-running",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": "not-running"
+      }
+    },
+    {
+      "name": "waitForInstall(unknown requestId) => null",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "cancelInstall during installing => cancelled",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": "cancelled"
+      }
+    },
+    {
+      "name": "cancelled install reports application=cancelled",
+      "ok": true,
+      "required": true,
+      "detail": "cancelled"
+    },
+    {
+      "name": "cancelled install reports changed=false (profile files restored)",
+      "ok": true,
+      "required": true,
+      "detail": false
+    },
+    {
+      "name": "cancel restores the previous declared dependency (commit C kept)",
+      "ok": true,
+      "required": true,
+      "detail": "github:heswy/dsh-game-market#611c0ed0083432fc7b471e1d1351b90bc15f81ff"
+    },
+    {
+      "name": "cancel leaves the live version untouched",
+      "ok": true,
+      "required": true,
+      "detail": "1.0.0"
+    },
+    {
+      "name": "cancel-at-applying phases seen by the scheduler (internal read)",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": [
+          "installing",
+          "applying"
+        ]
+      }
+    },
+    {
+      "name": "cancelInstall in the applying phase => too-late",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": "too-late"
+      }
+    },
+    {
+      "name": "too-late is not a rollback: the install completes as applied",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "application": "applied",
+        "version": "1.2.0",
+        "error": null
+      }
+    },
+    {
+      "name": "update-C-to-B-via-too-late: reported applied => live /health reports the installed version without restart",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "running": "1.2.0",
+        "installedVersion": "1.2.0"
+      }
+    },
+    {
+      "name": "update-C-to-B-via-too-late: disk package holds the installed version",
+      "ok": true,
+      "required": true,
+      "detail": "1.2.0"
+    },
+    {
+      "name": "too-late update records commit B in the dependency",
+      "ok": true,
+      "required": true,
+      "detail": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+    },
+    {
+      "name": "remove-bundle.application",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "applied"
+      }
+    },
+    {
+      "name": "remove-bundle.restartReason",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "remove-bundle.changed",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": true
+      }
+    },
+    {
+      "name": "remove-bundle.bundle",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "remove-bundle.version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "remove-bundle.error",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "remove-bundle.packageResult",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": {
+          "exitCode": 0,
+          "timedOut": null,
+          "truncated": false,
+          "kind": null
+        }
+      }
+    },
+    {
+      "name": "removeBundle did not throw stop-profile/bundle-in-use",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "independent operator survived the whole lifecycle (probe wrote the remove result)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": {
+          "selfFiberUid": 48,
+          "at": "2026-10-19T12:52:07.802Z"
+        },
+        "after": {
+          "selfFiberUid": 48,
+          "at": "2026-10-19T12:52:08.533Z",
+          "alive": true
+        }
+      }
+    },
+    {
+      "name": "after remove: dependency is gone",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "after remove: /health route is gone",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "available": false,
+        "connectionService": true,
+        "connectionScope": "probeScope",
+        "routeRegistered": false
+      }
+    },
+    {
+      "name": "after remove: the bundle row is not running",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "removeBundle reports applied under HMR",
+      "ok": true,
+      "required": true,
+      "detail": "applied"
+    },
+    {
+      "name": "reinstall-after-remove.application",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "applied"
+      }
+    },
+    {
+      "name": "reinstall-after-remove.restartReason",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "reinstall-after-remove.changed",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": true
+      }
+    },
+    {
+      "name": "reinstall-after-remove.bundle",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "dsh-game-market"
+      }
+    },
+    {
+      "name": "reinstall-after-remove.version",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": "1.2.0"
+      }
+    },
+    {
+      "name": "reinstall-after-remove.error",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": false,
+        "value": null
+      }
+    },
+    {
+      "name": "reinstall-after-remove.packageResult",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "present": true,
+        "value": {
+          "exitCode": 0,
+          "timedOut": null,
+          "truncated": false,
+          "kind": null
+        }
+      }
+    },
+    {
+      "name": "re-install after remove is applied by HMR",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "application": "applied",
+        "version": "1.2.0",
+        "error": null
+      }
+    },
+    {
+      "name": "reinstall-after-remove: reported applied => live /health reports the installed version without restart",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "running": "1.2.0",
+        "installedVersion": "1.2.0"
+      }
+    },
+    {
+      "name": "reinstall-after-remove: disk package holds the installed version",
+      "ok": true,
+      "required": true,
+      "detail": "1.2.0"
+    },
+    {
+      "name": "operator heartbeat is fresh and belongs to a single fiber",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "heartbeat": {
+          "bootTag": "su2-boot1",
+          "pid": 28673,
+          "selfFiberUid": 48,
+          "tick": 33,
+          "at": "2026-10-19T12:52:12.884Z",
+          "processed": 20
+        },
+        "observing": 48
+      }
+    },
+    {
+      "name": "operator fiber uid never changed across installs/removals (no disposal)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "samples": [
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48
+        ]
+      }
+    },
+    {
+      "name": "storage marker survived every update/removal/re-install",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "marker": "v1.5-m0-plugin-update-storage-marker",
+        "bootTag": "su2-boot1",
+        "writtenAt": "2026-10-19T12:51:40.282Z",
+        "note": "probe fixture standing in for user data outside the bundle directory"
+      }
+    },
+    {
+      "name": "save fixture survived unchanged",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "schemaVersion": 1,
+        "gameId": "snake",
+        "playSessionId": "probe-su2-boot1",
+        "score": 42,
+        "state": {
+          "snake": [
+            [
+              3,
+              3
+            ]
+          ],
+          "direction": "right"
+        },
+        "updatedAt": "2026-10-19T12:51:40.283Z",
+        "marker": "v1.5-m0-plugin-update-save-fixture"
+      }
+    },
+    {
+      "name": "storage root is outside the profile bundle directory",
+      "ok": true,
+      "required": true,
+      "detail": "/tmp/dsh-v15/home-su2-hmr/storages/dsh-game-market"
+    }
+  ],
+  "requiredChecks": 58,
+  "optionalChecks": 62,
+  "requiredPassed": 58,
+  "failedRequired": [],
+  "failedOptional": []
+}

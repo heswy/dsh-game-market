@@ -1,0 +1,57 @@
+{
+  "formatVersion": 2,
+  "entry": "index.html",
+  "gameManifest": "game.json",
+  "files": [
+    {
+      "path": "assets/pickup.wav",
+      "size": 3244,
+      "sha256": "26f77e9f2e488bac8d11394af9733438a229264fbb051f099d6a3023a750acc7"
+    },
+    {
+      "path": "assets/ship.png",
+      "size": 318,
+      "sha256": "3aa6bf0b3757eff41d1169c29096a35429a6b7ce87640edc8bd069e03d91672d"
+    },
+    {
+      "path": "game.json",
+      "size": 591,
+      "sha256": "1ebd4c2fd90b9bbc14e0f19138a095c6e06239f552f157a06e6bab210292ef32"
+    },
+    {
+      "path": "index.html",
+      "size": 1331,
+      "sha256": "794798f5e524dab9baaa5a4cc53483f5e7079ad02d9a4cb00d27b0cd69397499"
+    },
+    {
+      "path": "levels/level-01.json",
+      "size": 435,
+      "sha256": "73cafbe7fe165a1f9ca43eb794e03a80bebe57bf7cfad73ac2519de5ddc0be78"
+    },
+    {
+      "path": "scripts/bootstrap.js",
+      "size": 617,
+      "sha256": "e31c430c40e10c946d0768188065f9f6fc49f7771dedeb94c4672d47ed43ef2e"
+    },
+    {
+      "path": "scripts/level-loader.mjs",
+      "size": 662,
+      "sha256": "175c88c3a3a0abf0b882e5daee7729827b522e18b0a6adc33a03e383e61e3f0d"
+    },
+    {
+      "path": "scripts/main.js",
+      "size": 17292,
+      "sha256": "2487c32d3c081334249b04abccaddc2f58585743b056775898b277a12154860c"
+    },
+    {
+      "path": "scripts/powerup.mjs",
+      "size": 297,
+      "sha256": "7c077316448a681c1b0a51c9a12b4a06543a14b534d857bf4dde0092e65efd7a"
+    },
+    {
+      "path": "styles/game.css",
+      "size": 1373,
+      "sha256": "8a4f83303706483a36b580f67dd1bbd4edc230a123130144f2ff422aa33ce834"
+    }
+  ]
+}

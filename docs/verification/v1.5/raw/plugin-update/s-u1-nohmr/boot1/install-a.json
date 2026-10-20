@@ -1,0 +1,81 @@
+{
+  "probeVersion": 1,
+  "bootTag": "su1-boot1",
+  "commandIndex": 2,
+  "command": {
+    "id": "su1-b1-install-a",
+    "action": "install",
+    "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+    "requestId": "su1-a-1792414422191",
+    "saveExact": true,
+    "waitConcurrently": true
+  },
+  "startedAt": "2026-10-19T12:53:42.276Z",
+  "finishedAt": "2026-10-19T12:53:46.724Z",
+  "ok": true,
+  "action": "install",
+  "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f",
+  "options": {
+    "enabled": true,
+    "saveExact": true,
+    "requestId": "su1-a-1792414422191"
+  },
+  "waitConcurrently": true,
+  "waitResolvedWhileActive": true,
+  "result": {
+    "stage": "enable",
+    "target": "dsh-game-market",
+    "enabled": true,
+    "changed": true,
+    "application": "restart-required",
+    "restartReason": "no-hmr",
+    "registries": [
+      null
+    ],
+    "packageResult": {
+      "exitCode": 0,
+      "output": "Progress: resolved 0, reused 1, downloaded 0, added 0\n\ndependencies:\n+ dsh-game-market github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f\n\nPackages: +1\n+\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\nDone in 2.5s using pnpm v10.28.2\n",
+      "truncated": false,
+      "logPath": "/tmp/dsh-v15/home-su1-nohmr/profiles/web/.plugin-manager/logs/operation-cX5Q12/pnpm.log"
+    },
+    "bundle": "dsh-game-market",
+    "version": "1.1.0",
+    "warnings": []
+  },
+  "waitValue": {
+    "stage": "enable",
+    "target": "dsh-game-market",
+    "enabled": true,
+    "changed": true,
+    "application": "restart-required",
+    "restartReason": "no-hmr",
+    "registries": [
+      null
+    ],
+    "packageResult": {
+      "exitCode": 0,
+      "output": "Progress: resolved 0, reused 1, downloaded 0, added 0\n\ndependencies:\n+ dsh-game-market github:heswy/dsh-game-market#c106ac101e064a72f408c58b2516aad5118f513f\n\nPackages: +1\n+\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\nDone in 2.5s using pnpm v10.28.2\n",
+      "truncated": false,
+      "logPath": "/tmp/dsh-v15/home-su1-nohmr/profiles/web/.plugin-manager/logs/operation-cX5Q12/pnpm.log"
+    },
+    "bundle": "dsh-game-market",
+    "version": "1.1.0",
+    "warnings": []
+  },
+  "waitEqualsResult": true,
+  "waitForInstallAfterSettle": null,
+  "elapsedMs": 4448,
+  "resultKeys": [
+    "application",
+    "bundle",
+    "changed",
+    "enabled",
+    "packageResult",
+    "registries",
+    "restartReason",
+    "stage",
+    "target",
+    "version",
+    "warnings"
+  ]
+}

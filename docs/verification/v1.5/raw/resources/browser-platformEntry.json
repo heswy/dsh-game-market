@@ -1,0 +1,54 @@
+{
+  "name": "platform-entry",
+  "kind": "existing-capability",
+  "launch": {
+    "status": 200,
+    "ok": true
+  },
+  "entryUrlPath": "http://127.0.0.1:58261/api/game-market/entry?gameId=snake&version=1.0.0&instance=<instance>&nonce=<launch-nonce>",
+  "entryHeaders": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8",
+      "content-security-policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self' http://127.0.0.1:* http://localhost:*",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "no-referrer",
+      "content-length": "140496",
+      "x-entry-sha256": "919f43be…<redacted-len64>"
+    }
+  },
+  "repeatGetStatus": 200,
+  "fetchWithOriginNull": {
+    "status": 403,
+    "bodyPrefix": "forbidden"
+  },
+  "fetchWithSameOrigin": {
+    "status": 200
+  },
+  "iframeSessionAttached": true,
+  "domReady": true,
+  "dom": {
+    "origin": "http://127.0.0.1:58261",
+    "pathname": "/api/game-market/entry",
+    "title": "Snake",
+    "hasBody": true,
+    "classicMarker": false,
+    "probePresent": false,
+    "probeDone": false,
+    "styleSheetCount": 1,
+    "bodyBackground": "rgb(6, 8, 10)",
+    "scriptCount": 2,
+    "moduleScriptCount": 0,
+    "images": [],
+    "hud": null
+  },
+  "navigationTiming": {
+    "responseStatus": 200,
+    "contentType": "text/html",
+    "encodedBodySize": 43156,
+    "durationMs": 56
+  },
+  "entryResponse": [],
+  "screenshot": "docs/verification/v1.5/raw/resources/screenshots/dh-01-platform-entry-single-file.png"
+}

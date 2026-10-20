@@ -1,0 +1,131 @@
+{
+  "id": "CR-P1-selfnav",
+  "title": "sandboxed iframe self-navigation boundary (host frame-src vs game own CSP vs platform wrapper)",
+  "generatedAt": "2026-10-19T14:02:23.971Z",
+  "ports": {
+    "sink": 58301,
+    "resource": 58302,
+    "parent": 58303,
+    "cdp": 9501
+  },
+  "sandboxAttribute": "allow-scripts",
+  "gameScriptDelivery": "external /res/game.js (no inline script, per asset-zip-v2 rule)",
+  "controls": {
+    "bootBeacon": "every case beacons the target it is about to navigate to; a case only counts when the game ran AND aimed at the sink origin",
+    "wrapperPair": "C3 (wrapper with CSP) and C3c (same wrapper, no CSP) differ only in the wrapper policy, and both are framed by a top-level page that sends no CSP"
+  },
+  "cases": [
+    {
+      "id": "C1-parent-no-csp",
+      "note": "host page sends no CSP (current situation)",
+      "navigatedTo": "http://127.0.0.1:58303/plain",
+      "topLevelCsp": null,
+      "gameRan": true,
+      "attemptedTarget": "http://127.0.0.1:58301",
+      "aimedAtSink": true,
+      "expectedLeak": true,
+      "leaked": true,
+      "hits": [
+        {
+          "method": "GET",
+          "url": "/",
+          "host": "127.0.0.1:58301",
+          "referer": null
+        }
+      ],
+      "browserLog": [],
+      "verdict": "as-expected"
+    },
+    {
+      "id": "C2-parent-frame-src",
+      "note": "host page restricts frame-src to the resource origin",
+      "navigatedTo": "http://127.0.0.1:58303/with-frame-src",
+      "topLevelCsp": "default-src 'self'; frame-src http://127.0.0.1:58302; child-src http://127.0.0.1:58302",
+      "gameRan": true,
+      "attemptedTarget": "http://127.0.0.1:58301",
+      "aimedAtSink": true,
+      "expectedLeak": false,
+      "leaked": false,
+      "hits": [],
+      "browserLog": [
+        "Framing 'http://127.0.0.1:58301/' violates the following Content Security Policy directive: \"frame-src http://127.0.0.1:58302\". The request has been blocked.\n"
+      ],
+      "verdict": "as-expected"
+    },
+    {
+      "id": "C3-wrapper-frame-src",
+      "note": "platform-served wrapper restricts frame-src; top-level page sends no CSP",
+      "navigatedTo": "http://127.0.0.1:58303/wrapper",
+      "topLevelCsp": null,
+      "gameRan": true,
+      "attemptedTarget": "http://127.0.0.1:58301",
+      "aimedAtSink": true,
+      "expectedLeak": false,
+      "leaked": false,
+      "hits": [],
+      "browserLog": [],
+      "verdict": "as-expected"
+    },
+    {
+      "id": "C3c-wrapper-no-csp",
+      "note": "same wrapper without its CSP (control for C3)",
+      "navigatedTo": "http://127.0.0.1:58303/wrapper-nocsp",
+      "topLevelCsp": null,
+      "gameRan": true,
+      "attemptedTarget": "http://127.0.0.1:58301",
+      "aimedAtSink": true,
+      "expectedLeak": true,
+      "leaked": true,
+      "hits": [
+        {
+          "method": "GET",
+          "url": "/",
+          "host": "127.0.0.1:58301",
+          "referer": null
+        }
+      ],
+      "browserLog": [],
+      "verdict": "as-expected"
+    },
+    {
+      "id": "C4-game-own-csp-only",
+      "note": "game document CSP only (negative control)",
+      "navigatedTo": "http://127.0.0.1:58302/res/game.html?to=http%3A%2F%2F127.0.0.1%3A58301",
+      "topLevelCsp": "default-src 'none'; script-src http://127.0.0.1:58302; style-src http://127.0.0.1:58302; img-src http://127.0.0.1:58302 data:; connect-src http://127.0.0.1:58302; child-src 'none'; worker-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "gameRan": true,
+      "attemptedTarget": "http://127.0.0.1:58301",
+      "aimedAtSink": true,
+      "expectedLeak": true,
+      "leaked": true,
+      "hits": [
+        {
+          "method": "GET",
+          "url": "/",
+          "host": "127.0.0.1:58301",
+          "referer": "http://127.0.0.1:58302/"
+        },
+        {
+          "method": "GET",
+          "url": "/favicon.ico",
+          "host": "127.0.0.1:58301",
+          "referer": "http://127.0.0.1:58301/"
+        }
+      ],
+      "browserLog": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "verdict": "as-expected"
+    }
+  ],
+  "unexpected": [],
+  "conclusion": {
+    "gapReproduced": true,
+    "hostFrameSrcBlocks": true,
+    "sameOriginWrapperBlocks": true,
+    "wrapperControlLeaksWithoutItsCsp": true,
+    "gameOwnCspInsufficient": true,
+    "allCasesAimedAtSink": true,
+    "wrapperCasesHaveNoTopLevelCsp": true
+  },
+  "passed": true
+}

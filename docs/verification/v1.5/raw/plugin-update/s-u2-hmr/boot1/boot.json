@@ -1,0 +1,136 @@
+{
+  "identity": {
+    "dshPackage": {
+      "name": "@deepseek-ai/dsh-desktop-runtime",
+      "version": "0.2.1-rc.2"
+    },
+    "pluginManager": {
+      "name": "@deepseek-ai/dsh-plugin-manager",
+      "version": "0.2.1-rc.2"
+    },
+    "electronApp": {
+      "name": "@deepseek-ai/dsh-desktop",
+      "version": "0.2.1-rc.2"
+    },
+    "asarExtractedAt": "2026-10-19T12:00:52.172Z"
+  },
+  "ready": {
+    "bootTag": "su2-boot1",
+    "pid": 28673,
+    "at": "2026-10-19T12:51:40.229Z",
+    "managerContextHmr": true,
+    "sampledForMs": 1000
+  },
+  "boot": {
+    "probeVersion": 1,
+    "bootTag": "su2-boot1",
+    "pid": 28673,
+    "nodeVersion": "v24.14.0",
+    "execArgv": [
+      "--expose-internals"
+    ],
+    "startedAt": "2026-10-19T12:51:40.226Z",
+    "capabilitySamples": [
+      {
+        "at": "2026-10-19T12:51:38.225Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": {
+            "__jsExpr": "!ctx.get('profileContext')"
+          },
+          "hasFiber": true,
+          "fiberState": 1,
+          "fiberUid": 110
+        }
+      },
+      {
+        "at": "2026-10-19T12:51:38.726Z",
+        "managerContextHmr": true,
+        "probeScopeHmr": true,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": {
+            "__jsExpr": "!ctx.get('profileContext')"
+          },
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 110
+        }
+      }
+    ],
+    "capability": {
+      "at": "2026-10-19T12:51:40.227Z",
+      "probeScopeHmr": true,
+      "managerContextHmr": true,
+      "managerContextHmrCtor": "Hmr",
+      "managerContextHmrHasRunExclusive": true,
+      "hmrLoaderRow": {
+        "id": "hmr",
+        "name": "@deepseek-ai/dsh-hmr",
+        "disabled": {
+          "__jsExpr": "!ctx.get('profileContext')"
+        },
+        "hasFiber": true,
+        "fiberState": 2,
+        "fiberUid": 110
+      },
+      "samplesSinceBoot": 2
+    },
+    "managerInternal": {
+      "ownerEntryId": "include:plugin-manager",
+      "ownerContextIsProbeContext": false,
+      "ctor": "PluginManager",
+      "methods": [
+        "@deepseek-ai/dsh-typert-protocol/remote-methods",
+        "bundleRows",
+        "cancelInstall",
+        "change",
+        "configure",
+        "declaredRows",
+        "diskState",
+        "inspect",
+        "installBundle",
+        "listBundles",
+        "listPlugins",
+        "listVersionExemptions",
+        "protectsManager",
+        "publishAndReload",
+        "readRestoredFiles",
+        "refreshPackages",
+        "registries",
+        "reload",
+        "removeBundle",
+        "restoreFiles",
+        "runPnpm",
+        "selectBundle",
+        "setBundleEnabled",
+        "setPluginEnabled",
+        "setVersionExemption",
+        "waitForInstall"
+      ]
+    },
+    "profile": {
+      "dir": "/tmp/dsh-v15/home-su2-hmr/profiles/web",
+      "packageJson": {
+        "name": "dsh-profile-web",
+        "dependencies": {},
+        "profileBundles": [
+          "@deepseek-ai/dsh-base",
+          "@deepseek-ai/dsh-web-app"
+        ]
+      },
+      "dependency": null,
+      "diskPackage": null,
+      "diskPackagePath": "/tmp/dsh-v15/home-su2-hmr/profiles/web/node_modules/dsh-game-market/package.json"
+    },
+    "probeScopeServices": {
+      "pluginManager": true,
+      "connection": true
+    },
+    "eventSubscriptionErrors": []
+  }
+}

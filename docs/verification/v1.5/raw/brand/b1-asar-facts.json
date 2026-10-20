@@ -1,0 +1,99 @@
+{
+  "asar": "/tmp/dsh-v15/asar",
+  "files": {
+    "brand-official/lib/client.js": {
+      "path": "<asar>/dsh/node_modules/@deepseek-ai/dsh-client-ui-brand-official/lib/client.js",
+      "sha256": "22bb7e181a8d93372e1d14927b201612b09a02c84ea3d0f36933cfff1de47d71",
+      "bytes": 1863
+    },
+    "brand-official/LICENSE": {
+      "path": "<asar>/dsh/node_modules/@deepseek-ai/dsh-client-ui-brand-official/LICENSE",
+      "sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be",
+      "bytes": 1065
+    },
+    "brand-official/package.json": {
+      "path": "<asar>/dsh/node_modules/@deepseek-ai/dsh-client-ui-brand-official/package.json",
+      "sha256": "171cc0df25ac6cdc194bbc955fb6fcd7a6edb1929fbf61d21d335f479ea1b6e3",
+      "bytes": 1505
+    },
+    "web-frontend/dist/assets": {
+      "path": "<asar>/dsh/node_modules/@deepseek-ai/dsh-web-frontend/dist/assets/index-CN7NIWNw.js",
+      "sha256": "4bc914bfbb6adbdd63953a29f63835eb7127defd2a973149d64cdab489f1a9a5",
+      "bytes": 939867
+    },
+    "web-frontend/dist/favicon.svg": {
+      "path": "<asar>/dsh/node_modules/@deepseek-ai/dsh-web-frontend/dist/favicon.svg",
+      "sha256": "9e983b4f649c25c6ca0623a50be1a6e705fd8f49f756638b980fa13b40575ab6",
+      "bytes": 3634
+    },
+    "web-frontend/package.json": {
+      "path": "<asar>/dsh/node_modules/@deepseek-ai/dsh-web-frontend/package.json",
+      "sha256": "d7894ca035b8782cd77c03758809cc43653a92c8acebe5fd1e102be8f45d251d",
+      "bytes": 2609
+    },
+    "app.asar/package.json": {
+      "path": "<asar>/package.json",
+      "sha256": "53ee01d3b1accfbd037d245fb4752fb5fa5f8e2a76b7de634a4223558ee54bb9",
+      "bytes": 797
+    }
+  },
+  "primitives": {
+    "viewBox": {
+      "width": 23.16,
+      "height": 17.04
+    },
+    "pathSha256": "5bee701f39229e6dbb3950e8ed7fe69aedc6de462df916ace5e84563715abc47",
+    "pathLength": 3448,
+    "pathPrefix": "M22.9168 1.43018C22.6713 1.31018 22.5658 1.53918",
+    "fishLogoComponentFound": true,
+    "fishLogoComponentSource": "function FishLogo({size=24,className}){return jsx(\"svg\",{width:size,height:size*V.height/V.width,className,viewBox:`0 0 ${V.width} ${V.height}`,fill:\"none\",\"aria-hidden\":\"true\",children:jsx(\"path\",{d:PATH,fill:\"currentColor\"})})}",
+    "fillStrategy": "currentColor (inherits the theme text color)",
+    "exportedFromModule": true
+  },
+  "licenses": {
+    "app": {
+      "name": "@deepseek-ai/dsh-desktop",
+      "version": "0.2.1-rc.2",
+      "license": "MIT"
+    },
+    "brandOfficial": {
+      "name": "@deepseek-ai/dsh-client-ui-brand-official",
+      "version": "0.2.1-rc.2",
+      "license": "MIT"
+    },
+    "webFrontend": {
+      "name": "@deepseek-ai/dsh-web-frontend",
+      "version": "0.2.1-rc.2",
+      "license": "MIT"
+    },
+    "primitivesDeclaredAs": {
+      "devDependencyOf": "dsh-web-frontend",
+      "version": "0.2.1-rc.2",
+      "installedAsOwnPackage": false
+    },
+    "brandLicenseText": "MIT License\n\nCopyright (c) 2026 DeepSeek"
+  },
+  "platformSeedTable": {
+    "wiredAtBoot": true,
+    "bootExpression": "__ModuleLoader__.create({ boot, staticModules:SZ(), ... })",
+    "specifiers": [
+      "@deepseek-ai/cordis",
+      "@deepseek-ai/dsh-client-store",
+      "@deepseek-ai/dsh-client-ui-dockkit",
+      "@deepseek-ai/dsh-client-ui-primitives",
+      "@deepseek-ai/dsh-client-ui-slots",
+      "@tanstack/react-virtual",
+      "react",
+      "react-dom",
+      "react-dom/client",
+      "react/jsx-runtime"
+    ]
+  },
+  "officialSvgFile": {
+    "path": "<asar>/dsh/node_modules/@deepseek-ai/dsh-web-frontend/dist/favicon.svg",
+    "viewBox": "0 0 50 50",
+    "pathCount": 1,
+    "bytes": 3634,
+    "sha256": "9e983b4f649c25c6ca0623a50be1a6e705fd8f49f756638b980fa13b40575ab6"
+  }
+}

@@ -1,0 +1,501 @@
+{
+  "identity": {
+    "dshPackage": {
+      "name": "@deepseek-ai/dsh-desktop-runtime",
+      "version": "0.2.1-rc.2"
+    },
+    "pluginManager": {
+      "name": "@deepseek-ai/dsh-plugin-manager",
+      "version": "0.2.1-rc.2"
+    },
+    "electronApp": {
+      "name": "@deepseek-ai/dsh-desktop",
+      "version": "0.2.1-rc.2"
+    },
+    "asarExtractedAt": "2026-10-19T12:00:52.172Z"
+  },
+  "boot": {
+    "probeVersion": 1,
+    "bootTag": "su1-boot3",
+    "pid": 31690,
+    "nodeVersion": "v24.14.0",
+    "execArgv": [
+      "--expose-internals"
+    ],
+    "startedAt": "2026-10-19T12:54:32.624Z",
+    "capabilitySamples": [
+      {
+        "at": "2026-10-19T12:54:15.856Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:16.356Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:16.857Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:17.358Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:17.859Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:18.362Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:18.863Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:19.363Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:19.865Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:20.365Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:20.866Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:21.426Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:21.929Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:22.432Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:22.933Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:23.469Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:23.972Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:24.496Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:25.041Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:25.543Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:26.107Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:26.608Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:27.111Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:27.613Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:28.114Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:28.616Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:29.117Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:29.619Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:30.120Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      },
+      {
+        "at": "2026-10-19T12:54:30.622Z",
+        "managerContextHmr": false,
+        "probeScopeHmr": false,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": true,
+          "hasFiber": false,
+          "fiberState": null,
+          "fiberUid": null
+        }
+      }
+    ],
+    "capability": {
+      "at": "2026-10-19T12:54:32.624Z",
+      "probeScopeHmr": false,
+      "managerContextHmr": false,
+      "managerContextHmrCtor": null,
+      "managerContextHmrHasRunExclusive": false,
+      "hmrLoaderRow": {
+        "id": "hmr",
+        "name": "@deepseek-ai/dsh-hmr",
+        "disabled": true,
+        "hasFiber": false,
+        "fiberState": null,
+        "fiberUid": null
+      },
+      "samplesSinceBoot": 30
+    },
+    "managerInternal": {
+      "ownerEntryId": "include:plugin-manager",
+      "ownerContextIsProbeContext": false,
+      "ctor": "PluginManager",
+      "methods": [
+        "@deepseek-ai/dsh-typert-protocol/remote-methods",
+        "bundleRows",
+        "cancelInstall",
+        "change",
+        "configure",
+        "declaredRows",
+        "diskState",
+        "inspect",
+        "installBundle",
+        "listBundles",
+        "listPlugins",
+        "listVersionExemptions",
+        "protectsManager",
+        "publishAndReload",
+        "readRestoredFiles",
+        "refreshPackages",
+        "registries",
+        "reload",
+        "removeBundle",
+        "restoreFiles",
+        "runPnpm",
+        "selectBundle",
+        "setBundleEnabled",
+        "setPluginEnabled",
+        "setVersionExemption",
+        "waitForInstall"
+      ]
+    },
+    "profile": {
+      "dir": "/tmp/dsh-v15/home-su1-nohmr/profiles/web",
+      "packageJson": {
+        "name": "dsh-profile-web",
+        "dependencies": {
+          "dsh-game-market": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+        },
+        "profileBundles": [
+          "@deepseek-ai/dsh-base",
+          "@deepseek-ai/dsh-web-app",
+          "dsh-game-market"
+        ]
+      },
+      "dependency": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+      "diskPackage": {
+        "name": "dsh-game-market",
+        "version": "1.2.0"
+      },
+      "diskPackagePath": "/tmp/dsh-v15/home-su1-nohmr/profiles/web/node_modules/dsh-game-market/package.json",
+      "diskPackageRealPath": "/private/tmp/dsh-v15/home-su1-nohmr/profiles/web/node_modules/dsh-game-market"
+    },
+    "probeScopeServices": {
+      "pluginManager": true,
+      "connection": true
+    },
+    "eventSubscriptionErrors": []
+  },
+  "ready": {
+    "bootTag": "su1-boot3",
+    "pid": 31690,
+    "at": "2026-10-19T12:54:32.626Z",
+    "managerContextHmr": false,
+    "sampledForMs": 15000
+  }
+}

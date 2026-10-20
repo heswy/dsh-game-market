@@ -1,0 +1,180 @@
+{
+  "id": "V1.5-ZIP-DEP",
+  "title": "ZIP reader candidates: fflate (App-vendored) vs yauzl (pinned dependency)",
+  "commands": [
+    "npm install --no-save --prefix /tmp/dsh-v15/ziplib --cache /tmp/dsh-v15/npm-cache yauzl@3.4.0",
+    "node scripts/verification/v1.5/brand/zip-reader-eval.mjs"
+  ],
+  "startedAt": "2026-10-19T13:08:28.270Z",
+  "finishedAt": "2026-10-19T13:08:28.514Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "yauzl is pinned 3.4.0 under MIT",
+      "ok": true,
+      "required": true,
+      "detail": "3.4.0"
+    },
+    {
+      "name": "yauzl transitive closure is exactly pend@1.2.0 (MIT)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "dependencies": {
+          "pend": "~1.2.0"
+        },
+        "pend": "1.2.0",
+        "pendLicense": "MIT"
+      }
+    },
+    {
+      "name": "CRC-32 self-test vector matches 0xCBF43926",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "node": "v24.14.0",
+        "zlibCrc32": true
+      }
+    },
+    {
+      "name": "yauzl exposes the CRC-32 of every entry from the central directory",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "deflated": 3943299212,
+        "stored": 3150855069
+      }
+    },
+    {
+      "name": "yauzl decodes both Stored and Deflate entries with exact byte counts",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "deflated": {
+          "method": 8,
+          "decodedBytes": 36
+        },
+        "stored": {
+          "method": 0,
+          "decodedBytes": 10240
+        }
+      }
+    },
+    {
+      "name": "CRC-32 recomputed over decoded bytes confirms the intact archive",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "deflated": true,
+        "stored": true
+      }
+    },
+    {
+      "name": "CRC-32 recomputation detects a corrupted Stored entry (yauzl alone does not)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "decodedBytes": 10240,
+        "expectedCrc": 3150855069,
+        "computedCrc": 1084849677
+      }
+    },
+    {
+      "name": "fflate (App-vendored 0.8.2) exposes no per-entry CRC field",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "name": "scripts/main.js",
+          "publicKeys": [
+            "compression",
+            "name",
+            "originalSize",
+            "size",
+            "start",
+            "terminate"
+          ]
+        },
+        {
+          "name": "assets/big.bin",
+          "publicKeys": [
+            "compression",
+            "name",
+            "originalSize",
+            "size",
+            "start",
+            "terminate"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fflate silently returns corrupted Stored bytes (no CRC enforcement)",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "name": "scripts/main.js",
+          "decodedBytes": 36,
+          "originalSize": 36,
+          "error": null
+        },
+        {
+          "name": "assets/big.bin",
+          "decodedBytes": 10240,
+          "originalSize": 10240,
+          "error": null
+        }
+      ]
+    },
+    {
+      "name": "yauzl surfaces symlink mode bits so path/type policy can reject them",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "name": "assets/link",
+        "unixMode": "0120777"
+      }
+    },
+    {
+      "name": "hostile names arrive byte-exact (traversal, absolute, backslash, NFD/NFC pair)",
+      "ok": true,
+      "required": true,
+      "detail": [
+        "assets/link",
+        "../escape.txt",
+        "/abs.txt",
+        "a\\b.txt",
+        "café.txt",
+        "café.txt"
+      ]
+    },
+    {
+      "name": "encrypted entries are rejected before any data is decrypted",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "name": "t/hello.txt",
+        "fileNameRaw": "742f68656c6c6f2e747874",
+        "compressionMethod": 8,
+        "compressedSize": 29,
+        "uncompressedSize": 36,
+        "crc32": 3943299212,
+        "generalPurposeBitFlag": 9,
+        "externalFileAttributes": 2175008768,
+        "unixMode": "0100644",
+        "versionNeededToExtract": 20,
+        "extraFieldIds": [
+          21589,
+          30837
+        ],
+        "relativeOffsetOfLocalHeader": 0,
+        "encrypted": true,
+        "streamError": "rejected before openReadStream: general purpose bit 0 (encryption) set"
+      }
+    }
+  ],
+  "evidenceFile": "docs/verification/v1.5/raw/brand/b1-zip-reader-eval.json",
+  "prerequisite": "npm install --no-save --prefix /tmp/dsh-v15/ziplib --cache /tmp/dsh-v15/npm-cache yauzl@3.4.0"
+}
