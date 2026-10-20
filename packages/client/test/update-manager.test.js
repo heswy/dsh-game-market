@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createUpdateManager } from '../src/update-manager.js';
+import { deriveUpdateView } from '../src/update-state.js';
 import { createStore } from '../src/store.js';
 import { clearRuntimeInstances, registerRuntimeInstance } from '../src/runtime-registry.js';
 import { GM } from '../../shared/src/errors.js';
@@ -550,14 +551,15 @@ test('cancel too-late does not claim cancellation and keeps observing', async fu
   built.manager.stop();
 });
 
-test('refresh keeps the inspection and surfaces throttling without an error', async function () {
+test('refresh adopts Host throttling (canRefresh=false) and never confuses it with the 6h auto check', async function () {
   const api = createFakeApi({
     refresh: function refresh() {
       return Promise.resolve(
         inspectionFixture({
           refreshed: false,
           throttled: true,
-          discovery: { nextCheckAt: '2026-10-20T12:00:30.000Z' },
+          // Host: throttled -> canRefresh false + nextCheckAt = manual window (~60s).
+          discovery: { state: 'ready', canRefresh: false, nextCheckAt: '2026-10-20T12:00:30.000Z' },
         })
       );
     },
@@ -570,6 +572,26 @@ test('refresh keeps the inspection and surfaces throttling without an error', as
   assert.equal(state.update.error, null);
   assert.equal(state.update.status, 'ready');
   assert.ok(state.update.inspection);
+  const throttledView = deriveUpdateView(Object.assign({}, state.update, { now: built.scheduler.now() }));
+  assert.equal(throttledView.refresh.canRefresh, false);
+  assert.equal(throttledView.refresh.secondsUntil, 30);
+  assert.equal(throttledView.refresh.disabled, true, 'transient 60s throttle disables the button');
+
+  // The next automatic inspection (canRefresh true, nextCheckAt ~6h ahead) must
+  // re-enable the manual refresh button immediately.
+  const autoCheckNow = Date.parse('2026-10-20T12:00:31.000Z');
+  const autoCheckInspection = requireInspectionWithOperation();
+  autoCheckInspection.discovery.state = 'ready';
+  autoCheckInspection.discovery.canRefresh = true;
+  autoCheckInspection.discovery.nextCheckAt = '2026-10-20T18:00:31.000Z';
+  const allowedView = deriveUpdateView({
+    status: 'ready',
+    inspection: autoCheckInspection,
+    clientIdentity: { version: '1.2.0', buildCommit: COMMIT_RUNNING },
+    now: autoCheckNow,
+  });
+  assert.equal(allowedView.refresh.secondsUntil, null, 'the 6h auto check is not a manual throttle');
+  assert.equal(allowedView.refresh.disabled, false, 'manual refresh is usable again');
   built.manager.stop();
 });
 

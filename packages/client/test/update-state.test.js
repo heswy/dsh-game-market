@@ -345,17 +345,62 @@ test('deriveUpdateView shows a local starting state before the first observation
   assert.equal(view.operation.active, true);
 });
 
-test('deriveUpdateView computes the refresh throttle window from nextCheckAt', function () {
+test('refresh button is enabled when the Host allows it even if nextCheckAt is ~6h away', function () {
+  // Host semantics: with canRefresh === true, nextCheckAt is the NEXT AUTOMATIC
+  // silent check (lastAttempt + ~6h) and must not disable manual refresh.
   const now = Date.parse('2026-10-20T10:00:00.000Z');
   const inspection = normalizeInspection(
-    inspectionFixture({ discovery: { nextCheckAt: '2026-10-20T10:00:45.000Z' } })
+    inspectionFixture({
+      discovery: { state: 'ready', canRefresh: true, nextCheckAt: '2026-10-20T16:00:00.000Z', lastError: null },
+    })
   );
   const view = deriveUpdateView({ status: 'ready', inspection: inspection, now: now });
+  assert.equal(view.refresh.canRefresh, true);
+  assert.equal(view.refresh.availableAt, null, 'auto-check time is not exposed as a manual throttle');
+  assert.equal(view.refresh.secondsUntil, null, 'auto-check time is not a manual-refresh countdown');
+  assert.equal(view.refresh.disabled, false, 'button stays usable for ~6h case');
+  assert.equal(view.discovery.state, 'ready');
+});
+
+test('refresh button is disabled and counts down only when canRefresh === false', function () {
+  const now = Date.parse('2026-10-20T10:00:00.000Z');
+  const inspection = normalizeInspection(
+    inspectionFixture({
+      discovery: { state: 'ready', canRefresh: false, nextCheckAt: '2026-10-20T10:00:45.000Z', lastError: null },
+    })
+  );
+  const view = deriveUpdateView({ status: 'ready', inspection: inspection, now: now });
+  assert.equal(view.refresh.canRefresh, false);
   assert.equal(view.refresh.secondsUntil, 45);
   assert.equal(view.refresh.disabled, true);
   assert.equal(timestampMs(view.refresh.availableAt), Date.parse('2026-10-20T10:00:45.000Z'));
   const later = deriveUpdateView({ status: 'ready', inspection: inspection, now: Date.parse('2026-10-20T10:01:00.000Z') });
-  assert.equal(later.refresh.secondsUntil, null);
+  assert.equal(later.refresh.secondsUntil, null, 'no negative/fake countdown after the window');
+  assert.equal(later.refresh.disabled, true, 'Host still reports canRefresh false');
+});
+
+test('refresh button stays disabled when canRefresh is false without a usable timestamp', function () {
+  const inspection = normalizeInspection(
+    inspectionFixture({ discovery: { state: 'ready', canRefresh: false, nextCheckAt: null, lastError: null } })
+  );
+  const view = deriveUpdateView({ status: 'ready', inspection: inspection, now: Date.parse('2026-10-20T10:00:00.000Z') });
+  assert.equal(view.refresh.secondsUntil, null);
+  assert.equal(view.refresh.disabled, true, 'fail closed while the Host says refresh is not allowed');
+});
+
+test('an in-flight manual refresh disables the button independently of canRefresh', function () {
+  const inspection = normalizeInspection(
+    inspectionFixture({ discovery: { state: 'ready', canRefresh: true, nextCheckAt: '2026-10-20T16:00:00.000Z' } })
+  );
+  const view = deriveUpdateView({
+    status: 'ready',
+    inspection: inspection,
+    refreshing: true,
+    now: Date.parse('2026-10-20T10:00:00.000Z'),
+  });
+  assert.equal(view.refresh.busy, true);
+  assert.equal(view.refresh.secondsUntil, null);
+  assert.equal(view.refresh.disabled, true);
 });
 
 test('deriveUpdateView surfaces begin/refresh action errors and coordination state', function () {

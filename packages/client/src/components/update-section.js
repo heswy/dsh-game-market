@@ -149,13 +149,16 @@ export function UpdateSection(props) {
   const inspection = view.inspection;
   const blocked = view.blocked ? BLOCKED_KEYS[view.blocked.reason] || BLOCKED_KEYS.unknown : null;
   const refreshBusy = view.refresh.busy === true;
-  const refreshDisabled =
-    refreshBusy ||
-    view.refresh.secondsUntil !== null ||
-    (inspection !== null && inspection.discovery.canRefresh === false);
-  const refreshTitle = view.refresh.secondsUntil !== null
-    ? t('update.refresh.throttled', { seconds: String(view.refresh.secondsUntil) })
-    : t('update.refresh');
+  // Only the Host-reported throttle (canRefresh === false) or an in-flight
+  // request disables the button; nextCheckAt may be the ~6h automatic check.
+  const refreshDisabled = view.refresh.disabled === true;
+  const refreshTitle = refreshBusy
+    ? t('update.refresh.busy')
+    : view.refresh.secondsUntil !== null
+      ? t('update.refresh.throttled', { seconds: String(view.refresh.secondsUntil) })
+      : view.refresh.canRefresh === false
+        ? t('update.refresh.unavailable')
+        : t('update.refresh');
   const channel = inspection && inspection.target ? channelLabel(inspection.target.channel, t) : null;
   const lastChecked = inspection && inspection.discovery.checkedAt
     ? t('update.discovery.checked', { time: formatRelativeTime(inspection.discovery.checkedAt, now, locale) })

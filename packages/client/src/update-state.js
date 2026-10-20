@@ -502,7 +502,13 @@ export function deriveUpdateView(slice) {
     update: null,
     blocked: null,
     operation: null,
-    refresh: { busy: input.refreshing === true, availableAt: null, secondsUntil: null },
+    refresh: {
+      busy: input.refreshing === true,
+      /** Host `discovery.canRefresh`: true means a manual refresh is allowed now. */
+      canRefresh: true,
+      availableAt: null,
+      secondsUntil: null,
+    },
   };
 
   if (input.coordination && typeof input.coordination === 'object') {
@@ -532,11 +538,18 @@ export function deriveUpdateView(slice) {
       target: inspection.target,
       comparison: comparison.kind,
     };
-    view.refresh.availableAt = inspection.discovery.nextCheckAt;
-    const throttleMs = timestampMs(inspection.discovery.nextCheckAt);
-    if (throttleMs !== null && now > 0 && throttleMs > now) {
-      view.refresh.secondsUntil = Math.ceil((throttleMs - now) / 1000);
+    // Host semantics (m3-decisions §8 / platform-update service):
+    //  - canRefresh === false  -> manual refresh is throttled and nextCheckAt is
+    //    the earliest allowed manual-refresh time (usually ~60s);
+    //  - canRefresh === true   -> nextCheckAt is the NEXT AUTOMATIC silent
+    //    check (up to ~6h) and MUST NOT disable the manual refresh button.
+    view.refresh.canRefresh = inspection.discovery.canRefresh !== false;
+    if (view.refresh.canRefresh === false) {
       view.refresh.availableAt = inspection.discovery.nextCheckAt;
+      const throttleMs = timestampMs(inspection.discovery.nextCheckAt);
+      if (throttleMs !== null && now > 0 && throttleMs > now) {
+        view.refresh.secondsUntil = Math.ceil((throttleMs - now) / 1000);
+      }
     }
     view.update = {
       kind: comparison.kind,
@@ -595,7 +608,8 @@ export function deriveUpdateView(slice) {
   }
 
   // A manual refresh is unavailable while a request is in flight or while the
-  // Host throttle window is still open.
-  view.refresh.disabled = view.refresh.busy || view.refresh.secondsUntil !== null;
+  // Host explicitly reports it as throttled (`canRefresh === false`). The
+  // auto-check timestamp alone never disables it.
+  view.refresh.disabled = view.refresh.busy || view.refresh.canRefresh === false;
   return view;
 }

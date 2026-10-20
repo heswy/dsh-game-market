@@ -510,6 +510,7 @@ window.__ModuleLoader__.load({
       'update.refresh': '检查更新',
       'update.refresh.busy': '正在检查…',
       'update.refresh.throttled': '{seconds} 秒后可再次检查',
+      'update.refresh.unavailable': '暂时无法手动检查更新',
       'update.target.title': '目标版本',
       'update.target.commit': '目标 commit',
       'update.target.channel': '通道',
@@ -1112,6 +1113,7 @@ window.__ModuleLoader__.load({
       'update.refresh': 'Check for updates',
       'update.refresh.busy': 'Checking…',
       'update.refresh.throttled': 'Available again in {seconds}s',
+      'update.refresh.unavailable': 'Manual update checks are unavailable right now',
       'update.target.title': 'Target version',
       'update.target.commit': 'Target commit',
       'update.target.channel': 'Channel',
@@ -5574,7 +5576,13 @@ window.__ModuleLoader__.load({
         update: null,
         blocked: null,
         operation: null,
-        refresh: { busy: input.refreshing === true, availableAt: null, secondsUntil: null },
+        refresh: {
+          busy: input.refreshing === true,
+          /** Host `discovery.canRefresh`: true means a manual refresh is allowed now. */
+          canRefresh: true,
+          availableAt: null,
+          secondsUntil: null,
+        },
       };
 
       if (input.coordination && typeof input.coordination === 'object') {
@@ -5604,11 +5612,18 @@ window.__ModuleLoader__.load({
           target: inspection.target,
           comparison: comparison.kind,
         };
-        view.refresh.availableAt = inspection.discovery.nextCheckAt;
-        const throttleMs = timestampMs(inspection.discovery.nextCheckAt);
-        if (throttleMs !== null && now > 0 && throttleMs > now) {
-          view.refresh.secondsUntil = Math.ceil((throttleMs - now) / 1000);
+        // Host semantics (m3-decisions §8 / platform-update service):
+        //  - canRefresh === false  -> manual refresh is throttled and nextCheckAt is
+        //    the earliest allowed manual-refresh time (usually ~60s);
+        //  - canRefresh === true   -> nextCheckAt is the NEXT AUTOMATIC silent
+        //    check (up to ~6h) and MUST NOT disable the manual refresh button.
+        view.refresh.canRefresh = inspection.discovery.canRefresh !== false;
+        if (view.refresh.canRefresh === false) {
           view.refresh.availableAt = inspection.discovery.nextCheckAt;
+          const throttleMs = timestampMs(inspection.discovery.nextCheckAt);
+          if (throttleMs !== null && now > 0 && throttleMs > now) {
+            view.refresh.secondsUntil = Math.ceil((throttleMs - now) / 1000);
+          }
         }
         view.update = {
           kind: comparison.kind,
@@ -5667,8 +5682,9 @@ window.__ModuleLoader__.load({
       }
 
       // A manual refresh is unavailable while a request is in flight or while the
-      // Host throttle window is still open.
-      view.refresh.disabled = view.refresh.busy || view.refresh.secondsUntil !== null;
+      // Host explicitly reports it as throttled (`canRefresh === false`). The
+      // auto-check timestamp alone never disables it.
+      view.refresh.disabled = view.refresh.busy || view.refresh.canRefresh === false;
       return view;
     }
 
@@ -16809,13 +16825,16 @@ window.__ModuleLoader__.load({
       const inspection = view.inspection;
       const blocked = view.blocked ? BLOCKED_KEYS[view.blocked.reason] || BLOCKED_KEYS.unknown : null;
       const refreshBusy = view.refresh.busy === true;
-      const refreshDisabled =
-        refreshBusy ||
-        view.refresh.secondsUntil !== null ||
-        (inspection !== null && inspection.discovery.canRefresh === false);
-      const refreshTitle = view.refresh.secondsUntil !== null
-        ? t('update.refresh.throttled', { seconds: String(view.refresh.secondsUntil) })
-        : t('update.refresh');
+      // Only the Host-reported throttle (canRefresh === false) or an in-flight
+      // request disables the button; nextCheckAt may be the ~6h automatic check.
+      const refreshDisabled = view.refresh.disabled === true;
+      const refreshTitle = refreshBusy
+        ? t('update.refresh.busy')
+        : view.refresh.secondsUntil !== null
+          ? t('update.refresh.throttled', { seconds: String(view.refresh.secondsUntil) })
+          : view.refresh.canRefresh === false
+            ? t('update.refresh.unavailable')
+            : t('update.refresh');
       const channel = inspection && inspection.target ? channelLabel(inspection.target.channel, t) : null;
       const lastChecked = inspection && inspection.discovery.checkedAt
         ? t('update.discovery.checked', { time: formatRelativeTime(inspection.discovery.checkedAt, now, locale) })
