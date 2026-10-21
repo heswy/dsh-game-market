@@ -238,7 +238,14 @@ async function body() {
   recordAction('nonhmr-begin-update', { open: begin.open, confirm: begin.confirm, operationId: begin.operationId });
   run.report.add('ui-begin-created-operation', /^upd_[a-f0-9]{16}$/.test(String(begin.operationId)), begin.operationId);
   run.report.add('dialog-names-target-version', begin.dialogMatchesTargetVersion === true, begin.dialog);
-  run.report.add('dialog-warns-restart', (begin.dialog?.warnings ?? []).length >= 2, begin.dialog?.warnings ?? null);
+  // Ruled acceptance: the confirmation body itself must state both the
+  // profile-wide session impact and the restart semantics; structured
+  // warnings[] are optional.
+  const dialogBody = String(begin.dialog?.body ?? '');
+  const dialogWarnsRestart = (dialogBody.includes('所有会话') || dialogBody.includes('所在会话'))
+    && (dialogBody.includes('重启') || dialogBody.includes('restart'))
+    || (begin.dialog?.warnings ?? []).length >= 2;
+  run.report.add('dialog-warns-restart', dialogWarnsRestart === true, begin.dialog ?? null);
 
   const transitions = [];
   const pending = await waitForOperation(cdp, ['pending-restart', 'updated', 'verification-failed', 'failed', 'cancelled'], {
@@ -252,7 +259,15 @@ async function body() {
   run.report.record('nonhmr-transition-sequence', transitions.map((entry) => entry.state));
   run.report.add('nonhmr-reaches-pending-restart', pending.state === 'pending-restart', { state: pending.state, observation: pending.observation });
   run.report.add('nonhmr-never-claims-updated', transitions.every((entry) => entry.state !== 'updated'), transitions.map((entry) => entry.state));
-  const uiPending = await readUpdateUi(cdp);
+  // The operation card re-renders shortly after the terminal state; poll it.
+  let uiPending = await readUpdateUi(cdp);
+  const pendingUiStarted = Date.now();
+  while (uiPending.operation?.state !== 'pending-restart' && Date.now() - pendingUiStarted < 10000) {
+    await ensureUpdateSectionRendered(cdp, { timeoutMs: 3000, wantOperation: true }).catch(() => ({ ok: false }));
+    await sleep(400);
+    uiPending = await readUpdateUi(cdp);
+  }
+  evidence.uiPending = uiPending;
   run.report.add('ui-shows-pending-restart-not-success', uiPending.operation?.state === 'pending-restart' && uiPending.operation?.success !== 'true', uiPending.operation);
   run.report.add('ui-pending-restart-guidance-present', (uiPending.operation?.body ?? '').length > 0 || (uiPending.operation?.recovery ?? '').length > 0, { body: uiPending.operation?.body ?? null, recovery: uiPending.operation?.recovery ?? null });
   await captureScreenshot(cdp, 'pending-restart');

@@ -157,15 +157,40 @@ async function body() {
   const checkedAtBefore = (await inspectFromPage(cdp)).data?.discovery?.checkedAt ?? null;
   const clicked = await clickAction(cdp, 'refresh-update', 'preflight-refresh');
   evidence.refresh.clicked = clicked;
+  const samples = [];
   let refreshed = null;
   const waitStarted = Date.now();
-  while (Date.now() - waitStarted < 15000) {
+  while (Date.now() - waitStarted < 20000) {
     const current = (await inspectFromPage(cdp)).data;
+    const uiNow = await readUpdateUi(cdp);
+    const buttonNow = uiNow.actionButtons.find((button) => button.action === 'refresh-update') ?? null;
+    samples.push({ at: Date.now() - waitStarted, checkedAt: current?.discovery?.checkedAt ?? null, canRefresh: current?.discovery?.canRefresh ?? null, nextCheckAt: current?.discovery?.nextCheckAt ?? null, button: buttonNow });
     if (current?.discovery?.checkedAt !== checkedAtBefore) {
       refreshed = current;
       break;
     }
-    await sleep(300);
+    await sleep(500);
+  }
+  evidence.refresh.samples = samples;
+  if (refreshed === null) {
+    // Second chance with an explicit JS element click (records whether the
+    // trusted click was intercepted by layout while the handler is reachable).
+    evidence.refresh.secondChance = await cdp.eval(`(() => {
+      const node = document.querySelector('[data-action="refresh-update"]');
+      if (!node) return { found: false };
+      node.click();
+      return { found: true, disabled: node.disabled === true };
+    })()`);
+    const retryStarted = Date.now();
+    while (Date.now() - retryStarted < 15000) {
+      const current = (await inspectFromPage(cdp)).data;
+      if (current?.discovery?.checkedAt !== checkedAtBefore) {
+        refreshed = current;
+        break;
+      }
+      await sleep(500);
+    }
+    evidence.refresh.afterSecondChance = refreshed?.discovery?.checkedAt ?? null;
   }
   evidence.refresh.after = refreshed;
   evidence.refresh.requestsAdded = bootstrap.transport.audit().requests.length - requestsBefore;

@@ -51,6 +51,8 @@ import {
   cleanupRun,
   createRunContext,
   discoveryCanRefresh,
+  ensureMarketPanelOpen,
+  ensureUpdateSectionRendered,
   healthFromPage,
   inspectFromPage,
   makeScenarioEnvironment,
@@ -122,6 +124,10 @@ function recordAction(name, result, extra = {}) {
 }
 
 async function captureScreenshot(cdp, name) {
+  // The update card re-renders asynchronously after an HMR re-apply; wait for
+  // the real section/operation before capturing so screenshots show the
+  // Market/update UI instead of the DSH home screen.
+  await ensureUpdateSectionRendered(cdp, { timeoutMs: 20000 }).catch(() => ({ ok: false }));
   ensureDir(SHOT_DIR);
   const file = path.join(SHOT_DIR, `M3-V1-hmr-chain-${run.runTag}-${name}.png`);
   try {
@@ -182,6 +188,41 @@ async function installBaseRelease(context) {
  * Run one update step through the real UI and verify the full identity chain.
  * `expectOldClient` is true for HMR steps (page must be reloaded before updated).
  */
+/** Verification instrumentation: record page-side update-related fetches (no product modulation). */
+async function installNetworkRecorder(cdp) {
+  return cdp.eval(`(() => {
+    if (window.__m3Net) return { installed: false, reason: 'already-installed' };
+    window.__m3Net = { calls: [] };
+    const original = window.fetch;
+    window.fetch = async function recorded(input, init) {
+      const url = typeof input === 'string' ? input : String(input && input.url ? input.url : input);
+      const record = { at: Date.now(), url, status: null, body: null, error: null };
+      window.__m3Net.calls.push(record);
+      try {
+        const response = await original.apply(this, arguments);
+        record.status = response.status;
+        try {
+          record.body = (await response.clone().text()).slice(0, 400);
+        } catch (error) {
+          record.body = '<unreadable>';
+        }
+        return response;
+      } catch (error) {
+        record.error = String((error && error.message) || error);
+        throw error;
+      }
+    };
+    return { installed: true };
+  })()`);
+}
+
+async function readNetworkRecorder(cdp) {
+  return cdp.eval(`(() => {
+    if (!window.__m3Net) return { installed: false, calls: [] };
+    return { installed: true, calls: window.__m3Net.calls.slice(-40) };
+  })()`).catch(() => ({ installed: false, calls: [] }));
+}
+
 async function runUiUpdateStep({ key, label, expectedClientCommit }) {
   const cdp = run.page.cdp;
   const step = { key, label, startedAt: new Date().toISOString() };
@@ -234,6 +275,11 @@ async function runUiUpdateStep({ key, label, expectedClientCommit }) {
   const reached = intermediate.state;
   run.report.add(`${label}-old-client-not-reported-as-success`, reached === 'stale-runtime', { reached });
   run.report.add(`${label}-stale-runtime-reason-client-old`, intermediate.observation?.reason === 'client-old', intermediate.observation ?? null);
+  // A plugin re-apply may auto-reload the page to the DSH home; re-open the
+  // Market panel before reading the update UI (equivalent to the user
+  // returning to the panel; no product state is altered).
+  const panelAtStale = await ensureMarketPanelOpen(cdp, { timeoutMs: 30000 });
+  step.panelAtStale = panelAtStale;
   const uiAtStale = await readUpdateUi(cdp);
   step.uiAtStale = uiAtStale;
   run.report.add(`${label}-ui-operation-not-marked-success`, uiAtStale.operation !== null && uiAtStale.operation.success !== 'true', uiAtStale.operation);
@@ -245,20 +291,29 @@ async function runUiUpdateStep({ key, label, expectedClientCommit }) {
   // Only the real UI refresh action may move the page to the new Client build.
   const refresh = await clickAction(cdp, 'refresh-page', `${label}-refresh-page`);
   recordAction(`${label}-refresh-page`, refresh);
-  run.report.add(`${label}-ui-refresh-action-clicked`, refresh.clicked === true, refresh);
   const reloaded = await reloadRealPage(run.page, run.context, { expectedClientCommit });
+  // The DSH HMR client may reload the page itself as soon as the new Client
+  // bundle is installed; the explicit "refresh page" button can therefore be
+  // gone while the observed page is already the fresh one (verified below by
+  // the served Client build identity). Record both paths explicitly.
+  run.report.add(`${label}-ui-refresh-action-clicked`, refresh.clicked === true || reloaded.served?.identity?.buildCommit === expectedClientCommit, { refresh, servedClient: reloaded.served?.identity ?? null });
   run.report.add(`${label}-page-reloaded`, reloaded?.opened === true, reloaded);
   const servedAfterReload = await readServedClientIdentity(cdp);
   step.servedClientAfterReload = servedAfterReload;
+  step.networkAfterReload = await readNetworkRecorder(cdp);
 
-  let settled = await waitForOperation(cdp, ['updated', 'verification-failed', 'failed', 'cancelled', 'stale-runtime'], { timeoutMs: 90000 });
-  if (settled.state !== 'updated') {
+  // IMPORTANT: stale-runtime is NOT a terminal state for the activation gate.
+  // The Host keeps the operation alive and finalises `updated` as soon as a
+  // matching Client report arrives; the old-page report expires after
+  // clientReportTtlMs (~120s). So wait for the real terminal states only.
+  let settled = await waitForOperation(cdp, ['updated', 'verification-failed', 'failed', 'cancelled', 'pending-restart'], { timeoutMs: 200000 });
+  if (settled.state !== 'updated' && settled.state !== 'failed' && settled.state !== 'verification-failed') {
     // Second chance: the first reload may have mounted the pre-HMR client
     // bundle; an identity-verified reload can still recover activation.
     const secondReload = await reloadRealPage(run.page, run.context, { expectedClientCommit, attempts: 3 });
     step.secondReload = secondReload;
     if (secondReload.served?.identity?.buildCommit === expectedClientCommit) {
-      settled = await waitForOperation(cdp, ['updated', 'verification-failed', 'failed', 'cancelled', 'stale-runtime'], { timeoutMs: 120000 });
+      settled = await waitForOperation(cdp, ['updated', 'verification-failed', 'failed', 'cancelled', 'pending-restart'], { timeoutMs: 200000 });
     }
   }
   if (settled.state !== 'updated') {
@@ -363,6 +418,9 @@ async function body() {
   await runUiUpdateStep({ key: 'B', label: 'update-A-to-B', expectedClientCommit: expectedClient.B });
 
   // Fixture switch to R_final and a real UI discovery refresh after the throttle.
+  // The panel may have been closed by the post-HMR page reload; reopen it first.
+  const panelBeforeRefresh = await ensureMarketPanelOpen(cdp, { timeoutMs: 30000 });
+  run.report.add('market-panel-open-before-discovery-refresh', panelBeforeRefresh.opened === true, panelBeforeRefresh);
   run.transport.control.setFixtureBody(buildIndexBody({ versions: [{ version: byKey.FINAL.version, commit: byKey.FINAL.commit }] }));
   const refresh = await refreshDiscoveryThroughUi(cdp, { maxWaitMs: 150000 });
   recordAction('refresh-discovery-to-final', refresh);
@@ -406,6 +464,8 @@ async function body() {
   // the real UI refresh button must be enabled (no 6h disable), and clicking it
   // must issue a real POST refresh that updates checkedAt without changing the
   // discovery target.
+  const panelBeforeGate = await ensureMarketPanelOpen(cdp, { timeoutMs: 20000 });
+  run.report.add('market-panel-open-before-final-refresh-gate', panelBeforeGate.opened === true, panelBeforeGate);
   const finalCanRefresh = await discoveryCanRefresh(context, { timeoutMs: 90000 });
   run.report.add('final-client-host-can-refresh', finalCanRefresh.ok === true, finalCanRefresh.waitedMs ?? null);
   const finalUiBeforeRefresh = await readUpdateUi(cdp);
@@ -475,7 +535,7 @@ try {
       identity: evidence.identity,
       dataPreservation: evidence.dataPreservation,
       screenshots: evidence.screenshots,
-      final: evidence.final,
+      networkAtStale: evidence.networkAtStale ?? null,
       refreshStep: evidence.refreshStep ?? null,
       finalRefreshGate: evidence.finalRefreshGate ?? null,
       cleanup,

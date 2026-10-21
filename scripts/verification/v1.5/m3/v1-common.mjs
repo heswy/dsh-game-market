@@ -513,6 +513,31 @@ export async function openRealPage(context, { chromePort = null, marketOpenTimeo
   return page;
 }
 
+/** Open the Market panel if the page is on the DSH home screen (post-HMR auto reload). */
+export async function ensureMarketPanelOpen(cdp, { timeoutMs = 30000 } = {}) {
+  const started = Date.now();
+  let opened = await openMarketPanel(cdp, null);
+  while (opened.opened !== true && Date.now() - started < timeoutMs) {
+    await dismissOverlays(cdp, null);
+    const clicked = await cdp.eval(`(() => {
+      const candidates = [...document.querySelectorAll('button, [role="button"], a')]
+        .filter((node) => node.offsetParent !== null && (node.innerText || '').trim() === '游戏市场');
+      const node = candidates[0];
+      if (!node) return null;
+      const rect = node.getBoundingClientRect();
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    })()`);
+    if (clicked !== null) {
+      await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: clicked.x, y: clicked.y });
+      await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: clicked.x, y: clicked.y, button: 'left', buttons: 1, clickCount: 1 });
+      await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: clicked.x, y: clicked.y, button: 'left', buttons: 0, clickCount: 1 });
+    }
+    await sleep(700);
+    opened = await openMarketPanel(cdp, null);
+  }
+  return { ...opened, waitedMs: Date.now() - started };
+}
+
 export async function reloadRealPage(page, context, { attempts = 5, perAttemptMs = 25000, expectedClientCommit = null } = {}) {
   const cdp = page.cdp;
   const tried = [];
@@ -631,26 +656,72 @@ export async function readUpdateUi(cdp) {
 }
 
 /** Trusted CDP mouse click on the first visible/enabled element with `[data-action]`. */
+/** Wait until the update section (and — if present — the operation card) has rendered. */
+export async function ensureUpdateSectionRendered(cdp, { timeoutMs = 20000, wantOperation = false } = {}) {
+  const started = Date.now();
+  let last = await readUpdateUi(cdp);
+  while (Date.now() - started < timeoutMs) {
+    if (last.sectionPresent === true && (wantOperation !== true || last.operation !== null)) {
+      return { ok: true, waitedMs: Date.now() - started, ui: last };
+    }
+    await ensureMarketPanelOpen(cdp, { timeoutMs: 5000 });
+    await sleep(500);
+    last = await readUpdateUi(cdp);
+  }
+  return { ok: false, waitedMs: Date.now() - started, ui: last };
+}
+
+/** Wait until a data-action control is visible and enabled (post-HMR renders are async). */
+export async function waitForAction(cdp, action, { timeoutMs = 15000 } = {}) {
+  const started = Date.now();
+  let last = null;
+  while (Date.now() - started < timeoutMs) {
+    last = await cdp.eval(`(() => {
+      const node = [...document.querySelectorAll('[data-action="${action}"]')]
+        .find((candidate) => candidate.offsetParent !== null && candidate.disabled !== true);
+      if (!node) return null;
+      const rect = node.getBoundingClientRect();
+      if (!(rect.width > 0 && rect.height > 0)) return null;
+      return { text: (node.textContent || '').trim(), tag: node.tagName, disabled: node.disabled === true };
+    })()`);
+    if (last !== null) return { ok: true, waitedMs: Date.now() - started, control: last };
+    await sleep(400);
+  }
+  return { ok: false, waitedMs: Date.now() - started, control: last };
+}
+
 export async function clickAction(cdp, action, label = null) {
+  // Scroll the control into the viewport first (the update card can sit below
+  // the fold in a 1440x900 headless window) and poll until it is present,
+  // visible and enabled: after an HMR re-apply the update card re-renders.
+  const ready = await waitForAction(cdp, action);
+  if (ready.ok !== true) return { clicked: false, label: label ?? action, reason: 'not-found-or-disabled-after-wait', waitedMs: ready.waitedMs };
   const found = await cdp.eval(`(() => {
     const candidates = [...document.querySelectorAll('[data-action="${action}"]')]
       .filter((node) => node.offsetParent !== null && node.disabled !== true);
     const node = candidates[0];
     if (!node) return null;
+    node.scrollIntoView({ block: 'center', inline: 'center' });
     const rect = node.getBoundingClientRect();
-    if (!(rect.width > 0 && rect.height > 0)) return null;
     const x = rect.left + rect.width / 2;
     const y = rect.top + rect.height / 2;
-    return { x, y, text: (node.textContent || '').trim(), tag: node.tagName };
+    const atPoint = document.elementFromPoint(x, y);
+    const hitInsideTarget = atPoint === node || (atPoint !== null && node.contains(atPoint));
+    return {
+      x, y,
+      text: (node.textContent || '').trim(),
+      tag: node.tagName,
+      hitInsideTarget,
+      atPoint: atPoint === null ? null : { tag: atPoint.tagName, className: String(atPoint.className || '').slice(0, 80), text: (atPoint.textContent || '').trim().slice(0, 60) },
+    };
   })()`);
-  if (found === null) return { clicked: false, label: label ?? action, reason: 'not-found-or-disabled' };
+  if (found === null) return { clicked: false, label: label ?? action, reason: 'not-found-after-wait' };
   await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: found.x, y: found.y });
   await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: found.x, y: found.y, button: 'left', buttons: 1, clickCount: 1 });
   await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: found.x, y: found.y, button: 'left', buttons: 0, clickCount: 1 });
-  return { clicked: true, label: label ?? action, target: found, trusted: 'Input.dispatchMouseEvent' };
+  return { clicked: true, label: label ?? action, target: found, trusted: 'Input.dispatchMouseEvent', waitedMs: ready.waitedMs };
 }
 
-/** Click the confirmation dialog primary button (real mouse event). */
 export async function confirmDialog(cdp) {
   const found = await cdp.eval(`(() => {
     const node = document.querySelector('.dgm-dialog .dgm-btn-primary, .dgm-dialog .dgm-btn-danger');

@@ -623,7 +623,10 @@ export async function createIndexTransport({
         npm_config_https_proxy: proxy,
         npm_config_http_proxy: proxy,
         npm_config_proxy: proxy,
-        NO_PROXY: '127.0.0.1,localhost',
+        // Discovery host stays proxied (fixture interception); git/pnpm traffic
+        // to GitHub bypasses the fixture proxy and goes direct: the machine's
+        // local proxy is broken and GitHub is reachable directly.
+        NO_PROXY: '127.0.0.1,localhost,github.com,.github.com,codeload.github.com,objects.githubusercontent.com,api.github.com',
         ...(marker === null ? {} : { M3_FIXTURE_RUN_TAG: marker }),
       };
     },
