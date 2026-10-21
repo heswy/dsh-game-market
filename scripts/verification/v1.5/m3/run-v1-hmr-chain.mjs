@@ -76,6 +76,7 @@ import {
   userDataPreserved,
   waitForDiscoveredTarget,
   waitForHostVersion,
+  waitForAction,
   waitForOperation,
   waitForRoute,
 } from './v1-common.mjs';
@@ -595,13 +596,16 @@ async function body() {
   phase('final-refresh-gate');
   const finalCanRefresh = await discoveryCanRefresh(context, { timeoutMs: 90000 });
   run.report.add('final-client-host-can-refresh', finalCanRefresh.ok === true, finalCanRefresh.waitedMs ?? null);
+  // The Client re-inspects on its own ~3s cadence; poll the real control until
+  // it reflects canRefresh=true (bounded 30s) before asserting/clicking.
+  const gateAction = await waitForAction(cdp, 'refresh-update', { timeoutMs: 30000 });
   const finalUiBeforeRefresh = await readUpdateUi(cdp);
   const finalRefreshButton = finalUiBeforeRefresh.actionButtons.find((button) => button.action === 'refresh-update');
   const checkedAtBefore = (await inspectFromPage(cdp)).data?.discovery?.checkedAt ?? null;
   const requestsBefore = run.transport.audit().requests.length;
-  const finalRefreshClick = finalRefreshButton !== undefined && finalRefreshButton.disabled !== true
+  const finalRefreshClick = gateAction.ok === true
     ? await clickAction(cdp, 'refresh-update', 'final-refresh-fix')
-    : { clicked: false, reason: 'button-disabled-or-absent', button: finalRefreshButton ?? null };
+    : { clicked: false, reason: 'button-disabled-or-absent', button: finalRefreshButton ?? null, waitedMs: gateAction.waitedMs };
   let checkedAtAfter = null;
   const waitStarted = Date.now();
   while (Date.now() - waitStarted < 15000) {
@@ -613,7 +617,7 @@ async function body() {
     await sleep(300);
   }
   const requestsAdded = run.transport.audit().requests.length - requestsBefore;
-  evidence.finalRefreshGate = { finalCanRefresh, button: finalRefreshButton ?? null, click: finalRefreshClick, checkedAtBefore, checkedAtAfter, requestsAdded };
+  evidence.finalRefreshGate = { finalCanRefresh, gateAction: { ok: gateAction.ok, waitedMs: gateAction.waitedMs, control: gateAction.control ?? null }, button: finalRefreshButton ?? null, click: finalRefreshClick, checkedAtBefore, checkedAtAfter, requestsAdded };
   run.report.add('final-client-refresh-button-enabled-no-6h-disable', finalRefreshButton !== undefined && finalRefreshButton.disabled !== true, finalRefreshButton ?? null);
   run.report.add('final-client-refresh-click-posted-real-refresh', finalRefreshClick.clicked === true && checkedAtAfter !== null, { click: finalRefreshClick, checkedAtBefore, checkedAtAfter });
   run.report.add('final-client-refresh-made-one-discovery-request', requestsAdded === 1, { requestsAdded });

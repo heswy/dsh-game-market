@@ -7,6 +7,7 @@
  */
 
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import test from 'node:test';
 
 import { ROUTES } from '../../../shared/src/contracts.js';
@@ -15,7 +16,16 @@ import { updateTargetIdFor, updateGitSpecForCommit } from '../../../shared/src/p
 import { readBundleVersion } from '../../src/config.js';
 import { createHostIdentity } from '../../src/host-identity.js';
 import { createHostHarness } from '../support/harness.js';
-import { COMMIT_A, COMMIT_B, makeCacheDocument, writeDiscoveryCache } from '../support/platform-update.js';
+import {
+  COMMIT_A,
+  COMMIT_B,
+  makeCacheDocument,
+  makeIndexDocument,
+  makeVersion,
+  staticFetch,
+  writeDiscoveryCache,
+  writeProfile,
+} from '../support/platform-update.js';
 import { createFakePluginManager, makeBundleState } from '../support/platform-update-harness.js';
 
 const TARGET_VERSION = '1.3.0';
@@ -204,6 +214,103 @@ export function register() {
       return observation.state === 'verification-failed' || observation.state === 'stale-runtime' ? observation : null;
     });
     assert.ok(['verification-failed', 'stale-runtime'].includes(failed.state));
+  });
+
+  test('routes: retained terminal op + different validated target starts a new operation and re-installs', async (t) => {
+    // Reproduces the probe flow: an operation reached `updated` (terminal retained,
+    // Host running/disk at the released version), discovery then switches to a
+    // newer target and the frozen begin endpoint is called directly.
+    const ownVersion = readBundleVersion();
+    const retainedTarget = {
+      id: updateTargetIdFor(ownVersion, COMMIT_A),
+      version: ownVersion,
+      commit: COMMIT_A,
+      channel: 'stable',
+      publishedAt: '2023-11-14T22:13:20.000Z',
+      spec: updateGitSpecForCommit(COMMIT_A),
+    };
+    const nextTarget = {
+      id: updateTargetIdFor('9.9.9', COMMIT_B),
+      version: '9.9.9',
+      commit: COMMIT_B,
+      channel: 'stable',
+      publishedAt: '2024-01-01T00:00:00.000Z',
+      spec: updateGitSpecForCommit(COMMIT_B),
+    };
+    const clock = { stamp: Date.now() };
+    const indexStub = staticFetch(makeIndexDocument({ versions: [makeVersion({ version: '9.9.9', commit: COMMIT_B })] }));
+    const fake = createFakePluginManager({
+      hmr: { runExclusive: async (task) => task() },
+      install: async (spec) => ({
+        stage: 'enable',
+        target: 'dsh-game-market',
+        enabled: true,
+        changed: true,
+        application: 'restart-required',
+        restartReason: 'no-hmr',
+        bundle: 'dsh-game-market',
+        version: '9.9.9',
+        spec,
+      }),
+    });
+    const host = await createHostHarness(t, {
+      now: () => new Date(clock.stamp),
+      config: { platformUpdate: { startupCheck: false } },
+      http: {
+        platformUpdateFetch: indexStub.fetch,
+        updateOperationTiming: FAST_OPERATION_TIMING,
+      },
+      pluginManagerResolver: () => fake.manager,
+      hmrResolver: () => fake.state.hmr,
+      prepareDataRoot: async (dataRoot, directory) => {
+        const home = path.join(directory, 'home');
+        await writeProfile(null, home, {
+          spec: `github:heswy/dsh-game-market#${COMMIT_A}`,
+          diskVersion: ownVersion,
+        });
+        await writeDiscoveryCache(
+          dataRoot,
+          makeCacheDocument({ target: retainedTarget, checkedAt: new Date(clock.stamp).toISOString() })
+        );
+      },
+    });
+
+    // 1) Same target while already running it ⇒ terminal already-at-target.
+    const first = await host.requestJson(ROUTES.PLATFORM_UPDATE_BEGIN, { body: { targetId: retainedTarget.id } });
+    assert.equal(first.response.status, 200);
+    const firstId = first.payload.data.operationId;
+    const already = await poll(async () => {
+      const { payload } = await host.requestJson(ROUTES.PLATFORM_UPDATE_OBSERVE, { query: { operationId: firstId } });
+      return payload.ok === true && payload.data.state === 'already-at-target' ? payload.data : null;
+    });
+    assert.equal(already.reason, 'same-commit');
+    assert.equal(fake.calls.installBundle.length, 0);
+
+    // 2) Discovery moves to the next target (manual refresh after the 60s throttle).
+    clock.stamp += 61_000;
+    const refreshed = await host.requestJson(ROUTES.PLATFORM_UPDATE_REFRESH, { method: 'POST' });
+    assert.equal(refreshed.payload.data.refreshed, true);
+    assert.equal(refreshed.payload.data.target.id, nextTarget.id);
+
+    // 3) Retained terminal op + different validated target ⇒ NEW operation + install.
+    const second = await host.requestJson(ROUTES.PLATFORM_UPDATE_BEGIN, { body: { targetId: nextTarget.id } });
+    assert.equal(second.response.status, 200);
+    const secondId = second.payload.data.operationId;
+    assert.notEqual(secondId, firstId, 'must not return the retained terminal operation');
+    const pending = await poll(async () => {
+      const { payload } = await host.requestJson(ROUTES.PLATFORM_UPDATE_OBSERVE, { query: { operationId: secondId } });
+      return payload.ok === true && payload.data.state === 'pending-restart' ? payload.data : null;
+    });
+    assert.equal(pending.state, 'pending-restart');
+    assert.equal(fake.calls.installBundle.length, 1);
+    assert.equal(fake.calls.installBundle[0].spec, nextTarget.spec);
+    // The retained terminal operation was replaced, not returned.
+    const old = await host.requestJson(ROUTES.PLATFORM_UPDATE_OBSERVE, { query: { operationId: firstId } });
+    assert.equal(old.response.status, 400);
+    assert.equal(old.payload.error.code, GM.INVALID_PARAM);
+    const inspected = await host.data(ROUTES.PLATFORM_UPDATE);
+    assert.equal(inspected.operation.operationId, secondId);
+    assert.equal(inspected.operation.state, 'pending-restart');
   });
 
   test('routes: client-report records the browser identity it is given', async (t) => {

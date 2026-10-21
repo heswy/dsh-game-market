@@ -236,7 +236,7 @@ export function UpdateSection(props) {
         refreshBusy ? t('update.refresh.busy') : t('update.refresh')
       )
     ),
-    view.update && view.update.kind === 'available' && view.blocked === null && view.operation === null
+    view.update && view.update.offerable === true
       ? h(
           'div',
           { className: 'dgm-update-offer' },
@@ -292,8 +292,7 @@ export function UpdateSection(props) {
 export function UpdateBanner(props) {
   const t = props.t;
   const view = props.view;
-  if (!view || view.hidden || view.blocked || !view.update || view.update.kind !== 'available') return null;
-  if (view.operation !== null) return null;
+  if (!view || view.hidden || !view.update || view.update.offerable !== true) return null;
   const target = view.update.target;
   if (!target || !target.version) return null;
   return h(

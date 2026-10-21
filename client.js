@@ -5370,6 +5370,50 @@ window.__ModuleLoader__.load({
     }
 
     /**
+     * Terminal observations that already have their own recovery/continuation
+     * action; a new begin must not be offered while they are on screen.
+     * (`updated` is NOT here: a newer discovery target must still be offerable.)
+     */
+    const OFFER_SUPPRESSED_STATES = Object.freeze(['pending-restart', 'already-at-target', 'too-late', 'stale-runtime']);
+
+    /**
+     * True when a retained operation blocks a *new* update offer. Terminal
+     * operations are retained by the Host until the next begin by design, so only
+     * non-terminal ones (or the states that already own the next step) block.
+     */
+    function operationBlocksOffer(operation) {
+      if (!operation) return false;
+      if (typeof operation.terminal !== 'boolean') return true;
+      if (operation.terminal === true) return OFFER_SUPPRESSED_STATES.indexOf(operation.state) !== -1;
+      return true;
+    }
+
+    /**
+     * Whether the target is genuinely a different running identity (avoid offering
+     * a no-op update when the Host would answer `already-at-target`).
+     */
+    function targetIsSameAsRunning(inspection, comparison) {
+      if (!inspection || !inspection.target) return true;
+      if (comparison && comparison.kind === 'up-to-date') return true;
+      const target = inspection.target;
+      const knownVersions = [inspection.host.version, inspection.installed.loadedVersion, inspection.installed.version].filter(function keep(value) {
+        return typeof value === 'string' && value.length > 0;
+      });
+      if (target.version === null || knownVersions.length === 0) return false;
+      const sameVersion = knownVersions.every(function same(value) {
+        return value === target.version;
+      });
+      if (!sameVersion) return false;
+      const knownCommits = [inspection.host.commit, inspection.installed.loadedCommit, commitFromSpec(inspection.installed.spec)].filter(function keep(value) {
+        return typeof value === 'string' && value.length > 0;
+      });
+      if (target.commit === null || knownCommits.length === 0) return true;
+      return knownCommits.every(function same(value) {
+        return value === target.commit;
+      });
+    }
+
+    /**
      * Why an update cannot be started right now (fail-closed).
      * `canBeginUpdate` is only honored when the Host explicitly set it true.
      */
@@ -5681,6 +5725,22 @@ window.__ModuleLoader__.load({
         };
       }
 
+      // ---- update offer (banner + section action) ----------------------------
+      // A retained TERMINAL operation must not hide the next update offer: the Host
+      // keeps the last terminal observation until the next begin, and continuous
+      // updates must remain possible without a restart. Only non-terminal
+      // operations (plus states that own the next step) block the offer.
+      if (inspection && view.update) {
+        const comparisonKind = view.update.kind;
+        view.update.offerable =
+          comparisonKind === 'available' &&
+          view.blocked === null &&
+          operationBlocksOffer(view.operation) === false &&
+          targetIsSameAsRunning(inspection, { kind: comparisonKind, currentVersion: view.update.currentVersion, currentCommit: view.update.currentCommit }) === false;
+      } else if (view.update) {
+        view.update.offerable = false;
+      }
+
       // A manual refresh is unavailable while a request is in flight or while the
       // Host explicitly reports it as throttled (`canRefresh === false`). The
       // auto-check timestamp alone never disables it.
@@ -5688,7 +5748,7 @@ window.__ModuleLoader__.load({
       return view;
     }
 
-    return { timestampValue, timestampMs, normalizeHostIdentity, normalizeInstalled, normalizeTarget, normalizeDiscovery, normalizeCapability, normalizeObservation, isUpdateState, isActiveObservation, isContinuingObservation, isTerminalObservation, normalizeInspection, normalizeClientIdentity, commitFromSpec, isDevSource, compareTarget, blockedReason, describeObservation, deriveUpdateView };
+    return { timestampValue, timestampMs, normalizeHostIdentity, normalizeInstalled, normalizeTarget, normalizeDiscovery, normalizeCapability, normalizeObservation, isUpdateState, isActiveObservation, isContinuingObservation, isTerminalObservation, normalizeInspection, normalizeClientIdentity, commitFromSpec, isDevSource, compareTarget, operationBlocksOffer, targetIsSameAsRunning, blockedReason, describeObservation, deriveUpdateView };
     })();
 
     // module: packages/client/src/page-identity.js
@@ -16912,7 +16972,7 @@ window.__ModuleLoader__.load({
             refreshBusy ? t('update.refresh.busy') : t('update.refresh')
           )
         ),
-        view.update && view.update.kind === 'available' && view.blocked === null && view.operation === null
+        view.update && view.update.offerable === true
           ? h(
               'div',
               { className: 'dgm-update-offer' },
@@ -16968,8 +17028,7 @@ window.__ModuleLoader__.load({
     function UpdateBanner(props) {
       const t = props.t;
       const view = props.view;
-      if (!view || view.hidden || view.blocked || !view.update || view.update.kind !== 'available') return null;
-      if (view.operation !== null) return null;
+      if (!view || view.hidden || !view.update || view.update.offerable !== true) return null;
       const target = view.update.target;
       if (!target || !target.version) return null;
       return h(

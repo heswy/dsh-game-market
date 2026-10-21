@@ -1,5 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   blockedReason,
   compareTarget,
@@ -8,6 +11,7 @@ import {
   normalizeClientIdentity,
   normalizeInspection,
   normalizeObservation,
+  operationBlocksOffer,
   timestampMs,
 } from '../src/update-state.js';
 import { UPDATE_ACTIVE_STATES, UPDATE_TERMINAL_STATES } from '../src/constants.js';
@@ -443,4 +447,134 @@ test('inspection anomaly (same version different commit) is preserved for the UI
   );
   assert.equal(inspection.discovery.anomaly.kind, 'same-version-different-commit');
   assert.equal(inspection.discovery.anomaly.foundCommit, COMMIT_B);
+});
+
+
+/* ------------------------------------------------------------------------ *
+ * Continuous update: a retained TERMINAL operation must not hide the next
+ * update offer (Host keeps the last terminal observation until next begin).
+ * ------------------------------------------------------------------------ */
+
+function updatedInspection(overrides) {
+  return inspectionFixture(
+    Object.assign(
+      {
+        host: { version: '1.3.0', commit: COMMIT_A },
+        installed: { version: '1.3.0', loadedVersion: '1.3.0', loadedCommit: COMMIT_A },
+        target: { id: 'tgt_next', version: '1.4.0', commit: COMMIT_B, channel: 'stable', publishedAt: null, spec: null },
+        operation: observation('updated', {
+          version: '1.3.0',
+          host: '1.3.0+' + COMMIT_A,
+          client: '1.3.0+' + COMMIT_B,
+        }),
+      },
+      overrides || {}
+    )
+  );
+}
+
+function viewOf(rawInspection, extra) {
+  return deriveUpdateView(
+    Object.assign(
+      {
+        status: 'ready',
+        inspection: normalizeInspection(rawInspection),
+        clientIdentity: { version: '1.3.0', buildCommit: COMMIT_A },
+        now: Date.parse('2026-10-20T10:00:00.000Z'),
+      },
+      extra || {}
+    )
+  );
+}
+
+test('retained terminal updated op does not hide the next update offer', function () {
+  const view = viewOf(updatedInspection());
+  assert.equal(view.update.kind, 'available', 'discovery found a newer target');
+  assert.equal(view.update.offerable, true, 'banner + section offer must be visible again');
+  assert.equal(view.operation.state, 'updated');
+  assert.equal(view.operation.terminal, true, 'operation card stays visible for honesty');
+  assert.equal(view.operation.success, true);
+  assert.equal(view.blocked, null);
+});
+
+test('terminal updated op with the same target stays a no-op offer', function () {
+  const raw = updatedInspection({
+    target: { id: 'tgt_same', version: '1.3.0', commit: COMMIT_A, channel: 'stable', publishedAt: null, spec: null },
+  });
+  const view = viewOf(raw);
+  assert.equal(view.update.kind, 'up-to-date');
+  assert.equal(view.update.offerable, false, 'no offer for the already-installed identity');
+});
+
+test('an active operation still hides the next update offer', function () {
+  const raw = updatedInspection({
+    operation: observation('installing', { stage: 'install', progress: null }),
+  });
+  const view = viewOf(raw);
+  assert.equal(view.update.kind, 'available');
+  assert.equal(view.operation.active, true);
+  assert.equal(view.update.offerable, false, 'never offer a second install while one runs');
+});
+
+test('failed terminal op keeps retry and still allows the update offer', function () {
+  const raw = updatedInspection({
+    operation: observation('failed', { error: { code: 'GM-5033', message: 'x' }, oldVersionStillRunning: true }),
+  });
+  const view = viewOf(raw);
+  assert.equal(view.update.offerable, true);
+  assert.equal(view.operation.terminal, true);
+  assert.equal(view.operation.success, false);
+  assert.equal(view.operation.action, 'retry', 'failed recovery entry is unchanged');
+  assert.equal(view.operation.showRecovery, true);
+});
+
+test('pending-restart / too-late / already-at-target suppress a new offer', function () {
+  const pendingRestart = viewOf(
+    updatedInspection({
+      host: { version: '1.2.0', commit: COMMIT_A },
+      installed: { version: '1.3.0', loadedVersion: '1.2.0', loadedCommit: COMMIT_A },
+      operation: observation('pending-restart', { restartReason: 'no-hmr', installedVersion: '1.3.0' }),
+    })
+  );
+  assert.equal(pendingRestart.update.offerable, false, 'restart owns the next step');
+  assert.equal(pendingRestart.operation.terminal, true);
+
+  const tooLate = viewOf(updatedInspection({ operation: observation('too-late', { note: 'install-continues' }) }));
+  assert.equal(tooLate.operation.terminal, false);
+  assert.equal(tooLate.update.offerable, false, 'too-late is still observing the running install');
+
+  const already = viewOf(updatedInspection({ operation: observation('already-at-target', { reason: 'already-installed' }) }));
+  assert.equal(already.update.offerable, false);
+});
+
+test('no operation with a newer verified target is offerable (baseline)', function () {
+  const raw = updatedInspection({ operation: null });
+  const view = viewOf(raw);
+  assert.equal(view.update.kind, 'available');
+  assert.equal(view.update.offerable, true);
+});
+
+test('operationBlocksOffer only lets a retained success through', function () {
+  assert.equal(operationBlocksOffer(null), false);
+  assert.equal(operationBlocksOffer(describeObservation(observation('updated', { version: '1.3.0' }))), false);
+  assert.equal(operationBlocksOffer(describeObservation(observation('failed', { error: { code: 'GM-5033' } }))), false);
+  assert.equal(operationBlocksOffer(describeObservation(observation('cancelled', { cancelledBy: 'host' }))), false);
+  assert.equal(operationBlocksOffer(describeObservation(observation('verification-failed', { reason: 'response-lost' }))), false);
+  for (const state of ['inspecting', 'installing', 'applied', 'activating']) {
+    assert.equal(operationBlocksOffer(describeObservation(observation(state, { progress: null, stage: 'install', changed: true, bundle: 'x', version: '1.3.0', installedVersion: '1.3.0', awaiting: 'health' }))), true, state);
+  }
+  assert.equal(operationBlocksOffer(describeObservation(observation('too-late', { note: 'install-continues' }))), true);
+  assert.equal(operationBlocksOffer(describeObservation(observation('pending-restart', { restartReason: 'no-hmr', installedVersion: '1.3.0' }))), true);
+});
+
+
+test('banner and section offer gate on the derived offerable flag only (regression guard)', function () {
+  // The A→B one-hop bug: the banner hid itself whenever ANY operation existed,
+  // including the retained terminal `updated` one. Both surfaces must delegate
+  // to view.update.offerable (which lets terminal operations through).
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const source = fs.readFileSync(path.resolve(here, '..', 'src', 'components', 'update-section.js'), 'utf8');
+  assert.equal(/view\.operation\s*(===|!==)\s*null/.test(source), false, 'no raw operation-null gating');
+  assert.equal((source.match(/view\.update\.offerable\s*(===|!==)\s*true/g) || []).length, 2, 'banner + section offer use offerable');
+  assert.match(source, /if \(!view \|\| view\.hidden \|\| !view\.update \|\| view\.update\.offerable !== true\) return null;/);
 });

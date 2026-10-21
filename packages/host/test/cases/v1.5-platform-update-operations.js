@@ -699,6 +699,100 @@ export function register() {
     );
   });
 
+  test('retained terminal op: different target starts a fresh operation (new id + fresh coordination + new install), same target is already-at-target', async (t) => {
+    const target1 = makeTarget();
+    const target2 = makeTarget({ version: '1.4.0', commit: COMMIT_B });
+    const target3 = makeTarget({ version: '1.5.0', commit: 'd'.repeat(40) });
+    const harness = await createUpdateHarness(t, {
+      target: target1,
+      instances: [makeActiveInstance()],
+      managerOptions: {
+        install: async (spec) =>
+          installResult({ version: spec === target2.spec ? target2.version : target1.version }),
+      },
+    });
+    const ack = () => ({
+      windowId: 'window-1',
+      idle: false,
+      instances: [
+        {
+          instanceId: makeActiveInstance().instanceId,
+          gameId: 'snake',
+          paused: true,
+          saved: true,
+          saveStale: false,
+          playSessionId: null,
+          saveRevision: null,
+        },
+      ],
+    });
+    // 1) Complete an operation to a retained terminal `updated`.
+    const first = await harness.begin(target1.id);
+    await harness.waitForState('inspecting');
+    await harness.operations.coordinate(ack());
+    await harness.waitForState('applied');
+    harness.mutable.applyTarget(target1);
+    await harness.waitForState('activating');
+    await harness.postClientReport({ buildVersion: target1.version, buildCommit: COMMIT_CLIENT });
+    await harness.waitForState('updated');
+    assert.equal(harness.managerCalls.installBundle.length, 1);
+    assert.equal(harness.managerCalls.installBundle[0].spec, target1.spec);
+
+    // 2) Retained TERMINAL op + different validated target ⇒ NEW operation.
+    harness.discovery.setTarget(target2);
+    const second = await harness.begin(target2.id);
+    assert.notEqual(second.operationId, first.operationId, 'must create a new operation id');
+    const inspecting = harness.operations.observe(second.operationId);
+    assert.equal(inspecting.operationId, second.operationId);
+    assert.equal(inspecting.state, 'inspecting', 'fresh operation re-runs coordination');
+    assert.equal(inspecting.coordination.pending, 1);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.equal(harness.managerCalls.installBundle.length, 1, 'no install before fresh coordination');
+
+    // 3) ACTIVE op + different target ⇒ documented busy conflict (GM-4091).
+    harness.discovery.setTarget(target3);
+    await assert.rejects(
+      () => harness.operations.begin({ targetId: target3.id }),
+      (error) => {
+        assert.equal(error.code, GM.INSTALL_IN_PROGRESS);
+        assert.match(error.message, /platform plugin update is in progress/i);
+        return true;
+      }
+    );
+    harness.discovery.setTarget(target2);
+
+    // 4) Fresh coordination then install for the new target.
+    await harness.operations.coordinate(ack());
+    await harness.waitForState('applied');
+    harness.mutable.applyTarget(target2);
+    await harness.waitForState('activating');
+    await harness.postClientReport({ buildVersion: target2.version, buildCommit: COMMIT_CLIENT });
+    const updated2 = await harness.waitForState('updated');
+    assert.equal(updated2.version, target2.version);
+    assert.equal(harness.managerCalls.installBundle.length, 2);
+    assert.deepEqual(
+      harness.managerCalls.installBundle.map((call) => call.spec),
+      [target1.spec, target2.spec]
+    );
+    assert.throws(
+      () => harness.operations.observe(first.operationId),
+      (error) => error.code === GM.INVALID_PARAM
+    );
+
+    // 5) Retained terminal + SAME target ⇒ new terminal already-at-target, no install.
+    const third = await harness.begin(target2.id);
+    assert.notEqual(third.operationId, second.operationId);
+    const already = harness.operations.observe(third.operationId);
+    assert.equal(already.state, 'already-at-target');
+    assert.equal(already.reason, 'same-commit');
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.equal(harness.managerCalls.installBundle.length, 2, 'same-target begin must not reinstall');
+    assert.throws(
+      () => harness.operations.observe(second.operationId),
+      (error) => error.code === GM.INVALID_PARAM
+    );
+  });
+
   test('dev-row shadow blocks begin (GM-4090 dev-source) without installing', async (t) => {
     const harness = await createUpdateHarness(t, {
       managerOptions: {
