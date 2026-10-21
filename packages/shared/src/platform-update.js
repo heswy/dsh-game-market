@@ -89,6 +89,13 @@ export const PLATFORM_UPDATE_TIMING = Object.freeze({
   activationHostWaitMs: 30000,
   /** After the Host identity matches, how long to wait for a matching client report. */
   activationClientWaitMs: 60000,
+  /**
+   * Recovery after a real Host restart: the page reload is user/probe driven, so
+   * a pending-restart record must not preempt the update with `response-lost`
+   * before the Client has had a chance to load and report. Bounded by the
+   * 30-minute persisted-record rule.
+   */
+  recoveryClientWaitMs: 30 * 60 * 1000,
   /** Recovery: how long to wait for waitForInstall()/disk state after a restart. */
   recoveryProbeMs: 5000,
   recoveryPollMs: 250,
@@ -354,11 +361,41 @@ export function parseProfileDependencyCommit(spec) {
  * Release identity (`platform-updates/release.json`)
  * ------------------------------------------------------------------ */
 
+/**
+ * Normalise the release identity `repo` member to `<owner>/<name>`.
+ *
+ * Release tooling writes the repository URL (`REPO_URL`, e.g.
+ * `https://github.com/heswy/dsh-game-market`); older/alternative identities may
+ * carry the `.git` clone URL or the `owner/name` shorthand. Anything else
+ * (foreign host/repository, credentials, query/fragment, http) is rejected.
+ *
+ * @returns {string|null} canonical `owner/name`, or null when not the official repository
+ */
+export function normaliseReleaseRepository(value) {
+  if (typeof value !== 'string') return null;
+  const expected = `${PLATFORM_UPDATE_REPOSITORY.owner}/${PLATFORM_UPDATE_REPOSITORY.name}`;
+  let text = value.trim();
+  if (text.length === 0 || text.length > 300) return null;
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) {
+    let url;
+    try {
+      url = new URL(text);
+    } catch (_error) {
+      return null;
+    }
+    if (url.protocol !== 'https:') return null;
+    if (url.username !== '' || url.password !== '' || url.search !== '' || url.hash !== '') return null;
+    if (url.hostname.toLowerCase() !== 'github.com') return null;
+    text = url.pathname;
+  } else if (/^github\.com\//i.test(text)) {
+    text = text.slice('github.com/'.length);
+  }
+  const path = text.replace(/^\/+/, '').replace(/\/+$/, '').replace(/\.git$/i, '');
+  return path.toLowerCase() === expected.toLowerCase() ? expected : null;
+}
+
 function isReleaseRepository(value) {
-  if (typeof value !== 'string') return false;
-  const repo = PLATFORM_UPDATE_REPOSITORY;
-  const expected = `${repo.owner}/${repo.name}`;
-  return value === expected || value === `github.com/${expected}` || value === repo.url || value === `https://${repo.url.replace(/\.git$/, '')}` || value === `https://${repo.url}`;
+  return normaliseReleaseRepository(value) !== null;
 }
 
 /**

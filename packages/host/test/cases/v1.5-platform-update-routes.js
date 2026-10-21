@@ -13,6 +13,7 @@ import { ROUTES } from '../../../shared/src/contracts.js';
 import { GM } from '../../../shared/src/errors.js';
 import { updateTargetIdFor, updateGitSpecForCommit } from '../../../shared/src/platform-update.js';
 import { readBundleVersion } from '../../src/config.js';
+import { createHostIdentity } from '../../src/host-identity.js';
 import { createHostHarness } from '../support/harness.js';
 import { COMMIT_A, COMMIT_B, makeCacheDocument, writeDiscoveryCache } from '../support/platform-update.js';
 import { createFakePluginManager, makeBundleState } from '../support/platform-update-harness.js';
@@ -225,10 +226,9 @@ export function register() {
     assert.equal(report.response.status, 200);
     assert.equal(report.payload.data.accepted, true);
     assert.equal(report.payload.data.state, 'idle');
-    assert.deepEqual(report.payload.data.expected, {
-      buildVersion: readBundleVersion(),
-      buildCommit: null,
-    });
+    const ownIdentity = createHostIdentity({ env: { DSH_HOME: '/tmp/dsh-gm-no-profile' }, version: readBundleVersion() });
+    assert.deepEqual(report.payload.data.expected, ownIdentity.expectedClient);
+    assert.equal(report.payload.data.expected.buildVersion, readBundleVersion());
     const bad = await host.requestJson(ROUTES.PLATFORM_UPDATE_CLIENT_REPORT, {
       body: { clientId: 'client-1', windowId: 'window-1', buildVersion: '1.2', buildCommit: null },
     });

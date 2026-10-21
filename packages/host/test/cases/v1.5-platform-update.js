@@ -20,7 +20,7 @@ import { GM } from '../../../shared/src/errors.js';
 import { PLATFORM_UPDATE_INDEX_URL } from '../../../shared/src/platform-update.js';
 import { readBundleVersion } from '../../src/config.js';
 import { createHost } from '../../src/host.js';
-import { discoverProfile } from '../../src/host-identity.js';
+import { createHostIdentity, discoverProfile } from '../../src/host-identity.js';
 import { deriveUpdateCapability } from '../../src/platform-update.js';
 import { createHarness, createHostHarness, FIXTURE_ROOT } from '../support/harness.js';
 import { createFakePluginManager } from '../support/platform-update-harness.js';
@@ -376,7 +376,11 @@ export function register() {
     assert.equal(report.response.status, 200);
     assert.equal(report.payload.data.accepted, true);
     assert.equal(report.payload.data.state, 'idle');
-    assert.deepEqual(report.payload.data.expected, { buildVersion: readBundleVersion(), buildCommit: null });
+    // Expected identity comes from the running bundle's own release.json (the
+    // worktree now carries the release tooling's identity file).
+    const ownIdentity = createHostIdentity({ env: { DSH_HOME: '/tmp/dsh-gm-no-profile' }, version: readBundleVersion() });
+    assert.deepEqual(report.payload.data.expected, ownIdentity.expectedClient);
+    assert.equal(report.payload.data.expected.buildVersion, readBundleVersion());
 
     const badReport = await host.requestJson(ROUTES.PLATFORM_UPDATE_CLIENT_REPORT, {
       body: { clientId: 'c', windowId: 'w', buildVersion: 'not-semver', buildCommit: null },
@@ -516,6 +520,62 @@ export function register() {
     const anomaly = deriveUpdateCapability({ adapter: { available: true, hmr: 'present' }, hasTarget: true, hasAnomaly: true });
     assert.equal(anomaly.canBeginUpdate, false);
     assert.equal(anomaly.reasonKey, 'update.reason.versionCommitAnomaly');
+  });
+
+  test('release identity is read from the running bundle (release-tooling REPO_URL form)', async (t) => {
+    // V1 non-HMR restart finding: release.json carries repo
+    // "https://github.com/heswy/dsh-game-market" (no .git). Rejecting that made
+    // expectedClient.buildCommit null, so a real matching Client report was
+    // classified as stale-runtime. The Host must derive the expected Client
+    // identity from the running bundle's own release.json.
+    const directory = await fs.mkdtemp(path.join(tmpdir(), 'dsh-gm-release-identity-'));
+    t.after(async () => {
+      await fs.rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 20 });
+    });
+    const bundleRoot = path.join(directory, 'bundle');
+    await fs.mkdir(path.join(bundleRoot, 'platform-updates'), { recursive: true });
+    await fs.writeFile(
+      path.join(bundleRoot, 'platform-updates', 'release.json'),
+      JSON.stringify(
+        {
+          schemaVersion: 1,
+          version: '1.2.2',
+          clientBuildCommit: COMMIT_B,
+          repo: 'https://github.com/heswy/dsh-game-market',
+          artifacts: { algorithm: 'sha256-tree-v1', roots: ['client.js'] },
+        },
+        null,
+        2
+      )
+    );
+    const identity = createHostIdentity({
+      env: { DSH_HOME: path.join(directory, 'home') },
+      version: '1.2.2',
+      bundleRoot,
+    });
+    assert.equal(identity.releaseError, null);
+    assert.notEqual(identity.release, null);
+    assert.equal(identity.release.clientBuildCommit, COMMIT_B);
+    assert.deepEqual(identity.expectedClient, { buildVersion: '1.2.2', buildCommit: COMMIT_B });
+
+    // A foreign repository must not be accepted as this release identity.
+    await fs.writeFile(
+      path.join(bundleRoot, 'platform-updates', 'release.json'),
+      JSON.stringify({
+        schemaVersion: 1,
+        version: '1.2.2',
+        clientBuildCommit: COMMIT_B,
+        repo: 'https://github.com/evil/dsh-game-market',
+      })
+    );
+    const forged = createHostIdentity({
+      env: { DSH_HOME: path.join(directory, 'home') },
+      version: '1.2.2',
+      bundleRoot,
+    });
+    assert.equal(forged.release, null);
+    assert.equal(forged.releaseError, 'E_RELEASE_INVALID');
+    assert.deepEqual(forged.expectedClient, { buildVersion: '1.2.2', buildCommit: null });
   });
 
   test('health identity is frozen at activation (disk-new/running-old stays old)', async (t) => {

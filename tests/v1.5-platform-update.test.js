@@ -34,6 +34,7 @@ import {
   parsePluginMarketIndex,
   parseProfileDependencyCommit,
   parseReleaseManifest,
+  normaliseReleaseRepository,
   profileDependencySpecShape,
   selectOfficialUpdateTarget,
   updateGitSpecForCommit,
@@ -402,6 +403,35 @@ test('profile dependency specs map to the frozen specShape/specCommit vocabulary
 });
 
 test('release identity validates schemaVersion/version/clientBuildCommit/repo', () => {
+  // The release tooling writes REPO_URL: https://github.com/heswy/dsh-game-market
+  // (no `.git`). Rejecting it made the Host fall back to buildCommit:null and
+  // misclassify a matching real Client report as stale-runtime (V1 finding).
+  const toolingForm = parseReleaseManifest({
+    schemaVersion: 1,
+    version: '1.2.2',
+    clientBuildCommit: COMMIT_A,
+    repo: 'https://github.com/heswy/dsh-game-market',
+    artifacts: { algorithm: 'sha256-tree-v1' },
+  });
+  assert.equal(toolingForm.ok, true);
+  assert.deepEqual(toolingForm.value, {
+    schemaVersion: 1,
+    version: '1.2.2',
+    clientBuildCommit: COMMIT_A,
+    repo: 'heswy/dsh-game-market',
+  });
+  for (const repo of [
+    'https://github.com/heswy/dsh-game-market',
+    'https://github.com/heswy/dsh-game-market.git',
+    'https://github.com/heswy/dsh-game-market/',
+    'github.com/heswy/dsh-game-market',
+    'heswy/dsh-game-market',
+  ]) {
+    const form = parseReleaseManifest({ schemaVersion: 1, version: '1.3.0', clientBuildCommit: null, repo });
+    assert.equal(form.ok, true, `repo form must be accepted: ${repo}`);
+    assert.equal(form.value.repo, 'heswy/dsh-game-market');
+    assert.equal(normaliseReleaseRepository(repo), 'heswy/dsh-game-market');
+  }
   const valid = parseReleaseManifest({
     schemaVersion: 1,
     version: '1.3.0',
@@ -424,6 +454,10 @@ test('release identity validates schemaVersion/version/clientBuildCommit/repo', 
     { schemaVersion: 1, version: '1.3', repo: 'heswy/dsh-game-market' },
     { schemaVersion: 1, version: '1.3.0', clientBuildCommit: 'abc', repo: 'heswy/dsh-game-market' },
     { schemaVersion: 1, version: '1.3.0', repo: 'evil/dsh-game-market' },
+    { schemaVersion: 1, version: '1.3.0', repo: 'https://github.com/evil/dsh-game-market' },
+    { schemaVersion: 1, version: '1.3.0', repo: 'http://github.com/heswy/dsh-game-market' },
+    { schemaVersion: 1, version: '1.3.0', repo: 'https://user:token@github.com/heswy/dsh-game-market' },
+    { schemaVersion: 1, version: '1.3.0', repo: 'https://github.com/heswy/dsh-game-market?x=1' },
     { schemaVersion: 1, version: '1.3.0', repo: 42 },
   ]) {
     const result = parseReleaseManifest(invalid);

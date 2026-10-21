@@ -915,8 +915,19 @@ export function createUpdateOperationService({
     );
   }
 
-  async function waitForClientVerification(op) {
-    const deadline = now().getTime() + limits.activationClientWaitMs;
+  /**
+   * Wait for the Client's self-reported build identity.
+   *
+   * Normal in-place activation uses the frozen 60s window. Recovery after a real
+   * Host restart uses a much longer window bounded by the 30-minute persisted
+   * record rule: the page reload is user/probe driven and must not be preempted
+   * with `response-lost` before the Client has loaded (the V1 non-HMR restart run
+   * showed the page reloading after the 60s window had already expired).
+   */
+  async function waitForClientVerification(op, { recovery = false, recordDeadline = null } = {}) {
+    const windowMs = recovery === true ? limits.recoveryClientWaitMs : limits.activationClientWaitMs;
+    let deadline = now().getTime() + windowMs;
+    if (Number.isFinite(recordDeadline)) deadline = Math.min(deadline, recordDeadline);
     let sawMismatch = false;
     for (;;) {
       if (stopped || operation !== op || op.status === 'terminal') return;
@@ -1097,6 +1108,29 @@ export function createUpdateOperationService({
     };
   }
 
+  /** Absolute deadline from the persisted record's 30-minute freshness rule. */
+  function recoveryRecordDeadline(record) {
+    const updatedAt = record !== null && typeof record.updatedAt === 'string' ? Date.parse(record.updatedAt) : NaN;
+    return Number.isFinite(updatedAt) ? updatedAt + MAX_RECORD_AGE_MS : null;
+  }
+
+  /**
+   * Enter the activation wait from a recovered record. The running identity is
+   * already verified to match the target; only the Client identity is pending.
+   */
+  async function enterRecoveryActivation(op, record) {
+    op.status = 'activating';
+    op.installedVersion = op.target.version;
+    setObservation(op, {
+      operationId: op.operationId,
+      state: 'activating',
+      installedVersion: op.target.version,
+      awaiting: 'reload',
+    });
+    await persist(op);
+    await waitForClientVerification(op, { recovery: true, recordDeadline: recoveryRecordDeadline(record) });
+  }
+
   async function recoverFromRecord(record) {
     const op = {
       operationId: record.operationId,
@@ -1145,16 +1179,7 @@ export function createUpdateOperationService({
     }
     if (record.status === 'pending-restart') {
       if (hostAtTarget(op.target)) {
-        op.status = 'activating';
-        op.installedVersion = op.target.version;
-        setObservation(op, {
-          operationId: op.operationId,
-          state: 'activating',
-          installedVersion: op.target.version,
-          awaiting: 'reload',
-        });
-        await persist(op);
-        await waitForClientVerification(op);
+        await enterRecoveryActivation(op, record);
       } else {
         setObservation(op, record.observation ?? {
           operationId: op.operationId,
@@ -1167,16 +1192,7 @@ export function createUpdateOperationService({
       return;
     }
     if (hostAtTarget(op.target)) {
-      op.status = 'activating';
-      op.installedVersion = op.target.version;
-      setObservation(op, {
-        operationId: op.operationId,
-        state: 'activating',
-        installedVersion: op.target.version,
-        awaiting: 'reload',
-      });
-      await persist(op);
-      await waitForClientVerification(op);
+      await enterRecoveryActivation(op, record);
       return;
     }
     // Host still runs the old code. Ask the native manager (it survives the
@@ -1189,16 +1205,7 @@ export function createUpdateOperationService({
     const deadline = now().getTime() + limits.recoveryProbeMs;
     for (;;) {
       if (hostAtTarget(op.target)) {
-        op.status = 'activating';
-        op.installedVersion = op.target.version;
-        setObservation(op, {
-          operationId: op.operationId,
-          state: 'activating',
-          installedVersion: op.target.version,
-          awaiting: 'reload',
-        });
-        await persist(op);
-        await waitForClientVerification(op);
+        await enterRecoveryActivation(op, record);
         return;
       }
       if (diskAtTarget(op.target)) {

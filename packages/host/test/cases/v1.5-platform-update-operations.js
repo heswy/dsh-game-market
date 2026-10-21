@@ -512,6 +512,170 @@ export function register() {
     await reopened.operations.stop();
   });
 
+  test('recovery pending-restart does not preempt a slow post-restart page (no waitForInstall failure, no reinstall)', async (t) => {
+    const harness = await createUpdateHarness(t, {
+      managerOptions: {
+        install: async () => installResult({ application: 'restart-required', restartReason: 'no-hmr' }),
+      },
+      operationTiming: {
+        coordinateTimeoutMs: 100,
+        activationHostWaitMs: 400,
+        // Normal in-place activation window stays short; recovery gets the
+        // restart-safe window (V1 finding: real page reload happened later).
+        activationClientWaitMs: 20,
+        recoveryClientWaitMs: 400,
+        recoveryProbeMs: 120,
+        recoveryPollMs: 5,
+        operationPollMs: 2,
+        clientReportTtlMs: 60000,
+      },
+    });
+    const { operationId } = await harness.begin();
+    await harness.waitForState('pending-restart');
+    await harness.stop();
+    const reopened = await harness.reopen({
+      identityState: {
+        loadedVersion: '1.3.0',
+        loadedCommit: COMMIT_A,
+        diskVersion: '1.3.0',
+        diskCommit: COMMIT_A,
+        expectedClient: { buildVersion: '1.3.0', buildCommit: COMMIT_CLIENT },
+      },
+    });
+    const activating = await waitObservation(reopened.operations, (observation) => observation.state === 'activating');
+    assert.equal(activating.awaiting, 'reload');
+    // Wait beyond the normal 20ms activation window: the recovered operation
+    // must still be waiting for the Client instead of failing response-lost.
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    const stillWaiting = reopened.operations.currentObservation();
+    assert.notEqual(stillWaiting.state, 'verification-failed');
+    assert.equal(stillWaiting.state, 'activating');
+    // The page finally loads and reports its own (matching) build identity.
+    await reopened.operations.clientReport({
+      clientId: 'client-1',
+      windowId: 'window-1',
+      buildVersion: '1.3.0',
+      buildCommit: COMMIT_CLIENT,
+      pageToken: 'page-1',
+      startedAt: new Date().toISOString(),
+    });
+    const updated = await waitObservation(reopened.operations, (observation) => observation.state === 'updated');
+    assert.equal(updated.version, '1.3.0');
+    assert.equal(updated.client, `1.3.0+${COMMIT_CLIENT}`);
+    assert.equal(reopened.operations.observe(operationId).state, 'updated');
+    assert.equal(harness.managerCalls.installBundle.length, 1, 'recovery must not reinstall');
+    assert.equal(
+      harness.managerCalls.waitForInstall.length,
+      0,
+      'pending-restart recovery must not depend on waitForInstall()===null'
+    );
+    await reopened.operations.stop();
+  });
+
+  test('recovery pending-restart: old page report → stale-runtime(client-old), refreshed report → updated', async (t) => {
+    const harness = await createUpdateHarness(t, {
+      managerOptions: {
+        install: async () => installResult({ application: 'restart-required', restartReason: 'no-hmr' }),
+      },
+      operationTiming: {
+        coordinateTimeoutMs: 100,
+        activationHostWaitMs: 400,
+        activationClientWaitMs: 20,
+        recoveryClientWaitMs: 600,
+        recoveryProbeMs: 120,
+        recoveryPollMs: 5,
+        operationPollMs: 2,
+        clientReportTtlMs: 60000,
+      },
+    });
+    await harness.begin();
+    await harness.waitForState('pending-restart');
+    await harness.stop();
+    const reopened = await harness.reopen({
+      identityState: {
+        loadedVersion: '1.3.0',
+        loadedCommit: COMMIT_A,
+        diskVersion: '1.3.0',
+        diskCommit: COMMIT_A,
+        expectedClient: { buildVersion: '1.3.0', buildCommit: COMMIT_CLIENT },
+      },
+    });
+    await waitObservation(reopened.operations, (observation) => observation.state === 'activating');
+    // An unrefreshed page (old Client build) must not be reported as success.
+    await reopened.operations.clientReport({
+      clientId: 'old-client',
+      windowId: 'window-1',
+      buildVersion: '1.2.1',
+      buildCommit: null,
+      pageToken: 'old-page',
+      startedAt: new Date().toISOString(),
+    });
+    const stale = await waitObservation(reopened.operations, (observation) => observation.state === 'stale-runtime');
+    assert.equal(stale.reason, 'client-old');
+    assert.equal(stale.runningVersion, '1.2.1');
+    // Refreshing that same browser window replaces its report with the new one.
+    await reopened.operations.clientReport({
+      clientId: 'new-client',
+      windowId: 'window-1',
+      buildVersion: '1.3.0',
+      buildCommit: COMMIT_CLIENT,
+      pageToken: 'new-page',
+      startedAt: new Date().toISOString(),
+    });
+    const updated = await waitObservation(reopened.operations, (observation) => observation.state === 'updated');
+    assert.equal(updated.state, 'updated');
+    await reopened.operations.stop();
+  });
+
+  test('recovered record older than 30 minutes resolves response-lost (stale rule, not silent success)', async (t) => {
+    const harness = await createUpdateHarness(t, { managerOptions: { waitInstall: async () => null } });
+    await harness.stop();
+    const old = new Date(Date.now() - 31 * 60 * 1000).toISOString();
+    const operationId = 'upd_0123456789abcdef';
+    const seed = {
+      schemaVersion: 1,
+      operationId,
+      requestId: 'upd_fedcba9876543210',
+      createdAt: old,
+      updatedAt: old,
+      status: 'pending-restart',
+      target: harness.target,
+      previous: {
+        spec: `github:heswy/dsh-game-market#${COMMIT_B}`,
+        specShape: 'git-url',
+        version: '1.2.0',
+        commit: COMMIT_B,
+        enabled: true,
+        loadedVersion: '1.2.0',
+        loadedCommit: COMMIT_B,
+        dataRoot: harness.dataRoot,
+      },
+      coordination: null,
+      cancelled: false,
+      observation: {
+        operationId,
+        state: 'pending-restart',
+        restartReason: 'no-hmr',
+        installedVersion: '1.3.0',
+      },
+      hostEpochStarted: 'he_0000000000000000',
+    };
+    await fs.mkdir(harness.dataRoot, { recursive: true });
+    await fs.writeFile(path.join(harness.dataRoot, 'platform-update-operation.json'), JSON.stringify(seed));
+    const reopened = await harness.reopen({
+      identityState: {
+        loadedVersion: '1.3.0',
+        loadedCommit: COMMIT_A,
+        diskVersion: '1.3.0',
+        diskCommit: COMMIT_A,
+      },
+    });
+    const failed = await waitObservation(reopened.operations, (observation) => observation.state === 'verification-failed');
+    assert.equal(failed.reason, 'response-lost');
+    assert.equal(harness.managerCalls.installBundle.length, 0);
+    await reopened.operations.stop();
+  });
+
   test('terminal observation is retained until the next begin; new begin replaces it', async (t) => {
     const harness = await createUpdateHarness(t, {
       managerOptions: { install: async () => installResult() },
