@@ -1,0 +1,581 @@
+{
+  "id": "M3-V1-hmr-chain",
+  "title": "HMR update chain R_A -> R_B -> R_final driven through the real Client UI",
+  "commands": [
+    "node scripts/verification/v1.5/m3/run-v1-hmr-chain.mjs --a 344ce99c57f03645cbb246a75a45845fc1e9d789 --b ef8197dc3a6979227037e7739a2aac9e3ea4a709 --final d29e45f79ce01fc03927ed9000ee3ee8a304b2c6"
+  ],
+  "startedAt": "2026-10-21T00:44:02.118Z",
+  "finishedAt": "2026-10-21T00:50:09.483Z",
+  "passed": false,
+  "failed": [
+    "install-R_A-applied",
+    "install-R_A-version",
+    "install-R_A-pnpm-exit-zero",
+    "scenario-completed-without-throw"
+  ],
+  "checks": [
+    {
+      "name": "runtime-extraction-matches-installed-app",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "target-repo-fetch-proxy-d29e45f79ce0",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "commit": "d29e45f79ce01fc03927ed9000ee3ee8a304b2c6",
+        "kind": "full-history",
+        "ok": true,
+        "mode": "proxy",
+        "attempts": [
+          {
+            "mode": "direct",
+            "attempt": 1,
+            "ok": false,
+            "elapsedMs": 92568
+          },
+          {
+            "mode": "direct",
+            "attempt": 2,
+            "ok": false,
+            "elapsedMs": 171119
+          },
+          {
+            "mode": "direct",
+            "attempt": 3,
+            "ok": false,
+            "elapsedMs": 252927
+          },
+          {
+            "mode": "proxy",
+            "attempt": 1,
+            "ok": false,
+            "elapsedMs": 269976
+          },
+          {
+            "mode": "proxy",
+            "attempt": 2,
+            "ok": true,
+            "elapsedMs": 327712
+          }
+        ],
+        "elapsedMs": 327712,
+        "stderr": null
+      }
+    },
+    {
+      "name": "target-repo-fetch-direct-344ce99c57f0",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "commit": "344ce99c57f03645cbb246a75a45845fc1e9d789",
+        "kind": "by-sha",
+        "ok": true,
+        "mode": "direct",
+        "attempts": [
+          {
+            "mode": "direct",
+            "attempt": 1,
+            "ok": true,
+            "elapsedMs": 60
+          }
+        ],
+        "elapsedMs": 60,
+        "stderr": null
+      }
+    },
+    {
+      "name": "target-repo-fetch-direct-ef8197dc3a69",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "commit": "ef8197dc3a6979227037e7739a2aac9e3ea4a709",
+        "kind": "by-sha",
+        "ok": true,
+        "mode": "direct",
+        "attempts": [
+          {
+            "mode": "direct",
+            "attempt": 1,
+            "ok": true,
+            "elapsedMs": 54
+          }
+        ],
+        "elapsedMs": 54,
+        "stderr": null
+      }
+    },
+    {
+      "name": "target-A-commit-exists",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "commit": "344ce99c57f03645cbb246a75a45845fc1e9d789"
+      }
+    },
+    {
+      "name": "target-A-version",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "actual": "1.2.1",
+        "expected": "1.2.1"
+      }
+    },
+    {
+      "name": "target-A-release-identity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "schemaVersion": 1,
+        "version": "1.2.1",
+        "clientBuildCommit": "1f6978482a375736bfd419c168b63aec4531c255",
+        "repo": "https://github.com/heswy/dsh-game-market",
+        "artifacts": {
+          "algorithm": "sha256-tree-v1",
+          "roots": [
+            "client.js",
+            "games",
+            "registry"
+          ],
+          "sha256": "08c9acdf24e17a0f834c8027769bc3a10e1c6ed4cef27f68d1d5687e6aaba19e",
+          "files": 93,
+          "bytes": 3402366
+        }
+      }
+    },
+    {
+      "name": "target-B-commit-exists",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "commit": "ef8197dc3a6979227037e7739a2aac9e3ea4a709"
+      }
+    },
+    {
+      "name": "target-B-version",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "actual": "1.2.2",
+        "expected": "1.2.2"
+      }
+    },
+    {
+      "name": "target-B-release-identity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "schemaVersion": 1,
+        "version": "1.2.2",
+        "clientBuildCommit": "0591b9075b3d74ce2cadb7eae736c19166af687f",
+        "repo": "https://github.com/heswy/dsh-game-market",
+        "artifacts": {
+          "algorithm": "sha256-tree-v1",
+          "roots": [
+            "client.js",
+            "games",
+            "registry"
+          ],
+          "sha256": "b009d9546a13353c57a57f9d639526b8e51c38a1e86618f63c9c76d862dbbe34",
+          "files": 93,
+          "bytes": 3402366
+        }
+      }
+    },
+    {
+      "name": "target-FINAL-commit-exists",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "commit": "d29e45f79ce01fc03927ed9000ee3ee8a304b2c6"
+      }
+    },
+    {
+      "name": "target-FINAL-version",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "actual": "1.3.0",
+        "expected": "1.3.0"
+      }
+    },
+    {
+      "name": "target-FINAL-release-identity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "schemaVersion": 1,
+        "version": "1.3.0",
+        "clientBuildCommit": "4a4d952390bef89128e7d20c3fa4b8b7c364ff10",
+        "repo": "https://github.com/heswy/dsh-game-market",
+        "artifacts": {
+          "algorithm": "sha256-tree-v1",
+          "roots": [
+            "client.js",
+            "games",
+            "registry"
+          ],
+          "sha256": "3293ae69aee0fa5c040c0b72376b224ead52deb1c4cb886066ad7f84bb4f21d3",
+          "files": 93,
+          "bytes": 3402366
+        }
+      }
+    },
+    {
+      "name": "precondition-probe-releases-available",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "note": "R_A/R_B/R_final must be pushed and present before V1 can run (not-run otherwise)"
+      }
+    },
+    {
+      "name": "transport-fixture-up",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "port": 59877
+      }
+    },
+    {
+      "name": "fresh-isolated-home",
+      "ok": true,
+      "required": true,
+      "detail": "/tmp/dsh-v15/m3/home-v1-hmr-v1-hmr-chain-mvhe3004-14a1c1"
+    },
+    {
+      "name": "probe-operator-booted",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "pid": 8593
+      }
+    },
+    {
+      "name": "hmr-capability-present",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "at": "2026-10-21T00:49:41.745Z",
+        "probeScopeHmr": true,
+        "managerContextHmr": true,
+        "managerContextHmrCtor": "Hmr",
+        "managerContextHmrHasRunExclusive": true,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": {
+            "__jsExpr": "!ctx.get('profileContext')"
+          },
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 110
+        },
+        "samplesSinceBoot": 2
+      }
+    },
+    {
+      "name": "install-R_A-applied",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "install-R_A-version",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "install-R_A-pnpm-exit-zero",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "scenario-completed-without-throw",
+      "ok": false,
+      "required": true,
+      "detail": "Error: R_A exact-commit install failed: null\n    at installBaseRelease (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-hmr-chain.mjs:183:49)\n    at async body (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-hmr-chain.mjs:398:3)\n    at async file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-hmr-chain.mjs:503:3"
+    },
+    {
+      "name": "cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "run-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-21T00:50:09.434Z",
+        "ports": [],
+        "pids": [],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v1-hmr-v1-hmr-chain-mvhe3004-14a1c1",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "transport-and-tls-cleaned",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "v1-hmr-transport-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-21T00:50:09.483Z",
+        "ports": [
+          {
+            "port": 59877,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/scenario-v1-hmr-chain-mvhe3004-14a1c1/tls",
+            "exists": false
+          }
+        ]
+      }
+    }
+  ],
+  "runTag": "v1-hmr-chain-mvhe3004-14a1c1",
+  "targets": {
+    "a": "344ce99c57f03645cbb246a75a45845fc1e9d789",
+    "b": "ef8197dc3a6979227037e7739a2aac9e3ea4a709",
+    "final": "d29e45f79ce01fc03927ed9000ee3ee8a304b2c6",
+    "versionA": "1.2.1",
+    "versionB": "1.2.2",
+    "versionFinal": "1.3.0",
+    "homeSuffix": null
+  },
+  "evidenceLevel": "isolated-browser (real installed DSH runtime + real DSH page + real Client UI clicks) + isolated transport fixture",
+  "notProven": [
+    "real Desktop/Electron main process (isolated dsh web only)",
+    "production official index content (fixture transport)"
+  ],
+  "targetIdentities": [
+    {
+      "key": "A",
+      "commit": "344ce99c57f03645cbb246a75a45845fc1e9d789",
+      "version": "1.2.1",
+      "exists": true,
+      "packageVersion": "1.2.1",
+      "release": {
+        "schemaVersion": 1,
+        "version": "1.2.1",
+        "clientBuildCommit": "1f6978482a375736bfd419c168b63aec4531c255",
+        "repo": "https://github.com/heswy/dsh-game-market",
+        "artifacts": {
+          "algorithm": "sha256-tree-v1",
+          "roots": [
+            "client.js",
+            "games",
+            "registry"
+          ],
+          "sha256": "08c9acdf24e17a0f834c8027769bc3a10e1c6ed4cef27f68d1d5687e6aaba19e",
+          "files": 93,
+          "bytes": 3402366
+        }
+      },
+      "hasClientJs": true
+    },
+    {
+      "key": "B",
+      "commit": "ef8197dc3a6979227037e7739a2aac9e3ea4a709",
+      "version": "1.2.2",
+      "exists": true,
+      "packageVersion": "1.2.2",
+      "release": {
+        "schemaVersion": 1,
+        "version": "1.2.2",
+        "clientBuildCommit": "0591b9075b3d74ce2cadb7eae736c19166af687f",
+        "repo": "https://github.com/heswy/dsh-game-market",
+        "artifacts": {
+          "algorithm": "sha256-tree-v1",
+          "roots": [
+            "client.js",
+            "games",
+            "registry"
+          ],
+          "sha256": "b009d9546a13353c57a57f9d639526b8e51c38a1e86618f63c9c76d862dbbe34",
+          "files": 93,
+          "bytes": 3402366
+        }
+      },
+      "hasClientJs": true
+    },
+    {
+      "key": "FINAL",
+      "commit": "d29e45f79ce01fc03927ed9000ee3ee8a304b2c6",
+      "version": "1.3.0",
+      "exists": true,
+      "packageVersion": "1.3.0",
+      "release": {
+        "schemaVersion": 1,
+        "version": "1.3.0",
+        "clientBuildCommit": "4a4d952390bef89128e7d20c3fa4b8b7c364ff10",
+        "repo": "https://github.com/heswy/dsh-game-market",
+        "artifacts": {
+          "algorithm": "sha256-tree-v1",
+          "roots": [
+            "client.js",
+            "games",
+            "registry"
+          ],
+          "sha256": "3293ae69aee0fa5c040c0b72376b224ead52deb1c4cb886066ad7f84bb4f21d3",
+          "files": 93,
+          "bytes": 3402366
+        }
+      },
+      "hasClientJs": true
+    }
+  ],
+  "installs": [
+    {
+      "phase": "install-R_A",
+      "result": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "requestId": "m3-v1-hmr-install-a-v1-hmr-chain-mvhe3004-14a1c1-try1",
+          "result": {
+            "stage": "install",
+            "target": "https://github.com/heswy/dsh-game-market.git#344ce99c57f03645cbb246a75a45845fc1e9d789",
+            "enabled": true,
+            "changed": false,
+            "application": "failed",
+            "registries": [],
+            "packageResult": {
+              "exitCode": 1,
+              "output": "dsh: connection to github.com timed out after 5000ms\n",
+              "truncated": false,
+              "logPath": "/tmp/dsh-v15/m3/home-v1-hmr-v1-hmr-chain-mvhe3004-14a1c1/profiles/web/.plugin-manager/logs/github-connection-VSq7Sg/git.log",
+              "kind": "timeout"
+            },
+            "failedAt": "spec-host",
+            "error": {
+              "code": "operation-error",
+              "diagnostic": "dsh: connection to github.com timed out after 5000ms\n"
+            }
+          },
+          "elapsedMs": 5123,
+          "transient": true
+        },
+        {
+          "attempt": 2,
+          "requestId": "m3-v1-hmr-install-a-v1-hmr-chain-mvhe3004-14a1c1-try2",
+          "result": {
+            "stage": "install",
+            "target": "https://github.com/heswy/dsh-game-market.git#344ce99c57f03645cbb246a75a45845fc1e9d789",
+            "enabled": true,
+            "changed": false,
+            "application": "failed",
+            "registries": [],
+            "packageResult": {
+              "exitCode": 1,
+              "output": "dsh: connection to github.com timed out after 5000ms\n",
+              "truncated": false,
+              "logPath": "/tmp/dsh-v15/m3/home-v1-hmr-v1-hmr-chain-mvhe3004-14a1c1/profiles/web/.plugin-manager/logs/github-connection-CGuKom/git.log",
+              "kind": "timeout"
+            },
+            "failedAt": "spec-host",
+            "error": {
+              "code": "operation-error",
+              "diagnostic": "dsh: connection to github.com timed out after 5000ms\n"
+            }
+          },
+          "elapsedMs": 5119,
+          "transient": true
+        },
+        {
+          "attempt": 3,
+          "requestId": "m3-v1-hmr-install-a-v1-hmr-chain-mvhe3004-14a1c1-try3",
+          "result": {
+            "stage": "install",
+            "target": "https://github.com/heswy/dsh-game-market.git#344ce99c57f03645cbb246a75a45845fc1e9d789",
+            "enabled": true,
+            "changed": false,
+            "application": "failed",
+            "registries": [],
+            "packageResult": {
+              "exitCode": 1,
+              "output": "dsh: connection to github.com timed out after 5000ms\n",
+              "truncated": false,
+              "logPath": "/tmp/dsh-v15/m3/home-v1-hmr-v1-hmr-chain-mvhe3004-14a1c1/profiles/web/.plugin-manager/logs/github-connection-UJcm36/git.log",
+              "kind": "timeout"
+            },
+            "failedAt": "spec-host",
+            "error": {
+              "code": "operation-error",
+              "diagnostic": "dsh: connection to github.com timed out after 5000ms\n"
+            }
+          },
+          "elapsedMs": 5118,
+          "transient": true
+        }
+      ],
+      "retried": true
+    }
+  ],
+  "steps": [],
+  "transitions": [],
+  "dialogs": [],
+  "uiActions": [],
+  "refreshStep": null,
+  "finalRefreshGate": null,
+  "identity": {},
+  "dataPreservation": null,
+  "screenshots": [],
+  "networkAtStale": null,
+  "cleanup": {
+    "hosts": [
+      {
+        "pid": 8593,
+        "closed": {
+          "pid": 8593,
+          "port": 59882,
+          "closed": true,
+          "alreadyClosed": false
+        }
+      }
+    ],
+    "pages": [],
+    "homes": [
+      {
+        "home": "/tmp/dsh-v15/m3/home-v1-hmr-v1-hmr-chain-mvhe3004-14a1c1",
+        "removed": true
+      }
+    ],
+    "proof": {
+      "label": "run-cleanup",
+      "ok": true,
+      "checkedAt": "2026-10-21T00:50:09.434Z",
+      "ports": [],
+      "pids": [],
+      "dirs": [
+        {
+          "dir": "/tmp/dsh-v15/m3/home-v1-hmr-v1-hmr-chain-mvhe3004-14a1c1",
+          "exists": false
+        }
+      ]
+    }
+  },
+  "thrown": "Error: R_A exact-commit install failed: null\n    at installBaseRelease (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-hmr-chain.mjs:183:49)\n    at async body (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-hmr-chain.mjs:398:3)\n    at async file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-hmr-chain.mjs:503:3",
+  "environment": {
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "repoRoot": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update"
+  },
+  "failedRequired": [
+    "install-R_A-applied",
+    "install-R_A-version",
+    "install-R_A-pnpm-exit-zero",
+    "scenario-completed-without-throw"
+  ]
+}

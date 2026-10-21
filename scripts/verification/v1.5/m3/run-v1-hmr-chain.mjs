@@ -242,7 +242,12 @@ async function runUiUpdateStep({ key, label, expectedClientCommit }) {
   step.begin = { banner: begin.banner, dialog: begin.dialog, operationId: begin.operationId };
   run.report.add(`${label}-ui-begin-created-operation`, /^upd_[a-f0-9]{16}$/.test(String(begin.operationId)), begin.operationId);
   run.report.add(`${label}-dialog-names-target-version`, begin.dialogMatchesTargetVersion === true, begin.dialog);
-  run.report.add(`${label}-dialog-warns-all-sessions`, (begin.dialog?.warnings ?? []).length >= 2, begin.dialog?.warnings ?? null);
+  // Ruled acceptance: the confirmation body itself states the profile-wide
+  // session impact and the possible restart; structured warnings[] are optional.
+  const dialogBodyText = String(begin.dialog?.body ?? '');
+  const dialogAllSessions = dialogBodyText.includes('所有会话') || dialogBodyText.includes('所在会话');
+  const dialogRestart = dialogBodyText.includes('重启') || /restart/i.test(dialogBodyText);
+  run.report.add(`${label}-dialog-warns-all-sessions`, dialogAllSessions === true && dialogRestart === true, { body: dialogBodyText, warnings: begin.dialog?.warnings ?? null });
   const dialogMentionsCommit = JSON.stringify(begin.dialog ?? {}).includes(byKey[key].commit);
   run.report.add(`${label}-dialog-names-target-commit`, dialogMentionsCommit === true, begin.dialog?.meta ?? null);
 

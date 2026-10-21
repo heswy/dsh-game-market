@@ -95,12 +95,29 @@ const PROXY_ENV = {
 };
 const PROXY_KEYS = ['HTTPS_PROXY', 'HTTP_PROXY', 'ALL_PROXY', 'https_proxy', 'http_proxy', 'all_proxy', 'npm_config_https_proxy', 'npm_config_http_proxy', 'npm_config_proxy'];
 
+// Pinned reachable GitHub IPs (DNS github.com is blocked; local proxy flaps).
+const PINNED_RESOLVES = {
+  'github.com': '140.82.112.3',
+  'codeload.github.com': '140.82.112.3',
+  'raw.githubusercontent.com': '185.199.108.133',
+};
+const PINNED_CONFIG_ENTRIES = Object.entries(PINNED_RESOLVES).map(([host, ip]) => `${host}:443:${ip}`);
+
 function gitNetworkEnv(mode) {
   const base = { ...process.env };
   for (const key of PROXY_KEYS) delete base[key];
-  base.NO_PROXY = '127.0.0.1,localhost';
+  base.NO_PROXY = mode === 'proxy' ? '127.0.0.1,localhost' : '*';
   if (mode === 'proxy') Object.assign(base, PROXY_ENV);
   return base;
+}
+
+function gitModeArgs(mode) {
+  if (mode === 'proxy') return ['-c', `http.proxy=${PROXY_ENV.HTTP_PROXY}`, '-c', `https.proxy=${PROXY_ENV.HTTP_PROXY}`];
+  const args = ['-c', 'http.proxy=', '-c', 'https.proxy='];
+  if (mode === 'pinned') {
+    for (const entry of PINNED_CONFIG_ENTRIES) args.push('-c', `http.curloptResolve=${entry}`);
+  }
+  return args;
 }
 
 function sleepSync(ms) {
@@ -113,20 +130,16 @@ function sleepSync(ms) {
  * Fetch the pushed probe-release commits into an isolated temp clone (never the
  * shared worktree) and return a git runner bound to that clone.
  *
- * Network mode is DIRECT-first with a recorded proxy fallback (current machine
- * topology: local proxy broken, direct GitHub works). Each commit fetch retries
- * with backoff (~up to 60s per mode) and every attempt/mode is recorded.
+ * Network mode order: PINNED reachable GitHub IPs -> direct DNS -> local proxy,
+ * with retries/backoff; the chosen mode is recorded for every commit fetch.
  */
 export function prepareTargetRepo({ final, commits = [], workDir = `/tmp/dsh-v15/m3/v1-target-repo-${process.pid}-${Date.now().toString(36)}`, originUrl = REPO_URL } = {}) {
   fs.rmSync(workDir, { recursive: true, force: true });
   fs.mkdirSync(workDir, { recursive: true });
-  const run = (gitArgs, { allowFail = false, mode = 'direct' } = {}) => {
-    // `-c http.proxy=` neutralizes any user-level git proxy config; the network
-    // mode decides whether an explicit proxy is configured instead.
-    const proxyArgs = mode === 'proxy'
-      ? ['-c', `http.proxy=${PROXY_ENV.HTTP_PROXY}`, '-c', `https.proxy=${PROXY_ENV.HTTP_PROXY}`]
-      : ['-c', 'http.proxy=', '-c', 'https.proxy='];
-    const result = spawnSync('git', ['-C', workDir, ...proxyArgs, ...gitArgs], { encoding: 'utf8', env: gitNetworkEnv(mode), maxBuffer: 256 * 1024 * 1024 });
+  const run = (gitArgs, { allowFail = false, mode = 'pinned' } = {}) => {
+    // `-c http.proxy=` neutralizes any user-level git proxy config; each network
+    // mode then pins/reaches GitHub its own way (pinned IPs -> direct -> proxy).
+    const result = spawnSync('git', ['-C', workDir, ...gitModeArgs(mode), ...gitArgs], { encoding: 'utf8', env: gitNetworkEnv(mode), maxBuffer: 256 * 1024 * 1024 });
     if (result.status !== 0) {
       if (allowFail) return { ok: false, status: result.status, stdout: result.stdout ?? '', stderr: result.stderr ?? '' };
       throw new Error(`git ${gitArgs.join(' ')} failed: ${(result.stderr || result.stdout || '').trim()}`);
@@ -143,7 +156,7 @@ export function prepareTargetRepo({ final, commits = [], workDir = `/tmp/dsh-v15
     let ok = false;
     let modeUsed = null;
     let lastError = null;
-    for (const mode of ['direct', 'proxy']) {
+    for (const mode of ['pinned', 'direct', 'proxy']) {
       for (let attempt = 1; attempt <= 3 && !ok; attempt += 1) {
         const result = run(['fetch', '--no-tags', 'origin', commit], { allowFail: true, mode });
         attempts.push({ mode, attempt, ok: result.ok, elapsedMs: Date.now() - started });
@@ -153,7 +166,7 @@ export function prepareTargetRepo({ final, commits = [], workDir = `/tmp/dsh-v15
           break;
         }
         lastError = result.stderr.split('\n').slice(-2).join(' | ');
-        sleepSync(attempt === 1 ? 3000 : attempt === 2 ? 6000 : 12000);
+        sleepSync(attempt === 1 ? 2000 : attempt === 2 ? 5000 : 10000);
       }
       if (ok) break;
     }
@@ -163,7 +176,7 @@ export function prepareTargetRepo({ final, commits = [], workDir = `/tmp/dsh-v15
   fetchOne(final, 'full-history');
   for (const commit of commits) fetchOne(commit, 'by-sha');
   const gitRunner = (gitArgs, { allowFail = false } = {}) => {
-    const result = run(gitArgs, { allowFail, mode: 'direct' });
+    const result = run(gitArgs, { allowFail, mode: 'pinned' });
     return allowFail ? (result.ok ? result.stdout.trim() : null) : result.stdout.trim();
   };
   const networkModes = [...new Set(fetchResults.map((item) => item.mode).filter(Boolean))];
@@ -177,7 +190,7 @@ export function prepareTargetRepo({ final, commits = [], workDir = `/tmp/dsh-v15
  * whole operation without touching the profile. Retries are recorded verbatim;
  * only this transient/timeout shape is retried, never a real management failure.
  */
-export async function installExactWithRetry(probe, { spec, requestIdBase, attempts = 3, timeoutMs = 420000 } = {}) {
+export async function installExactWithRetry(probe, { spec, requestIdBase, attempts = 6, timeoutMs = 420000 } = {}) {
   const tried = [];
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     const requestId = `${requestIdBase}-try${attempt}`;
@@ -198,7 +211,10 @@ export async function installExactWithRetry(probe, { spec, requestIdBase, attemp
     );
     tried.push({ attempt, requestId, result, elapsedMs: Date.now() - startedAt, transient: transient === true });
     if (!transient) return { result, attempts: tried, retried: attempt > 1 };
-    await sleep(4000);
+    // The GitHub link on this machine is intermittent; back off generously so a
+    // short outage does not turn into a false verification failure.
+    const backoff = [5000, 10000, 20000, 30000, 45000][attempt - 1] ?? 45000;
+    await sleep(backoff);
   }
   return { result: null, attempts: tried, retried: tried.length > 1, exhausted: true };
 }

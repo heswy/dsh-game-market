@@ -94,14 +94,30 @@ export const GAME_MARKET_ID = 'dsh-game-market';
  * local proxy this machine uses (the M0 harness proved this is required).
  * Not written to any user/App configuration; recorded in evidence for honesty.
  */
+export const PINNED_GITHUB_RESOLVES = Object.freeze({
+  'github.com': '140.82.112.3',
+  'codeload.github.com': '140.82.112.3',
+  'raw.githubusercontent.com': '185.199.108.133',
+});
+
+/** GIT_CONFIG_* env that pins GitHub hosts to reachable IPs (git/libcurl). */
+export function pinnedGitConfigEnv() {
+  const entries = Object.entries(PINNED_GITHUB_RESOLVES).map(([host, ip]) => `${host}:443:${ip}`);
+  const env = { GIT_CONFIG_COUNT: String(entries.length) };
+  entries.forEach((entry, index) => {
+    env[`GIT_CONFIG_KEY_${index}`] = 'http.curloptResolve';
+    env[`GIT_CONFIG_VALUE_${index}`] = entry;
+  });
+  return env;
+}
+
 export const PROBE_NETWORK_ENV = Object.freeze({
-  // Current machine topology (2026-10-20 late): the local 7897 proxy is broken;
-  // GitHub/raw.githubusercontent are reachable DIRECTLY. The isolated host's
-  // pnpm/git therefore run without injected proxy variables. The discovery
-  // transport fixture still injects its own NODE_USE_ENV_PROXY/NODE_EXTRA_CA_CERTS
-  // for the fixed index URL; its tunnels/passthrough are direct-first with a
-  // recorded proxy fallback.
-  NO_PROXY: '127.0.0.1,localhost',
+  // Current machine topology (2026-10-21): DNS github.com is blocked and the
+  // local 7897 proxy flaps; alternate GitHub IPs are reachable. Pinned mode:
+  // no proxy for git/pnpm, with http.curloptResolve pinning. The discovery
+  // transport fixture injects its own proxy/CA env for the fixed index URL.
+  ...pinnedGitConfigEnv(),
+  NO_PROXY: '*',
 });
 
 // ---------------------------------------------------------------------------

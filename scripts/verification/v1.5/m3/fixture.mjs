@@ -176,12 +176,34 @@ function defaultScenarios() {
 // Data-plane helpers: real origin passthrough through the machine proxy
 // ---------------------------------------------------------------------------
 
+// Current machine topology (2026-10-21): the DNS-resolved github.com address is
+// blocked and the local proxy flaps. These alternate GitHub IPs are reachable;
+// git/libcurl pins them per-host via http.curloptResolve (proven by Lead), and
+// the TLS servername stays the real hostname.
+const PINNED_RESOLVES = {
+  'github.com': '140.82.112.3',
+  'codeload.github.com': '140.82.112.3',
+  'raw.githubusercontent.com': '185.199.108.133',
+};
+const RESOLVE_CONFIG_ENTRIES = Object.entries(PINNED_RESOLVES).map(([host, ip]) => `${host}:443:${ip}`);
+
+/** GIT_CONFIG_* env that pins GitHub hosts to reachable IPs (applies to git and to pnpm's git shell-outs). */
+function pinnedGitEnv() {
+  const env = { GIT_CONFIG_COUNT: String(RESOLVE_CONFIG_ENTRIES.length) };
+  RESOLVE_CONFIG_ENTRIES.forEach((entry, index) => {
+    env[`GIT_CONFIG_KEY_${index}`] = 'http.curloptResolve';
+    env[`GIT_CONFIG_VALUE_${index}`] = entry;
+  });
+  return env;
+}
+
 const PROXY_ENV_KEYS = ['HTTPS_PROXY', 'HTTP_PROXY', 'ALL_PROXY', 'https_proxy', 'http_proxy', 'all_proxy', 'npm_config_https_proxy', 'npm_config_http_proxy', 'npm_config_proxy'];
 
-/** Connect directly to host:port (no proxy) with a bounded timeout. */
+/** Connect directly to host:port (no proxy) with a bounded timeout; pinned IP first. */
 function connectDirect(host, port = 443, timeoutMs = 20000) {
+  const targetHost = PINNED_RESOLVES[host] ?? host;
   return new Promise((resolve, reject) => {
-    const socket = net.connect({ host, port });
+    const socket = net.connect({ host: targetHost, port });
     let settled = false;
     const fail = (error) => {
       if (settled) return;
@@ -196,7 +218,7 @@ function connectDirect(host, port = 443, timeoutMs = 20000) {
       if (settled) return;
       settled = true;
       socket.setTimeout(0);
-      resolve({ socket, mode: 'direct' });
+      resolve({ socket, mode: PINNED_RESOLVES[host] ? 'pinned' : 'direct', resolvedAddress: targetHost });
     });
   });
 }
@@ -623,10 +645,19 @@ export async function createIndexTransport({
         npm_config_https_proxy: proxy,
         npm_config_http_proxy: proxy,
         npm_config_proxy: proxy,
-        // Discovery host stays proxied (fixture interception); git/pnpm traffic
-        // to GitHub bypasses the fixture proxy and goes direct: the machine's
-        // local proxy is broken and GitHub is reachable directly.
-        NO_PROXY: '127.0.0.1,localhost,github.com,.github.com,codeload.github.com,objects.githubusercontent.com,api.github.com',
+        // ALL GitHub traffic (pnpm, git, and the native manager's own
+        // connectivity probes) goes through this fixture proxy; its CONNECT
+        // tunnels connect to pinned reachable IPs for github.com/codeload and
+        // raw, bypassing the blocked DNS address and the flapping local proxy.
+        NO_PROXY: '127.0.0.1,localhost',
+        M3_NETWORK_MODE: 'pinned-tunnel',
+        // Do NOT export GIT_CONFIG_COUNT/KEY_* here: one native-manager code
+        // path spawns git with a filtered env that kept the count but dropped
+        // the keys ("missing config key GIT_CONFIG_KEY_0"). Network is already
+        // handled by the fixture proxy's pinned CONNECT tunnels, so git/pnpm
+        // simply use HTTPS_PROXY. Our own probe git calls pass explicit
+        // `-c http.curloptResolve=...` args instead of env.
+        GIT_CONFIG_COUNT: '0',
         ...(marker === null ? {} : { M3_FIXTURE_RUN_TAG: marker }),
       };
     },
