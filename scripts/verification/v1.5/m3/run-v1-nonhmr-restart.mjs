@@ -186,6 +186,10 @@ async function body() {
   run.transport.control.setFixtureBody(buildIndexBody({ versions: [{ version: byKey.B.version, commit: byKey.B.commit }] }));
   run.report.add('transport-fixture-up', Boolean(run.transport.port), { port: run.transport.port });
   run.report.add('host-network-env-selfcheck', run.transport.hostEnvCheck?.ok === true, run.transport.hostEnvCheck ?? null);
+  if (run.transport.networkGate !== undefined && run.transport.networkGate.ok !== true) {
+    throw new Error('pre-run network gate failed; refusing to start installs');
+  }
+  run.report.add('host-network-env-selfcheck', run.transport.hostEnvCheck?.ok === true, run.transport.hostEnvCheck ?? null);
 
   // Fresh isolated profile with the hmr row explicitly disabled (non-HMR profile).
   const name = `v1-nonhmr-${run.runTag}`;
@@ -290,6 +294,8 @@ async function body() {
   evidence.boots.push({ bootIndex: context.bootIndex, pid: context.host.pid, phase: 'after-pending-restart' });
   const route3 = await waitForRoute(context, { timeoutMs: 90000 });
   run.report.add('restart-routes-available', route3.ok === true, route3.ok ? { waitedMs: route3.waitedMs } : null);
+  const restartedVersion = await waitForHostVersion(context.probe, byKey.B.version, { timeoutMs: 180000 });
+  run.report.add('restart-host-loaded-R_B', restartedVersion.ok === true, restartedVersion.ok ? { waitedMs: restartedVersion.waitedMs } : restartedVersion.last);
   const inspectAfterRestart = (await probeInspect(context)).body;
   run.report.add('restart-running-version-R_B', inspectAfterRestart?.host?.version === byKey.B.version, inspectAfterRestart?.host ?? null);
   run.report.add('restart-host-commit-R_B', inspectAfterRestart?.host?.commit === byKey.B.commit, inspectAfterRestart?.host ?? null);

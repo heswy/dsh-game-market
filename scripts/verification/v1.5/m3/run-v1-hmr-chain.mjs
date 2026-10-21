@@ -247,7 +247,7 @@ async function runUiUpdateStep({ key, label, expectedClientCommit, previousOpera
 
   let begin;
   if (before.banner !== null) {
-    begin = await beginUpdateThroughUi(cdp, { expectVersion: byKey[key].version });
+    begin = await beginUpdateThroughUi(cdp, { expectVersion: byKey[key].version, previousOperationId });
   } else {
     // The Host retains a terminal operation until the next begin; the Client
     // hides the "update available" banner while an operation card is shown, so
@@ -521,31 +521,30 @@ async function body() {
   const panelBeforeRefresh = await ensureMarketPanelOpen(cdp, { timeoutMs: 30000 });
   run.report.add('market-panel-open-before-discovery-refresh', panelBeforeRefresh.opened === true, panelBeforeRefresh);
   run.transport.control.setFixtureBody(buildIndexBody({ versions: [{ version: byKey.FINAL.version, commit: byKey.FINAL.commit }] }));
-  // Deterministic discovery switch: while the previous operation may still be
-  // busy/activating, the UI refresh control is not a reliable vehicle. Use the
-  // frozen POST refresh route in a bounded loop (respecting the 60s manual
-  // throttle via nextCheckAt) and poll GET until target == R_final6. This is a
-  // LABELLED test control; the real fixed-client UI refresh gate is verified
-  // separately at the end of the chain.
-  phase('discovery-switch-frozen-refresh');
+  // Real UI discovery switch first (fixed Client, throttle-aware); only if the
+  // UI path cannot deliver the new target do we fall back to the labelled
+  // frozen refresh route.
+  phase('discovery-switch-ui-refresh');
+  const panelBeforeUiRefresh = await ensureMarketPanelOpen(cdp, { timeoutMs: 30000 });
+  evidence.uiRefreshPanel = panelBeforeUiRefresh;
+  const uiRefresh = await refreshDiscoveryThroughUi(cdp, { maxWaitMs: 150000 });
+  evidence.uiRefresh = uiRefresh;
+  const uiRefreshOk = uiRefresh.mode === 'ui' && uiRefresh.clicked === true;
+  recordAction('refresh-discovery-to-final-ui', { mode: uiRefresh.mode, clicked: uiRefresh.clicked, waitedMs: uiRefresh.waitedMs, defect: uiRefresh.defect ?? null });
+  run.report.add('discovery-refresh-through-ui', uiRefreshOk, uiRefresh);
   const finalDiscovered = await ensureDiscoveryTarget(cdp, {
     version: byKey.FINAL.version,
     commit: byKey.FINAL.commit,
-    timeoutMs: 150000,
+    timeoutMs: 120000,
     allowApiFallback: true,
   });
   evidence.finalDiscoveryGate = finalDiscovered;
   evidence.refreshStep = {
-    mode: 'frozen-refresh-route-test-control',
+    mode: uiRefreshOk ? 'ui' : 'frozen-refresh-route-test-control',
+    ui: { mode: uiRefresh.mode, clicked: uiRefresh.clicked, waitedMs: uiRefresh.waitedMs },
     gate: finalDiscovered,
-    note: 'discovery switched via frozen POST /platform-update/refresh test control (50-shot bounded, throttle-aware); fixed-client UI refresh is asserted at the end of the chain',
   };
-  recordAction('refresh-discovery-to-final-test-control', { mode: evidence.refreshStep.mode, ok: finalDiscovered.ok === true, history: finalDiscovered.history });
-  run.report.add('discovery-refresh-through-ui', finalDiscovered.ok === true, {
-    note: 'UI refresh superseded by labelled frozen-route test control for this hop; fixed-client UI refresh gate asserted after R_final6',
-    gate: { mode: finalDiscovered.mode, waitedMs: finalDiscovered.waitedMs, history: finalDiscovered.history },
-  });
-  run.report.add('discovery-refresh-frozen-route-test-control', finalDiscovered.ok === true && finalDiscovered.history.length > 0, { mode: finalDiscovered.mode, history: finalDiscovered.history });
+  run.report.add('discovery-refresh-frozen-route-test-control', finalDiscovered.ok === true && (finalDiscovered.history?.length ?? 0) > 0, { uiRefreshOk, gate: { mode: finalDiscovered.mode, waitedMs: finalDiscovered.waitedMs, history: finalDiscovered.history } }, { required: false });
   // Hard gate: never start the second update until discovery really points at
   // R_final6 (target.version+commit). Uses polling first; the frozen refresh
   // POST is a LABELLED test control when the 60s manual throttle has elapsed.
@@ -558,13 +557,13 @@ async function body() {
   await ensureUpdateSectionRendered(cdp, { timeoutMs: 30000 });
   let finalBanner = null;
   const bannerStarted = Date.now();
-  while (Date.now() - bannerStarted < 30000) {
+  while (Date.now() - bannerStarted < 60000) {
     const ui = await readUpdateUi(cdp);
     if (ui.banner !== null) { finalBanner = ui.banner; break; }
     await sleep(500);
   }
   evidence.finalBanner = finalBanner;
-  run.report.add('update-B-to-final-banner-present-after-gate', finalBanner !== null, { banner: finalBanner, note: finalBanner === null ? 'banner hidden by retained terminal operation; second hop starts through labelled frozen-begin test control' : null }, { required: false });
+  run.report.add('update-B-to-final-banner-present-after-gate', finalBanner !== null, { banner: finalBanner, note: finalBanner === null ? 'banner missing after fixed-client discovery switch; second hop would fall back to labelled frozen-begin test control' : null });
 
   phase('step-B-to-final-begin');
   // Step 2: B -> R_final through the real UI; each hop must be a NEW operation.

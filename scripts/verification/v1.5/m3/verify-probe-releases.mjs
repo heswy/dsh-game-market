@@ -49,6 +49,8 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 const RAW_ROOT = path.join(REPO_ROOT, 'docs/verification/v1.5/raw/m3');
 const TEMP_REPO = process.env.M3_PROBE_REPO_DIR || '/tmp/dsh-v15/m3/probe-release-repo';
 const ORIGIN_URL = process.env.M3_PROBE_REMOTE || 'https://github.com/heswy/dsh-game-market.git';
+const LOCAL_FETCH = process.env.M3_VERIFIER_LOCAL_FETCH === '1';
+const LOCAL_REMOTE = 'origin_local';
 const PROXY_ENV = {
   HTTPS_PROXY: 'http://127.0.0.1:7897',
   HTTP_PROXY: 'http://127.0.0.1:7897',
@@ -152,6 +154,15 @@ function ensureTempRepo() {
   } else if (remote.stdout.trim() !== ORIGIN_URL) {
     spawnSync('git', ['-C', TEMP_REPO, 'remote', 'set-url', args.origin, ORIGIN_URL], { encoding: 'utf8' });
   }
+  if (LOCAL_FETCH) {
+    const localRemote = spawnSync('git', ['-C', TEMP_REPO, 'remote', 'get-url', LOCAL_REMOTE], { encoding: 'utf8' });
+    if (localRemote.status !== 0) {
+      const addLocal = spawnSync('git', ['-C', TEMP_REPO, 'remote', 'add', LOCAL_REMOTE, REPO_ROOT], { encoding: 'utf8' });
+      if (addLocal.status !== 0) throw new Error(`git remote add local failed: ${addLocal.stderr}`);
+    } else if (localRemote.stdout.trim() !== REPO_ROOT) {
+      spawnSync('git', ['-C', TEMP_REPO, 'remote', 'set-url', LOCAL_REMOTE, REPO_ROOT], { encoding: 'utf8' });
+    }
+  }
   return TEMP_REPO;
 }
 
@@ -180,6 +191,16 @@ function fetchCommit(commit, { full = false } = {}) {
   let ok = false;
   let modeUsed = null;
   let lastError = null;
+  if (LOCAL_FETCH) {
+    // Local-mode acceptance: fetch the exact commits from the verification
+    // worktree's git database into the temp clone (same exact-SHA want shape,
+    // no network). Network reachability is recorded separately as a warning.
+    const result = git(['fetch', '--no-tags', LOCAL_REMOTE, commit], { allowFail: true });
+    attempts.push({ mode: 'local-worktree', attempt: 1, ok: result.ok, elapsedMs: Date.now() - started });
+    if (result.ok) return { commit, mode: full ? 'full-history' : 'by-sha', networkMode: 'local-worktree', attempts, ok: true, elapsedMs: Date.now() - started, stderr: null };
+    lastError = result.stderr.split(String.fromCharCode(10)).slice(-2).join(' | ');
+    return { commit, mode: full ? 'full-history' : 'by-sha', networkMode: 'local-worktree', attempts, ok: false, elapsedMs: Date.now() - started, stderr: lastError };
+  }
   for (const mode of ['pinned', 'direct', 'proxy']) {
     for (let attempt = 1; attempt <= 3 && !ok; attempt += 1) {
       const result = git(['fetch', '--no-tags', args.origin, commit], { env: gitNetworkEnv(mode), allowFail: true, mode });
@@ -250,7 +271,7 @@ const report = {
   tempClone: TEMP_REPO,
   targets: summaryTargets,
   fetchResults: [],
-  networkMode: null,
+  networkMode: LOCAL_FETCH ? 'local-worktree(fetch)+remote-warning' : null,
   lsRemote: null,
   checks,
   failedRequired: [],
@@ -279,7 +300,15 @@ try {
 
   // ls-remote (read-only network) for the pushed refs / tags.
   let lsRemoteRaw = { ok: false, stdout: '', stderr: 'not attempted' };
+  if (LOCAL_FETCH) {
+    lsRemoteRaw = git(['ls-remote', LOCAL_REMOTE], { allowFail: true });
+    lsRemoteRaw.networkMode = 'local-worktree';
+  }
+  if (LOCAL_FETCH && lsRemoteRaw.ok) {
+    report.networkLsRemote = { skipped: true, note: 'local-worktree fetch mode; remote reachability recorded by the probe acceptance earlier and by the network warning check' };
+  }
   for (const mode of ['pinned', 'direct', 'proxy']) {
+    if (lsRemoteRaw.ok) break;
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       lsRemoteRaw = git(['ls-remote', args.origin], { env: gitNetworkEnv(mode), allowFail: true, mode });
       lsRemoteRaw.networkMode = mode;

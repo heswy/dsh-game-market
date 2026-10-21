@@ -595,6 +595,16 @@ export async function createIndexTransport({
   // this fixture proxy for the fixed index URL. Written per scenario dir.
   const scenarioDir = path.dirname(tlsMaterial.caPem);
   const hostGitConfigPath = path.join(scenarioDir, 'host-gitconfig');
+  // Deterministic offline install transport: when the Lead-provided local bare
+  // mirror config exists, it rewrites the official git URL to the mirror
+  // (url.insteadOf). Commits are identical to origin; the production transport
+  // is unchanged. Recorded in evidence as isolated-mirror mode.
+  const MIRROR_CONFIG = '/tmp/m3-mirror-gitconfig';
+  const mirrorAvailable = fs.existsSync(MIRROR_CONFIG);
+  const hostGitConfigFinal = mirrorAvailable ? MIRROR_CONFIG : hostGitConfigPath;
+  if (mirrorAvailable) {
+    fs.writeFileSync('/tmp/dsh-v15/m3/mirror-mode', '1', 'utf8');
+  }
   fs.writeFileSync(hostGitConfigPath, [
     '[http]',
     ...RESOLVE_CONFIG_ENTRIES.map((entry) => `\tcurloptResolve = ${entry}`),
@@ -756,12 +766,23 @@ dns.promises.lookup = async function patchedPromiseLookup(hostname, options) {
         //  - pnpm retry/timeout knobs for the flapping link.
         NO_PROXY: '127.0.0.1,localhost,github.com,.github.com,codeload.github.com,objects.githubusercontent.com,api.github.com',
         npm_config_noproxy: '127.0.0.1,localhost',
-        M3_NETWORK_MODE: 'pinned-gitconfig-file',
-        GIT_CONFIG_GLOBAL: hostGitConfigPath,
+        M3_NETWORK_MODE: mirrorAvailable ? 'local-mirror' : 'pinned-gitconfig-file',
+        GIT_CONFIG_GLOBAL: hostGitConfigFinal,
         GIT_CONFIG_NOSYSTEM: '1',
         // Pin DNS for the three GitHub hosts inside the isolated Host process
         // (resolver intermittently returns blocked wildcard records).
         NODE_OPTIONS: `--require ${dnsPinPath}`,
+        // pnpm: bypass the fixture proxy entirely. Git dependency URLs are
+        // rewritten to the local bare mirror by GIT_CONFIG_GLOBAL, and registry
+        // metadata (if any) goes direct: routing pnpm through the discovery
+        // fixture added 2-3 minute timeouts per install.
+        npm_config_proxy: '',
+        npm_config_http_proxy: '',
+        npm_config_https_proxy: '',
+        // pnpm must never touch the network: git deps resolve via the local
+        // bare mirror and the warm content-addressable store holds the trees.
+        npm_config_offline: 'true',
+        npm_config_prefer_offline: 'true',
         // pnpm network resilience (link flaps): bounded retries, no aggressive
         // concurrency. (Verification env only; product install path unchanged.)
         npm_config_fetch_retries: '4',

@@ -398,14 +398,25 @@ export function makeScenarioEnvironment(runTag, { transport: provided = null } =
 export async function startTransport(env) {
   if (env.transport !== null) return env.transport;
   env.transport = await createIndexTransport({ tlsMaterial: env.tls, upstreamProxy: 'http://127.0.0.1:7897' });
-  // Validate the exact isolated host network env BEFORE any run: full-env git
-  // (proxy/tunnel path) and scrubbed-env git (native manager github preflight
-  // path, which drops proxy vars and relies on pinned GIT_CONFIG_* env).
-  try {
-    env.transport.hostEnvCheck = await env.transport.validateHostNetworkEnv({ attempts: 3, timeoutMs: 120000 });
-  } catch (error) {
-    env.transport.hostEnvCheck = { ok: false, error: String(error && error.message ? error.message : error) };
+  // NETWORK GATE: do not start a scenario in a dead network window. The native
+  // manager's github preflight has a hard 5s budget, so we validate the exact
+  // isolated host env (scrubbed path + pinned gitconfig file) first, retrying
+  // over ~2-3 minutes; the gate result is recorded in evidence.
+  const gateAttempts = [];
+  let hostEnvCheck = null;
+  const gateStarted = Date.now();
+  for (let attempt = 1; attempt <= 8; attempt += 1) {
+    try {
+      hostEnvCheck = await env.transport.validateHostNetworkEnv({ attempts: 2, timeoutMs: 25000 });
+    } catch (error) {
+      hostEnvCheck = { ok: false, error: String(error && error.message ? error.message : error) };
+    }
+    gateAttempts.push({ attempt, at: new Date().toISOString(), ok: hostEnvCheck.ok === true, scrubbed: hostEnvCheck.scrubbed?.attempts ?? null, elapsedMs: Date.now() - gateStarted });
+    if (hostEnvCheck.ok === true) break;
+    await sleep(5000);
   }
+  env.transport.hostEnvCheck = hostEnvCheck;
+  env.transport.networkGate = { ok: hostEnvCheck?.ok === true, attempts: gateAttempts, elapsedMs: Date.now() - gateStarted, mode: hostEnvCheck?.networkMode ?? null };
   return env.transport;
 }
 
@@ -486,8 +497,21 @@ export async function restartContextHost(context, { logNamePrefix = null } = {})
   if (!Array.isArray(context.restarts)) context.restarts = [];
   const previousPid = context.host ? hostPid(context.host) : null;
   if (context.host) {
-    await context.host.stop();
-    context.restarts.push({ phase: 'stop', pid: previousPid, at: new Date().toISOString() });
+    const closed = await context.host.stop();
+    context.restarts.push({ phase: 'stop', pid: previousPid, closed, at: new Date().toISOString() });
+    // Wait for the old Host process to really exit before reusing the SAME
+    // profile dir: the native plugin-manager may still hold profile locks and a
+    // racing boot can read a pre-install profile snapshot.
+    const stopStarted = Date.now();
+    while (Date.now() - stopStarted < 15000) {
+      let alive = false;
+      if (Number.isInteger(previousPid) && previousPid > 0) {
+        try { process.kill(previousPid, 0); alive = true; } catch (_error) { alive = false; }
+      }
+      if (alive !== true) break;
+      await sleep(300);
+    }
+    await sleep(800);
   }
   context.bootIndex += 1;
   const runDir = path.join(RUNS_ROOT, `${context.name ?? 'scenario'}-boot${context.bootIndex}`);
@@ -950,19 +974,25 @@ export async function waitForOperation(cdp, desiredStates, { timeoutMs = 180000,
  * Start the update through the real UI: banner "打开更新/更新" -> confirmation
  * dialog (captured) -> primary confirm. Returns dialog text + operation id.
  */
-export async function beginUpdateThroughUi(cdp, { expectVersion = null } = {}) {
+export async function beginUpdateThroughUi(cdp, { expectVersion = null, previousOperationId = null } = {}) {
   const banner = await waitForUi(cdp, (ui) => ui.banner !== null, { timeoutMs: 30000 });
   const open = await clickAction(cdp, 'open-update', 'open-update-banner');
   const dialog = await waitForUi(cdp, (ui) => ui.dialog !== null, { timeoutMs: 15000 });
   const dialogSnapshot = dialog.ui?.dialog ?? null;
   const confirm = await confirmDialog(cdp);
   let operationId = null;
+  let operationState = null;
   const started = Date.now();
-  while (Date.now() - started < 30000) {
+  while (Date.now() - started < 45000) {
     const inspect = await inspectFromPage(cdp);
-    const id = inspect.data?.operation?.operationId ?? null;
-    if (id !== null) {
+    const operation = inspect.data?.operation ?? null;
+    const id = operation?.operationId ?? null;
+    // A sequential hop must observe a NEW operation id; the previous terminal
+    // operation is still returned by inspect until the Host creates the next
+    // one, so do not latch onto the first non-null id.
+    if (id !== null && (previousOperationId === null || id !== previousOperationId)) {
       operationId = id;
+      operationState = operation?.state ?? null;
       break;
     }
     await sleep(400);
@@ -974,6 +1004,7 @@ export async function beginUpdateThroughUi(cdp, { expectVersion = null } = {}) {
     dialogMatchesTargetVersion: expectVersion === null || dialogSnapshot === null ? null : `${dialogSnapshot.title} ${dialogSnapshot.body} ${JSON.stringify(dialogSnapshot.meta)}`.includes(expectVersion),
     confirm,
     operationId,
+    operationState,
   };
 }
 
