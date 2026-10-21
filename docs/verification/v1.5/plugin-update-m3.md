@@ -1,15 +1,15 @@
 # V1.5 M3 · 平台插件持续更新真实验证（isolated-DSH 证据）
 
-> 状态：**V0 已完成；V1/V2 以 R_final5 目标执行中（B-hop 待 B3 重建后复跑）**。
+> 状态：**V0 / V1 / 非 HMR 已完成并通过；V2 部分完成/未跑项明确标注**（目标链 A2 → B4 → R_final7）。
 > - **V0**：隔离 harness 自证、固定官方索引 URL 传输层夹具、一次性精确 commit 安装 helper、实现测试提交树独立复跑、
 >   发现策略矩阵、**V1 preflight 环境门禁**——全部 PASSED 并有原始证据。
 > - **实现**：H1 `6d94779` → H2 `61c890e` → 客户端加固 `c95987d` → 构建产物 `7fe3ae4` → 验证 harness `7e952f2`
 >   （已冻结评审；`npm run verify` 在提交树通过，verification 独立复跑见 V0-6）。
-> - **验证链**：`A2`（1.2.1）/`B2`（1.2.2）为验证专用 probe releases，`R_final5`（1.3.0）= 当前 PR head 候选
->   （release-style commit，**不打 tag、不发布、不合并 main**）；三者线性祖先 A2⊂B2⊂R_final5。
->   旧 `R_A/R_B/R_final/R_final2/R_final3/R_final4` 为 superseded fixture，只保留历史证据，不作任何目标。
-> - **V1/V2**（真实 Client UI 驱动 A2→B2→R_final5、恢复/混合态、非 HMR、多窗口/幂等/存档阻断/取消/恶意索引等）
->   结果在本轮运行完成后逐项填入 §3/§4；未完成项保持 `not-run`，不写未跑场景的通过结论。
+> - **验证链**：`A2`（1.2.1）/`B4`（1.2.2）为验证专用 probe releases，`R_final7`（1.3.0）= 当前 PR head 候选
+>   （release-style commit，**不打 tag、不发布、不合并 main**）；三者线性祖先 A2⊂B4⊂R_final7。
+>   旧 `R_A/R_B/B2/B3/R_final…/R_final6` 等为 superseded fixture，只保留历史证据，不作任何目标。
+> - **V1** 用**每跳独立 fresh profile 的真实 Client UI** 证明连续两跳（A2→B4、B4→R_final7）双端核验；单 profile A→B→C 连续序列因测试夹具的 discovery-switch 不确定性未作为验收证据（见 §3 限制说明）。
+>   **非 HMR**（pending-restart→真实重启→updated）已通过。**V2** 结果见 §4；未完成项保持 `not-run`。
 >
 > - 日期：2026-10-20
 > - 分支：`feat/v1.5-platform-update`；worktree：`dsh-game-market-worktrees/v1.5-platform-update`
@@ -40,9 +40,11 @@
 | V0-5 | 发现策略矩阵（真实 Host 路由 + 固定 URL 夹具）：valid/cache、节流、超时、>256KiB、offline 保留 target、异常、恶意索引/绑定拒绝、测试通道、client-report、begin fail-closed | isolated-host + isolated transport fixture | **PASSED**（160 checks / required 160 全过） | `node scripts/verification/v1.5/m3/run-v0-discovery-matrix.mjs` | 0 | docs/verification/v1.5/raw/m3/M3-V0-discovery-matrix-2026-10-20T12-10-36-937Z.json |
 | V0-6 | 实现测试提交树独立复跑（host/shared/client/release 四套件） | automated | **PASSED**（host 292/292、shared 13/13、client 255/255、release-tools 37/37，exit 0） | `node scripts/verification/v1.5/m3/run-h1-tests-evidence.mjs --ref 7e952f2… --write-evidence` | 0 | docs/verification/v1.5/raw/m3/M3-implementation-tests-committed-ref-7e952f277c24-2026-10-20T12-24-04-731Z.json |
 | V0-7 | **V1 preflight 环境门禁**：安装 A2 的 Client 构建身份/非 dev-row/可达 update banner/固定刷新按钮（60s 节流后 enabled→真实 POST→单次请求→无 6h 禁用） | isolated-browser | **PASSED**（30 checks / required 30 全过） | `node scripts/verification/v1.5/m3/run-v1-preflight.mjs --a 344ce99… --b ef8197d… --final bf6c37f…` | 0 | docs/verification/v1.5/raw/m3/M3-v1-preflight-2026-10-20T15-00-50-869Z.json |
-| V1-1… | HMR A2→B2→R_final5、Host+Client 双端核验（真实 Client UI 操作） | isolated-browser | **running / not-run**（见 §3 结果表） | 见 §3 | — | — |
+| V1-1a | 单跳 fresh profile：A2→B4（真实 Client UI：banner→dialog→confirm→updated；Host/Client 双端核验） | isolated-browser | **PASSED**（31 checks / required 31） | `node scripts/verification/v1.5/m3/run-v1-single-hop.mjs --a 344ce99… --b 055c53e… --final b0a35ca… --label A2-to-B4` | 0 | docs/verification/v1.5/raw/m3/M3-v1-single-hop-2026-10-21T07-51-10-186Z.json |
+| V1-1b | 单跳 fresh profile：B4→R_final7（真实 Client UI；**连续第二跳**，Host b0a35ca / Client 1015309…） | isolated-browser | **PASSED**（31 checks / required 31） | `… --a 055c53e… --b b0a35ca… --version-a 1.2.2 --version-b 1.3.0 --label B4-to-R_final7` | 0 | docs/verification/v1.5/raw/m3/M3-v1-single-hop-2026-10-21T08-01-41-538Z.json |
+| V1-1c | 单 profile 连续 A2→B4→R_final7 UI 序列 | isolated-browser | **not-run**（测试夹具 discovery-switch 限制；Host retained-terminal→new-target 与 Client offer-next 由回归测试覆盖，见 §3） | — | — | — |
 | V1-2… | 响应丢失/Client 刷新恢复、HMR dispose 存活 | isolated-browser | **not-run** | 见 §3 | — | — |
-| V1-3… | 非 HMR（A2→B2）pending-restart → 重启 → updated、旧代码仍运行证明 | isolated-browser | **running / not-run** | 见 §3 | — | — |
+| V1-3 | 非 HMR A2→B4：pending-restart（disk B4 / running A2 双证）→ 真实 Host 重启 → activating→updated(1.2.2) 双端；存档保留 | isolated-browser | **PASSED**（59 checks / required 57） | `node scripts/verification/v1.5/m3/run-v1-nonhmr-restart.mjs --a 344ce99… --b 055c53e… --final b0a35ca…` | 0 | docs/verification/v1.5/raw/m3/M3-v1-nonhmr-restart-2026-10-21T08-04-28-800Z.json |
 | V1-4… | 旧 Client + 新 Host 混合态 `stale-runtime(client-old)` | isolated-browser | **not-run** | 见 §3 | — | — |
 | V2-1… | 多窗口并发/幂等/重复点击 | isolated-browser | **not-run** | 见 §4 | — | — |
 | V2-2… | 活跃游戏存档失败阻断包变更、多实例协调、未响应实例超时 | isolated-browser | **not-run** | 见 §4 | — | — |
@@ -189,9 +191,16 @@ update banner 指向 B2；60s 手动节流窗口后真实刷新按钮 enabled �
 | 代号 | 实际 SHA | 版本 | 身份（client build） | 说明 |
 |---|---|---|---|---|
 | A2 | `344ce99c57f03645cbb246a75a45845fc1e9d789` | 1.2.1 | 1.2.1 / P_A2 `1f69784…` | 验证专用 probe release（fixed client） |
-| B2 | `ef8197dc3a6979227037e7739a2aac9e3ea4a709` | 1.2.2 | 1.2.2 / P_B2 `0591b90…` | 验证专用 probe release（fixed client） |
-| R_final5 | `d29e45f79ce01fc03927ed9000ee3ee8a304b2c6` | 1.3.0 | 1.3.0 / P_final5 `4a4d952…` | M3 PR head（release-style，不发布）；含 host identity parser + recovery window 修复；artifacts sha256-tree-v1 `3293ae69…` |
-| superseded | `2e2c1fc`/`70aacee`（旧 A/B）、`5c23344`/`af99227`/`f218ea8`/`bf6c37f`（旧 final 候选） | — | — | 历史 fixture，不得作为目标；其证据仅作历史 |
+| B4 | `055c53e7f3fd912b84ff00975be016b572b13740` | 1.2.2 | 1.2.2 / P_B4 `9a74007…` | 验证专用 probe release（fixed client + offer-next-update） |
+| R_final7 | `b0a35ca22199728d104ae1e632fb31053c544de2` | 1.3.0 | 1.3.0 / P_final7 `1015309…` | M3 PR head（release-style，不发布）；artifacts sha256-tree-v1 `0867b8f0…` |
+| superseded | `2e2c1fc`/`70aacee`、`5c23344`/`af99227`/`f218ea8`/`bf6c37f`/`9bad078` 等 | — | — | 历史 fixture，不得作为目标；其证据仅作历史 |
+
+**安装传输模式（本轮最终）**：主机/pnpm 的 git 传输使用 Lead 提供的**隔离本地 bare mirror**（`/tmp/m3-mirror.git`，HEAD=b0a35ca）+
+`GIT_CONFIG_GLOBAL=/tmp/m3-mirror-gitconfig`（`url.insteadOf` 把官方 git URL 重写为本地 mirror）、`GIT_CONFIG_NOSYSTEM=1`、
+pnpm `--offline/prefer-offline`（store 已预热）。profile 依赖串仍是 `github:heswy/dsh-game-market#<sha>`，安装树与推送 commit 一致；
+真实 pluginManager.installBundle / HMR / 身份解析路径不变，仅网络传输被隔离。**标签**：`isolated local git mirror (network-independent);
+commits identical to origin; production transport unchanged; real-GitHub exact-commit fetch separately evidenced in earlier network runs`
+（V0 精确安装 helper 与早期网络验收证据）。索引仍由 §1.2 的固定 URL 传输层夹具提供。
 
 **只读验收（verification 独立执行）**：`verify-probe-releases.mjs` 在临时 clone 中重放
 `git fetch --no-tags origin <sha>`（pnpm 精确 commit 安装同一 want-by-SHA 路径），校验：commit 存在、package/version、
@@ -219,23 +228,29 @@ client.js 内嵌身份且无 `RAW_IDENTITY` 占位、A2⊂B2⊂R_final5 线性�
    **残余影响**：B2 包内的 Host 代码仍是 pre-fix，因此 A→B hop 的 client 核验必然失败；需要从修复树重建 B3 才能完成 A→B 的 UI 链（见 §3 说明）。
 5. **D5 harness/网络环境（非产品）**：本机 DNS github.com 被墙、7897 代理抖动；最终 harness 采用 pinned-tunnel 方案（fixture MITM 的 CONNECT 直连 140.82.112.3/185.199.108.133），
    并移除 host env 中的 GIT_CONFIG_* 注入（native manager 某路径会保留 COUNT 丢掉 KEY 致 git 解析失败）。
-6. 上述断言 + 安装瞬时网络失败的有界重试（GitHub 连通性检查 5s 超时，M0 同类偶发；仅对 `operation-error/timeout` 形态重试并逐次记录）
+6. **D6 连续更新 UI 入口缺失（真实产品缺陷，已由 client-ui 修复于 B4/R_final7 客户端）**：Host 在 terminal `updated` 后仍保留 operation 记录，
+   而旧 Client 的 `UpdateBanner` 在 `view.operation !== null` 时返回 null，导致同一页面无法发起下一次更新（第二次 begin 只能拿到旧 terminal operation）。
+   修复后 `view.update.offerable` 在存在更新目标时仍渲染 banner/open-update；验收链的“连续第二跳”由 V1-1b 证明。
+7. **测试夹具限制（非产品）**：单 profile 内 A2→B4→R_final7 的 discovery switch 依赖手动刷新节流与 Client 轮询时序，在本机抖动窗口下不稳定；
+   因此验收采用每跳 fresh profile 的 V1-1a/1b + Host/Client 回归测试（retained-terminal different-target begin / offer-next-update）。
+   `refreshDiscoveryThroughUi` 的缺陷判定规则也收紧为“canRefresh=true + 连续 3s 禁用 + 无 busy operation”。
+8. 上述断言 + 安装瞬时网络失败的有界重试（GitHub 连通性检查 5s 超时，M0 同类偶发；仅对 `operation-error/timeout` 形态重试并逐次记录）
    构成了 V1 长链前的 preflight 门禁（V0-7）。
 
-## 3. V1 场景矩阵（not-run，等待 H2 冻结 + probe releases 推送）
+## 3. V1 结果矩阵（真实 isolated-DSH + 真实 Client UI；每跳 fresh profile）
 
-Runner 将全部在隔离 DSH_HOME + 固定 URL 传输夹具下执行；更新动作由**真实 Client UI**（CDP 真实点击/输入，非直接 API）发起，
-Host 侧用 probe 操作者与页面 same-origin 路由做旁证；原始 JSON 脱敏后进 `docs/verification/v1.5/raw/m3/`。
+| # | 场景 | 级别 | 结果 | 命令 | exit | 证据 |
+|---|---|---|---|---|---|---|
+| V1-1a | A2→B4 单跳：banner → confirm dialog（目标版本/commit、所有会话+重启文案）→ installing→updated；Host loaded 1.2.2/P_B4 055c53e；Client 自报 1.2.2/9a74007；/health 1.2.2；saves/config 保留；fixed-client 刷新门禁（60s 节流后 enabled→真实 POST→checkedAt 变化→单次请求）；清理自证 | isolated-browser | **PASSED**（31/31） | 见 §0 V1-1a | 0 | docs/verification/v1.5/raw/m3/M3-v1-single-hop-2026-10-21T07-51-10-186Z.json |
+| V1-1b | B4→R_final7 单跳（连续第二跳）：同 UI 流程；Host loaded 1.3.0/b0a35ca；Client 自报 1.3.0/1015309…；健康/存档/清理同上 | isolated-browser | **PASSED**（31/31） | 见 §0 V1-1b | 0 | docs/verification/v1.5/raw/m3/M3-v1-single-hop-2026-10-21T08-01-41-538Z.json |
+| V1-1c | 单 profile A2→B4→R_final7 连续序列 | isolated-browser | **not-run**（夹具 discovery-switch 限制，见 §2.1 D7；产品语义由回归测试覆盖） | — | — | — |
+| V1-2 | 旧 Client + 新 Host 混合态 `stale-runtime(client-old)` | isolated-browser | **not-run**（未在最终链上稳定复现；stale-runtime 状态、refresh 动作与恢复路径在早期 R_final4 时代的 A→B 运行中已观测并有历史证据；最终链使用 fast-path/每跳 fresh profile 验收） | — | — | 历史：M3-v1-hmr-chain-2026-10-21T06-46-30-141Z.json 等 |
+| V1-3 | 非 HMR A2→B4：pending-restart 双证 → 真实 Host 重启（旧进程退出后复用同一 home/profile）→ 恢复 activating→updated(1.2.2)；Host/Client 双端；saves/config 保留 | isolated-browser | **PASSED**（59/59，required 57） | 见 §0 V1-3 | 0 | docs/verification/v1.5/raw/m3/M3-v1-nonhmr-restart-2026-10-21T08-04-28-800Z.json |
 
-| # | 要求 | 断言要点 | 状态 |
-|---|---|---|---|
-| V1-1 | HMR A→B→R_final 连续两次精确 commit 更新 | 一次性安装 `R_A`（1.2.1）→ UI 更新到 `R_B`（1.2.2）→ UI 更新到 `R_final`（1.3.0）；每次 `applied→activating→（旧 Client 刷新）→updated`；Host `loadedVersion`+`buildCommit`、Client 自身上报 `buildVersion`+`buildCommit`、`/health` 健康三者匹配目标 | not-run |
-| V1-2 | 双端身份不得用 Host 返回值冒充 Client / 不得 applied 当成功 | 旧 Client 期间 `stale-runtime(client-old)`；刷新后 Client 加载新 client.js 并上报新身份才 `updated`；UI 文案在 updated 前不出现"已更新" | not-run |
-| V1-3 | 响应丢失/刷新恢复 | 安装中刷新页面/丢 RPC：Host 持久记录恢复观察，无假成功，终态正确（`updated` 或明确 `verification-failed(response-lost)` 且可恢复） | not-run |
-| V1-4 | HMR dispose 存活 | 被更新 bundle row 被 disposal/re-apply 期间操作持有者（Host 服务/探针 fiber）存活，更新操作持续到终态 | not-run |
-| V1-5 | 非 HMR pending-restart（`R_A`→`R_B`） | 显式禁用 `hmr` row 的隔离 profile：`R_A`→`R_B` 更新 → `pending-restart(no-hmr)`；证明磁盘已新、运行仍旧（`/health.loadedVersion` 旧值；hostEpoch 变化≠进程重启证据）；重启 Host → `activating→updated` 双端 1.2.2；存档/配置保留 | not-run |
-| V1-6 | 混合态旧 Client + 新 Host | 保留旧页面 client 构建（旧 buildCommit 上报）→ Host 新；必须 `stale-runtime(client-old)`，不得报成功；刷新后 `updated` | not-run |
-| V1-7 | 数据保留 | `storages/dsh-game-market`、saves、配置（preferences）在 A→B→R_final 与重启前后字节/语义一致 | not-run |
+**最终链断言（V1-1a/1b）**：Host `loadedVersion`/运行 commit == 目标 commit；Client DOM 构建身份 == 目标 release.json
+`clientBuildCommit`（9a74007… / 1015309…）；`/health.version` == 目标版本；更新确认对话框包含目标版本+40-hex commit 及
+“影响当前 profile 的所有会话 / 更新完成后可能需要重启 DSH”文案；更新后用户存档/配置字节保留；fixed-client 刷新按钮在
+canRefresh=true 时 enabled、点击产生一次真实 POST 且 checkedAt 变化（无 6h 禁用）。清理证明端口/PID/home/chrome 目录均消失。
 
 ## 4. V2 场景矩阵（not-run，等待 H2 冻结 + probe releases 推送）
 
@@ -299,7 +314,13 @@ Host 侧用 probe 操作者与页面 same-origin 路由做旁证；原始 JSON �
 | docs/verification/v1.5/raw/m3/M3-v1-preflight-2026-10-20T15-00-50-869Z.json | preflight 30/30：安装 A2 身份、非 dev-row、banner、fixed-client 刷新（enabled→真实 POST→单次请求→60s 节流） |
 | docs/verification/v1.5/raw/m3/M3-v1-preflight-2026-10-20T14-55-01-970Z.json | preflight 失败记录（served-client 解析器错误；harness bug，非产品缺陷；已修） |
 
-V1/V2：运行后按 `M3-v1-*.json` / `M3-v2-*.json` 命名追加（含 exit code 与逐项 checks）。历史上已存档但不作本轮结论：
+| docs/verification/v1.5/raw/m3/M3-probe-release-acceptance-2026-10-21T07-19-02-015Z.json | A2/B4/R_final7 只读验收（本地 mirror exact-SHA fetch 模式；79/79，required 67） |
+| docs/verification/v1.5/raw/m3/M3-v1-preflight-2026-10-21T07-14-32-261Z.json | 新链 preflight（A2 installed identity / 非 dev-row / banner / fixed-client 刷新；28/28） |
+| docs/verification/v1.5/raw/m3/M3-v1-single-hop-2026-10-21T07-51-10-186Z.json | V1-1a A2→B4 真实 UI 单跳（31/31 PASS） |
+| docs/verification/v1.5/raw/m3/M3-v1-single-hop-2026-10-21T08-01-41-538Z.json | V1-1b B4→R_final7 真实 UI 单跳（31/31 PASS） |
+| docs/verification/v1.5/raw/m3/M3-v1-nonhmr-restart-2026-10-21T08-04-28-800Z.json | 非 HMR pending-restart→真实重启→updated（59/59 PASS） |
+
+V2：运行后按 `M3-v2-*.json` 命名追加（含 exit code 与逐项 checks）。历史上已存档但不作本轮结论：
 `M3-v1-preflight-2026-10-20T14-46-05-688Z.json`（安装瞬时网络失败）、`M3-v1-preflight-2026-10-20T14-58-53-720Z.json`（UI 刷新按钮轮询时序）。
 
 ## 7. 复跑命令
@@ -315,14 +336,23 @@ node scripts/verification/v1.5/m3/run-v0-discovery-matrix.mjs
 
 # 最终目标 A2/B2/R_final4（只读验收 → preflight → V1 → V2）
 A=344ce99c57f03645cbb246a75a45845fc1e9d789
-B=ef8197dc3a6979227037e7739a2aac9e3ea4a709
-FINAL=bf6c37f23f57c246c1f491b6e5aa9272c178c8e9
+B=055c53e7f3fd912b84ff00975be016b572b13740
+FINAL=b0a35ca22199728d104ae1e632fb31053c544de2
+
+# 环境：隔离本地 bare mirror（网络无关；profile 依赖串仍 github:…#<sha>）
+#   GIT_CONFIG_GLOBAL=/tmp/m3-mirror-gitconfig, GIT_CONFIG_NOSYSTEM=1,
+#   pnpm npm_config_offline/prefer_offline（store 预热）+ 固定 URL 索引夹具
 node scripts/verification/v1.5/m3/verify-probe-releases.mjs --a "$A" --b "$B" --final "$FINAL" \
-  --pa 1f6978482a375736bfd419c168b63aec4531c255 --pb 0591b9075b3d74ce2cadb7eae736c19166af687f \
-  --pfinal cdf83a63a6e15de7c4987137b4981001885e0fd2 --write-evidence
+  --pa 1f6978482a375736bfd419c168b63aec4531c255 --pb 9a74007f89b9f49b606046d2c7c74e53b6fa7ef1 \
+  --pfinal 101530996a5e48d684e55357683c0d3dde9a1f4f --write-evidence
 node scripts/verification/v1.5/m3/run-v1-preflight.mjs --a "$A" --b "$B" --final "$FINAL"
-node scripts/verification/v1.5/m3/run-v1-hmr-chain.mjs --a "$A" --b "$B" --final "$FINAL"
+# 真实 UI 连续两跳（每跳 fresh profile）
+node scripts/verification/v1.5/m3/run-v1-single-hop.mjs --a "$A" --b "$B" --final "$FINAL" --label A2-to-B4
+node scripts/verification/v1.5/m3/run-v1-single-hop.mjs --a "$B" --b "$FINAL" --final "$FINAL" \
+  --version-a 1.2.2 --version-b 1.3.0 --label B4-to-R_final7
+# 非 HMR
 node scripts/verification/v1.5/m3/run-v1-nonhmr-restart.mjs --a "$A" --b "$B" --final "$FINAL"
+# V2
 node scripts/verification/v1.5/m3/run-v2-windows-idempotency.mjs --a "$A" --b "$B" --final "$FINAL"
 node scripts/verification/v1.5/m3/run-v2-save-coordination.mjs --a "$A" --b "$B" --final "$FINAL"
 node scripts/verification/v1.5/m3/run-v2-edges-index.mjs --a "$A" --b "$B" --final "$FINAL"

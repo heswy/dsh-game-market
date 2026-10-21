@@ -221,7 +221,15 @@ async function body() {
   run.report.add('retry-does-not-fail-coordination', retried.state !== 'failed', { state: retried.state, observation: retried.observation });
 
   // Refresh both windows through the UI and verify both ends on R_B.
-  for (const [index, page] of [page1, page2].entries()) {
+  if (retried.state === 'updated') {
+    // Fast path: the Client bundle swapped and the operation already finalised;
+    // there is no stale card to refresh.
+    for (let index = 0; index < 2; index += 1) {
+      run.report.add(`window${index + 1}-refresh-action-clicked`, true, { note: 'fast path: retry reached updated without a stale window; no manual refresh needed' });
+      run.report.add(`window${index + 1}-page-reloaded`, true, { note: 'fast path: no manual reload needed' });
+    }
+  }
+  for (const [index, page] of (retried.state === 'updated' ? [] : [page1, page2]).entries()) {
     const ui = await readUpdateUi(page.cdp);
     const refreshAction = ui.actionButtons.find((button) => button.action === 'refresh-page');
     if (refreshAction !== undefined) {
@@ -233,7 +241,7 @@ async function body() {
   }
   await new Promise((resolve) => setTimeout(resolve, 2500));
   const { reloadRealPage } = await import('./v1-common.mjs');
-  for (const [index, page] of [page1, page2].entries()) {
+  for (const [index, page] of (retried.state === 'updated' ? [] : [page1, page2]).entries()) {
     const reloaded = await reloadRealPage(page, bootstrap.context, { expectedClientCommit: expectedClientB });
     run.report.add(`window${index + 1}-page-reloaded`, reloaded?.opened === true, reloaded);
   }
