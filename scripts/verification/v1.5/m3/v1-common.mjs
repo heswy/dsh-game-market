@@ -134,12 +134,57 @@ function sleepSync(ms) {
  * with retries/backoff; the chosen mode is recorded for every commit fetch.
  */
 export function prepareTargetRepo({ final, commits = [], workDir = `/tmp/dsh-v15/m3/v1-target-repo-${process.pid}-${Date.now().toString(36)}`, originUrl = REPO_URL } = {}) {
+  // Fast path: the shared worktree already contains the pushed probe-release
+  // commits (verification branch). Reading them there is READ-ONLY and avoids
+  // the flaky network entirely; fall back to a temp clone + fetch otherwise.
+  const localRead = (gitArgs) => {
+    const result = spawnSync('git', ['-C', REPO_ROOT, ...gitArgs], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 60000 });
+    return { ok: result.status === 0, stdout: (result.stdout || '').trim(), stderr: (result.stderr || '').trim() };
+  };
+  const wanted = [final, ...commits];
+  const localAvailable = wanted.every((commit) => localRead(['cat-file', '-e', `${commit}^{commit}`]).ok === true);
+  if (localAvailable) {
+    return {
+      dir: REPO_ROOT,
+      mode: 'local-worktree',
+      fetchResults: [],
+      networkModes: ['local-worktree'],
+      git: (gitArgs, { allowFail = false } = {}) => {
+        const result = localRead(gitArgs);
+        if (!result.ok && !allowFail) throw new Error(`git ${gitArgs.join(' ')} failed: ${result.stderr}`);
+        return result.ok ? result.stdout : null;
+      },
+    };
+  }
+  return prepareTargetRepoNetwork({ final, commits, workDir, originUrl });
+}
+
+/** Network/temp-clone path used when the probe-release commits are not local. */
+function prepareTargetRepoNetwork({ final, commits = [], workDir = `/tmp/dsh-v15/m3/v1-target-repo-${process.pid}-${Date.now().toString(36)}`, originUrl = REPO_URL } = {}) {
+  // Clean stale temp clones from previous runs (bounded disk + no shared state).
+  try {
+    for (const entry of fs.readdirSync('/tmp/dsh-v15/m3')) {
+      if (entry.startsWith('v1-target-repo-') && entry !== path.basename(workDir)) {
+        fs.rmSync(path.join('/tmp/dsh-v15/m3', entry), { recursive: true, force: true });
+      }
+    }
+  } catch { /* ignore */ }
   fs.rmSync(workDir, { recursive: true, force: true });
   fs.mkdirSync(workDir, { recursive: true });
   const run = (gitArgs, { allowFail = false, mode = 'pinned' } = {}) => {
     // `-c http.proxy=` neutralizes any user-level git proxy config; each network
     // mode then pins/reaches GitHub its own way (pinned IPs -> direct -> proxy).
-    const result = spawnSync('git', ['-C', workDir, ...gitModeArgs(mode), ...gitArgs], { encoding: 'utf8', env: gitNetworkEnv(mode), maxBuffer: 256 * 1024 * 1024 });
+    const result = spawnSync('git', ['-C', workDir, ...gitModeArgs(mode), ...gitArgs], {
+      encoding: 'utf8',
+      env: gitNetworkEnv(mode),
+      maxBuffer: 256 * 1024 * 1024,
+      timeout: 120000,
+      killSignal: 'SIGKILL',
+    });
+    if (result.error && result.error.code === 'ETIMEDOUT') {
+      if (allowFail) return { ok: false, status: null, stdout: result.stdout ?? '', stderr: `git ${gitArgs.join(' ')} timed out after 120s` };
+      throw new Error(`git ${gitArgs.join(' ')} timed out after 120s`);
+    }
     if (result.status !== 0) {
       if (allowFail) return { ok: false, status: result.status, stdout: result.stdout ?? '', stderr: result.stderr ?? '' };
       throw new Error(`git ${gitArgs.join(' ')} failed: ${(result.stderr || result.stdout || '').trim()}`);
@@ -217,6 +262,26 @@ export async function installExactWithRetry(probe, { spec, requestIdBase, attemp
     await sleep(backoff);
   }
   return { result: null, attempts: tried, retried: tried.length > 1, exhausted: true };
+}
+
+/**
+ * The isolated host's pnpm/git traffic needs to reach GitHub while its Node
+ * fetch still uses the fixture MITM (fixed index URL). We therefore give the
+ * host process an ISOLATED git config file (GIT_CONFIG_GLOBAL) that pins the
+ * reachable GitHub IPs via http.curloptResolve and disables any proxy, plus
+ * GIT_CONFIG_NOSYSTEM=1. This avoids fragile GIT_CONFIG_COUNT/KEY env.
+ */
+export function hostNetworkEnvOverlay(envEvidenceDir = '/tmp/dsh-v15/m3') {
+  ensureDir(envEvidenceDir);
+  const gitConfigPath = path.join(envEvidenceDir, 'host-gitconfig');
+  const lines = [
+    '[http]',
+    '\tproxy = ',
+    ...PINNED_CONFIG_ENTRIES.map((entry) => `\tcurloptResolve = ${entry}`),
+    '',
+  ];
+  fs.writeFileSync(gitConfigPath, lines.join('\n'), 'utf8');
+  return { GIT_CONFIG_GLOBAL: gitConfigPath, GIT_CONFIG_NOSYSTEM: '1' };
 }
 
 export async function bootstrapInstalledProfile({
@@ -333,6 +398,14 @@ export function makeScenarioEnvironment(runTag, { transport: provided = null } =
 export async function startTransport(env) {
   if (env.transport !== null) return env.transport;
   env.transport = await createIndexTransport({ tlsMaterial: env.tls, upstreamProxy: 'http://127.0.0.1:7897' });
+  // Validate the exact isolated host network env BEFORE any run: full-env git
+  // (proxy/tunnel path) and scrubbed-env git (native manager github preflight
+  // path, which drops proxy vars and relies on pinned GIT_CONFIG_* env).
+  try {
+    env.transport.hostEnvCheck = await env.transport.validateHostNetworkEnv({ attempts: 3, timeoutMs: 120000 });
+  } catch (error) {
+    env.transport.hostEnvCheck = { ok: false, error: String(error && error.message ? error.message : error) };
+  }
   return env.transport;
 }
 
@@ -783,13 +856,15 @@ export async function healthFromPage(cdp) {
 }
 
 /** Read the Client bundle identity that the Host actually served to this page. */
-export async function readServedClientIdentity(cdp) {
+export async function readServedClientIdentity(cdp, { cacheBust = false } = {}) {
   return cdp.eval(`(async () => {
+    const cacheBust = ${cacheBust ? 'true' : 'false'};
     const url = performance.getEntriesByType('resource').map((entry) => entry.name)
       .find((name) => name.includes('dsh-game-market/client.js'));
     if (!url) return { found: false, reason: 'plugin-client-resource-not-loaded' };
     try {
-      const text = await (await fetch(url)).text();
+      const fetchUrl = (() => { try { const parsed = new URL(url, location.href); if (cacheBust) parsed.searchParams.set('m3cb', String(Date.now())); return parsed.toString(); } catch (error) { return url + (cacheBust ? (url.includes('?') ? '&' : '?') + 'm3cb=' + Date.now() : ''); } })();
+      const text = await (await fetch(fetchUrl, { cache: cacheBust ? 'no-store' : 'default' })).text();
       const marker = 'RAW_IDENTITY = ';
       const index = text.indexOf(marker);
       if (index < 0) return { found: false, reason: 'RAW_IDENTITY-assignment-not-found', url: url.slice(0, 200) };
@@ -934,49 +1009,93 @@ export async function waitForDiscoveredTarget(cdp, version, { timeoutMs = 90000 
 export async function refreshDiscoveryThroughUi(cdp, { maxWaitMs = 90000, allowApiFallback = true } = {}) {
   const started = Date.now();
   let lastUi = null;
+  let disabledSince = null;
+  const BUSY_STATES = ['installing', 'applied', 'activating', 'coordinating', 'inspecting', 'beginning'];
   while (Date.now() - started < maxWaitMs) {
     lastUi = await readUpdateUi(cdp);
+    const inspect = await inspectFromPage(cdp);
+    const operation = inspect.data?.operation ?? null;
+    const canRefresh = inspect.data?.discovery?.canRefresh === true;
+    const busy = operation !== null && BUSY_STATES.includes(operation.state);
     const refreshButton = lastUi.actionButtons.find((button) => button.action === 'refresh-update');
-    if (refreshButton === undefined) return { clicked: false, mode: 'absent', reason: 'refresh-button-absent', waitedMs: Date.now() - started, ui: lastUi };
+    if (refreshButton === undefined) {
+      // The section may be re-rendering (fast HMR path); wait for it instead of
+      // declaring the control absent on the first sample.
+      await sleep(1000);
+      continue;
+    }
     if (refreshButton.disabled !== true) {
       const click = await clickAction(cdp, 'refresh-update', 'refresh-update');
       return { clicked: click.clicked === true, mode: 'ui', click, waitedMs: Date.now() - started, ui: lastUi };
     }
-    if (allowApiFallback) {
-      const inspect = await inspectFromPage(cdp);
-      const canRefresh = inspect.data?.discovery?.canRefresh === true;
-      if (canRefresh) {
-        const response = await pagePostJson(cdp, `${PLATFORM_UPDATE_PATH}/refresh`, {});
-        let envelope = null;
-        try {
-          envelope = JSON.parse(response.body);
-        } catch { /* not json */ }
-        return {
-          clicked: false,
-          mode: 'api-fallback-after-ui-defect',
-          waitedMs: Date.now() - started,
-          ui: lastUi,
-          defect: {
-            observedAt: new Date().toISOString(),
-            buttonDisabled: true,
-            hostCanRefresh: true,
-            nextCheckAt: inspect.data?.discovery?.nextCheckAt ?? null,
-            discoveryState: inspect.data?.discovery?.state ?? null,
-            note: 'client refresh countdown uses discovery.nextCheckAt (next automatic check ~6h) although canRefresh is true (manual throttle 60s elapsed); UI cannot force a re-check',
-          },
-          response: { status: response.status, envelopeOk: envelope?.ok ?? null, refreshed: envelope?.data?.refreshed ?? null, throttled: envelope?.data?.throttled ?? null },
-        };
-      }
+    // Disabled: only a STABLE disabled state with an IDLE Host is the product
+    // defect; a busy operation legitimately disables the control.
+    if (disabledSince === null) disabledSince = Date.now();
+    const stableFor = Date.now() - disabledSince;
+    if (allowApiFallback && canRefresh && busy !== true && stableFor >= 3000 && lastUi.operation === null) {
+      const response = await pagePostJson(cdp, `${PLATFORM_UPDATE_PATH}/refresh`, {});
+      let envelope = null;
+      try {
+        envelope = JSON.parse(response.body);
+      } catch { /* not json */ }
+      return {
+        clicked: false,
+        mode: 'api-fallback-after-ui-defect',
+        waitedMs: Date.now() - started,
+        ui: lastUi,
+        defect: {
+          observedAt: new Date().toISOString(),
+          buttonDisabled: true,
+          disabledStableMs: stableFor,
+          hostCanRefresh: true,
+          nextCheckAt: inspect.data?.discovery?.nextCheckAt ?? null,
+          discoveryState: inspect.data?.discovery?.state ?? null,
+          operationState: operation === null ? null : operation.state,
+          note: 'refresh control stayed disabled for >=3s while canRefresh=true and no operation was active (manual throttle elapsed); UI cannot force a re-check',
+        },
+        response: { status: response.status, envelopeOk: envelope?.ok ?? null, refreshed: envelope?.data?.refreshed ?? null, throttled: envelope?.data?.throttled ?? null },
+      };
     }
+    if (canRefresh !== true || busy === true) disabledSince = null;
     await sleep(1000);
-    if (Date.now() - started > maxWaitMs) break;
   }
   return { clicked: false, mode: 'timeout', waitedMs: Date.now() - started, ui: lastUi };
 }
 
-// ---------------------------------------------------------------------------
-// Storage / data preservation fixtures
-// ---------------------------------------------------------------------------
+/**
+ * Ensure discovery really points at the expected probe-release target before a
+ * UI update step. The frozen manual-refresh POST is used as a LABELLED test
+ * control only when the fixture index was already switched and the UI refresh
+ * path did not deliver the new target in time; every action is recorded.
+ */
+export async function ensureDiscoveryTarget(cdp, { version, commit, timeoutMs = 180000, allowApiFallback = true } = {}) {
+  const started = Date.now();
+  const history = [];
+  while (Date.now() - started < timeoutMs) {
+    const inspect = (await inspectFromPage(cdp)).data;
+    const target = inspect?.target ?? null;
+    const discovery = inspect?.discovery ?? null;
+    if (target !== null && target.version === version && target.commit === commit) {
+      return { ok: true, waitedMs: Date.now() - started, mode: history.length === 0 ? 'poll' : 'after-refresh', target, history };
+    }
+    const canRefresh = discovery?.canRefresh === true;
+    const nextCheckAtMs = discovery?.nextCheckAt === undefined ? null : Date.parse(discovery.nextCheckAt);
+    const waitMs = canRefresh === true ? 0 : Math.max(0, Math.min(20000, (nextCheckAtMs ?? 0) - Date.now() + 1000));
+    if (waitMs > 0) {
+      await sleep(waitMs);
+      continue;
+    }
+    if (allowApiFallback && canRefresh === true) {
+      const response = await pagePostJson(cdp, `${PLATFORM_UPDATE_PATH}/refresh`, {});
+      let envelope = null;
+      try { envelope = JSON.parse(response.body); } catch { /* not json */ }
+      history.push({ at: new Date().toISOString(), mode: 'api-test-control-refresh', canRefresh, status: response.status, envelopeOk: envelope?.ok ?? null, refreshed: envelope?.data?.refreshed ?? null, throttled: envelope?.data?.throttled ?? null, targetSeen: target === null ? null : { version: target.version, commit: target.commit }, discoveryState: discovery?.state ?? null });
+    }
+    await sleep(1000);
+  }
+  const last = (await inspectFromPage(cdp)).data;
+  return { ok: false, waitedMs: Date.now() - started, mode: 'timeout', target: last?.target ?? null, discovery: last?.discovery ?? null, history };
+}
 
 export function seedUserData(home, bootTag) {
   const root = path.join(home, 'storages', 'dsh-game-market');
@@ -1068,6 +1187,38 @@ export function trackPage(run, page) {
 
 /** Stop host(s), close page(s), remove isolated homes, then prove no leaks. */
 export async function cleanupRun(run) {
+  // Preserve the native plugin-manager logs (pnpm/git diagnostics) BEFORE the
+  // isolated home is deleted, so a failed install/update remains diagnosable.
+  const homeForLogs = run.homePath ?? (Array.isArray(run.homes) && run.homes.length > 0 ? run.homes[0] : null);
+  const preserved = { home: homeForLogs, copied: [], error: null };
+  try {
+    const home = homeForLogs;
+    if (home !== null && fs.existsSync(home)) {
+      const logsRoot = path.join(home, 'profiles', 'web', '.plugin-manager', 'logs');
+      if (fs.existsSync(logsRoot)) {
+        const target = path.join(run.runDir, 'native-logs');
+        ensureDir(target);
+        for (const entry of fs.readdirSync(logsRoot)) {
+          const source = path.join(logsRoot, entry);
+          if (!fs.statSync(source).isDirectory()) continue;
+          for (const file of fs.readdirSync(source)) {
+            const from = path.join(source, file);
+            if (!fs.statSync(from).isFile()) continue;
+            const size = fs.statSync(from).size;
+            if (size > 256 * 1024) continue;
+            const to = path.join(target, entry);
+            ensureDir(to);
+            fs.copyFileSync(from, path.join(to, file));
+            preserved.copied.push(path.relative(run.runDir, path.join(to, file)));
+          }
+        }
+      }
+    }
+  } catch (error) {
+    preserved.error = String(error && error.message ? error.message : error);
+  }
+  run.nativeLogs = preserved;
+
   const results = { hosts: [], pages: [], homes: [], proof: null };
   for (const page of run.pages) {
     try {

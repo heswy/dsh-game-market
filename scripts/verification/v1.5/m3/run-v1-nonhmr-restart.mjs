@@ -30,6 +30,7 @@ import {
   RUNS_ROOT,
   SHOT_DIR,
   bootProbeHost,
+  sleep,
   cleanupProof,
   createReport,
   ensureDir,
@@ -45,6 +46,7 @@ import {
   buildIndexBody,
   cleanupRun,
   createRunContext,
+  ensureUpdateSectionRendered,
   healthFromPage,
   inspectFromPage,
   makeScenarioEnvironment,
@@ -183,6 +185,7 @@ async function body() {
   run.transport = await startTransport(env);
   run.transport.control.setFixtureBody(buildIndexBody({ versions: [{ version: byKey.B.version, commit: byKey.B.commit }] }));
   run.report.add('transport-fixture-up', Boolean(run.transport.port), { port: run.transport.port });
+  run.report.add('host-network-env-selfcheck', run.transport.hostEnvCheck?.ok === true, run.transport.hostEnvCheck ?? null);
 
   // Fresh isolated profile with the hmr row explicitly disabled (non-HMR profile).
   const name = `v1-nonhmr-${run.runTag}`;

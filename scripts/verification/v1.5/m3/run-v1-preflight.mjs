@@ -97,6 +97,7 @@ async function body() {
     runTag: run.runTag,
   });
   trackHost(run, bootstrap.context);
+  run.report.add('host-network-env-selfcheck', bootstrap.transport?.hostEnvCheck?.ok === true, bootstrap.transport?.hostEnvCheck ?? null);
   evidence.install = bootstrap.install;
   evidence.installAttempts = bootstrap.installAttempts ?? null;
   run.report.add('R_A-install-attempts-recorded', Array.isArray(bootstrap.installAttempts) && bootstrap.installAttempts.length > 0, { attempts: bootstrap.installAttempts ?? null, retried: bootstrap.installRetried === true });

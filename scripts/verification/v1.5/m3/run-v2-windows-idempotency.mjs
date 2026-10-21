@@ -118,6 +118,7 @@ async function body() {
     runTag: run.runTag,
   });
   trackHost(run, bootstrap.context);
+  run.report.add('host-network-env-selfcheck', bootstrap.transport?.hostEnvCheck?.ok === true, bootstrap.transport?.hostEnvCheck ?? null);
   run.report.add('R_A-installed-applied', bootstrap.install?.application === 'applied' && bootstrap.install?.version === byKey.A.version, bootstrap.install);
   run.report.add('R_A-applied-to-disk-and-running', bootstrap.applied?.ok === true, bootstrap.applied?.ok ?? bootstrap.applied?.last);
   run.report.add('update-routes-available', bootstrap.routeReady?.ok === true, bootstrap.routeReady?.ok ?? null);

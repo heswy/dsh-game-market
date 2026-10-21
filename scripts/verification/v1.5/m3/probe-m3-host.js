@@ -338,6 +338,9 @@ async function actionInstall(ctx, manager, config, state, command) {
     enabled: command.enabled !== false,
     ...(requestId === null ? {} : { requestId }),
     ...(command.registry !== undefined ? { registry: command.registry } : {}),
+    // Verification-only seam: lets the comparison probe reproduce the exact
+    // adapter option set (e.g. saveExact) against the same native manager.
+    ...(command.installOptions !== null && typeof command.installOptions === 'object' ? command.installOptions : {}),
   };
   const record = { action: 'install', spec: command.spec, options, startedAt: new Date().toISOString() };
   try {

@@ -271,6 +271,7 @@ async function body() {
     runTag: run.runTag,
   });
   trackHost(run, bootstrap.context);
+  run.report.add('host-network-env-selfcheck', bootstrap.transport?.hostEnvCheck?.ok === true, bootstrap.transport?.hostEnvCheck ?? null);
   run.report.add('R_A-installed-applied', bootstrap.install?.application === 'applied', bootstrap.install?.application ?? null);
   run.page = trackPage(run, await openRealPage(bootstrap.context));
   const cdp = run.page.cdp;

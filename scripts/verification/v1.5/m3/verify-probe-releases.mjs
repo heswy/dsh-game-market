@@ -158,6 +158,8 @@ function ensureTempRepo() {
 function git(argsList, { allowFail = false, env = null, mode = null } = {}) {
   const proxyArgs = mode === null ? [] : gitModeArgs(mode);
   const result = spawnSync('git', ['-C', TEMP_REPO, ...proxyArgs, ...argsList], {
+    timeout: 120000,
+    killSignal: 'SIGKILL',
     encoding: 'utf8',
     env: { ...process.env, ...(env ?? {}) },
     maxBuffer: 256 * 1024 * 1024,

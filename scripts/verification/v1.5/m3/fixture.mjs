@@ -36,7 +36,7 @@ import tls from 'node:tls';
 import http from 'node:http';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { spawn, execFileSync } from 'node:child_process';
+import { spawn, execFileSync, spawnSync } from 'node:child_process';
 
 export const FIXED_INDEX_URL = 'https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json';
 export const FIXED_INDEX_HOST = 'raw.githubusercontent.com';
@@ -590,6 +590,47 @@ export async function createIndexTransport({
     });
   }
 
+  // Isolated git config for the HOST process: pins reachable GitHub IPs and
+  // disables proxying for git/pnpm, while the host's Node fetch keeps using
+  // this fixture proxy for the fixed index URL. Written per scenario dir.
+  const scenarioDir = path.dirname(tlsMaterial.caPem);
+  const hostGitConfigPath = path.join(scenarioDir, 'host-gitconfig');
+  fs.writeFileSync(hostGitConfigPath, [
+    '[http]',
+    ...RESOLVE_CONFIG_ENTRIES.map((entry) => `\tcurloptResolve = ${entry}`),
+    '',
+  ].join('\n'), 'utf8');
+
+  // Verification-only DNS pin preload for the isolated HOST process: the
+  // machine's resolver intermittently returns wildcard/blocked records for the
+  // GitHub hosts (e.g. raw.githubusercontent.com -> ::/0.0.0.0), which makes the
+  // product's public-destination guard reject the frozen index URL before the
+  // fixture proxy ever sees the request. The preload pins only these three
+  // hostnames to the reachable public IPs; no product code is modified.
+  const dnsPinPath = path.join(scenarioDir, 'dns-pin.cjs');
+  fs.writeFileSync(dnsPinPath, `'use strict';
+const dns = require('node:dns');
+const PINNED = ${JSON.stringify({ 'github.com': '140.82.112.3', 'codeload.github.com': '140.82.112.3', 'raw.githubusercontent.com': '185.199.108.133' })};
+function pick(hostname) { return PINNED[String(hostname).toLowerCase()] || null; }
+const originalLookup = dns.lookup;
+dns.lookup = function patchedLookup(hostname, options, callback) {
+  let opts = options;
+  let cb = callback;
+  if (typeof opts === 'function') { cb = opts; opts = {}; }
+  const ip = pick(hostname);
+  if (ip === null) return originalLookup.call(dns, hostname, opts, cb);
+  if (opts && opts.all === true) return process.nextTick(() => cb(null, [{ address: ip, family: 4 }]));
+  return process.nextTick(() => cb(null, ip, 4));
+};
+const originalPromiseLookup = dns.promises.lookup;
+dns.promises.lookup = async function patchedPromiseLookup(hostname, options) {
+  const ip = pick(hostname);
+  if (ip === null) return originalPromiseLookup.call(dns.promises, hostname, options);
+  if (options && options.all === true) return [{ address: ip, family: 4 }];
+  return { address: ip, family: 4 };
+};
+`, 'utf8');
+
   const server = http.createServer((req, res) => {
     // A plain HTTP proxy request would mean product code downgraded to http://.
     state.rejected.push({ at: new Date().toISOString(), method: req.method, url: req.url, reason: 'plain-http-request-refused' });
@@ -634,6 +675,58 @@ export async function createIndexTransport({
       scenarios: () => [...state.scenarios.keys()],
     },
     /** Environment for the isolated probe Host process (and its child fetch tests). */
+    /**
+     * Self-check the exact isolated host network env before launching:
+     *  a) git ls-remote with the FULL env (proxy path: fixture CONNECT tunnels);
+     *  b) git ls-remote with proxy vars scrubbed (the native manager's
+     *     github preflight path: GIT_CONFIG_* pins must resolve reachable IPs).
+     * Retries because the machine's link flaps; the result is recorded.
+     */
+    async validateHostNetworkEnv({ attempts = 3, timeoutMs = 30000 } = {}) {
+      if (this.hostEnvCheck !== undefined) return this.hostEnvCheck;
+      const fullEnv = { ...process.env, ...this.envForHost({ marker: 'host-env-selfcheck' }) };
+      const scrubbed = { ...fullEnv };
+      for (const key of ['HTTPS_PROXY', 'HTTP_PROXY', 'ALL_PROXY', 'https_proxy', 'http_proxy', 'all_proxy', 'npm_config_https_proxy', 'npm_config_http_proxy', 'npm_config_proxy']) delete scrubbed[key];
+      const runGit = (env) => {
+        const args = ['ls-remote', 'https://github.com/heswy/dsh-game-market.git', 'HEAD'];
+        const result = spawnSync('git', args, { encoding: 'utf8', env, timeout: timeoutMs, killSignal: 'SIGKILL' });
+        return { ok: result.status === 0, status: result.status, stderr: (result.stderr || '').split(String.fromCharCode(10)).slice(-2).join(' | '), stdout: (result.stdout || '').split(String.fromCharCode(10))[0] ?? null };
+      };
+      const fullAttempts = [];
+      let full = null;
+      for (let attempt = 1; attempt <= attempts; attempt += 1) {
+        full = await runGit(fullEnv);
+        fullAttempts.push({ attempt, ...full });
+        if (full.ok) break;
+      }
+      const scrubbedAttempts = [];
+      let scrubbedResult = null;
+      for (let attempt = 1; attempt <= attempts; attempt += 1) {
+        scrubbedResult = await runGit(scrubbed);
+        scrubbedAttempts.push({ attempt, ...scrubbedResult });
+        if (scrubbedResult.ok) break;
+      }
+      this.hostEnvCheck = {
+        // The native manager's github preflight runs with the scrubbed env
+        // (proxy vars dropped, GIT_CONFIG_GLOBAL kept), so the scrubbed check
+        // is the required gate; the full-env check is informational.
+        ok: scrubbedResult !== null && scrubbedResult.ok === true,
+        gitVersion: (spawnSync('git', ['--version'], { encoding: 'utf8' }).stdout || '').trim(),
+        envKeys: Object.keys(this.envForHost({ marker: 'host-env-selfcheck' })).sort(),
+        full: { ok: full !== null && full.ok, attempts: fullAttempts },
+        scrubbed: { ok: scrubbedResult !== null && scrubbedResult.ok, attempts: scrubbedAttempts },
+        networkMode: 'pinned-gitconfig',
+        pinned: PINNED_RESOLVES,
+      };
+      if (this.hostEnvCheck.ok !== true) {
+        console.warn('[m3] host network env self-check failed:', JSON.stringify({
+          full: this.hostEnvCheck.full.attempts.map((a) => a.stderr),
+          scrubbed: this.hostEnvCheck.scrubbed.attempts.map((a) => a.stderr),
+        }));
+      }
+      return this.hostEnvCheck;
+    },
+
     envForHost({ marker = null } = {}) {
       const proxy = `http://127.0.0.1:${port}`;
       return {
@@ -645,19 +738,36 @@ export async function createIndexTransport({
         npm_config_https_proxy: proxy,
         npm_config_http_proxy: proxy,
         npm_config_proxy: proxy,
-        // ALL GitHub traffic (pnpm, git, and the native manager's own
-        // connectivity probes) goes through this fixture proxy; its CONNECT
-        // tunnels connect to pinned reachable IPs for github.com/codeload and
-        // raw, bypassing the blocked DNS address and the flapping local proxy.
-        NO_PROXY: '127.0.0.1,localhost',
-        M3_NETWORK_MODE: 'pinned-tunnel',
-        // Do NOT export GIT_CONFIG_COUNT/KEY_* here: one native-manager code
-        // path spawns git with a filtered env that kept the count but dropped
-        // the keys ("missing config key GIT_CONFIG_KEY_0"). Network is already
-        // handled by the fixture proxy's pinned CONNECT tunnels, so git/pnpm
-        // simply use HTTPS_PROXY. Our own probe git calls pass explicit
-        // `-c http.curloptResolve=...` args instead of env.
-        GIT_CONFIG_COUNT: '0',
+        // Discovery fetch to raw.githubusercontent.com must go through this
+        // fixture proxy (fixed index URL interception). git/pnpm traffic to
+        // GitHub bypasses the proxy and uses the isolated git config written
+        // below (pinned reachable IPs, no proxy). This avoids GIT_CONFIG_COUNT/
+        // KEY_* env entirely (a native-manager code path mangled that env).
+        // Host network env (isolated, verification-only seam):
+        //  - HTTPS_PROXY/NODE_USE_ENV_PROXY: the Host's own fetch reaches the
+        //    fixture proxy (fixed index URL interception);
+        //  - GIT_CONFIG_GLOBAL: isolated git config file pinning github/
+        //    codeload/raw to reachable IPs via http.curloptResolve. The native
+        //    manager's github preflight runs with a SCRUBBED env (DSH drops
+        //    /KEY|PASSWORD|SECRET|TOKEN/i names, which is why GIT_CONFIG_KEY_*
+        //    must NOT be used) but keeps GIT_CONFIG_GLOBAL; git then resolves
+        //    the pinned IPs instead of the DNS-blocked address within its 5s
+        //    preflight budget;
+        //  - pnpm retry/timeout knobs for the flapping link.
+        NO_PROXY: '127.0.0.1,localhost,github.com,.github.com,codeload.github.com,objects.githubusercontent.com,api.github.com',
+        npm_config_noproxy: '127.0.0.1,localhost',
+        M3_NETWORK_MODE: 'pinned-gitconfig-file',
+        GIT_CONFIG_GLOBAL: hostGitConfigPath,
+        GIT_CONFIG_NOSYSTEM: '1',
+        // Pin DNS for the three GitHub hosts inside the isolated Host process
+        // (resolver intermittently returns blocked wildcard records).
+        NODE_OPTIONS: `--require ${dnsPinPath}`,
+        // pnpm network resilience (link flaps): bounded retries, no aggressive
+        // concurrency. (Verification env only; product install path unchanged.)
+        npm_config_fetch_retries: '4',
+        npm_config_fetch_retry_maxtimeout: '120000',
+        npm_config_fetch_timeout: '120000',
+        npm_config_network_concurrency: '1',
         ...(marker === null ? {} : { M3_FIXTURE_RUN_TAG: marker }),
       };
     },
