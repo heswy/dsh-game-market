@@ -48,13 +48,12 @@
 
 - **mirror 模式**：`/tmp/m3-mirror.git`、`/tmp/m3-mirror-gitconfig` 与 pnpm 离线预热 store 已被清掉。我重建了 bare mirror 和 gitconfig（commit 可 `ls-remote`、可按 SHA 取），但 pnpm 仍报 `ERR_PNPM_NO_OFFLINE_TARBALL`——它走 codeload tarball 路径，离线 store 里没有这些 commit。没有找到当初预热 store 的脚本。
 - **real-github 模式**：`fixture.mjs` 里 `PINNED_RESOLVES` 把 `codeload.github.com` 钉到 `140.82.112.3`，该 IP 对 tarball 返回 404（`ERR_PNPM_FETCH_404`）。用本机代理 `127.0.0.1:7897` 直接 curl 同一 tarball 是 200（仓库为 PUBLIC）。
-- 我给 `fixture.mjs` 加了开关 `M3_PREFER_PROXY=1`：隧道优先走上游代理（`DEFAULT_UPSTREAM_PROXY`，**未核对其默认值是否就是 7897**）。该改动已提交，**但带此开关的 smoke 在被叫停时才刚启动，结果未知**。
+- 我给 `fixture.mjs` 加了开关 `M3_PREFER_PROXY=1`：隧道优先走上游代理（`DEFAULT_UPSTREAM_PROXY`，已核对默认值就是 `http://127.0.0.1:7897`）。该改动已提交，**但带此开关的 smoke 在被叫停时才刚启动，结果未知**。
 
 继续时先验证这一点：
 
 ```bash
 cd dsh-game-market-worktrees/v1.5-platform-update
-grep -n 'DEFAULT_UPSTREAM_PROXY =' scripts/verification/v1.5/m3/fixture.mjs   # 确认指向 http://127.0.0.1:7897，否则设 env
 rm -f /tmp/dsh-v15/m3/m3-serial.lock
 M3_PREFER_PROXY=1 node scripts/verification/v1.5/m3/run-m3-serial.mjs --mode real-github \
   --a 8fdd599a67b4c344d75b65d47801cd4ef8a4b6ec --b 0ba9f5006fa874c7e98d0238ccb04804183b4ce2 \
