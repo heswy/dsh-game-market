@@ -9,6 +9,7 @@ import {
   isBusyError,
   isInstallRetryable,
   isOfflineError,
+  updateActionErrorKey,
 } from '../src/errors-text.js';
 import { EN, ZH } from '../src/locale.js';
 
@@ -79,4 +80,26 @@ test('the GM mapping table never leaks the raw diagnostic message', function () 
     assert.equal(/GM-\d{4}/.test(ZH[key]), false, 'raw code in zh copy for ' + code);
     assert.equal(/GM-\d{4}/.test(EN[key]), false, 'raw code in en copy for ' + code);
   }
+});
+
+
+test('GM-4091 copy is context-aware: plugin update vs ordinary game-install busy', function () {
+  // Game install/uninstall/launch-adjacent toast surfaces use the generic key.
+  assert.equal(errorTextKey(GM.INSTALL_IN_PROGRESS), 'error.gm.installBusy');
+  // Platform-update surfaces (begin/observe/cancel action errors) must not
+  // reuse the game-install sentence.
+  assert.equal(updateActionErrorKey(GM.INSTALL_IN_PROGRESS), 'update.error.inProgress');
+  assert.notEqual(updateActionErrorKey(GM.INSTALL_IN_PROGRESS), errorTextKey(GM.INSTALL_IN_PROGRESS));
+
+  const installZh = ZH['error.gm.installBusy'];
+  const updateZh = ZH['update.error.inProgress'];
+  assert.match(installZh, /游戏安装/);
+  assert.match(updateZh, /插件更新/);
+  assert.notEqual(installZh, updateZh);
+
+  const installEn = EN['error.gm.installBusy'];
+  const updateEn = EN['update.error.inProgress'];
+  assert.match(installEn, /game install/i);
+  assert.match(updateEn, /plugin update/i);
+  assert.notEqual(installEn, updateEn);
 });

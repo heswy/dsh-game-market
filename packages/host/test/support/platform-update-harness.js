@@ -18,6 +18,7 @@ import {
   updateTargetIdFor,
 } from '../../../shared/src/platform-update.js';
 import { createStorage } from '../../src/storage.js';
+import { createUpdateAdmissionBarrier } from '../../src/update-admission.js';
 import { createPlatformUpdateAdapter } from '../../src/update-adapter.js';
 import { createUpdateOperationService } from '../../src/update-operations.js';
 
@@ -251,6 +252,7 @@ export async function createUpdateHarness(t, {
   const mutable = createMutableIdentity(identityOptions);
   const discovery = createFakeDiscovery(target);
   const storage = createStorage({ root: dataRoot });
+  const admission = createUpdateAdmissionBarrier();
   const coordinationState = { instances: instances.slice() };
   let healthOk = health;
   const adapter = createPlatformUpdateAdapter({
@@ -264,6 +266,7 @@ export async function createUpdateHarness(t, {
     storage,
     discovery,
     adapter,
+    admission,
     identity: mutable.identity,
     coordination: { listActiveInstances: () => coordinationState.instances.slice() },
     healthCheck: async () => ({ ok: healthOk }),
@@ -287,6 +290,7 @@ export async function createUpdateHarness(t, {
     discovery,
     adapter,
     operations,
+    admission,
     coordinationState,
     setHealth: (ok) => {
       healthOk = ok;
@@ -328,6 +332,7 @@ export async function createUpdateHarness(t, {
         storage: nextStorage,
         discovery: nextDiscovery,
         adapter: nextAdapter,
+        admission,
         identity: mutable.identity,
         coordination: { listActiveInstances: () => coordinationState.instances.slice() },
         healthCheck: async () => ({ ok: healthOk }),

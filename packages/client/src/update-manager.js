@@ -402,7 +402,9 @@ export function createUpdateManager(options) {
     const value = result && typeof result === 'object' ? result : {};
     return {
       unresponsive: value.unresponsive === true,
-      saveStale: value.saveStale === true,
+      // Tri-state on purpose: `null` means the pause result did not state
+      // whether the save is stale, and that must never count as saved.
+      saveStale: typeof value.saveStale === 'boolean' ? value.saveStale : null,
       ok: value.ok === true,
       error: value.error && typeof value.error === 'object' ? value.error : null,
     };
@@ -425,16 +427,18 @@ export function createUpdateManager(options) {
         });
       }
       const paused = pauseResult.unresponsive !== true;
-      // Honest save semantics: only a platform pause that resolved ok and did
-      // not report a stale save counts as saved.
-      const saved = pauseResult.ok === true && pauseResult.saveStale !== true;
+      // Honest save semantics (AUD-02): only a platform pause that resolved
+      // ok AND explicitly reported a non-stale save counts as saved. A missing
+      // saveStale is unknown and therefore treated as stale (fail closed).
+      const saved = pauseResult.ok === true && pauseResult.saveStale === false;
+      const saveStale = pauseResult.saveStale !== false;
       const entry = {
         instanceId: instance.instanceId,
         gameId: instance.gameId,
         playSessionId: null,
         paused: paused,
         saved: saved,
-        saveStale: pauseResult.saveStale,
+        saveStale: saveStale,
         saveRevision: null,
       };
       if (!saved) {

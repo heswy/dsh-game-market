@@ -311,6 +311,14 @@ export function createGameController(options = {}) {
   let pausePromise = null;
   let hiddenPaused = false;
   let hiddenPausePromise = null;
+  /**
+   * V1.5 AUD-02: paused != saved. `saveStale` records whether the latest
+   * storage write for THIS generation failed (or never completed). pause() must
+   * never claim success for an already-paused instance whose progress was not
+   * persisted; a real successful save clears it. Relaunch/destroy resets it.
+   */
+  let saveStale = false;
+  let saveStaleGeneration = -1;
 
   let resizeObserver = null;
   let messageHandler = null;
@@ -426,7 +434,34 @@ export function createGameController(options = {}) {
     };
   }
 
+  /** Mark the current generation's last storage write as failed/unverified. */
+  function markSaveStale() {
+    saveStale = true;
+    saveStaleGeneration = generation;
+  }
+
+  /** A real successful write clears staleness (only for the current generation). */
+  function clearSaveStale() {
+    if (saveStaleGeneration === generation) {
+      saveStale = false;
+      saveStaleGeneration = -1;
+    }
+  }
+
+  /** True when progress may not be on disk for the current launch generation. */
+  function saveIsStale() {
+    return saveStale === true && saveStaleGeneration === generation;
+  }
+
+  function noteSaveOutcome(outcome) {
+    if (outcome && outcome.ok === true) clearSaveStale();
+    else markSaveStale();
+  }
+
   function handleSaveOutcome(outcome) {
+    // Any storage write outcome (save or remove) updates the paused != saved
+    // ledger before the scheduler resolves a pending pause.
+    noteSaveOutcome(outcome);
     if (scheduler && scheduler.noteSave(outcome)) return;
     emit({ type: 'save-status', status: outcome && outcome.ok ? 'saved' : 'failed', at: now() });
   }
@@ -715,6 +750,8 @@ export function createGameController(options = {}) {
     pausePromise = null;
     hiddenPausePromise = null;
     hiddenPaused = false;
+    saveStale = false;
+    saveStaleGeneration = -1;
     iframeLoaded = false;
     if (scheduler) scheduler.stop();
     generation += 1;
@@ -830,32 +867,94 @@ export function createGameController(options = {}) {
     else resumeAfterPause();
   }
 
+  /**
+   * Finish one pause save for `token` generation.
+   * Success is only reported for a real `{ok:true}` scheduler result; failures
+   * keep the per-generation stale ledger set (AUD-02).
+   */
+  function finishPauseSave(token, result) {
+    pausePromise = null;
+    const ok = Boolean(result && result.ok === true);
+    if (token === generation && !destroyed) {
+      if (ok) clearSaveStale();
+      else markSaveStale();
+      if (machine.get() === 'saving') enterState('paused');
+    }
+    return { ok: ok, saveStale: !ok };
+  }
+
+  function failPauseSave(token) {
+    pausePromise = null;
+    if (token === generation && !destroyed) {
+      markSaveStale();
+      if (machine.get() === 'saving') enterState('paused');
+    }
+    return { ok: false, saveStale: true };
+  }
+
+  /**
+   * AUD-02: a coordination pause of an ALREADY-PAUSED instance must perform a
+   * REAL save when the previous save failed. Returning `{ok:true}` here let a
+   * retried update replace the plugin while progress was still only in memory.
+   * No duplicate PAUSE event is sent: the game is already paused.
+   */
+  function retryStalePause(pauseReason) {
+    if (!scheduler || !bridge || typeof bridge.isInitialized !== 'function' || !bridge.isInitialized()) {
+      // No live game to save through: fail closed instead of claiming saved.
+      return Promise.resolve({ ok: false, saveStale: true });
+    }
+    const token = generation;
+    enterState('saving');
+    pausePromise = scheduler.save(pauseSaveReason(pauseReason)).then(
+      function onSaved(result) {
+        return finishPauseSave(token, result);
+      },
+      function onSaveError() {
+        return failPauseSave(token);
+      }
+    );
+    return pausePromise;
+  }
+
   function pause(reason) {
     const pauseReason = PAUSE_REASONS.includes(reason) ? reason : 'user';
     if (pausePromise) return pausePromise;
-    if (!launchInfo || !bridge || machine.get() !== 'playing') {
+    if (destroyed) {
+      // The Runtime was torn down: nothing can be verified as saved anymore.
+      return Promise.resolve({ ok: false, saveStale: true });
+    }
+    if (!launchInfo || !bridge) return Promise.resolve({ ok: true, saveStale: false });
+    const currentState = machine.get();
+    if (currentState === 'error' || currentState === 'exited') {
+      // The frame is gone; the in-memory progress can no longer be verified as
+      // saved, so report an honest stale result instead of success.
+      return Promise.resolve({ ok: false, saveStale: true });
+    }
+    const storageCapable = launchInfo.capabilities.includes('storage');
+    if (currentState === 'paused') {
+      if (!storageCapable) return Promise.resolve({ ok: true, saveStale: false });
+      if (!saveIsStale()) return Promise.resolve({ ok: true, saveStale: false });
+      // The previous pause save failed and no successful save happened since:
+      // run a real forced save retry and report its true outcome.
+      return retryStalePause(pauseReason);
+    }
+    if (currentState !== 'playing') {
+      // ready/loading: nothing has been played yet, so there is no pending
+      // in-memory progress to flush.
       return Promise.resolve({ ok: true, saveStale: false });
     }
     const token = generation;
     scheduler.stop();
     enterState('paused');
     bridge.sendEvent(EVENTS.PAUSE, { reason: pauseReason, at: now() });
-    if (!launchInfo.capabilities.includes('storage')) {
-      return Promise.resolve({ ok: true, saveStale: false });
-    }
+    if (!storageCapable) return Promise.resolve({ ok: true, saveStale: false });
     enterState('saving');
     pausePromise = scheduler.save(pauseSaveReason(pauseReason)).then(
       function onSaved(result) {
-        pausePromise = null;
-        if (token !== generation || destroyed) return { ok: Boolean(result.ok), saveStale: result.saveStale };
-        if (machine.get() === 'saving') enterState('paused');
-        return { ok: Boolean(result.ok), saveStale: result.saveStale };
+        return finishPauseSave(token, result);
       },
       function onSaveError() {
-        pausePromise = null;
-        if (token !== generation || destroyed) return { ok: false, saveStale: true };
-        if (machine.get() === 'saving') enterState('paused');
-        return { ok: false, saveStale: true };
+        return failPauseSave(token);
       }
     );
     return pausePromise;
@@ -1016,6 +1115,8 @@ export function createGameController(options = {}) {
     machine.reset('idle');
     launchInfo = normalized;
     pausePromise = null;
+    saveStale = false;
+    saveStaleGeneration = -1;
     expectedFrameLoads = 0;
     navigationUsesLaunchCredential = false;
     capabilitiesRevoked = false;
@@ -1046,6 +1147,10 @@ export function createGameController(options = {}) {
         }
       },
       onStatus: function onStatus(status, at) {
+        // A save that timed out or failed leaves progress unpersisted; a
+        // successful save clears the stale ledger (AUD-02).
+        if (status === 'saved') clearSaveStale();
+        else if (status === 'failed') markSaveStale();
         emit({ type: 'save-status', status, at });
       },
     });

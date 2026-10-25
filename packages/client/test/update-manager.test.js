@@ -418,6 +418,60 @@ test('a save failure is reported saved:false and visibly blocks the update', asy
   built.manager.stop();
 });
 
+test('a pause result without an explicit saveStale is never reported as saved (AUD-02 defense)', async function () {
+  const api = createFakeApi({
+    inspect: function inspect() {
+      return Promise.resolve(inspectionFixture({ operation: { operationId: OPERATION_ID, state: 'inspecting', progress: null } }));
+    },
+  });
+  const built = buildManager({
+    api: api,
+    getRuntimeInstances: function instancesFn() {
+      return [{ instanceId: INSTANCE_ID, gameId: 'snake', controller: {} }];
+    },
+    pauseInstance: function pause() {
+      // Legacy/ambiguous result shape: ok but no saveStale verdict.
+      return Promise.resolve({ ok: true });
+    },
+  });
+  await built.manager.inspect();
+  await waitFor(function coordinated() {
+    return api.count('coordinate') === 1;
+  });
+  const instance = api.last('coordinate').payload.instances[0];
+  assert.equal(instance.saved, false, 'unknown save verdict must never be saved:true');
+  assert.equal(instance.paused, true);
+  assert.equal(instance.saveStale, true, 'unknown is conservatively stale');
+  assert.equal(instance.error.code, GM.SAVE_WRITE_FAILED);
+  assert.equal(built.store.getState().update.coordination.status, 'failed');
+  built.manager.stop();
+});
+
+test('a pause result that explicitly reports saveStale:true is saved:false even when ok:true', async function () {
+  const api = createFakeApi({
+    inspect: function inspect() {
+      return Promise.resolve(inspectionFixture({ operation: { operationId: OPERATION_ID, state: 'inspecting', progress: null } }));
+    },
+  });
+  const built = buildManager({
+    api: api,
+    getRuntimeInstances: function instancesFn() {
+      return [{ instanceId: INSTANCE_ID, gameId: 'snake', controller: {} }];
+    },
+    pauseInstance: function pause() {
+      return Promise.resolve({ ok: true, saveStale: true });
+    },
+  });
+  await built.manager.inspect();
+  await waitFor(function coordinated() {
+    return api.count('coordinate') === 1;
+  });
+  const instance = api.last('coordinate').payload.instances[0];
+  assert.equal(instance.saved, false);
+  assert.equal(instance.saveStale, true);
+  built.manager.stop();
+});
+
 test('an unresponsive instance is reported paused:false and saved:false', async function () {
   const api = createFakeApi({
     inspect: function inspect() {

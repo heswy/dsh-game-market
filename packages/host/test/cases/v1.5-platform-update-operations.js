@@ -39,6 +39,37 @@ function installResult(overrides = {}) {
   };
 }
 
+/**
+ * Wrap the harness HostStorage.writeJson to inject deterministic storage
+ * failures and to observe the exact critical-write sequence (audit M3-AUD-01).
+ * `decide(index, record)` returns a DOMException-free error code (e.g. 'ENOSPC',
+ * 'EACCES') to fail that write, or null to pass it through.
+ */
+function hookStorageWrites(harness, decide, events = []) {
+  const original = harness.storage.writeJson.bind(harness.storage);
+  let writeIndex = 0;
+  harness.storage.writeJson = async (file, value, options) => {
+    const index = writeIndex;
+    writeIndex += 1;
+    const failure = typeof decide === 'function' ? decide(index, value) : null;
+    if (failure) {
+      events.push({ type: 'write', index, failed: true, code: failure, status: value.status });
+      const error = new Error('simulated storage failure');
+      error.code = failure;
+      throw error;
+    }
+    const result = await original(file, value, options);
+    events.push({ type: 'write', index, failed: false, status: value.status });
+    return result;
+  };
+  return {
+    events,
+    restore() {
+      harness.storage.writeJson = original;
+    },
+  };
+}
+
 async function waitObservation(operations, predicate, { timeoutMs = 3000, label = 'observation' } = {}) {
   const deadline = Date.now() + timeoutMs;
   for (;;) {
@@ -432,6 +463,9 @@ export function register() {
     });
     const { operationId } = await harness.begin();
     await harness.waitForState('installing');
+    // Wait until the native install call is actually in flight (the observation
+    // becomes `installing` just before the critical pre-install record write).
+    await harness.waitFor(() => harness.managerCalls.installBundle.length === 1, { label: 'install in flight' });
     // The update disposes this Host row; the operation is NOT terminal and the
     // native manager is still installing. The persisted record must survive.
     await harness.stop();
@@ -791,6 +825,202 @@ export function register() {
       () => harness.operations.observe(second.operationId),
       (error) => error.code === GM.INVALID_PARAM
     );
+  });
+
+  test('AUD-01 critical begin record failure fails closed with retryable GM.STORE_IO (ENOSPC/EACCES)', async (t) => {
+    for (const code of ['ENOSPC', 'EACCES']) {
+      await t.test(`begin write ${code}`, async (subtest) => {
+        const harness = await createUpdateHarness(subtest, {});
+        const hook = hookStorageWrites(harness, (index) => (index === 0 ? code : null));
+        await assert.rejects(
+          () => harness.begin(),
+          (error) => {
+            assert.equal(error.code, GM.STORE_IO);
+            assert.equal(error.retryable, true);
+            assert.doesNotMatch(String(error.message), /\/tmp|\/Users|dsh-gm-update|\/private\//);
+            return true;
+          }
+        );
+        assert.equal(harness.managerCalls.installBundle.length, 0, 'no package change on critical persist failure');
+        assert.equal(harness.operations._operation(), null, 'no half-started operation left behind');
+        assert.equal(harness.admission.isBlocked(), false, 'admission barrier released');
+        // Storage recovers: a later begin must be possible (no leaked lock/state).
+        hook.restore();
+        const retried = await harness.begin();
+        assert.match(retried.operationId, /^upd_[a-f0-9]{16}$/);
+        await harness.waitFor(() => harness.managerCalls.installBundle.length === 1, { label: 'install after retry' });
+        await harness.stop();
+      });
+    }
+  });
+
+  test('AUD-01 pre-install record failure aborts before installBundle and releases lock/barrier (ENOSPC/EACCES)', async (t) => {
+    for (const code of ['ENOSPC', 'EACCES']) {
+      await t.test(`pre-install write ${code}`, async (subtest) => {
+        const harness = await createUpdateHarness(subtest, {});
+        // Write #0 = begin record, write #1 = immediately-before-installBundle record.
+        const hook = hookStorageWrites(harness, (index) => (index === 1 ? code : null));
+        const { operationId } = await harness.begin();
+        const failed = await harness.waitForState('failed');
+        assert.equal(failed.error.code, GM.STORE_IO);
+        assert.match(failed.error.message, /not started|retry/i);
+        assert.equal(failed.oldVersionStillRunning, true);
+        assert.equal(harness.managerCalls.installBundle.length, 0, 'no package change without a persisted record');
+        assert.equal(harness.operations.observe(operationId).state, 'failed');
+        assert.equal(harness.admission.isBlocked(), false, 'admission barrier released');
+        hook.restore();
+        const retried = await harness.begin();
+        assert.notEqual(retried.operationId, operationId);
+        await harness.waitFor(() => harness.managerCalls.installBundle.length === 1, { label: 'install after storage recovery' });
+        await harness.stop();
+      });
+    }
+  });
+
+  test('AUD-01 installBundle is only called after two successful critical record writes', async (t) => {
+    const harness = await createUpdateHarness(t, {
+      managerOptions: {
+        install: async () => installResult({ application: 'restart-required', restartReason: 'no-hmr' }),
+      },
+    });
+    const events = [];
+    const hook = hookStorageWrites(harness, () => null, events);
+    const originalInstall = harness.managerState.install;
+    harness.managerState.install = async (spec, options) => {
+      events.push({ type: 'install', spec });
+      return originalInstall(spec, options);
+    };
+    const { operationId } = await harness.begin();
+    await harness.waitForState('pending-restart');
+    const installEvent = events.find((entry) => entry.type === 'install');
+    assert.ok(installEvent !== undefined, 'installBundle was called');
+    const writesBeforeInstall = events.filter((entry) => entry.type === 'write' && entry.index < events.indexOf(installEvent));
+    assert.equal(writesBeforeInstall.length, 2, 'begin record + pre-install record');
+    assert.deepEqual(writesBeforeInstall.map((entry) => entry.failed), [false, false]);
+    assert.deepEqual(writesBeforeInstall.map((entry) => entry.status), ['installing', 'installing']);
+    assert.equal(installEvent.spec, harness.target.spec);
+    assert.equal(harness.operations.observe(operationId).state, 'pending-restart');
+    hook.restore();
+  });
+
+  test('AUD-03 dynamic inclusion: an instance appearing before the package change re-opens coordination and blocks install', async (t) => {
+    const harness = await createUpdateHarness(t, {
+      managerOptions: {
+        install: async () => installResult({ application: 'restart-required', restartReason: 'no-hmr' }),
+      },
+    });
+    const lateInstance = makeActiveInstance();
+    // Simulate an in-flight launch that registers during the pre-install persist
+    // await (the audit's reproduce: begin with 0 active -> instance appears later).
+    hookStorageWrites(harness, (index) => {
+      if (index === 1) harness.coordinationState.instances = [lateInstance];
+      return null;
+    });
+    const { operationId } = await harness.begin();
+    const inspecting = await harness.waitForState('inspecting');
+    assert.equal(inspecting.coordination.pending, 1);
+    assert.equal(harness.admission.isBlocked(), true, 'admission blocked while update is active');
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    assert.equal(harness.managerCalls.installBundle.length, 0, 'install must wait for the late instance save ack');
+    const coordinate = await harness.operations.coordinate({
+      windowId: 'window-1',
+      idle: false,
+      instances: [
+        {
+          instanceId: lateInstance.instanceId,
+          gameId: lateInstance.gameId,
+          paused: true,
+          saved: true,
+          saveStale: false,
+        },
+      ],
+    });
+    assert.equal(coordinate.phase, 'satisfied');
+    const pending = await harness.waitForState('pending-restart');
+    assert.equal(pending.state, 'pending-restart');
+    assert.equal(harness.managerCalls.installBundle.length, 1);
+    assert.equal(harness.managerCalls.installBundle[0].spec, harness.target.spec);
+    assert.equal(harness.operations.observe(operationId).state, 'pending-restart');
+    assert.equal(harness.admission.isBlocked(), false, 'barrier released once the package change completed');
+  });
+
+  test('AUD-03 coordination-satisfied boundary: an instance appearing during the critical persist re-opens coordination', async (t) => {
+    const initialInstance = makeActiveInstance();
+    const lateInstance = makeActiveInstance({ instanceId: '2'.repeat(32) });
+    const harness = await createUpdateHarness(t, {
+      instances: [initialInstance],
+      managerOptions: {
+        install: async () => installResult({ application: 'restart-required', restartReason: 'no-hmr' }),
+      },
+    });
+    hookStorageWrites(harness, (index) => {
+      // write #0 = begin record (coordinating), #1 = pre-install critical record.
+      if (index === 1) harness.coordinationState.instances = [initialInstance, lateInstance];
+      return null;
+    });
+    await harness.begin();
+    await harness.waitForState('inspecting');
+    const ackFor = (instances) => ({
+      windowId: 'window-1',
+      idle: false,
+      instances: instances.map((instance) => ({
+        instanceId: instance.instanceId,
+        gameId: instance.gameId,
+        paused: true,
+        saved: true,
+        saveStale: false,
+      })),
+    });
+    await harness.operations.coordinate(ackFor([initialInstance]));
+    // Coordination was satisfied, but a new instance appeared at the install
+    // boundary: the pipeline must re-open the gate instead of installing.
+    const reopened = await harness.waitForState('inspecting');
+    assert.equal(reopened.coordination.pending, 1);
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    assert.equal(harness.managerCalls.installBundle.length, 0, 'no install while the late instance is unconfirmed');
+    const coordinate = await harness.operations.coordinate(ackFor([initialInstance, lateInstance]));
+    assert.equal(coordinate.phase, 'satisfied');
+    await harness.waitForState('pending-restart');
+    assert.equal(harness.managerCalls.installBundle.length, 1);
+    assert.equal(harness.managerCalls.installBundle[0].spec, harness.target.spec);
+  });
+
+  test('AUD-03 admission barrier is released on update failure, cancel and stop (no lock leak)', async (t) => {
+    // Failure path + retry (proves the profile update lock is not leaked).
+    const failedHarness = await createUpdateHarness(t, {
+      instances: [makeActiveInstance()],
+      managerOptions: {
+        install: async () => ({ stage: 'install', target: 'spec', enabled: true, changed: false, application: 'failed', error: { code: 'operation-error' } }),
+      },
+    });
+    await failedHarness.begin();
+    assert.equal(failedHarness.admission.isBlocked(), true);
+    await failedHarness.operations.coordinate({
+      windowId: 'window-1',
+      idle: false,
+      instances: [{ instanceId: makeActiveInstance().instanceId, gameId: 'snake', paused: true, saved: true, saveStale: false }],
+    });
+    await failedHarness.waitForState('failed');
+    assert.equal(failedHarness.admission.isBlocked(), false, 'barrier released after failure');
+    const retried = await failedHarness.begin();
+    assert.match(retried.operationId, /^upd_/);
+    await failedHarness.stop();
+
+    // Cancel path: cancelling coordination releases the barrier immediately.
+    const cancelHarness = await createUpdateHarness(t, { instances: [makeActiveInstance()] });
+    const cancelOperation = await cancelHarness.begin();
+    assert.equal(cancelHarness.admission.isBlocked(), true);
+    const cancelled = await cancelHarness.operations.cancel({ operationId: cancelOperation.operationId });
+    assert.equal(cancelled.status, 'cancelled');
+    assert.equal(cancelHarness.admission.isBlocked(), false, 'barrier released after cancel');
+    await cancelHarness.stop();
+
+    // Stop path (plugin dispose) releases the barrier too.
+    const stopHarness = await createUpdateHarness(t, { instances: [makeActiveInstance()] });
+    await stopHarness.begin();
+    assert.equal(stopHarness.admission.isBlocked(), true);
+    await stopHarness.operations.stop();
+    assert.equal(stopHarness.admission.isBlocked(), false, 'barrier released on dispose');
   });
 
   test('dev-row shadow blocks begin (GM-4090 dev-source) without installing', async (t) => {

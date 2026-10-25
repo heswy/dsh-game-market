@@ -152,6 +152,12 @@ export function createUpdateOperationService({
   logger = null,
   now = () => new Date(),
   timing = {},
+  /**
+   * Host-authoritative admission barrier (audit M3-AUD-03). While a real update
+   * is between coordination and package change, new game launches are blocked.
+   * Optional so unit tests can construct the operations service in isolation.
+   */
+  admission = null,
 }) {
   const limits = { ...PLATFORM_UPDATE_TIMING, ...(isPlainObject(timing) ? timing : {}) };
 
@@ -238,7 +244,41 @@ export function createUpdateOperationService({
     };
   }
 
-  async function persist(op) {
+  function persistFailure(error) {
+    return hostError(GM.STORE_IO, 'Could not persist the platform update record', {
+      retryable: true,
+      cause: error,
+    });
+  }
+
+  /**
+   * CRITICAL persistence gate (audit M3-AUD-01): the durable update record must
+   * exist BEFORE any package change. A storage failure here must abort the
+   * update (no `installBundle`) with a retryable `GM.STORE_IO`; it is never
+   * swallowed, because losing the record means losing the recovery target /
+   * requestId / previous-version snapshot if HMR disposes this Host row.
+   */
+  async function persistCritical(op) {
+    if (op === null) return;
+    if (storage === null) {
+      throw hostError(GM.STORE_IO, 'Could not persist the platform update record', { retryable: true });
+    }
+    try {
+      await storage.writeJson(storage.filePath(PLATFORM_UPDATE_OPERATION_FILE), recordOf(op));
+    } catch (error) {
+      logger?.warn?.(LOG, 'platform-update-record-write-critical-failed', `code=${error?.code || 'E_UNKNOWN'}`);
+      throw persistFailure(error);
+    }
+  }
+
+  /**
+   * BEST-EFFORT diagnostics persistence: progress/terminal observations AFTER
+   * the package change already started, plus recovery-side bookkeeping. These
+   * writes may fail without changing the operation outcome (the native manager
+   * plus the last critical record still drive recovery), so failures are logged
+   * and intentionally non-fatal.
+   */
+  async function persistBestEffort(op) {
     if (stopped || storage === null || op === null) return;
     try {
       await storage.writeJson(storage.filePath(PLATFORM_UPDATE_OPERATION_FILE), recordOf(op));
@@ -260,6 +300,71 @@ export function createUpdateOperationService({
     if (typeof release === 'function') {
       await release().catch(() => undefined);
     }
+  }
+
+  // ----- Host-authoritative update admission barrier (audit M3-AUD-03) -----
+
+  function blockAdmission(op) {
+    if (admission === null || op === null) return;
+    admission.block(op.operationId);
+  }
+
+  function releaseAdmission(op) {
+    if (admission === null) return;
+    if (op === null) admission.release();
+    else admission.release(op.operationId);
+  }
+
+  /** Instance ids covered by a paused+saved+not-stale, error-free ack. */
+  function confirmedInstanceIds(op) {
+    const confirmed = new Set();
+    if (op === null || op.coordination === null) return confirmed;
+    for (const ack of op.coordination.acks.values()) {
+      for (const entry of ack.instances.values()) {
+        if (entry.paused === true && entry.saved === true && entry.saveStale !== true && entry.error === undefined) {
+          confirmed.add(entry.instanceId);
+        }
+      }
+    }
+    return confirmed;
+  }
+
+  /** Active instances that no confirming ack covers (must block install). */
+  function unconfirmedInstances(op) {
+    if (op === null || op.status === 'terminal') return [];
+    const confirmed = confirmedInstanceIds(op);
+    return activeRuntimeInstances().filter((instance) => !confirmed.has(instance.instanceId));
+  }
+
+  /**
+   * Re-open the coordination gate for instances that appeared after the first
+   * enumeration (in-flight launch that raced the barrier, or a still-registered
+   * resumed instance). Resets the coordination deadline to the frozen window.
+   */
+  function reopenCoordination(op, pendingInstances) {
+    const coordinationState =
+      op.coordination === null
+        ? { acks: new Map(), failed: undefined, resolve: null, reject: null }
+        : op.coordination;
+    coordinationState.phase = 'waiting';
+    coordinationState.pending = pendingInstances.length;
+    coordinationState.startedAt = iso(now);
+    coordinationState.deadlineAt = new Date(now().getTime() + limits.coordinateTimeoutMs).toISOString();
+    coordinationState.registry = pendingInstances.map((instance) => ({
+      instanceId: instance.instanceId,
+      gameId: instance.gameId,
+    }));
+    coordinationState.failed = undefined;
+    coordinationState.resolve = null;
+    coordinationState.reject = null;
+    op.coordination = coordinationState;
+    op.status = 'coordinating';
+    setObservation(op, {
+      operationId: op.operationId,
+      state: 'inspecting',
+      progress: null,
+      coordination: { phase: 'waiting', pending: pendingInstances.length },
+    });
   }
 
   function clearCoordinationTimer() {
@@ -330,7 +435,8 @@ export function createUpdateOperationService({
       op.coordination.phase = 'failed';
       op.coordination.failed = { reason: observation.error?.message ?? 'failed' };
     }
-    void persist(op);
+    releaseAdmission(op);
+    void persistBestEffort(op);
     if (release) void releaseHeldLock();
     return observation;
   }
@@ -370,7 +476,10 @@ export function createUpdateOperationService({
       installedVersion,
     });
     op.status = 'pending-restart';
-    void persist(op);
+    // The package change already completed (restart required); new launches are
+    // safe against the installed bundle even though the old code still runs.
+    releaseAdmission(op);
+    void persistBestEffort(op);
     return op.observation;
   }
 
@@ -405,11 +514,63 @@ export function createUpdateOperationService({
     if (pipeline !== null) return pipeline;
     pipeline = (async () => {
       try {
-        if (waitCoordination) await waitForCoordination(op);
-        if (stopped || op.status === 'terminal' || operation !== op) return;
-        op.status = 'installing';
-        setObservation(op, { operationId: op.operationId, state: 'installing', stage: 'install', progress: null });
-        await persist(op);
+        if (waitCoordination) {
+          try {
+            await waitForCoordination(op);
+          } catch (_error) {
+            // Coordination failed/timed out and finalised the operation.
+            return;
+          }
+        }
+        if (stopped || operation !== op || op.status === 'terminal') return;
+        // Host-authoritative barrier + dynamic inclusion (audit M3-AUD-03):
+        // re-enumerate immediately before the package change; never persist or
+        // install while unconfirmed instances exist, and re-check once more
+        // after the critical record write, immediately before installBundle.
+        for (;;) {
+          if (stopped || operation !== op || op.status === 'terminal') return;
+          const unconfirmed = unconfirmedInstances(op);
+          if (unconfirmed.length > 0) {
+            reopenCoordination(op, unconfirmed);
+            await persistBestEffort(op);
+            scheduleCoordinationTimeout(op);
+            try {
+              await waitForCoordination(op);
+            } catch (_error) {
+              return;
+            }
+            continue;
+          }
+          op.status = 'installing';
+          setObservation(op, { operationId: op.operationId, state: 'installing', stage: 'install', progress: null });
+          try {
+            // CRITICAL pre-install gate (audit M3-AUD-01): without a durable
+            // record there must be no package change.
+            await persistCritical(op);
+          } catch (_error) {
+            // Fail closed: no installBundle. Release the barrier/lock BEFORE the
+            // failure becomes observable, so a retry cannot race the lock.
+            releaseAdmission(op);
+            await releaseHeldLock();
+            finalise(op, {
+              operationId: op.operationId,
+              state: 'failed',
+              error: {
+                code: GM.STORE_IO,
+                message: 'The update was not started because its recovery record could not be stored; retry',
+              },
+              oldVersionStillRunning: oldVersionStillRunning(op),
+            });
+            return;
+          }
+          if (stopped || operation !== op || op.status === 'terminal') return;
+          // Deliberately no `await` between this final unconfirmed check and the
+          // install call: the barrier blocks new entries, and entry.launch
+          // re-checks admission after registering, so a launch that raced the
+          // barrier cannot leave an unconfirmed live instance.
+          if (unconfirmedInstances(op).length === 0) break;
+          op.status = 'coordinating';
+        }
         let result;
         try {
           result = await adapter.install(op.target, { requestId: op.requestId });
@@ -589,43 +750,61 @@ export function createUpdateOperationService({
     }
 
     await acquireLock();
-    const previous = previousIdentitySnapshot();
-    previous.enabled = adapterInfo.enabled === undefined ? null : adapterInfo.enabled;
-    const active = activeRuntimeInstances();
-    const op = newOperation(target, {
-      status: active.length === 0 ? 'installing' : 'coordinating',
-      previous,
-    });
-    if (active.length > 0) {
-      const startedAt = iso(now);
-      op.coordination = {
-        phase: 'waiting',
-        pending: active.length,
-        acks: new Map(),
-        startedAt,
-        deadlineAt: new Date(now().getTime() + limits.coordinateTimeoutMs).toISOString(),
-        registry: active.map((instance) => ({ instanceId: instance.instanceId, gameId: instance.gameId })),
-        failed: undefined,
-        resolve: null,
-        reject: null,
-      };
-      setObservation(op, {
-        operationId: op.operationId,
-        state: 'inspecting',
-        progress: null,
-        coordination: {
+    let op = null;
+    try {
+      const previous = previousIdentitySnapshot();
+      previous.enabled = adapterInfo.enabled === undefined ? null : adapterInfo.enabled;
+      const active = activeRuntimeInstances();
+      op = newOperation(target, {
+        status: active.length === 0 ? 'installing' : 'coordinating',
+        previous,
+      });
+      // Host-authoritative barrier: block new game launches from the moment the
+      // operation exists until the package change completes/terminates.
+      blockAdmission(op);
+      if (active.length > 0) {
+        const startedAt = iso(now);
+        op.coordination = {
           phase: 'waiting',
           pending: active.length,
-        },
+          acks: new Map(),
+          startedAt,
+          deadlineAt: new Date(now().getTime() + limits.coordinateTimeoutMs).toISOString(),
+          registry: active.map((instance) => ({ instanceId: instance.instanceId, gameId: instance.gameId })),
+          failed: undefined,
+          resolve: null,
+          reject: null,
+        };
+        setObservation(op, {
+          operationId: op.operationId,
+          state: 'inspecting',
+          progress: null,
+          coordination: {
+            phase: 'waiting',
+            pending: active.length,
+          },
+        });
+      } else {
+        setObservation(op, { operationId: op.operationId, state: 'installing', stage: 'install', progress: null });
+      }
+      // CRITICAL pre-write (audit M3-AUD-01): the recovery record must exist
+      // BEFORE any package change; on failure fail closed with no operation.
+      await persistCritical(op);
+    } catch (error) {
+      // Never leave a half-started operation/barrier/lock behind. `operation`
+      // is only assigned after the critical write, so a later begin can retry
+      // (the previous retained terminal operation, if any, stays observable).
+      releaseAdmission(op);
+      clearCoordinationTimer();
+      await releaseHeldLock();
+      if (error !== null && typeof error === 'object' && error.code === GM.STORE_IO) throw error;
+      throw hostError(GM.STORE_IO, 'Could not record the update before installation', {
+        retryable: true,
+        cause: error,
       });
-    } else {
-      setObservation(op, { operationId: op.operationId, state: 'installing', stage: 'install', progress: null });
     }
     operation = op;
-    // Persist BEFORE any package change: this record is what recovery reads if
-    // HMR disposes this Host row while the install is applying.
-    await persist(op);
-    if (active.length > 0) {
+    if (op.coordination !== null) {
       scheduleCoordinationTimeout(op);
       void startPipeline(op, { waitCoordination: true });
     } else {
@@ -711,6 +890,10 @@ export function createUpdateOperationService({
   }
 
   async function handleInstallResult(op, result) {
+    // The native install settled: the package change window is over, so new
+    // game launches may proceed again (any later activation verification does
+    // not replace the running bundle a second time).
+    releaseAdmission(op);
     const application = isPlainObject(result) ? result.application : undefined;
     logInstallOutcome(op, application, result);
     if (application === 'applied') {
@@ -762,7 +945,7 @@ export function createUpdateOperationService({
     });
     op.status = 'applied';
     op.installedVersion = installedVersion;
-    await persist(op);
+    await persistBestEffort(op);
     if (stopped || operation !== op) return;
     if (installedVersion !== op.target.version) {
       verificationFailed(op, 'version-mismatch', {
@@ -887,7 +1070,7 @@ export function createUpdateOperationService({
       installedVersion: op.installedVersion ?? op.target.version,
       awaiting: 'reload',
     });
-    await persist(op);
+    await persistBestEffort(op);
     await waitForClientVerification(op);
   }
 
@@ -951,7 +1134,7 @@ export function createUpdateOperationService({
             reason: 'client-old',
             runningVersion: mismatched[0].buildVersion,
           });
-          void persist(op);
+          void persistBestEffort(op);
         } else if (reports.some((report) => clientMatches(report, expected))) {
           finalise(op, {
             operationId: op.operationId,
@@ -1067,8 +1250,10 @@ export function createUpdateOperationService({
         return { status: 'cancelled', observation: cancelled(op, 'user') };
       }
       if (status === 'too-late') {
+        // The native install is still applying the package change, so the
+        // admission barrier stays held until handleInstallResult releases it.
         setObservation(op, { operationId: op.operationId, state: 'too-late', note: 'install-continues' });
-        void persist(op);
+        void persistBestEffort(op);
         return { status: 'too-late', observation: op.observation };
       }
       return { status: 'not-running', observation: observationOf(op) };
@@ -1127,7 +1312,8 @@ export function createUpdateOperationService({
       installedVersion: op.target.version,
       awaiting: 'reload',
     });
-    await persist(op);
+    releaseAdmission(op);
+    await persistBestEffort(op);
     await waitForClientVerification(op, { recovery: true, recordDeadline: recoveryRecordDeadline(record) });
   }
 
@@ -1152,6 +1338,9 @@ export function createUpdateOperationService({
       recoveredAt: iso(now),
     };
     operation = op;
+    // A recovered `installing` record may still have the native manager applying
+    // the package change; keep new launches out until it settles or terminates.
+    if (record.status === 'installing') blockAdmission(op);
     if (record.status === 'terminal') {
       logger?.info?.(LOG, 'platform-update-recovered-terminal', `operation=${op.operationId}`, `state=${op.observation?.state ?? 'none'}`);
       return;
@@ -1187,7 +1376,9 @@ export function createUpdateOperationService({
           restartReason: 'no-hmr',
           installedVersion: op.installedVersion ?? op.target.version,
         });
-        await persist(op);
+        // pending-restart needs no package change; do not hold admission.
+        releaseAdmission(op);
+        await persistBestEffort(op);
       }
       return;
     }
@@ -1240,6 +1431,7 @@ export function createUpdateOperationService({
     // install or a 30s identity wait.
     recovery = recoverFromRecord(record).catch((error) => {
       logger?.warn?.(LOG, 'platform-update-recovery-failed', `code=${error?.code || 'E_UNKNOWN'}`);
+      releaseAdmission(null);
     });
   }
 
@@ -1249,6 +1441,7 @@ export function createUpdateOperationService({
 
   async function stop() {
     stopped = true;
+    releaseAdmission(null);
     clearCoordinationTimer();
     if (operation !== null && operation.coordination !== null && typeof operation.coordination.reject === 'function') {
       operation.coordination.reject(new Error('Host disposed'));

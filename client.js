@@ -301,7 +301,7 @@ window.__ModuleLoader__.load({
       'error.gm.registry': '游戏目录暂时不可用，正在使用本地缓存',
       'error.gm.offline': '当前离线，无法完成此操作',
       'error.gm.throttled': '刚刚刷新过，请稍后再试',
-      'error.gm.installBusy': '另一个安装正在进行，请稍后再试',
+      'error.gm.installBusy': '另一个游戏安装正在进行，请稍后再试',
       'error.gm.installRunning': '游戏正在运行，请先退出游戏',
       'error.gm.installUrl': '安装包地址不被信任',
       'error.gm.installVersion': '版本冲突，请先卸载或检查更新',
@@ -442,6 +442,8 @@ window.__ModuleLoader__.load({
       'runtime.error.saveCorrupt': '存档损坏，无法恢复',
       'runtime.error.saveCorrupt.body': '可以开始新的一局。',
       'runtime.error.noRuntime': '游戏运行时暂不可用',
+      'runtime.error.updateBusy.title': '插件更新进行中',
+      'runtime.error.updateBusy.body': '游戏会在更新完成后恢复可用，请稍后重试。',
       'runtime.error.noRuntime.body': '当前安装还没有包含 Game Runtime。可以返回市场，或稍后重试。',
       'runtime.error.generic': '出了点问题',
       'runtime.error.generic.body': '可以重试，或返回市场。',
@@ -609,7 +611,7 @@ window.__ModuleLoader__.load({
       'update.blocked.commitAnomaly.body': '为避免重复安装，更新已禁用。请检查发布渠道或稍后重试。',
       'update.blocked.adapter': '暂时无法使用插件更新能力',
       'update.blocked.adapter.body': '请在 DSH 插件管理中查看安装来源与版本。',
-      'update.error.inProgress': '已有更新正在进行，请等待当前更新完成',
+      'update.error.inProgress': '插件更新正在进行，请等待当前更新完成',
       'update.error.targetInvalid': '更新目标不受支持',
       'update.error.adapterUnavailable': '暂时无法使用插件更新能力',
       'update.error.observeTimeout': '暂时无法确认更新状态，请稍后重试',
@@ -899,7 +901,7 @@ window.__ModuleLoader__.load({
       'error.gm.registry': 'The game catalog is unavailable; showing the local cache',
       'error.gm.offline': 'This action is unavailable offline',
       'error.gm.throttled': 'Already refreshed recently. Try again later.',
-      'error.gm.installBusy': 'Another install is in progress. Try again later.',
+      'error.gm.installBusy': 'Another game install is in progress. Try again later.',
       'error.gm.installRunning': 'Exit the game before updating',
       'error.gm.installUrl': 'The package address is not trusted',
       'error.gm.installVersion': 'Version conflict. Uninstall or check for updates first.',
@@ -1040,6 +1042,8 @@ window.__ModuleLoader__.load({
       'runtime.error.saveCorrupt': 'Save data is corrupted',
       'runtime.error.saveCorrupt.body': 'You can start a new run.',
       'runtime.error.noRuntime': 'Game Runtime is not available',
+      'runtime.error.updateBusy.title': 'Plugin update in progress',
+      'runtime.error.updateBusy.body': 'Games become available when the update finishes. Try again shortly.',
       'runtime.error.noRuntime.body': 'This install does not include the Game Runtime yet. Go back to the market or try again later.',
       'runtime.error.generic': 'Something went wrong',
       'runtime.error.generic.body': 'Retry, or go back to the market.',
@@ -1212,7 +1216,7 @@ window.__ModuleLoader__.load({
       'update.blocked.commitAnomaly.body': 'Updates are disabled to avoid a repeated install. Check the release channel or retry later.',
       'update.blocked.adapter': 'Plugin update capability is temporarily unavailable',
       'update.blocked.adapter.body': 'Check the install source and version in the DSH plugin manager.',
-      'update.error.inProgress': 'Another update is already running; wait for it to finish',
+      'update.error.inProgress': 'A plugin update is already in progress; wait for it to finish',
       'update.error.targetInvalid': 'This update target is not supported',
       'update.error.adapterUnavailable': 'Plugin update capability is temporarily unavailable',
       'update.error.observeTimeout': 'The update state could not be confirmed; retry later',
@@ -4679,6 +4683,11 @@ window.__ModuleLoader__.load({
           return 'runtime.error.saveCorrupt';
         case GM.NO_RUNTIME:
           return 'runtime.error.noRuntime';
+        case GM.INSTALL_IN_PROGRESS:
+          // The Host reuses GM-4091 for the platform-plugin update lock (launch
+          // admission, task-10). In the runtime/launch context that means a plugin
+          // update is running, not an ordinary game install.
+          return 'runtime.error.updateBusy.title';
         case GM.ENTRY_LAUNCH_CONSUMED:
           return 'runtime.error.entryConsumed';
         case GM.RESOURCE_CREDENTIAL_INVALID:
@@ -4711,6 +4720,8 @@ window.__ModuleLoader__.load({
           return 'runtime.error.saveCorrupt.body';
         case GM.NO_RUNTIME:
           return 'runtime.error.noRuntime.body';
+        case GM.INSTALL_IN_PROGRESS:
+          return 'runtime.error.updateBusy.body';
         case GM.ENTRY_LAUNCH_CONSUMED:
           return 'runtime.error.entryConsumed.body';
         case GM.RESOURCE_CREDENTIAL_INVALID:
@@ -8379,6 +8390,14 @@ window.__ModuleLoader__.load({
       let pausePromise = null;
       let hiddenPaused = false;
       let hiddenPausePromise = null;
+      /**
+       * V1.5 AUD-02: paused != saved. `saveStale` records whether the latest
+       * storage write for THIS generation failed (or never completed). pause() must
+       * never claim success for an already-paused instance whose progress was not
+       * persisted; a real successful save clears it. Relaunch/destroy resets it.
+       */
+      let saveStale = false;
+      let saveStaleGeneration = -1;
 
       let resizeObserver = null;
       let messageHandler = null;
@@ -8494,7 +8513,34 @@ window.__ModuleLoader__.load({
         };
       }
 
+      /** Mark the current generation's last storage write as failed/unverified. */
+      function markSaveStale() {
+        saveStale = true;
+        saveStaleGeneration = generation;
+      }
+
+      /** A real successful write clears staleness (only for the current generation). */
+      function clearSaveStale() {
+        if (saveStaleGeneration === generation) {
+          saveStale = false;
+          saveStaleGeneration = -1;
+        }
+      }
+
+      /** True when progress may not be on disk for the current launch generation. */
+      function saveIsStale() {
+        return saveStale === true && saveStaleGeneration === generation;
+      }
+
+      function noteSaveOutcome(outcome) {
+        if (outcome && outcome.ok === true) clearSaveStale();
+        else markSaveStale();
+      }
+
       function handleSaveOutcome(outcome) {
+        // Any storage write outcome (save or remove) updates the paused != saved
+        // ledger before the scheduler resolves a pending pause.
+        noteSaveOutcome(outcome);
         if (scheduler && scheduler.noteSave(outcome)) return;
         emit({ type: 'save-status', status: outcome && outcome.ok ? 'saved' : 'failed', at: now() });
       }
@@ -8783,6 +8829,8 @@ window.__ModuleLoader__.load({
         pausePromise = null;
         hiddenPausePromise = null;
         hiddenPaused = false;
+        saveStale = false;
+        saveStaleGeneration = -1;
         iframeLoaded = false;
         if (scheduler) scheduler.stop();
         generation += 1;
@@ -8898,32 +8946,94 @@ window.__ModuleLoader__.load({
         else resumeAfterPause();
       }
 
+      /**
+       * Finish one pause save for `token` generation.
+       * Success is only reported for a real `{ok:true}` scheduler result; failures
+       * keep the per-generation stale ledger set (AUD-02).
+       */
+      function finishPauseSave(token, result) {
+        pausePromise = null;
+        const ok = Boolean(result && result.ok === true);
+        if (token === generation && !destroyed) {
+          if (ok) clearSaveStale();
+          else markSaveStale();
+          if (machine.get() === 'saving') enterState('paused');
+        }
+        return { ok: ok, saveStale: !ok };
+      }
+
+      function failPauseSave(token) {
+        pausePromise = null;
+        if (token === generation && !destroyed) {
+          markSaveStale();
+          if (machine.get() === 'saving') enterState('paused');
+        }
+        return { ok: false, saveStale: true };
+      }
+
+      /**
+       * AUD-02: a coordination pause of an ALREADY-PAUSED instance must perform a
+       * REAL save when the previous save failed. Returning `{ok:true}` here let a
+       * retried update replace the plugin while progress was still only in memory.
+       * No duplicate PAUSE event is sent: the game is already paused.
+       */
+      function retryStalePause(pauseReason) {
+        if (!scheduler || !bridge || typeof bridge.isInitialized !== 'function' || !bridge.isInitialized()) {
+          // No live game to save through: fail closed instead of claiming saved.
+          return Promise.resolve({ ok: false, saveStale: true });
+        }
+        const token = generation;
+        enterState('saving');
+        pausePromise = scheduler.save(pauseSaveReason(pauseReason)).then(
+          function onSaved(result) {
+            return finishPauseSave(token, result);
+          },
+          function onSaveError() {
+            return failPauseSave(token);
+          }
+        );
+        return pausePromise;
+      }
+
       function pause(reason) {
         const pauseReason = PAUSE_REASONS.includes(reason) ? reason : 'user';
         if (pausePromise) return pausePromise;
-        if (!launchInfo || !bridge || machine.get() !== 'playing') {
+        if (destroyed) {
+          // The Runtime was torn down: nothing can be verified as saved anymore.
+          return Promise.resolve({ ok: false, saveStale: true });
+        }
+        if (!launchInfo || !bridge) return Promise.resolve({ ok: true, saveStale: false });
+        const currentState = machine.get();
+        if (currentState === 'error' || currentState === 'exited') {
+          // The frame is gone; the in-memory progress can no longer be verified as
+          // saved, so report an honest stale result instead of success.
+          return Promise.resolve({ ok: false, saveStale: true });
+        }
+        const storageCapable = launchInfo.capabilities.includes('storage');
+        if (currentState === 'paused') {
+          if (!storageCapable) return Promise.resolve({ ok: true, saveStale: false });
+          if (!saveIsStale()) return Promise.resolve({ ok: true, saveStale: false });
+          // The previous pause save failed and no successful save happened since:
+          // run a real forced save retry and report its true outcome.
+          return retryStalePause(pauseReason);
+        }
+        if (currentState !== 'playing') {
+          // ready/loading: nothing has been played yet, so there is no pending
+          // in-memory progress to flush.
           return Promise.resolve({ ok: true, saveStale: false });
         }
         const token = generation;
         scheduler.stop();
         enterState('paused');
         bridge.sendEvent(EVENTS.PAUSE, { reason: pauseReason, at: now() });
-        if (!launchInfo.capabilities.includes('storage')) {
-          return Promise.resolve({ ok: true, saveStale: false });
-        }
+        if (!storageCapable) return Promise.resolve({ ok: true, saveStale: false });
         enterState('saving');
         pausePromise = scheduler.save(pauseSaveReason(pauseReason)).then(
           function onSaved(result) {
-            pausePromise = null;
-            if (token !== generation || destroyed) return { ok: Boolean(result.ok), saveStale: result.saveStale };
-            if (machine.get() === 'saving') enterState('paused');
-            return { ok: Boolean(result.ok), saveStale: result.saveStale };
+            return finishPauseSave(token, result);
           },
           function onSaveError() {
-            pausePromise = null;
-            if (token !== generation || destroyed) return { ok: false, saveStale: true };
-            if (machine.get() === 'saving') enterState('paused');
-            return { ok: false, saveStale: true };
+            return failPauseSave(token);
           }
         );
         return pausePromise;
@@ -9084,6 +9194,8 @@ window.__ModuleLoader__.load({
         machine.reset('idle');
         launchInfo = normalized;
         pausePromise = null;
+        saveStale = false;
+        saveStaleGeneration = -1;
         expectedFrameLoads = 0;
         navigationUsesLaunchCredential = false;
         capabilitiesRevoked = false;
@@ -9114,6 +9226,10 @@ window.__ModuleLoader__.load({
             }
           },
           onStatus: function onStatus(status, at) {
+            // A save that timed out or failed leaves progress unpersisted; a
+            // successful save clears the stale ledger (AUD-02).
+            if (status === 'saved') clearSaveStale();
+            else if (status === 'failed') markSaveStale();
             emit({ type: 'save-status', status, at });
           },
         });
@@ -9927,7 +10043,9 @@ window.__ModuleLoader__.load({
         const value = result && typeof result === 'object' ? result : {};
         return {
           unresponsive: value.unresponsive === true,
-          saveStale: value.saveStale === true,
+          // Tri-state on purpose: `null` means the pause result did not state
+          // whether the save is stale, and that must never count as saved.
+          saveStale: typeof value.saveStale === 'boolean' ? value.saveStale : null,
           ok: value.ok === true,
           error: value.error && typeof value.error === 'object' ? value.error : null,
         };
@@ -9950,16 +10068,18 @@ window.__ModuleLoader__.load({
             });
           }
           const paused = pauseResult.unresponsive !== true;
-          // Honest save semantics: only a platform pause that resolved ok and did
-          // not report a stale save counts as saved.
-          const saved = pauseResult.ok === true && pauseResult.saveStale !== true;
+          // Honest save semantics (AUD-02): only a platform pause that resolved
+          // ok AND explicitly reported a non-stale save counts as saved. A missing
+          // saveStale is unknown and therefore treated as stale (fail closed).
+          const saved = pauseResult.ok === true && pauseResult.saveStale === false;
+          const saveStale = pauseResult.saveStale !== false;
           const entry = {
             instanceId: instance.instanceId,
             gameId: instance.gameId,
             playSessionId: null,
             paused: paused,
             saved: saved,
-            saveStale: pauseResult.saveStale,
+            saveStale: saveStale,
             saveRevision: null,
           };
           if (!saved) {

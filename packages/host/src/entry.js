@@ -203,6 +203,13 @@ export function createEntryService({
   now = () => new Date(),
   timing = {},
   resources = null,
+  /**
+   * Host-authoritative update admission barrier (audit M3-AUD-03). While a
+   * platform update is between coordination and package change, new game
+   * launches are rejected with a retryable busy code. Optional so isolated
+   * entry tests can run without a host barrier.
+   */
+  admission = null,
 }) {
   const instanceBindings = new Map();
   const frameAncestors = Array.isArray(settings?.security?.frameAncestors)
@@ -346,6 +353,9 @@ export function createEntryService({
   }
 
   async function launch(body) {
+    // Fail fast BEFORE any side effect: the update barrier must reject new
+    // entries (start and resume-paused alike) while a package change may occur.
+    if (admission) admission.assertEntryAllowed();
     if (body === null || typeof body !== 'object' || Array.isArray(body)) {
       throw hostError(GM.INVALID_PARAM, 'Request body must be an object');
     }
@@ -467,6 +477,19 @@ export function createEntryService({
       entryExpiresAt: createdAtMs + bindingTtlMs,
       expiresAt: createdAtMs + bindingTtlMs,
     });
+    // Second admission check at the end of the (async) launch: a launch that
+    // passed the first check just before the Host set the update barrier must
+    // not leave a live instance behind. Remove the binding/credential and fail
+    // closed with the same retryable busy code.
+    if (admission) {
+      try {
+        admission.assertEntryAllowed();
+      } catch (error) {
+        instanceBindings.delete(instanceId);
+        if (resources) resources.release(instanceId, gameId);
+        throw error;
+      }
+    }
     return {
       instanceId,
       nonce,

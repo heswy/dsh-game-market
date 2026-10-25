@@ -313,6 +313,88 @@ export function register() {
     assert.equal(inspected.operation.state, 'pending-restart');
   });
 
+  test('AUD-03 real Host admission barrier: game launch is blocked while the update coordinates and works again once it settles', async (t) => {
+    const fake = createFakePluginManager({
+      hmr: { runExclusive: async (task) => task() },
+      install: async (spec) => ({
+        stage: 'enable',
+        target: 'dsh-game-market',
+        enabled: true,
+        changed: true,
+        application: 'restart-required',
+        restartReason: 'no-hmr',
+        bundle: 'dsh-game-market',
+        version: '1.3.0',
+        spec,
+      }),
+    });
+    const host = await createHostHarness(t, {
+      config: { platformUpdate: { startupCheck: false } },
+      http: { updateOperationTiming: FAST_OPERATION_TIMING },
+      pluginManagerResolver: () => fake.manager,
+      hmrResolver: () => fake.state.hmr,
+      prepareDataRoot: async (dataRoot) => {
+        await writeDiscoveryCache(dataRoot, makeCacheDocument({ target: TARGET }));
+      },
+    });
+    // One real active runtime instance (Host entry registry) -> coordination gate.
+    const launched = await host.data(ROUTES.LAUNCH, { body: { gameId: 'snake' } });
+    assert.equal(launched.gameId, 'snake');
+    const activeInstanceId = launched.instanceId;
+    const begin = await host.requestJson(ROUTES.PLATFORM_UPDATE_BEGIN, { body: { targetId: TARGET.id } });
+    assert.equal(begin.response.status, 200);
+    const operationId = begin.payload.data.operationId;
+    const inspecting = await poll(async () => {
+      const observation = await host.data(ROUTES.PLATFORM_UPDATE_OBSERVE, { query: { operationId } });
+      return observation.state === 'inspecting' ? observation : null;
+    });
+    assert.equal(inspecting.coordination.pending, 1);
+
+    // Non-game routes stay available during the update window.
+    const games = await host.data(ROUTES.GAMES);
+    assert.equal(Array.isArray(games.items), true);
+
+    // Host-authoritative barrier: a NEW launch must be rejected even though the
+    // Client UI never asked this window to pause/save.
+    const blocked = await host.requestJson(ROUTES.LAUNCH, { body: { gameId: 'snake' } });
+    assert.equal(blocked.response.status, 409);
+    assert.equal(blocked.payload.error.code, GM.INSTALL_IN_PROGRESS);
+    assert.match(blocked.payload.error.message, /platform plugin update is in progress/i);
+    assert.equal(blocked.payload.error.retryable, true);
+    assert.equal(fake.calls.installBundle.length, 0, 'no package change while a launch is denied by the barrier');
+
+    // Confirm the active instance's pause+save, then the package change settles.
+    const coordinate = await host.requestJson(ROUTES.PLATFORM_UPDATE_COORDINATE, {
+      body: {
+        windowId: 'window-1',
+        idle: false,
+        instances: [
+          {
+            instanceId: activeInstanceId,
+            gameId: 'snake',
+            paused: true,
+            saved: true,
+            saveStale: false,
+            playSessionId: null,
+            saveRevision: null,
+          },
+        ],
+      },
+    });
+    assert.equal(coordinate.payload.data.phase, 'satisfied');
+    await poll(async () => {
+      const observation = await host.data(ROUTES.PLATFORM_UPDATE_OBSERVE, { query: { operationId } });
+      return observation.state === 'pending-restart' ? observation : null;
+    });
+    assert.equal(fake.calls.installBundle.length, 1);
+    assert.equal(fake.calls.installBundle[0].spec, TARGET.spec);
+
+    // Barrier released once the package change completed: launches work again.
+    const relaunched = await host.data(ROUTES.LAUNCH, { body: { gameId: 'snake' } });
+    assert.equal(relaunched.gameId, 'snake');
+    assert.notEqual(relaunched.instanceId, activeInstanceId);
+  });
+
   test('routes: client-report records the browser identity it is given', async (t) => {
     const fake = createFakePluginManager({ hmr: { runExclusive: async (task) => task() } });
     const host = await createHostHarness(t, {

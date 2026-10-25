@@ -26,6 +26,7 @@ import { createSavesService } from './saves.js';
 import { createScoresService } from './scores.js';
 import { createSessionsService } from './sessions.js';
 import { createStorage } from './storage.js';
+import { createUpdateAdmissionBarrier } from './update-admission.js';
 import { createPlatformUpdateAdapter } from './update-adapter.js';
 import { createUpdateOperationService } from './update-operations.js';
 import { createAgentAdapter } from './agent-adapter.js';
@@ -101,6 +102,11 @@ export function createHost({
     frameAncestors: settings.security.frameAncestors,
     dshWebOrigin: http.dshWebOrigin ?? null,
   });
+  // V1.5 M3 audit AUD-03: one Host-authoritative admission barrier shared by the
+  // entry (launch/resume) path and the update operation state machine. It blocks
+  // NEW game entries only while an update is between coordination and package
+  // change; non-game routes are unaffected.
+  const admission = createUpdateAdmissionBarrier({ now });
   const entry = createEntryService({
     catalog,
     devCatalog,
@@ -112,6 +118,7 @@ export function createHost({
     logger,
     now,
     timing: http.timing,
+    admission,
     // V1.5: entry/launch needs the resource origin to issue instance
     // credentials and fill the LaunchInfo resource fields (§7.2/§7.6).
     resources,
@@ -213,6 +220,7 @@ export function createHost({
     discovery: platformUpdate,
     adapter,
     identity,
+    admission,
     coordination: {
       listActiveInstances: () => entry.listActiveInstances(),
     },
@@ -262,6 +270,7 @@ export function createHost({
     identity,
     platformUpdate,
     updates,
+    admission,
     /**
      * Release the loopback resource server. Idempotent; awaited by the plugin
      * teardown so tests never leave a listening socket behind.

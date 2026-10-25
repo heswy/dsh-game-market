@@ -25,3 +25,4 @@ import './update-api.test.js';
 import './update-identity.test.js';
 import './update-manager.test.js';
 import './update-copy.test.js';
+import './update-coordination-runtime.test.js';

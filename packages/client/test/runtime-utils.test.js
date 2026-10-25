@@ -315,3 +315,10 @@ test('reloadRuntime delegates to controller.reload and reports acceptance', func
     false
   );
 });
+
+
+test('launch/runtime GM-4091 renders the plugin-update-busy copy, not the game-install copy', function () {
+  assert.equal(runtimeErrorTitleKey(GM.INSTALL_IN_PROGRESS), 'runtime.error.updateBusy.title');
+  assert.equal(runtimeErrorBodyKey(GM.INSTALL_IN_PROGRESS), 'runtime.error.updateBusy.body');
+  assert.notEqual(runtimeErrorTitleKey(GM.INSTALL_IN_PROGRESS), 'runtime.error.generic');
+});
