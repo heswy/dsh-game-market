@@ -235,6 +235,7 @@ export async function promoteRelease(options = {}) {
     index,
     indexText,
     installSpec: target.spec,
+    correspondence: inspected.correspondence,
     selfReference: {
       indexInsideRelease: inspected.indexInRelease,
       indexOutputPath: outRelative === null ? null : outRelative.split(path.sep).join('/'),

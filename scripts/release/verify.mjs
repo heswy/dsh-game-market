@@ -28,9 +28,10 @@ Options:
 function human(result) {
   const lines = [];
   lines.push(`${PROGRAM} — v${result.version} (${result.release.slice(0, 12)}…)`);
-  lines.push(`  build commit P    ${result.buildCommit}`);
+  lines.push(`  build commit P    ${result.buildCommit} (R's first parent, P/R version ${result.correspondence.versionAtBuildCommit === result.version ? 'matches' : 'MISMATCH'})`);
+  lines.push(`  release message   ${result.correspondence.releaseMessage}`);
   lines.push(`  artifacts         ${result.deterministicIdentity.files} files, ${formatBytes(result.deterministicIdentity.bytes)}, sha256 ${result.deterministicIdentity.digest}`);
-  lines.push(`  client identity   version=${result.clientIdentity.version} buildCommit=${result.clientIdentity.buildCommit}`);
+  lines.push(`  client identity   version=${result.clientIdentity.version} buildCommit=${result.clientIdentity.buildCommit} (matches release.json)`);
   lines.push(`  engines.dsh       ${result.engineDsh}`);
   lines.push(`  self-reference    ${result.selfReference.indexInsideRelease.present ? 'INDEX INSIDE R (fatal)' : 'none (index must be a separate commit)'}`);
   if (result.index) {

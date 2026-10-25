@@ -44,6 +44,9 @@ export async function verifyRelease(options = {}) {
       files: inspected.identity.artifacts.files,
       bytes: inspected.identity.artifacts.bytes,
     },
+    // Q2 proof (contract §17.6): release.json ↔ commit message ↔ first parent
+    // P ↔ P's package version ↔ client.js banner ↔ artifact digest all agree.
+    correspondence: inspected.correspondence,
     clientIdentity: inspected.clientIdentity,
     selfReference: {
       indexInsideRelease: inspected.indexInRelease,

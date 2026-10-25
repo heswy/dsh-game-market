@@ -14,11 +14,24 @@
  *     `marketInstallTarget(name, version)` returns the exact install spec.
  *   - The validator below re-implements the public constraints (format 1,
  *     localized text, exact SemVer, git source with a lowercase 40-hex commit,
- *     UUID-free HTTPS canonical git URL, engines.dsh SemVer range, integer
- *     publishTimestamp) for the fixed official index this repository owns.
- *     It is intentionally narrower than the public reader: it accepts the
- *     documented shape this generator emits and rejects anything else, so a
- *     malformed index fails here instead of in a user's DSH.
+ *     canonical HTTPS git URL without query/fragment, engines.dsh SemVer
+ *     range, integer publishTimestamp) for the fixed official index this
+ *     repository owns. It is intentionally **stricter** than the public
+ *     reader: it accepts the documented shape this generator emits and rejects
+ *     everything else, so a malformed index fails here instead of in a user's
+ *     DSH. The strict subset and its rationale are recorded in
+ *     docs/V1.5-CONTRACTS.md §17.6; tests/v1.5-release-tools.test.js compares
+ *     it against the public `@deepseek-ai/dsh-plugin-market-index` entry when
+ *     that package is reachable (test-only, never a runtime dependency).
+ *
+ *     Deliberate strictness (public reader tolerates, this generator stays
+ *     narrow): unknown/extra members anywhere are rejected (public drops
+ *     them); `metadata` (top-level or per-plugin) and `icon` are not emitted
+ *     by this generator and are rejected rather than partially validated;
+ *     `engines.dsh` accepts only explicit comparator ranges over 1-3 part
+ *     versions (public accepts `*`, `1.x`, spaced comparators too). Base URL /
+ *     transport policy (fixed HTTPS official index URL) is enforced by the
+ *     Host discovery layer, not by this format validator.
  *
  * Self-reference rule (decisions §5): the index is a mutable discovery entry
  * committed in a *separate* commit I referencing the immutable release commit R.
@@ -44,8 +57,6 @@ const PACKAGE_NAME_MAX_LENGTH = 214;
 const COMMIT = /^[0-9a-f]{40}$/u;
 const PATH_SEGMENT = /^[A-Za-z0-9._@+-]+$/u;
 const MAX_PUBLISH_TIMESTAMP = 1e11;
-const MAX_INLINE_ICON_BYTES = 32 * 1024;
-const DATA_ICON = /^data:(?:image\/svg\+xml|image\/png|image\/jpeg|image\/webp);base64,([A-Za-z0-9+/]*={0,2})$/u;
 
 /** Build the complete format-1 index document for the fixed official index. */
 export function buildPluginIndex({ version, commit, publishTimestamp, engineDsh }) {
@@ -110,11 +121,10 @@ export function validatePluginIndex(value, options = {}) {
   };
 
   if (!object(value, '$')) return { ok: false, errors };
-  onlyKeys(value, new Set(['format', 'title', 'description', 'plugins', 'metadata']), '$');
+  onlyKeys(value, new Set(['format', 'title', 'description', 'plugins']), '$');
   if (value.format !== INDEX_FORMAT) add('E_RELEASE_INDEX_INVALID', `format must be ${String(INDEX_FORMAT)}`, '$.format');
   if (!localized(value.title, '$.title', add)) { /* reported */ }
   if (value.description !== undefined) localized(value.description, '$.description', add);
-  if (value.metadata !== undefined && !object(value.metadata, '$.metadata')) { /* reported */ }
   if (!Array.isArray(value.plugins)) {
     add('E_RELEASE_INDEX_INVALID', 'plugins must be an array', '$.plugins');
     return { ok: false, errors };
@@ -123,7 +133,7 @@ export function validatePluginIndex(value, options = {}) {
   value.plugins.forEach((plugin, position) => {
     const path = `$.plugins[${String(position)}]`;
     if (!object(plugin, path)) return;
-    onlyKeys(plugin, new Set(['name', 'title', 'description', 'icon', 'author', 'homepage', 'repository', 'metadata', 'versions']), path);
+    onlyKeys(plugin, new Set(['name', 'title', 'description', 'author', 'homepage', 'repository', 'versions']), path);
     if (typeof plugin.name !== 'string' || plugin.name.length > PACKAGE_NAME_MAX_LENGTH || !PACKAGE_NAME.test(plugin.name)) {
       add('E_RELEASE_INDEX_INVALID', 'name must be a valid npm package name', `${path}.name`);
     } else if (names.has(plugin.name)) {
@@ -137,7 +147,6 @@ export function validatePluginIndex(value, options = {}) {
       add('E_RELEASE_INDEX_INVALID', 'author must be a non-empty string', `${path}.author`);
     }
     if (plugin.homepage !== undefined) absoluteHttpUrl(plugin.homepage, `${path}.homepage`, add, true);
-    if (plugin.icon !== undefined) icon(plugin.icon, `${path}.icon`, add);
     if (plugin.repository !== undefined) {
       if (object(plugin.repository, `${path}.repository`)) {
         absoluteHttpUrl(plugin.repository.url, `${path}.repository.url`, add, true);
@@ -145,7 +154,6 @@ export function validatePluginIndex(value, options = {}) {
         onlyKeys(plugin.repository, new Set(['url', 'directory']), `${path}.repository`);
       }
     }
-    if (plugin.metadata !== undefined && !object(plugin.metadata, `${path}.metadata`)) { /* reported */ }
     if (!Array.isArray(plugin.versions) || plugin.versions.length === 0) {
       add('E_RELEASE_INDEX_INVALID', 'versions must be a non-empty array', `${path}.versions`);
       return;
@@ -235,25 +243,6 @@ export function validatePluginIndex(value, options = {}) {
     if (candidate.split('/').some((segment) => segment === '.' || segment === '..' || !PATH_SEGMENT.test(segment))) {
       report('E_RELEASE_INDEX_INVALID', 'must be a relative directory of safe segments', path);
     }
-  }
-
-  function icon(candidate, path, report) {
-    if (typeof candidate !== 'string' || candidate.trim() === '') {
-      report('E_RELEASE_INDEX_INVALID', 'icon must be a URL or data URL', path);
-      return;
-    }
-    if (candidate.startsWith('data:')) {
-      const payload = DATA_ICON.exec(candidate)?.[1];
-      if (payload === undefined || payload === '') {
-        report('E_RELEASE_INDEX_INVALID', 'icon data URL must be base64 SVG, PNG, JPEG or WebP', path);
-        return;
-      }
-      const decoded = Math.floor((payload.length / 4) * 3)
-        - (payload.endsWith('==') ? 2 : payload.endsWith('=') ? 1 : 0);
-      if (decoded > MAX_INLINE_ICON_BYTES) report('E_RELEASE_INDEX_INVALID', 'icon data URL exceeds 32 KiB decoded', path);
-      return;
-    }
-    absoluteHttpUrl(candidate, path, report, false);
   }
 
   function source(candidate, path, report) {

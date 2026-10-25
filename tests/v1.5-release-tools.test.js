@@ -15,12 +15,14 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import {
+  ARTIFACT_ROOTS,
   INDEX_PATH,
   RELEASE_IDENTITY_PATH,
 } from '../scripts/release/lib/constants.mjs';
+import { digestInventory, sha256Hex } from '../scripts/release/lib/fs-tree.mjs';
 import {
   buildPluginIndex,
   collectIndexCommits,
@@ -94,6 +96,7 @@ function git(dir, args, options = {}) {
   const result = spawnSync('git', args, {
     cwd: dir,
     encoding: 'utf8',
+    input: options.input,
     env: { ...process.env, GIT_AUTHOR_NAME: 'Fixture', GIT_AUTHOR_EMAIL: 'fixture@example.com', GIT_COMMITTER_NAME: 'Fixture', GIT_COMMITTER_EMAIL: 'fixture@example.com', ...options.env },
     ...options.spawn,
   });
@@ -205,6 +208,17 @@ function writeRelease(fixture) {
   return result.stdoutJson;
 }
 
+/** Commit a package.json version change and return the new HEAD (version commit). */
+function addVersionCommit(fixture, version) {
+  const file = path.join(fixture.dir, 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
+  pkg.version = version;
+  fs.writeFileSync(file, `${JSON.stringify(pkg, null, 2)}\n`);
+  git(fixture.dir, ['add', 'package.json']);
+  git(fixture.dir, ['commit', '-q', '-m', `chore: version ${version}`]);
+  return head(fixture.dir);
+}
+
 function commitEpoch(dir, ref) {
   return Number.parseInt(git(dir, ['show', '-s', '--format=%ct', ref]), 10);
 }
@@ -224,6 +238,99 @@ function status(dir) {
 function readAt(dir, ref, file) {
   const result = spawnSync('git', ['cat-file', 'blob', `${ref}:${file}`], { cwd: dir, encoding: null });
   return result.status === 0 ? result.stdout : null;
+}
+
+/** Artifact inventory of a commit tree, read exactly like the release tools do. */
+function artifactInventoryAt(dir, ref) {
+  const listing = git(dir, ['ls-tree', '-r', '-z', '--long', ref, '--', ...ARTIFACT_ROOTS]);
+  const files = listing
+    .split('\0')
+    .filter((record) => record.length > 0)
+    .map((record) => {
+      const tab = record.indexOf('\t');
+      const meta = record.slice(0, tab);
+      const file = record.slice(tab + 1);
+      const match = /^(\d{6}) blob ([0-9a-f]{40})\s+(\d+)$/u.exec(meta);
+      assert.ok(match, `unparseable ls-tree record: ${record}`);
+      const bytes = readAt(dir, ref, file);
+      return { path: file, sha256: sha256Hex(bytes), size: bytes.length };
+    })
+    .sort((left, right) => (left.path < right.path ? -1 : left.path > right.path ? 1 : 0));
+  return {
+    files,
+    digest: digestInventory(files),
+    bytes: files.reduce((total, file) => total + file.size, 0),
+  };
+}
+
+/**
+ * Create a commit with an arbitrary tree based on `baseRef` and an explicit
+ * parent, without touching the fixture worktree or HEAD. Used to build
+ * hand-assembled "release-like" commits for tamper tests (the real tool only
+ * creates valid ones).
+ */
+function createReleaseLikeCommit(fixture, { baseRef, parent, message, edits = {}, remove = [] }) {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-release-tamper-'));
+  const indexFile = path.join(tempDir, 'index');
+  const env = { GIT_INDEX_FILE: indexFile };
+  try {
+    git(fixture.dir, ['read-tree', baseRef], { env });
+    for (const [file, content] of Object.entries(edits)) {
+      const blob = git(fixture.dir, ['hash-object', '-w', '--stdin'], { env, input: content });
+      git(fixture.dir, ['update-index', '--add', '--cacheinfo', `100644,${blob},${file}`], { env });
+    }
+    for (const file of remove) {
+      git(fixture.dir, ['update-index', '--force-remove', file], { env });
+    }
+    const tree = git(fixture.dir, ['write-tree'], { env });
+    const commit = git(fixture.dir, [
+      'commit-tree', tree,
+      ...(parent === null ? [] : ['-p', parent]),
+      '-m', message,
+    ], { env });
+    // Keep the tampered commit reachable from a branch so promote's
+    // reachability gate passes and the proof under test is what rejects it.
+    git(fixture.dir, ['update-ref', `refs/heads/tamper-${commit.slice(0, 12)}`, commit]);
+    return commit;
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Build a tampered release commit that keeps the message/parent chain valid but
+ * changes the embedded client identity, recomputing the release.json artifact
+ * digest so the client-banner assertion (not the digest assertion) is the one
+ * that must fail.
+ */
+function tamperedClientCommit(fixture, { baseRef, parent, message, releasePatch = {}, clientTransform }) {
+  const identity = JSON.parse(readAt(fixture.dir, baseRef, RELEASE_IDENTITY_PATH).toString('utf8'));
+  const clientText = readAt(fixture.dir, baseRef, 'client.js').toString('utf8');
+  const newClient = clientTransform(clientText);
+  const inventory = artifactInventoryAt(fixture.dir, baseRef);
+  const newBytes = Buffer.byteLength(newClient, 'utf8');
+  const files = inventory.files.map((file) => (file.path === 'client.js'
+    ? { path: 'client.js', sha256: sha256Hex(Buffer.from(newClient, 'utf8')), size: newBytes }
+    : file));
+  const nextIdentity = {
+    ...identity,
+    ...releasePatch,
+    artifacts: {
+      ...identity.artifacts,
+      sha256: digestInventory(files),
+      files: files.length,
+      bytes: files.reduce((total, file) => total + file.size, 0),
+    },
+  };
+  return createReleaseLikeCommit(fixture, {
+    baseRef,
+    parent,
+    message,
+    edits: {
+      'client.js': newClient,
+      [RELEASE_IDENTITY_PATH]: `${JSON.stringify(nextIdentity, null, 2)}\n`,
+    },
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -549,18 +656,31 @@ test('promote rejects an unreachable (dangling) commit', (t) => {
   assert.equal(result.stderrJson.code, 'E_RELEASE_UNREACHABLE');
 });
 
+/** The identity record embedded in a release commit. */
+function releaseIdentityAt(fixture, release) {
+  return JSON.parse(readAt(fixture.dir, release, RELEASE_IDENTITY_PATH).toString('utf8'));
+}
+
+function releaseMessageFor(version, buildCommit) {
+  return `chore(release): v${version} build ${buildCommit}`;
+}
+
 test('promote rejects a release commit whose release.json version was tampered with', (t) => {
   const fixture = makeFixture();
   t.after(() => fixture.cleanup());
   const release = writeRelease(fixture).commit;
-  const identity = JSON.parse(readAt(fixture.dir, release, RELEASE_IDENTITY_PATH).toString('utf8'));
-  identity.version = '1.2.9';
-  fs.writeFileSync(path.join(fixture.dir, RELEASE_IDENTITY_PATH), `${JSON.stringify(identity, null, 2)}\n`);
-  git(fixture.dir, ['add', RELEASE_IDENTITY_PATH]);
-  git(fixture.dir, ['commit', '-q', '-m', 'tamper identity']);
-  const tampered = head(fixture.dir);
+  const identity = releaseIdentityAt(fixture, release);
+  const tampered = createReleaseLikeCommit(fixture, {
+    baseRef: release,
+    parent: identity.clientBuildCommit,
+    message: releaseMessageFor(identity.version, identity.clientBuildCommit),
+    edits: {
+      [RELEASE_IDENTITY_PATH]: `${JSON.stringify({ ...identity, version: '1.2.9' }, null, 2)}\n`,
+    },
+  });
   const result = promote(fixture, ['--release', tampered]);
   assert.notEqual(result.status, 0);
+  assert.equal(result.stderrJson.code, 'E_RELEASE_IDENTITY_VERSION');
   assert.match(`${result.stderrJson.code} ${result.stderrJson.message}`, /VERSION|version/u);
 });
 
@@ -568,11 +688,14 @@ test('promote rejects an artifact digest mismatch', (t) => {
   const fixture = makeFixture();
   t.after(() => fixture.cleanup());
   const release = writeRelease(fixture).commit;
+  const identity = releaseIdentityAt(fixture, release);
   const client = readAt(fixture.dir, release, 'client.js').toString('utf8');
-  fs.writeFileSync(path.join(fixture.dir, 'client.js'), `${client}// tampered\n`);
-  git(fixture.dir, ['add', 'client.js']);
-  git(fixture.dir, ['commit', '-q', '-m', 'tamper artifact']);
-  const tampered = head(fixture.dir);
+  const tampered = createReleaseLikeCommit(fixture, {
+    baseRef: release,
+    parent: identity.clientBuildCommit,
+    message: releaseMessageFor(identity.version, identity.clientBuildCommit),
+    edits: { 'client.js': `${client}// tampered artifact\n` },
+  });
   const result = promote(fixture, ['--release', tampered]);
   assert.notEqual(result.status, 0);
   assert.equal(result.stderrJson.code, 'E_RELEASE_ARTIFACT_DIGEST');
@@ -608,20 +731,22 @@ test('promote refuses an index introduced inside a release-style commit (no self
   const fixture = makeFixture();
   t.after(() => fixture.cleanup());
   const release = writeRelease(fixture).commit;
-  // A valid index pinning R that is then committed inside a descendant whose
-  // release identity still points at R's tree: the index must be a separate
-  // commit, not mixed into a release commit.
+  const identity = releaseIdentityAt(fixture, release);
+  // A valid index pinning R that is then committed inside a hand-assembled
+  // release-style commit whose message/parent chain still claim P: the index
+  // must be a separate commit, not mixed into a release commit.
   const index = buildPluginIndex({
     version: STABLE_VERSION,
     commit: release,
     publishTimestamp: commitEpoch(fixture.dir, release),
     engineDsh: '>=0.2.0 <0.3.0',
   });
-  fs.mkdirSync(path.join(fixture.dir, 'platform-updates'), { recursive: true });
-  fs.writeFileSync(path.join(fixture.dir, INDEX_PATH), serializePluginIndex(index));
-  git(fixture.dir, ['add', INDEX_PATH]);
-  git(fixture.dir, ['commit', '-q', '-m', 'sneak index into release']);
-  const sneak = head(fixture.dir);
+  const sneak = createReleaseLikeCommit(fixture, {
+    baseRef: release,
+    parent: identity.clientBuildCommit,
+    message: releaseMessageFor(identity.version, identity.clientBuildCommit),
+    edits: { [INDEX_PATH]: serializePluginIndex(index) },
+  });
   const result = promote(fixture, ['--release', sneak]);
   assert.notEqual(result.status, 0);
   assert.equal(result.stderrJson.code, 'E_RELEASE_INDEX_IN_RELEASE');
@@ -757,6 +882,146 @@ test('promote validates the release from git objects, not from the working tree'
 });
 
 // ---------------------------------------------------------------------------
+// Q2 (audit ruling): release:verify proves the P/R correspondence
+// ---------------------------------------------------------------------------
+
+test('release:verify proves the P/R correspondence and stays read-only', (t) => {
+  const fixture = makeFixture();
+  t.after(() => fixture.cleanup());
+  const written = writeRelease(fixture);
+  const release = written.commit;
+  const p = written.clientBuildCommit;
+  const beforeHead = head(fixture.dir);
+  const beforeStatus = status(fixture.dir);
+  const beforeRefs = git(fixture.dir, ['for-each-ref', '--format=%(refname) %(objectname)']);
+
+  const verified = runTool(fixture, 'verify.mjs', ['--json', '--release', release]);
+  assert.equal(verified.status, 0, verified.stderr);
+  const json = verified.stdoutJson;
+  const proof = json.correspondence;
+  assert.equal(json.release, release);
+  assert.equal(json.buildCommit, p);
+  assert.equal(proof.buildCommit, p);
+  assert.equal(proof.version, STABLE_VERSION);
+  assert.deepEqual(proof.parents, [p], 'R must have exactly one parent (P)');
+  assert.equal(proof.firstParentIsBuildCommit, true);
+  assert.equal(proof.buildCommitAncestor, true);
+  assert.equal(proof.releaseMessage, `chore(release): v${STABLE_VERSION} build ${p}`);
+  assert.equal(proof.releaseMessageMatches, true);
+  assert.equal(proof.versionAtBuildCommit, STABLE_VERSION);
+  assert.equal(proof.versionInReleaseJson, STABLE_VERSION);
+  assert.equal(proof.versionInPackageJson, STABLE_VERSION);
+  assert.equal(proof.clientBannerVersion, STABLE_VERSION);
+  assert.equal(proof.clientBannerBuildCommit, p);
+  assert.equal(proof.clientBannerMatches, true);
+  assert.equal(proof.artifactDigest, json.deterministicIdentity.digest);
+  assert.equal(proof.artifactDigestMatches, true);
+  assert.equal(proof.artifactFiles, json.deterministicIdentity.files);
+  assert.equal(proof.artifactBytes, json.deterministicIdentity.bytes);
+
+  // read-only: no HEAD/ref/working-tree changes, nothing written
+  assert.equal(head(fixture.dir), beforeHead);
+  assert.equal(status(fixture.dir), beforeStatus);
+  assert.equal(git(fixture.dir, ['for-each-ref', '--format=%(refname) %(objectname)']), beforeRefs);
+});
+
+test('release:verify rejects a release commit that is not the child of the declared P', (t) => {
+  const fixture = makeFixture();
+  t.after(() => fixture.cleanup());
+  const release = writeRelease(fixture).commit;
+  const identity = releaseIdentityAt(fixture, release);
+  const p = identity.clientBuildCommit;
+  // P stays an ancestor of the bad release, but only through an extra commit,
+  // so it is not R's direct (first) parent.
+  const intermediate = createReleaseLikeCommit(fixture, { baseRef: p, parent: p, message: 'intermediate source commit' });
+  const bad = createReleaseLikeCommit(fixture, {
+    baseRef: release,
+    parent: intermediate,
+    message: releaseMessageFor(identity.version, p),
+  });
+  const result = runTool(fixture, 'verify.mjs', ['--json', '--release', bad]);
+  assert.notEqual(result.status, 0);
+  assert.equal(result.stderrJson.code, 'E_RELEASE_VERSION_MISMATCH');
+  assert.match(result.stderrJson.message, /direct child|parent/u);
+  // promote (the write path) applies the same proof before generating an index
+  const promoted = promote(fixture, ['--release', bad]);
+  assert.notEqual(promoted.status, 0);
+  assert.equal(promoted.stderrJson.code, 'E_RELEASE_VERSION_MISMATCH');
+});
+
+test('release:verify rejects a P whose package version differs from the release', (t) => {
+  const fixture = makeFixture();
+  t.after(() => fixture.cleanup());
+  const oldP = addVersionCommit(fixture, '1.2.9');
+  const versionP = addVersionCommit(fixture, fixture.pkg.version);
+  const written = writeRelease(fixture);
+  const release = written.commit;
+  assert.equal(written.clientBuildCommit, versionP);
+  const identity = releaseIdentityAt(fixture, release);
+  const bad = tamperedClientCommit(fixture, {
+    baseRef: release,
+    parent: oldP,
+    message: releaseMessageFor(identity.version, oldP),
+    releasePatch: { clientBuildCommit: oldP },
+    clientTransform: (text) => text.replace(/buildCommit=[0-9a-f]{40}/u, `buildCommit=${oldP}`),
+  });
+  const result = runTool(fixture, 'verify.mjs', ['--json', '--release', bad]);
+  assert.notEqual(result.status, 0);
+  assert.equal(result.stderrJson.code, 'E_RELEASE_VERSION_MISMATCH');
+  assert.match(result.stderrJson.message, /version commit/u);
+});
+
+test('release:verify rejects a mismatched client.js buildCommit banner', (t) => {
+  const fixture = makeFixture();
+  t.after(() => fixture.cleanup());
+  const release = writeRelease(fixture).commit;
+  const identity = releaseIdentityAt(fixture, release);
+  const bad = tamperedClientCommit(fixture, {
+    baseRef: release,
+    parent: identity.clientBuildCommit,
+    message: releaseMessageFor(identity.version, identity.clientBuildCommit),
+    clientTransform: (text) => text.replace(/buildCommit=[0-9a-f]{40}/u, `buildCommit=${'a'.repeat(40)}`),
+  });
+  const result = runTool(fixture, 'verify.mjs', ['--json', '--release', bad]);
+  assert.notEqual(result.status, 0);
+  assert.equal(result.stderrJson.code, 'E_RELEASE_CLIENT_IDENTITY_MISSING');
+  assert.match(result.stderrJson.message, /buildCommit/u);
+});
+
+test('release:verify rejects a mismatched client.js version banner', (t) => {
+  const fixture = makeFixture();
+  t.after(() => fixture.cleanup());
+  const release = writeRelease(fixture).commit;
+  const identity = releaseIdentityAt(fixture, release);
+  const bad = tamperedClientCommit(fixture, {
+    baseRef: release,
+    parent: identity.clientBuildCommit,
+    message: releaseMessageFor(identity.version, identity.clientBuildCommit),
+    clientTransform: (text) => text.replace(/(release-identity: version=)[^\s]+/u, '$11.2.2'),
+  });
+  const result = runTool(fixture, 'verify.mjs', ['--json', '--release', bad]);
+  assert.notEqual(result.status, 0);
+  assert.equal(result.stderrJson.code, 'E_RELEASE_CLIENT_IDENTITY_MISSING');
+  assert.match(result.stderrJson.message, /version/u);
+});
+
+test('release:verify rejects a hand-assembled release commit message', (t) => {
+  const fixture = makeFixture();
+  t.after(() => fixture.cleanup());
+  const release = writeRelease(fixture).commit;
+  const identity = releaseIdentityAt(fixture, release);
+  const bad = createReleaseLikeCommit(fixture, {
+    baseRef: release,
+    parent: identity.clientBuildCommit,
+    message: `chore: hand-assembled release v${STABLE_VERSION}`,
+  });
+  const result = runTool(fixture, 'verify.mjs', ['--json', '--release', bad]);
+  assert.notEqual(result.status, 0);
+  assert.equal(result.stderrJson.code, 'E_RELEASE_VERSION_MISMATCH');
+  assert.match(result.stderrJson.message, /does not match/u);
+});
+
+// ---------------------------------------------------------------------------
 // verify + index validator unit coverage
 // ---------------------------------------------------------------------------
 
@@ -845,6 +1110,293 @@ test('release identity validator enforces the frozen schema', () => {
     mutate(candidate);
     assert.equal(validateReleaseIdentity(candidate, { requireArtifacts: true }).ok, false, `validator accepted mutation: ${String(mutate)}`);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Q1 (audit ruling): compatibility with the host public
+// `@deepseek-ai/dsh-plugin-market-index` parser/target builder.
+//
+// Test-only: the release tooling never depends on that package at runtime. When
+// the public entry is reachable (explicit DSH_PLUGIN_MARKET_INDEX_ENTRY, or an
+// installed/extracted DSH profile bundle node_modules) the comparison runs;
+// otherwise it skips with a reason while the strict-subset behavior below is
+// still exercised. Contract record: docs/V1.5-CONTRACTS.md §17.6.
+// ---------------------------------------------------------------------------
+
+const OFFICIAL_INDEX_URL = 'https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json';
+
+function safeDirectories(dir) {
+  try {
+    return fs.readdirSync(dir, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+  } catch {
+    return [];
+  }
+}
+
+/** Resolve an env/autodetect candidate to the public package's `lib/index.js`. */
+function resolveMarketIndexEntry(candidate) {
+  if (typeof candidate !== 'string' || candidate.trim() === '') return null;
+  const variants = [
+    candidate,
+    path.join(candidate, 'lib/index.js'),
+    path.join(candidate, '@deepseek-ai/dsh-plugin-market-index/lib/index.js'),
+    path.join(candidate, 'node_modules/@deepseek-ai/dsh-plugin-market-index/lib/index.js'),
+  ];
+  for (const variant of variants) {
+    try {
+      if (variant.endsWith('.js') && fs.statSync(variant).isFile()) return variant;
+    } catch {
+      // candidate does not exist: try the next one
+    }
+  }
+  return null;
+}
+
+/**
+ * Locate the host public package without adding a dependency and without
+ * touching the user's profile: env override first, then read-only autodetect of
+ * installed/extracted DSH bundle `node_modules`.
+ */
+function findPublicMarketIndexEntry() {
+  const configured = process.env.DSH_PLUGIN_MARKET_INDEX_ENTRY;
+  const configuredEntry = resolveMarketIndexEntry(configured);
+  if (configured !== undefined && configuredEntry === null) {
+    return {
+      entry: null,
+      configured,
+      error: `DSH_PLUGIN_MARKET_INDEX_ENTRY=${JSON.stringify(configured)} does not resolve to a @deepseek-ai/dsh-plugin-market-index lib/index.js (pass the package dir, a node_modules dir, or the file itself)`,
+    };
+  }
+  if (configuredEntry !== null) return { entry: configuredEntry, configured, error: null };
+
+  const candidates = [];
+  const dshHome = process.env.DSH_HOME || path.join(os.homedir(), '.dsh');
+  for (const profile of safeDirectories(path.join(dshHome, 'profiles'))) {
+    candidates.push(path.join(dshHome, 'profiles', profile, 'node_modules'));
+    candidates.push(path.join(dshHome, 'profiles', profile, 'bundle', 'node_modules'));
+  }
+  for (const runtime of safeDirectories(path.join(dshHome, 'dsh-runtimes'))) {
+    candidates.push(path.join(dshHome, 'dsh-runtimes', runtime, 'node_modules'));
+    candidates.push(path.join(dshHome, 'dsh-runtimes', runtime, 'dependencies', 'node_modules'));
+  }
+  // Isolated-extraction convention used by the M0/M3 DSH harness (read-only).
+  for (const extraction of safeDirectories('/tmp/dsh-v15')) {
+    candidates.push(path.join('/tmp/dsh-v15', extraction, 'asar', 'dsh', 'node_modules'));
+  }
+  candidates.push(path.join('/tmp/dsh-v15', 'asar', 'dsh', 'node_modules'));
+  candidates.push('/Applications/DeepSeek Harness.app/Contents/Resources/app.asar.unpacked/dsh/node_modules');
+
+  for (const candidate of candidates) {
+    const entry = resolveMarketIndexEntry(candidate);
+    if (entry !== null) return { entry, configured, error: null };
+  }
+  return { entry: null, configured, error: null };
+}
+
+const publicMarketIndex = findPublicMarketIndexEntry();
+const publicMarketIndexSkip = publicMarketIndex.entry === null
+  ? 'skipped: host public package @deepseek-ai/dsh-plugin-market-index not reachable; set DSH_PLUGIN_MARKET_INDEX_ENTRY to its lib/index.js (or an installed DSH profile node_modules) to run the compatibility comparison'
+  : false;
+const skipWithoutPublic = publicMarketIndex.entry === null ? { skip: publicMarketIndexSkip } : {};
+let publicMarketIndexModule = null;
+
+async function loadPublicMarketIndex() {
+  if (publicMarketIndex.entry === null) throw new Error('public market index entry is unavailable');
+  publicMarketIndexModule ??= await import(pathToFileURL(publicMarketIndex.entry).href);
+  return publicMarketIndexModule;
+}
+
+const PUBLIC_COMPAT_COMMIT = 'b0a35ca22199728d104ae1e632fb31053c544de2';
+
+function baseIndexDocument(version = STABLE_VERSION) {
+  return buildPluginIndex({
+    version,
+    commit: PUBLIC_COMPAT_COMMIT,
+    publishTimestamp: 1_792_566_455,
+    engineDsh: '>=0.2.0 <0.3.0',
+  });
+}
+
+function mutateIndex(mutate) {
+  const index = JSON.parse(JSON.stringify(baseIndexDocument()));
+  mutate(index);
+  return index;
+}
+
+test('Q1: configured public market-index entry resolves (clear failure on misconfiguration)', () => {
+  assert.equal(publicMarketIndex.error, null, publicMarketIndex.error || '');
+  if (publicMarketIndex.entry !== null) {
+    assert.ok(fs.existsSync(publicMarketIndex.entry), `resolved public package entry disappeared: ${publicMarketIndex.entry}`);
+  }
+});
+
+test('Q1: strict format-1 subset rejects members our generator never emits', () => {
+  assert.equal(validatePluginIndex(baseIndexDocument()).ok, true, 'the generated index shape must be valid');
+  const rejections = [
+    ['extra top-level member', (index) => { index.extra = true; }, /unexpected member/u],
+    ['extra plugin member', (index) => { index.plugins[0].extra = 1; }, /unexpected member/u],
+    ['extra version member', (index) => { index.plugins[0].versions[0].extra = 1; }, /unexpected member/u],
+    ['top-level metadata', (index) => { index.metadata = {}; }, /unexpected member/u],
+    ['plugin metadata', (index) => { index.plugins[0].metadata = {}; }, /unexpected member/u],
+    ['absolute icon', (index) => { index.plugins[0].icon = 'https://example.com/icon.png'; }, /unexpected member/u],
+    ['relative icon', (index) => { index.plugins[0].icon = 'icon.png'; }, /unexpected member/u],
+    ['engines wildcard', (index) => { index.plugins[0].versions[0].engines.dsh = '*'; }, /engines\.dsh/u],
+    ['engines x-range', (index) => { index.plugins[0].versions[0].engines.dsh = '1.x'; }, /engines\.dsh/u],
+    ['engines spaced comparator', (index) => { index.plugins[0].versions[0].engines.dsh = '>= 0.2.0'; }, /engines\.dsh/u],
+    ['engines extra member', (index) => { index.plugins[0].versions[0].engines.node = '>=20'; }, /unexpected member/u],
+  ];
+  for (const [name, mutate, reason] of rejections) {
+    const result = validatePluginIndex(mutateIndex(mutate));
+    assert.equal(result.ok, false, `strict subset must reject: ${name}`);
+    assert.match(`${result.errors[0].path} ${result.errors[0].message}`, reason, `unexpected reason for ${name}`);
+  }
+  // The generator always emits the frozen official binding; strict options add
+  // the binding layer on top of the structural format.
+  const generated = baseIndexDocument();
+  assert.equal(generated.plugins.length, 1);
+  assert.equal(generated.plugins[0].name, 'dsh-game-market');
+  assert.deepEqual(generated.plugins[0].versions[0].source, { type: 'git', url: REPO_URL, commit: PUBLIC_COMPAT_COMMIT });
+  assert.equal(validatePluginIndex(generated, { expect: { commit: 'a'.repeat(40), version: STABLE_VERSION } }).ok, false);
+});
+
+test('Q1: public parser accepts every index our generator emits and derives the same pinned install spec', skipWithoutPublic, async () => {
+  const publicEntry = await loadPublicMarketIndex();
+  assert.equal(typeof publicEntry.parseMarketIndex, 'function');
+  assert.equal(typeof publicEntry.marketInstallTarget, 'function');
+  assert.equal(new URL(OFFICIAL_INDEX_URL).protocol, 'https:', 'the fixed official index URL must stay HTTPS');
+
+  // Same accepted exact versions (including prerelease and build metadata:
+  // structural validity is separate from the stable-channel policy layer).
+  for (const version of [STABLE_VERSION, PRERELEASE_VERSION, '1.2.2', '1.3.0+build.5']) {
+    const index = baseIndexDocument(version);
+    assert.equal(validatePluginIndex(index).ok, true, `our validator rejected generated ${version}`);
+    const parsed = publicEntry.parseMarketIndex(index, OFFICIAL_INDEX_URL);
+    assert.equal(parsed.format, 1);
+    assert.equal(parsed.plugins.length, 1);
+    assert.equal(parsed.plugins[0].name, 'dsh-game-market');
+    assert.equal(parsed.plugins[0].versions.length, 1);
+    const publicVersion = parsed.plugins[0].versions[0];
+    assert.equal(publicVersion.version, version);
+    assert.equal(publicVersion.publishTimestamp, 1_792_566_455);
+    assert.deepEqual(publicVersion.source, { type: 'git', url: REPO_URL, commit: PUBLIC_COMPAT_COMMIT });
+    assert.equal(publicVersion.engines.dsh, '>=0.2.0 <0.3.0');
+    const publicSpec = publicEntry.marketInstallTarget('dsh-game-market', publicVersion).spec;
+    const ourSpec = installTargetFor('dsh-game-market', index.plugins[0].versions[0]).spec;
+    assert.equal(publicSpec, ourSpec, `install spec drifted for ${version}`);
+    assert.equal(publicSpec, `git+${REPO_URL}.git#${PUBLIC_COMPAT_COMMIT}`);
+  }
+
+  // Target derivation parity for the npm source form too (the official
+  // generator emits git only, but the target builders must not drift).
+  const npmIndex = mutateIndex((index) => {
+    index.plugins[0].versions[0].source = { type: 'npm' };
+  });
+  assert.equal(validatePluginIndex(npmIndex).ok, true);
+  const parsedNpm = publicEntry.parseMarketIndex(npmIndex, OFFICIAL_INDEX_URL);
+  assert.deepEqual(
+    publicEntry.marketInstallTarget('dsh-game-market', parsedNpm.plugins[0].versions[0]),
+    installTargetFor('dsh-game-market', npmIndex.plugins[0].versions[0]),
+  );
+});
+
+test('Q1: strict-subset implication — our validator never accepts a document the public parser rejects', skipWithoutPublic, async () => {
+  const publicEntry = await loadPublicMarketIndex();
+  const acceptedVariants = [
+    ['prerelease version', (index) => { index.plugins[0].versions[0].version = '1.4.0-rc.1'; }],
+    ['build metadata version', (index) => { index.plugins[0].versions[0].version = '1.3.0+build.5'; }],
+    ['two distinct versions', (index) => { index.plugins[0].versions.push({ ...index.plugins[0].versions[0], version: '1.2.2' }); }],
+    ['localized title object', (index) => { index.plugins[0].title = { en: 'Market', zh: '市场' }; }],
+    ['npm source', (index) => { index.plugins[0].versions[0].source = { type: 'npm' }; }],
+    ['npm source with http registry', (index) => { index.plugins[0].versions[0].source = { type: 'npm', registry: 'http://registry.example.com/' }; }],
+    ['git url with .git suffix', (index) => { index.plugins[0].versions[0].source.url = `${REPO_URL}.git`; }],
+    ['git source path', (index) => { index.plugins[0].versions[0].source.path = 'packages/market'; }],
+    ['homepage http', (index) => { index.plugins[0].homepage = 'http://github.com/heswy/dsh-game-market'; }],
+    ['homepage fragment', (index) => { index.plugins[0].homepage = `${REPO_URL}#readme`; }],
+    ['repository with directory', (index) => { index.plugins[0].repository = { url: REPO_URL, directory: 'packages/market' }; }],
+    ['engines absent', (index) => { delete index.plugins[0].versions[0].engines; }],
+    ['engines caret', (index) => { index.plugins[0].versions[0].engines.dsh = '^0.2.0'; }],
+    ['engines two comparators', (index) => { index.plugins[0].versions[0].engines.dsh = '>=0.2.0 <0.3.0'; }],
+    ['publishTimestamp 0', (index) => { index.plugins[0].versions[0].publishTimestamp = 0; }],
+    ['scoped plugin name', (index) => { index.plugins[0].name = '@heswy/dsh-game-market'; }],
+  ];
+  for (const [name, mutate] of acceptedVariants) {
+    const candidate = mutateIndex(mutate);
+    assert.equal(validatePluginIndex(candidate).ok, true, `our validator unexpectedly rejected ${name}`);
+    assert.doesNotThrow(
+      () => publicEntry.parseMarketIndex(candidate, OFFICIAL_INDEX_URL),
+      `our validator accepted ${name} but the public parser rejected it (we must never be looser)`,
+    );
+  }
+});
+
+test('Q1: documented strict rejections are stricter-or-equal, never looser', skipWithoutPublic, async () => {
+  const publicEntry = await loadPublicMarketIndex();
+  // Public parser tolerates these members/forms by dropping or widening them;
+  // our strict generator subset rejects them because it never emits them.
+  const stricter = [
+    ['extra top-level member', (index) => { index.extra = true; }],
+    ['extra plugin member', (index) => { index.plugins[0].extra = 1; }],
+    ['extra version member', (index) => { index.plugins[0].versions[0].extra = 1; }],
+    ['plugin metadata', (index) => { index.plugins[0].metadata = {}; }],
+    ['absolute icon', (index) => { index.plugins[0].icon = 'https://example.com/icon.png'; }],
+    ['relative icon', (index) => { index.plugins[0].icon = 'icon.png'; }],
+    ['engines wildcard', (index) => { index.plugins[0].versions[0].engines.dsh = '*'; }],
+    ['engines x-range', (index) => { index.plugins[0].versions[0].engines.dsh = '1.x'; }],
+    ['engines spaced comparator', (index) => { index.plugins[0].versions[0].engines.dsh = '>= 0.2.0'; }],
+  ];
+  for (const [name, mutate] of stricter) {
+    const candidate = mutateIndex(mutate);
+    assert.equal(validatePluginIndex(candidate).ok, false, `strict subset must reject ${name}`);
+    assert.doesNotThrow(
+      () => publicEntry.parseMarketIndex(candidate, OFFICIAL_INDEX_URL),
+      `documented strict subset drifted: public parser now rejects ${name} too (update §17.6 wording)`,
+    );
+  }
+  // Both reject: malformed/unsafe documents.
+  const equallyRejected = [
+    ['format 2', (index) => { index.format = 2; }],
+    ['empty title', (index) => { index.title = '   '; }],
+    ['missing plugins', (index) => { delete index.plugins; }],
+    ['float publishTimestamp', (index) => { index.plugins[0].versions[0].publishTimestamp = 1.5; }],
+    ['duplicate versions', (index) => { index.plugins[0].versions.push({ ...index.plugins[0].versions[0] }); }],
+    ['short commit', (index) => { index.plugins[0].versions[0].source.commit = PUBLIC_COMPAT_COMMIT.slice(0, 12); }],
+    ['uppercase commit', (index) => { index.plugins[0].versions[0].source.commit = PUBLIC_COMPAT_COMMIT.toUpperCase(); }],
+    ['http source url', (index) => { index.plugins[0].versions[0].source.url = 'http://github.com/heswy/dsh-game-market'; }],
+    ['source url with query', (index) => { index.plugins[0].versions[0].source.url = `${REPO_URL}?x=1`; }],
+    ['invalid plugin name', (index) => { index.plugins[0].name = 'DSH-Game-Market'; }],
+    ['invalid version', (index) => { index.plugins[0].versions[0].version = 'v1.3.0'; }],
+    ['leading-zero version', (index) => { index.plugins[0].versions[0].version = '01.3.0'; }],
+    ['source.type unknown', (index) => { index.plugins[0].versions[0].source = { type: 'file', url: REPO_URL }; }],
+  ];
+  for (const [name, mutate] of equallyRejected) {
+    const candidate = mutateIndex(mutate);
+    assert.equal(validatePluginIndex(candidate).ok, false, `we must reject ${name}`);
+    assert.throws(
+      () => publicEntry.parseMarketIndex(candidate, OFFICIAL_INDEX_URL),
+      undefined,
+      `public parser accepted ${name}; our "equal or stricter" claim is wrong`,
+    );
+  }
+  // Binding (repo/plugin/commit/version) is a toolchain-layer strictness on top
+  // of the transport parser: the public parser has no binding expectation.
+  const canonical = baseIndexDocument();
+  assert.equal(validatePluginIndex(canonical, { expect: { commit: 'a'.repeat(40) } }).ok, false);
+  assert.doesNotThrow(() => publicEntry.parseMarketIndex(canonical, OFFICIAL_INDEX_URL));
+  // Channel policy (stable excludes prerelease) is likewise a promotion-layer
+  // rule, not a format rule: see "promote stable rejects prerelease versions".
+  assert.equal(validatePluginIndex(baseIndexDocument(PRERELEASE_VERSION)).ok, true);
+  assert.doesNotThrow(() => publicEntry.parseMarketIndex(baseIndexDocument(PRERELEASE_VERSION), OFFICIAL_INDEX_URL));
+});
+
+test('Q1: index-URL transport policy is separate from the format parser', skipWithoutPublic, async () => {
+  const publicEntry = await loadPublicMarketIndex();
+  const canonical = baseIndexDocument();
+  // The public parser accepts any absolute index URL (relative icon resolution
+  // is the only place it uses it). The fixed official URL's HTTPS requirement
+  // is enforced by Host discovery, not by the format layer; our generator emits
+  // no relative references and the official URL constant is HTTPS.
+  assert.equal(new URL(OFFICIAL_INDEX_URL).protocol, 'https:');
+  assert.doesNotThrow(() => publicEntry.parseMarketIndex(canonical, 'http://127.0.0.1:9/plugins.json'));
 });
 
 // ---------------------------------------------------------------------------
