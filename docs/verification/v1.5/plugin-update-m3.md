@@ -1,6 +1,7 @@
 # V1.5 M3 · 平台插件持续更新真实验证（isolated-DSH 证据）
 
 > 状态：**V0 / V1 / 非 HMR 已完成并通过；V2 部分完成/未跑项明确标注**（目标链 A2 → B4 → R_final7）。
+> **Harness 已稳定化**：单一 network-env builder（默认本地 mirror）、静态自检、串行 driver（含 smoke）；见 §8。
 > - **V0**：隔离 harness 自证、固定官方索引 URL 传输层夹具、一次性精确 commit 安装 helper、实现测试提交树独立复跑、
 >   发现策略矩阵、**V1 preflight 环境门禁**——全部 PASSED 并有原始证据。
 > - **实现**：H1 `6d94779` → H2 `61c890e` → 客户端加固 `c95987d` → 构建产物 `7fe3ae4` → 验证 harness `7e952f2`
@@ -46,6 +47,8 @@
 | V1-2… | 响应丢失/Client 刷新恢复、HMR dispose 存活 | isolated-browser | **not-run** | 见 §3 | — | — |
 | V1-3 | 非 HMR A2→B4：pending-restart（disk B4 / running A2 双证）→ 真实 Host 重启 → activating→updated(1.2.2) 双端；存档保留 | isolated-browser | **PASSED**（59 checks / required 57） | `node scripts/verification/v1.5/m3/run-v1-nonhmr-restart.mjs --a 344ce99… --b 055c53e… --final b0a35ca…` | 0 | docs/verification/v1.5/raw/m3/M3-v1-nonhmr-restart-2026-10-21T08-04-28-800Z.json |
 | V1-4… | 旧 Client + 新 Host 混合态 `stale-runtime(client-old)` | isolated-browser | **not-run** | 见 §3 | — | — |
+| H-1 | Harness 静态自检（语法/import/标识符/无 unbounded while/无 broad cleanup） | automated | **PASSED**（446 checks） | `node scripts/verification/v1.5/m3/check-runners.mjs --write-evidence` | 0 | docs/verification/v1.5/raw/m3/M3-harness-selfcheck-2026-10-21T08-52-49-085Z.json |
+| H-2 | **串行 driver smoke（<5 min，mirror 模式，含 cleanup）** | isolated-browser | **PASSED**（driver PASS；preflight 30/30） | `node scripts/verification/v1.5/m3/run-m3-serial.mjs --scenarios smoke` | 0 | docs/verification/v1.5/raw/m3/M3-v1-preflight-2026-10-21T08-49-16-446Z.json（summary: M3-serial-summary-2026-10-21T08-50-33-707Z.json） |
 | V2-1… | 多窗口并发/幂等/重复点击 | isolated-browser | **not-run** | 见 §4 | — | — |
 | V2-2… | 活跃游戏存档失败阻断包变更、多实例协调、未响应实例超时 | isolated-browser | **not-run** | 见 §4 | — | — |
 | V2-3… | already-installed / ambiguous-install / cancel / too-late | isolated-host + isolated-browser | **not-run** | 见 §4 | — | — |
@@ -319,6 +322,9 @@ canRefresh=true 时 enabled、点击产生一次真实 POST 且 checkedAt 变化
 | docs/verification/v1.5/raw/m3/M3-v1-single-hop-2026-10-21T07-51-10-186Z.json | V1-1a A2→B4 真实 UI 单跳（31/31 PASS） |
 | docs/verification/v1.5/raw/m3/M3-v1-single-hop-2026-10-21T08-01-41-538Z.json | V1-1b B4→R_final7 真实 UI 单跳（31/31 PASS） |
 | docs/verification/v1.5/raw/m3/M3-v1-nonhmr-restart-2026-10-21T08-04-28-800Z.json | 非 HMR pending-restart→真实重启→updated（59/59 PASS） |
+| docs/verification/v1.5/raw/m3/M3-v1-preflight-2026-10-21T08-49-16-446Z.json | 串行 driver smoke（preflight 30/30；<5 min；含 cleanup） |
+| docs/verification/v1.5/raw/m3/M3-serial-summary-2026-10-21T08-50-33-707Z.json | 串行 driver 机器可读 summary（mode/候选 SHA/逐场景 exit/timeout/cleanup/orphans） |
+| docs/verification/v1.5/raw/m3/M3-harness-selfcheck-2026-10-21T08-52-49-085Z.json | Harness 静态自检（446 checks） |
 
 V2：运行后按 `M3-v2-*.json` 命名追加（含 exit code 与逐项 checks）。历史上已存档但不作本轮结论：
 `M3-v1-preflight-2026-10-20T14-46-05-688Z.json`（安装瞬时网络失败）、`M3-v1-preflight-2026-10-20T14-58-53-720Z.json`（UI 刷新按钮轮询时序）。
@@ -360,3 +366,74 @@ node scripts/verification/v1.5/m3/run-v2-edges-index.mjs --a "$A" --b "$B" --fin
 
 约定：所有 runner **required 断言失败即非零退出**；证据经 `sanitiseM3` 脱敏（**保留 40 位 commit SHA**、semver、`/tmp` 路径；
 遮蔽 token/Bearer/32 位会话凭证/`/Users/<user>`）；运行结束前做端口拒绝 + PID 死亡 + 临时 home/配置删除自证。
+
+## 8. Harness 稳定化（task-12；bounding + serial driver + single env builder）
+
+### 8.1 唯一稳定路径（one command, serial, bounded）
+
+```
+node scripts/verification/v1.5/m3/run-m3-serial.mjs --scenarios selfcheck,smoke,hop-a,hop-b,two-hop,nonhmr,v2-windows,v2-save,v2-edges \
+  --a 344ce99c57f03645cbb246a75a45845fc1e9d789 \
+  --b 055c53e7f3fd912b84ff00975be016b572b13740 \
+  --final b0a35ca22199728d104ae1e632fb31053c544de2
+```
+
+- **串行**：driver 逐个 spawn 场景（不并发），任一场景失败默认停止（`--keep-going` 可继续）；全局 lock 文件防止两个 driver 并发。
+- **每场景 timeout**：selfcheck 120s、smoke 420s、hop 600s、non-HMR 900s、V2 900–1200s（`--timeout-multiplier` 可放大）；超时对子进程组 `SIGKILL` 并记 `timedOut=true`。
+- **机器可读 summary**：`docs/verification/v1.5/raw/m3/M3-serial-summary-<ts>.json`（候选 SHA、mode、逐场景 exit/timeout/evidencePath/cleanupProven/orphanPids/passed）。
+- **cleanup 断言**：每个场景由运行器自身写 `cleanup-proven`（ports 拒绝连接、PID 退出、home/chrome 目录删除）；driver 额外做“场景前后 `ps` 差异”检查，场景新增残留进程即判失败。
+- **失败诊断**：场景 stdout/stderr → `/tmp/dsh-v15/m3/logs/m3-serial-<tag>/<scenario>.log`；运行器在删除隔离 home 前把
+  `profiles/web/.plugin-manager/logs/**` 复制到 runDir/native-logs（pnpm/git 原始日志）。
+
+### 8.2 单一 network env builder（默认 mirror，real-GitHub 显式 opt-in）
+
+`network-env.mjs` 是所有 runner 的唯一来源（fixture `envForHost()` 调用它）：
+
+- 默认 `mirror`：`GIT_CONFIG_GLOBAL=/tmp/m3-mirror-gitconfig`（`url.insteadOf` → `/tmp/m3-mirror.git`）、`GIT_CONFIG_NOSYSTEM=1`、
+  pnpm `offline/prefer_offline`（预热 store），网络无关；profile 依赖串仍是 `github:heswy/dsh-game-market#<sha>`，安装树与推送 commit 一致。
+- `real-github`（显式）：`--mode real-github` 或 `M3_NETWORK_MODE=real-github`；使用 pinned gitconfig（curloptResolve）+ pnpm 重试/超时。
+- 证据 label：runner 的 `host-network-env-selfcheck` 里记录 `networkMode`/`networkModeLabel`；summary 记录 `mode/modeLabel`。
+- 索引仍由固定 URL 传输层夹具（§1.2）经 MITM 提供；DNS pin preload 只作用于隔离 Host 进程的三个 GitHub 主机名。
+
+### 8.3 Known traps（本轮踩过的坑，均已固化）
+
+1. **不要在 runner 运行中编辑 harness 文件**（Node 已 import，磁盘改动会让下一次运行与本次不一致；曾造成 missing import）。
+   改完必须跑 `check-runners.mjs`（语法+import+标识符+bounded 扫描）再启动。
+2. **GIT_CONFIG_COUNT/KEY/VALUE 不能用于 Host env**：DSH `scrubbedParentEnv()` 过滤 `/KEY|PASSWORD|SECRET|TOKEN/i`，会丢掉 `GIT_CONFIG_KEY_i`
+   而保留 COUNT → git `missing config key`。必须用 `GIT_CONFIG_GLOBAL` 文件（mirror 或 pinned）。
+3. **不要 broad cleanup**（`pkill -f chrome-*` / `rm -rf .../home-*`）：只清理运行器登记的 run-scoped home/chrome/port；driver 用
+   runTag 日志目录与 lock，避免互相踩踏。
+4. **pkill/并发**：两个 DSH host 同时安装会互相拖慢并让 pnpm store/lock 争用；只需串行。
+5. **pkill 误杀**：外部清理会杀掉其他 run 的 chrome；用 `runTag` 前缀定位。
+6. **单 profile 连续 A→B→C 的 discovery switch** 依赖手动刷新节流/Client 轮询时序，夹具下不稳定；验收用每跳 fresh profile
+   （V1-1a/1b），Host/Client 回归测试覆盖 retained-terminal→new-target 与 offer-next-update。见 §2.1 D7。
+7. **stale-runtime 不是必然中间态**：HMR 快路径会 installing→updated；断言必须允许 fast path（双端身份为准），不要强制 stale 截图/刷新。
+8. **每次操作后 UI 可能被 HMR 自动 reload 回 DSH home**：读 DOM 身份前必须 `ensureMarketPanelOpen` + `ensureUpdateSectionRendered`。
+9. **probe release 目标必须是本次链的 SHAs**（superseded fixture 不用于结论）。
+
+### 8.4 Runner inventory
+
+| 运行器 | 状态 | 用途/说明 |
+|---|---|---|
+| `run-m3-serial.mjs` | **stable（推荐入口）** | 串行 driver + timeout/orphans/cleanup/summary |
+| `check-runners.mjs` | **stable** | 静态自检（446 checks）；改动 harness 后先跑 |
+| `run-v1-single-hop.mjs` | **stable** | 每跳 fresh profile 的真实 Client UI 更新 + 双端核验（V1-1a/1b 证据） |
+| `run-v1-nonhmr-restart.mjs` | **stable** | 非 HMR pending-restart→真实重启→updated |
+| `run-v1-preflight.mjs` | **stable** | 环境门禁/smoke（安装 A2 + 真实页面 + fixed-client 刷新 + cleanup） |
+| `run-v2-windows-idempotency.mjs` | stable（fast-path 已容忍） | 多窗口/重复点击同 operation、单次安装 |
+| `run-v2-save-coordination.mjs` | stable（待本轮结果） | 活跃游戏存档失败阻断包变更 |
+| `run-v1-two-hop.mjs` | ready（task-13 使用；本轮未跑） | 单 profile 连续 A→B→FINAL（两跳都走真实 UI；fixed Client 的 offer-next 必需） |
+| `run-v2-edges-index.mjs` | ready / 本轮 not-run | at-target/ambiguous/cancel/too-late/malicious/dev-row/recovery |
+| `run-v1-hmr-chain.mjs` | **superseded / flaky（不作结论）** | 单 profile A→B→C 连续链；discovery switch 不稳定，历史证据仅参考 |
+| `verify-probe-releases.mjs` | stable | 只读验收（支持 `M3_VERIFIER_LOCAL_FETCH=1` 本地 mirror exact-fetch 模式并标注） |
+| V0 runners（`run-v0-*.mjs`, `install-exact-commit.mjs`） | frozen historical | V0 证据生成器，保持不动 |
+| `run-v1v2.sh` | historical runbook | 以本 §8 与 §7 为准 |
+
+### 8.5 本轮 smoke 结果
+
+- 命令：`node scripts/verification/v1.5/m3/run-m3-serial.mjs --scenarios smoke`（默认候选 b0a35ca，mirror 模式）
+- 结果：**PASS**，`exit=0`、`timedOut=false`、`orphanPids=0`、`cleanupProven=true`；耗时约 77s（<5 min）。
+- 证据：docs/verification/v1.5/raw/m3/M3-v1-preflight-2026-10-21T08-49-16-446Z.json（preflight 30/30）
+  + docs/verification/v1.5/raw/m3/M3-serial-summary-2026-10-21T08-50-33-707Z.json
+- 自检：`node scripts/verification/v1.5/m3/check-runners.mjs --write-evidence` → 446 checks PASS，
+  evidence docs/verification/v1.5/raw/m3/M3-harness-selfcheck-2026-10-21T08-52-49-085Z.json

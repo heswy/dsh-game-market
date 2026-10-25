@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 /**
+ * SUPERSEDED / NOT FOR FINAL EVIDENCE (task-12): single-profile A→B→C chain.
+ * The discovery-switch between hops is timing-fragile in the fixture; use
+ * run-v1-single-hop.mjs per hop (V1-1a/V1-1b) and run-m3-serial.mjs instead.
+ * Kept for historical evidence reproduction only.
  * M3-V1 HMR update chain: install R_A -> real Client UI update to R_B ->
  * real Client UI update to R_final (version 1.3.0).
  *

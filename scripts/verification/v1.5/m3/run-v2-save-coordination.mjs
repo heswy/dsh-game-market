@@ -31,6 +31,7 @@ import {
   log,
   sleep,
   verifyRuntime,
+  finalizeRun,
 } from './lib.mjs';
 import {
   attachReport,

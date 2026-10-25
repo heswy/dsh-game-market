@@ -1,3 +1,5 @@
+# SUPERSEDED RUNBOOK (task-12): prefer docs/verification/v1.5/plugin-update-m3.md §7/§8 and
+# `node scripts/verification/v1.5/m3/run-m3-serial.mjs`. Kept for reference only.
 #!/usr/bin/env bash
 # M3 V1/V2 execution runbook (verification-owned; no git writes).
 #

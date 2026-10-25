@@ -32,6 +32,7 @@
  */
 import fs from 'node:fs';
 import net from 'node:net';
+import { buildHostNetworkEnv, resolveNetworkMode, networkModeLabel } from './network-env.mjs';
 import tls from 'node:tls';
 import http from 'node:http';
 import path from 'node:path';
@@ -725,7 +726,8 @@ dns.promises.lookup = async function patchedPromiseLookup(hostname, options) {
         envKeys: Object.keys(this.envForHost({ marker: 'host-env-selfcheck' })).sort(),
         full: { ok: full !== null && full.ok, attempts: fullAttempts },
         scrubbed: { ok: scrubbedResult !== null && scrubbedResult.ok, attempts: scrubbedAttempts },
-        networkMode: 'pinned-gitconfig',
+        networkMode: resolveNetworkMode(),
+        networkModeLabel: networkModeLabel(resolveNetworkMode()),
         pinned: PINNED_RESOLVES,
       };
       if (this.hostEnvCheck.ok !== true) {
@@ -739,6 +741,10 @@ dns.promises.lookup = async function patchedPromiseLookup(hostname, options) {
 
     envForHost({ marker = null } = {}) {
       const proxy = `http://127.0.0.1:${port}`;
+      const mode = resolveNetworkMode();
+      // ONE env builder for every runner (see network-env.mjs). The fixture
+      // proxy/CA/DNS-pin vars are local-only; the network-mode vars decide how
+      // git/pnpm reach the exact commits (default: isolated local mirror).
       return {
         NODE_USE_ENV_PROXY: '1',
         NODE_EXTRA_CA_CERTS: tlsMaterial.caPem,
@@ -748,48 +754,9 @@ dns.promises.lookup = async function patchedPromiseLookup(hostname, options) {
         npm_config_https_proxy: proxy,
         npm_config_http_proxy: proxy,
         npm_config_proxy: proxy,
-        // Discovery fetch to raw.githubusercontent.com must go through this
-        // fixture proxy (fixed index URL interception). git/pnpm traffic to
-        // GitHub bypasses the proxy and uses the isolated git config written
-        // below (pinned reachable IPs, no proxy). This avoids GIT_CONFIG_COUNT/
-        // KEY_* env entirely (a native-manager code path mangled that env).
-        // Host network env (isolated, verification-only seam):
-        //  - HTTPS_PROXY/NODE_USE_ENV_PROXY: the Host's own fetch reaches the
-        //    fixture proxy (fixed index URL interception);
-        //  - GIT_CONFIG_GLOBAL: isolated git config file pinning github/
-        //    codeload/raw to reachable IPs via http.curloptResolve. The native
-        //    manager's github preflight runs with a SCRUBBED env (DSH drops
-        //    /KEY|PASSWORD|SECRET|TOKEN/i names, which is why GIT_CONFIG_KEY_*
-        //    must NOT be used) but keeps GIT_CONFIG_GLOBAL; git then resolves
-        //    the pinned IPs instead of the DNS-blocked address within its 5s
-        //    preflight budget;
-        //  - pnpm retry/timeout knobs for the flapping link.
-        NO_PROXY: '127.0.0.1,localhost,github.com,.github.com,codeload.github.com,objects.githubusercontent.com,api.github.com',
-        npm_config_noproxy: '127.0.0.1,localhost',
-        M3_NETWORK_MODE: mirrorAvailable ? 'local-mirror' : 'pinned-gitconfig-file',
-        GIT_CONFIG_GLOBAL: hostGitConfigFinal,
-        GIT_CONFIG_NOSYSTEM: '1',
-        // Pin DNS for the three GitHub hosts inside the isolated Host process
-        // (resolver intermittently returns blocked wildcard records).
         NODE_OPTIONS: `--require ${dnsPinPath}`,
-        // pnpm: bypass the fixture proxy entirely. Git dependency URLs are
-        // rewritten to the local bare mirror by GIT_CONFIG_GLOBAL, and registry
-        // metadata (if any) goes direct: routing pnpm through the discovery
-        // fixture added 2-3 minute timeouts per install.
-        npm_config_proxy: '',
-        npm_config_http_proxy: '',
-        npm_config_https_proxy: '',
-        // pnpm must never touch the network: git deps resolve via the local
-        // bare mirror and the warm content-addressable store holds the trees.
-        npm_config_offline: 'true',
-        npm_config_prefer_offline: 'true',
-        // pnpm network resilience (link flaps): bounded retries, no aggressive
-        // concurrency. (Verification env only; product install path unchanged.)
-        npm_config_fetch_retries: '4',
-        npm_config_fetch_retry_maxtimeout: '120000',
-        npm_config_fetch_timeout: '120000',
-        npm_config_network_concurrency: '1',
-        ...(marker === null ? {} : { M3_FIXTURE_RUN_TAG: marker }),
+        ...buildHostNetworkEnv({ mode, marker }),
+        M3_NETWORK_MODE_LABEL: networkModeLabel(mode),
       };
     },
     audit() {
