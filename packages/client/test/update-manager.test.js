@@ -348,7 +348,7 @@ test('coordination reports saved:true only for a clean platform pause', async fu
       return Promise.resolve(inspectionFixture({ operation: { operationId: OPERATION_ID, state: 'inspecting', progress: null } }));
     },
   });
-  const instances = [{ instanceId: INSTANCE_ID, gameId: 'snake', controller: {} }];
+  const instances = [{ instanceId: INSTANCE_ID, gameId: 'snake', controller: { setUpdateHold() {} } }];
   const built = buildManager({
     api: api,
     getRuntimeInstances: function instancesFn() {
@@ -389,7 +389,7 @@ test('a save failure is reported saved:false and visibly blocks the update', asy
       );
     },
   });
-  const instances = [{ instanceId: INSTANCE_ID, gameId: 'puzzle', controller: {} }];
+  const instances = [{ instanceId: INSTANCE_ID, gameId: 'puzzle', controller: { setUpdateHold() {} } }];
   const built = buildManager({
     api: api,
     getRuntimeInstances: function instancesFn() {
@@ -427,7 +427,7 @@ test('a pause result without an explicit saveStale is never reported as saved (A
   const built = buildManager({
     api: api,
     getRuntimeInstances: function instancesFn() {
-      return [{ instanceId: INSTANCE_ID, gameId: 'snake', controller: {} }];
+      return [{ instanceId: INSTANCE_ID, gameId: 'snake', controller: { setUpdateHold() {} } }];
     },
     pauseInstance: function pause() {
       // Legacy/ambiguous result shape: ok but no saveStale verdict.
@@ -456,7 +456,7 @@ test('a pause result that explicitly reports saveStale:true is saved:false even 
   const built = buildManager({
     api: api,
     getRuntimeInstances: function instancesFn() {
-      return [{ instanceId: INSTANCE_ID, gameId: 'snake', controller: {} }];
+      return [{ instanceId: INSTANCE_ID, gameId: 'snake', controller: { setUpdateHold() {} } }];
     },
     pauseInstance: function pause() {
       return Promise.resolve({ ok: true, saveStale: true });
@@ -481,7 +481,7 @@ test('an unresponsive instance is reported paused:false and saved:false', async 
   const built = buildManager({
     api: api,
     getRuntimeInstances: function instancesFn() {
-      return [{ instanceId: INSTANCE_ID, gameId: 'breakout', controller: {} }];
+      return [{ instanceId: INSTANCE_ID, gameId: 'breakout', controller: { setUpdateHold() {} } }];
     },
     pauseInstance: function pause() {
       return Promise.reject(new Error('bridge hung'));
@@ -678,8 +678,8 @@ test('client identity is re-reported periodically while an update is running', a
 
 test('runtime registry entries are collected without clearing live registrations', function () {
   clearRuntimeInstances();
-  const unregister = registerRuntimeInstance({ instanceId: INSTANCE_ID, gameId: 'snake', controller: {} });
-  assert.equal(registerRuntimeInstance({ instanceId: INSTANCE_ID, gameId: 'other', controller: {} }) instanceof Function, true);
+  const unregister = registerRuntimeInstance({ instanceId: INSTANCE_ID, gameId: 'snake', controller: { setUpdateHold() {} } });
+  assert.equal(registerRuntimeInstance({ instanceId: INSTANCE_ID, gameId: 'other', controller: { setUpdateHold() {} } }) instanceof Function, true);
   unregister();
   clearRuntimeInstances();
 });

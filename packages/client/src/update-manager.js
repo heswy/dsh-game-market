@@ -97,6 +97,7 @@ export function createUpdateManager(options) {
   let inspectFailures = 0;
   let unsupported = false;
   let reportedOperations = [];
+  const heldRuntimes = new Map();
 
   function dispatch(action) {
     if (target && typeof target.dispatch === 'function') return target.dispatch(action);
@@ -246,9 +247,18 @@ export function createUpdateManager(options) {
     if (inspectTimer && typeof inspectTimer.unref === 'function') inspectTimer.unref();
   }
 
+  function releaseRuntimeHolds(operationId) {
+    for (const [id, controllers] of heldRuntimes) {
+      if (id !== operationId) continue;
+      for (const controller of controllers) controller.setUpdateHold(id, false);
+      heldRuntimes.delete(id);
+    }
+  }
+
   function applyInspection(inspection) {
     dispatch(updateInspectReady(inspection, now()));
     const operation = inspection.operation;
+    if (operation && !isContinuingObservation(operation)) releaseRuntimeHolds(operation.operationId);
     if (operation && isContinuingObservation(operation)) {
       ensureObserve(operation.operationId);
       scheduleClientReport();
@@ -375,6 +385,7 @@ export function createUpdateManager(options) {
   }
 
   function onTerminalObservation(observation) {
+    releaseRuntimeHolds(observation.operationId);
     clearTimer('observe');
     if (observation.state === UPDATE_SUCCESS_STATE) {
       void reportClient();
@@ -410,13 +421,17 @@ export function createUpdateManager(options) {
     };
   }
 
-  async function collectCoordinatedInstances() {
+  async function collectCoordinatedInstances(operationId) {
     const instances = runtimeInstances();
     const reports = [];
     let failedCount = 0;
     for (const instance of instances) {
       let pauseResult;
       try {
+        if (typeof instance.controller?.setUpdateHold !== 'function') throw { code: GM.NO_RUNTIME };
+        instance.controller.setUpdateHold(operationId, true);
+        if (!heldRuntimes.has(operationId)) heldRuntimes.set(operationId, new Set());
+        heldRuntimes.get(operationId).add(instance.controller);
         pauseResult = normalizePauseResult(await pauseInstance(instance.controller));
       } catch (error) {
         pauseResult = normalizePauseResult({
@@ -456,9 +471,12 @@ export function createUpdateManager(options) {
     const api = getApi();
     const page = identity();
     if (!api || typeof api.coordinate !== 'function' || !page) return Promise.resolve(null);
+    // A new Host operation supersedes the old one; retire its holds before
+    // acquiring the new hold synchronously in collectCoordinatedInstances.
+    for (const id of heldRuntimes.keys()) if (id !== operationId) releaseRuntimeHolds(id);
     coordinateInFlight = true;
     dispatch(updateCoordinated({ operationId: operationId, status: 'working', failedCount: 0, at: now() }));
-    return collectCoordinatedInstances()
+    return collectCoordinatedInstances(operationId)
       .then(async function send(collected) {
         const payload = {
           windowId: page.windowId,

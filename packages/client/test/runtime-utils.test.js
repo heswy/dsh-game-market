@@ -15,6 +15,7 @@ import {
 import {
   isRuntimeController,
   pauseRuntime,
+  resumeRuntime,
   pauseRuntimeBounded,
   reloadRuntime,
   safeCreateRuntime,
@@ -321,4 +322,11 @@ test('launch/runtime GM-4091 renders the plugin-update-busy copy, not the game-i
   assert.equal(runtimeErrorTitleKey(GM.INSTALL_IN_PROGRESS), 'runtime.error.updateBusy.title');
   assert.equal(runtimeErrorBodyKey(GM.INSTALL_IN_PROGRESS), 'runtime.error.updateBusy.body');
   assert.notEqual(runtimeErrorTitleKey(GM.INSTALL_IN_PROGRESS), 'runtime.error.generic');
+});
+
+
+test('runtime adapter preserves an unknown save verdict and a refused resume', async () => {
+  const result = await pauseRuntime({ pause: async () => ({ ok: true }) });
+  assert.equal(result.saveStale, true, 'missing verdict must not become a clean save');
+  assert.equal(resumeRuntime({ resume: () => false }), false, 'update hold refusal reaches UI');
 });

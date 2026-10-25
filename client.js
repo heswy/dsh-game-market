@@ -8355,6 +8355,7 @@ window.__ModuleLoader__.load({
 
       let environment = normalizeEnvironment(options.environment);
       let launchInfo = null;
+      const updateHolds = new Set();
       let iframe = null;
       /** Set the moment the element is created; teardown uses it as a fallback. */
       let createdFrame = null;
@@ -9039,15 +9040,24 @@ window.__ModuleLoader__.load({
         return pausePromise;
       }
 
+      // Trusted Client coordination owns these holds; games cannot access them.
+      function setUpdateHold(operationId, held) {
+        if (typeof operationId !== 'string' || operationId.length === 0) return;
+        if (held === true) updateHolds.add(operationId);
+        else updateHolds.delete(operationId);
+      }
+
       function resumeWithReason(reason) {
-        if (!launchInfo || !bridge) return;
-        if (machine.get() !== 'paused') return;
+        if (updateHolds.size > 0) return false;
+        if (!launchInfo || !bridge) return false;
+        if (machine.get() !== 'paused') return false;
         enterState('playing');
         bridge.sendEvent(EVENTS.RESUME, { reason: reason === 'visible' ? 'visible' : 'user', at: now() });
+        return true;
       }
 
       function resume() {
-        resumeWithReason('user');
+        return resumeWithReason('user');
       }
 
       function cleanupDom() {
@@ -9188,6 +9198,7 @@ window.__ModuleLoader__.load({
       }
 
       async function launch(info) {
+        if (updateHolds.size > 0) throw makeGameError(GM.INSTALL_IN_PROGRESS, 'A platform plugin update is in progress', { retryable: true });
         if (destroyed) throw makeGameError(GM.NO_RUNTIME, 'Game Runtime was destroyed');
         const normalized = normalizeLaunchInfo(info);
         if (iframe || bridge) cleanupDom();
@@ -9316,6 +9327,7 @@ window.__ModuleLoader__.load({
        * @returns {Promise<{ok: boolean, error?: object}>}
        */
       function reload() {
+        if (updateHolds.size > 0) return Promise.reject(makeGameError(GM.INSTALL_IN_PROGRESS, 'A platform plugin update is in progress', { retryable: true }));
         if (destroyed) {
           return Promise.reject(makeGameError(GM.NO_RUNTIME, 'Game Runtime was destroyed'));
         }
@@ -9406,6 +9418,7 @@ window.__ModuleLoader__.load({
         reload,
         pause,
         resume,
+        setUpdateHold,
         destroy,
         getState,
         handleAgentState,
@@ -9518,7 +9531,7 @@ window.__ModuleLoader__.load({
             error: makeGameError(GM.SAVE_WRITE_FAILED, null, { retryable: true }),
           };
         }
-        return { ok: true, saveStale: result.saveStale === true, unresponsive: false, error: null };
+        return { ok: true, saveStale: result.saveStale !== false, unresponsive: false, error: null };
       } catch (error) {
         return {
           ok: false,
@@ -9558,8 +9571,7 @@ window.__ModuleLoader__.load({
     function resumeRuntime(controller) {
       if (!controller || typeof controller.resume !== 'function') return false;
       try {
-        controller.resume();
-        return true;
+        return controller.resume() !== false;
       } catch (_error) {
         return false;
       }
@@ -9738,6 +9750,7 @@ window.__ModuleLoader__.load({
       let inspectFailures = 0;
       let unsupported = false;
       let reportedOperations = [];
+      const heldRuntimes = new Map();
 
       function dispatch(action) {
         if (target && typeof target.dispatch === 'function') return target.dispatch(action);
@@ -9887,9 +9900,18 @@ window.__ModuleLoader__.load({
         if (inspectTimer && typeof inspectTimer.unref === 'function') inspectTimer.unref();
       }
 
+      function releaseRuntimeHolds(operationId) {
+        for (const [id, controllers] of heldRuntimes) {
+          if (id !== operationId) continue;
+          for (const controller of controllers) controller.setUpdateHold(id, false);
+          heldRuntimes.delete(id);
+        }
+      }
+
       function applyInspection(inspection) {
         dispatch(updateInspectReady(inspection, now()));
         const operation = inspection.operation;
+        if (operation && !isContinuingObservation(operation)) releaseRuntimeHolds(operation.operationId);
         if (operation && isContinuingObservation(operation)) {
           ensureObserve(operation.operationId);
           scheduleClientReport();
@@ -10016,6 +10038,7 @@ window.__ModuleLoader__.load({
       }
 
       function onTerminalObservation(observation) {
+        releaseRuntimeHolds(observation.operationId);
         clearTimer('observe');
         if (observation.state === UPDATE_SUCCESS_STATE) {
           void reportClient();
@@ -10051,13 +10074,17 @@ window.__ModuleLoader__.load({
         };
       }
 
-      async function collectCoordinatedInstances() {
+      async function collectCoordinatedInstances(operationId) {
         const instances = runtimeInstances();
         const reports = [];
         let failedCount = 0;
         for (const instance of instances) {
           let pauseResult;
           try {
+            if (typeof instance.controller?.setUpdateHold !== 'function') throw { code: GM.NO_RUNTIME };
+            instance.controller.setUpdateHold(operationId, true);
+            if (!heldRuntimes.has(operationId)) heldRuntimes.set(operationId, new Set());
+            heldRuntimes.get(operationId).add(instance.controller);
             pauseResult = normalizePauseResult(await pauseInstance(instance.controller));
           } catch (error) {
             pauseResult = normalizePauseResult({
@@ -10097,9 +10124,12 @@ window.__ModuleLoader__.load({
         const api = getApi();
         const page = identity();
         if (!api || typeof api.coordinate !== 'function' || !page) return Promise.resolve(null);
+        // A new Host operation supersedes the old one; retire its holds before
+        // acquiring the new hold synchronously in collectCoordinatedInstances.
+        for (const id of heldRuntimes.keys()) if (id !== operationId) releaseRuntimeHolds(id);
         coordinateInFlight = true;
         dispatch(updateCoordinated({ operationId: operationId, status: 'working', failedCount: 0, at: now() }));
-        return collectCoordinatedInstances()
+        return collectCoordinatedInstances(operationId)
           .then(async function send(collected) {
             const payload = {
               windowId: page.windowId,

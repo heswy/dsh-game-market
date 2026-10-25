@@ -486,3 +486,31 @@ test('getState reports idle + null before launch', () => {
   const context = makeContext();
   assert.deepEqual(context.controller.getState(), { state: 'idle', gameId: null });
 });
+
+
+test('update hold blocks user and visibility resume until its owner releases it', async () => {
+  const context = makeContext();
+  try {
+    await context.controller.launch(makeLaunchInfo({ mode: 'resume-paused' }));
+    const iframe = await handshake(context);
+    context.controller.setUpdateHold('operation-a', true);
+    context.controller.resume();
+    assert.equal(context.controller.getState().state, 'paused');
+    context.doc.hidden = true;
+    context.doc.dispatchEvent('visibilitychange', {});
+    context.doc.hidden = false;
+    context.doc.dispatchEvent('visibilitychange', {});
+    await flushAsync();
+    assert.equal(context.controller.getState().state, 'paused');
+    await assert.rejects(context.controller.launch(makeLaunchInfo()), error => error.code === GM.INSTALL_IN_PROGRESS);
+    await assert.rejects(context.controller.reload(), error => error.code === GM.INSTALL_IN_PROGRESS);
+    context.controller.setUpdateHold('operation-b', false);
+    context.controller.resume();
+    assert.equal(context.controller.getState().state, 'paused', 'stale owner cannot unlock');
+    assert.equal(messagesOf(iframe, message => message.event === EVENTS.RESUME).length, 0);
+    context.controller.setUpdateHold('operation-a', false);
+    assert.equal(context.controller.getState().state, 'paused', 'unlock never auto-resumes');
+    context.controller.resume();
+    assert.equal(context.controller.getState().state, 'playing');
+  } finally { context.controller.destroy(); }
+});

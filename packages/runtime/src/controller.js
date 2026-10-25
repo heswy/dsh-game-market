@@ -276,6 +276,7 @@ export function createGameController(options = {}) {
 
   let environment = normalizeEnvironment(options.environment);
   let launchInfo = null;
+  const updateHolds = new Set();
   let iframe = null;
   /** Set the moment the element is created; teardown uses it as a fallback. */
   let createdFrame = null;
@@ -960,15 +961,24 @@ export function createGameController(options = {}) {
     return pausePromise;
   }
 
+  // Trusted Client coordination owns these holds; games cannot access them.
+  function setUpdateHold(operationId, held) {
+    if (typeof operationId !== 'string' || operationId.length === 0) return;
+    if (held === true) updateHolds.add(operationId);
+    else updateHolds.delete(operationId);
+  }
+
   function resumeWithReason(reason) {
-    if (!launchInfo || !bridge) return;
-    if (machine.get() !== 'paused') return;
+    if (updateHolds.size > 0) return false;
+    if (!launchInfo || !bridge) return false;
+    if (machine.get() !== 'paused') return false;
     enterState('playing');
     bridge.sendEvent(EVENTS.RESUME, { reason: reason === 'visible' ? 'visible' : 'user', at: now() });
+    return true;
   }
 
   function resume() {
-    resumeWithReason('user');
+    return resumeWithReason('user');
   }
 
   function cleanupDom() {
@@ -1109,6 +1119,7 @@ export function createGameController(options = {}) {
   }
 
   async function launch(info) {
+    if (updateHolds.size > 0) throw makeGameError(GM.INSTALL_IN_PROGRESS, 'A platform plugin update is in progress', { retryable: true });
     if (destroyed) throw makeGameError(GM.NO_RUNTIME, 'Game Runtime was destroyed');
     const normalized = normalizeLaunchInfo(info);
     if (iframe || bridge) cleanupDom();
@@ -1237,6 +1248,7 @@ export function createGameController(options = {}) {
    * @returns {Promise<{ok: boolean, error?: object}>}
    */
   function reload() {
+    if (updateHolds.size > 0) return Promise.reject(makeGameError(GM.INSTALL_IN_PROGRESS, 'A platform plugin update is in progress', { retryable: true }));
     if (destroyed) {
       return Promise.reject(makeGameError(GM.NO_RUNTIME, 'Game Runtime was destroyed'));
     }
@@ -1327,6 +1339,7 @@ export function createGameController(options = {}) {
     reload,
     pause,
     resume,
+    setUpdateHold,
     destroy,
     getState,
     handleAgentState,

@@ -288,6 +288,17 @@ test('coordination reports saved:false on a real failed save, then a retried coo
   assert.equal(messagesOf(context.iframe, (message) => message.event === EVENTS.PAUSE).length, 1, 'no duplicate PAUSE event');
   assert.equal(messagesOf(context.iframe, (message) => message.event === EVENTS.BEFORE_SAVE).length, 2);
 
+  context.controller.resume();
+  assert.equal(context.controller.getState().state, 'paused', 'acknowledged instance cannot resume during update');
+  host.setInspection(inspection({ operationId: OPERATION_A, state: 'failed', error: { code: 'GM-5036' }, oldVersionStillRunning: true }));
+  await manager.inspect();
+  context.controller.resume();
+  assert.equal(context.controller.getState().state, 'paused', 'late result of old operation cannot unlock new operation');
+  host.setInspection(inspection({ operationId: OPERATION_B, state: 'failed', error: { code: 'GM-5036' }, oldVersionStillRunning: true }));
+  await manager.inspect();
+  context.controller.resume();
+  assert.equal(context.controller.getState().state, 'playing', 'terminal failure releases hold for explicit resume');
+
   manager.stop();
   context.controller.destroy();
 });
