@@ -230,6 +230,11 @@ function connectDirect(host, port = 443, timeoutMs = 20000) {
  * fails. The chosen mode is recorded by the transport audit.
  */
 async function openTunnel(host, port, { proxyUrl = null, timeoutMs = 20000 } = {}) {
+  // M3_PREFER_PROXY=1: the pinned IPs above can be stale (they served 404 for
+  // codeload tarballs); go through the configured upstream proxy first.
+  if (process.env.M3_PREFER_PROXY === '1' && proxyUrl !== null) {
+    return connectViaProxy(proxyUrl, host, port, timeoutMs).then((viaProxy) => ({ ...viaProxy, mode: 'proxy' }));
+  }
   try {
     return await connectDirect(host, port, timeoutMs);
   } catch (directError) {
