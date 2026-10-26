@@ -1,0 +1,44 @@
+{
+  "id": "M3-package-transfer",
+  "evidenceLevel": "real GitHub exact-commit package fetch through the same isolated transport; prewarms pnpm store",
+  "release": "f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+  "code": null,
+  "timedOut": true,
+  "durationMs": 229012,
+  "output": "",
+  "audit": {
+    "scenarioSequence": [],
+    "connects": [],
+    "tunnels": [
+      {
+        "at": "2026-10-26T03:36:48.946Z",
+        "target": "github.com:443"
+      },
+      {
+        "at": "2026-10-26T03:36:48.950Z",
+        "target": "github.com:443",
+        "mode": "proxy"
+      },
+      {
+        "at": "2026-10-26T03:36:54.382Z",
+        "target": "codeload.github.com:443"
+      },
+      {
+        "at": "2026-10-26T03:36:54.383Z",
+        "target": "codeload.github.com:443",
+        "mode": "proxy"
+      }
+    ],
+    "tlsErrors": [],
+    "rejected": [],
+    "requests": [],
+    "counts": {
+      "fixtureRequests": 0,
+      "passthroughRequests": 0,
+      "tunnelConnects": 4,
+      "rejectedPlainHttp": 0,
+      "tlsHandshakeErrors": 0
+    }
+  },
+  "passed": false
+}

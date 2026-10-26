@@ -8,6 +8,7 @@
  */
 import { createApiClient as sharedCreateApiClient, GameMarketApiError } from '../../shared/src/api-client.js';
 import { createMarketApi } from './api-v1.js';
+import { createUpdateApi } from './api-update.js';
 import { reportDiagnostic } from './diagnostics.js';
 
 export const ClientApiError = GameMarketApiError;
@@ -19,6 +20,7 @@ export const createClientApi = function createClientApi(options) {
 
 let client = null;
 let marketClient = null;
+let updateClient = null;
 
 /** Inject a client in tests or replace it at runtime. */
 export function configureApiClient(nextClient) {
@@ -33,6 +35,14 @@ export function configureMarketApi(nextClient) {
   marketClient = nextClient && typeof nextClient === 'object' ? nextClient : null;
   return function reset() {
     marketClient = null;
+  };
+}
+
+/** Inject the V1.5 platform-update client in tests. */
+export function configureUpdateApi(nextClient) {
+  updateClient = nextClient && typeof nextClient === 'object' ? nextClient : null;
+  return function reset() {
+    updateClient = null;
   };
 }
 
@@ -60,6 +70,18 @@ export function getMarketApi() {
   return marketClient;
 }
 
+/** Return the V1.5 platform-update API client, or null when unavailable. */
+export function getUpdateApi() {
+  if (updateClient !== null) return updateClient;
+  try {
+    updateClient = createUpdateApi();
+  } catch (error) {
+    reportDiagnostic('update-api-unavailable', error);
+    updateClient = null;
+  }
+  return updateClient;
+}
+
 /** True when a same-origin fetch client can be built. */
 export function isApiAvailable() {
   return getApiClient() !== null;
@@ -68,4 +90,9 @@ export function isApiAvailable() {
 /** True when the V1 Market client can be built. */
 export function isMarketApiAvailable() {
   return getMarketApi() !== null;
+}
+
+/** True when the V1.5 platform-update client can be built. */
+export function isUpdateApiAvailable() {
+  return getUpdateApi() !== null;
 }

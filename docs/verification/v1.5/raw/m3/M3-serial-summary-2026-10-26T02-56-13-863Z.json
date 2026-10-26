@@ -1,0 +1,37 @@
+{
+  "id": "M3-serial-summary",
+  "startedAt": "2026-10-26T02:54:23.032Z",
+  "runTag": "serial-mvonxvzr",
+  "mode": "real-github",
+  "modeLabel": "real GitHub transport (network-dependent; explicitly opted in)",
+  "candidates": {
+    "a": "ce0247cbd3f3bee59aae9d276616dfb080ae0e08",
+    "b": "1a110b651b200ab6ac597306e544267b59352c0d",
+    "final": "a321bc72c95ae3f246c3b7081731ea4e6e541f19",
+    "versionA": "1.2.1",
+    "versionB": "1.2.2",
+    "versionFinal": "1.3.0"
+  },
+  "scenarios": [
+    {
+      "name": "v2-save",
+      "label": "active-game save failure blocks package change",
+      "command": "/opt/homebrew/Cellar/node@24/24.14.0_1/bin/node /Users/orange/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v2-save-coordination.mjs --a ce0247cbd3f3bee59aae9d276616dfb080ae0e08 --b 1a110b651b200ab6ac597306e544267b59352c0d --final a321bc72c95ae3f246c3b7081731ea4e6e541f19",
+      "logFile": "/tmp/dsh-v15/m3/logs/m3-serial-mvonxvzr/v2-save.log",
+      "timeoutMs": 1200000,
+      "timedOut": false,
+      "exitCode": 1,
+      "signal": null,
+      "spawnError": null,
+      "durationMs": 110795,
+      "evidencePath": "/Users/orange/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/docs/verification/v1.5/raw/m3/M3-v2-save-coordination-2026-10-26T02-54-23-149Z.json",
+      "evidencePassed": false,
+      "cleanupProven": true,
+      "orphanPids": [],
+      "passed": false
+    }
+  ],
+  "failedAt": "v2-save",
+  "passed": false,
+  "logDir": "/tmp/dsh-v15/m3/logs/m3-serial-mvonxvzr"
+}

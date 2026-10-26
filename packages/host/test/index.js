@@ -25,6 +25,10 @@ import { register as v15InstallZip } from './cases/v1.5-install-zip.js';
 import { register as v15RegistryV2 } from './cases/v1.5-registry-v2.js';
 import { register as v15Resources } from './cases/v1.5-resources.js';
 import { register as v15BuiltinPackage } from './cases/v1.5-builtin-package.js';
+import { register as v15PlatformUpdate } from './cases/v1.5-platform-update.js';
+import { register as v15PlatformUpdateAdapter } from './cases/v1.5-platform-update-adapter.js';
+import { register as v15PlatformUpdateOperations } from './cases/v1.5-platform-update-operations.js';
+import { register as v15PlatformUpdateRoutes } from './cases/v1.5-platform-update-routes.js';
 
 health();
 games();
@@ -44,3 +48,7 @@ v15InstallZip();
 v15RegistryV2();
 v15Resources();
 v15BuiltinPackage();
+v15PlatformUpdate();
+v15PlatformUpdateAdapter();
+v15PlatformUpdateOperations();
+v15PlatformUpdateRoutes();

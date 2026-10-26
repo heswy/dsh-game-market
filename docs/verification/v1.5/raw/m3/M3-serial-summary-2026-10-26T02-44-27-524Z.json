@@ -1,0 +1,37 @@
+{
+  "id": "M3-serial-summary",
+  "startedAt": "2026-10-26T02:42:41.484Z",
+  "runTag": "serial-mvoniuob",
+  "mode": "real-github",
+  "modeLabel": "real GitHub transport (network-dependent; explicitly opted in)",
+  "candidates": {
+    "a": "f623ee6ac12471ee1193ec01ddef4bfc97d095be",
+    "b": "5719d483bd5516629e2f61b59a6034562da2b7e3",
+    "final": "889bf78b7c15ff8894880612d267340c75a1a7b6",
+    "versionA": "1.2.1",
+    "versionB": "1.2.2",
+    "versionFinal": "1.3.0"
+  },
+  "scenarios": [
+    {
+      "name": "v2-save",
+      "label": "active-game save failure blocks package change",
+      "command": "/opt/homebrew/Cellar/node@24/24.14.0_1/bin/node /Users/orange/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v2-save-coordination.mjs --a f623ee6ac12471ee1193ec01ddef4bfc97d095be --b 5719d483bd5516629e2f61b59a6034562da2b7e3 --final 889bf78b7c15ff8894880612d267340c75a1a7b6",
+      "logFile": "/tmp/dsh-v15/m3/logs/m3-serial-mvoniuob/v2-save.log",
+      "timeoutMs": 1200000,
+      "timedOut": false,
+      "exitCode": 1,
+      "signal": null,
+      "spawnError": null,
+      "durationMs": 106004,
+      "evidencePath": "/Users/orange/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/docs/verification/v1.5/raw/m3/M3-v2-save-coordination-2026-10-26T02-42-41-605Z.json",
+      "evidencePassed": false,
+      "cleanupProven": true,
+      "orphanPids": [],
+      "passed": false
+    }
+  ],
+  "failedAt": "v2-save",
+  "passed": false,
+  "logDir": "/tmp/dsh-v15/m3/logs/m3-serial-mvoniuob"
+}

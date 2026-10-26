@@ -23,6 +23,7 @@ export function createHealthService({
   startedAt,
   now = () => new Date(),
   logger = null,
+  identity = null,
 }) {
   async function registrySnapshot() {
     if (!registry) {
@@ -98,6 +99,10 @@ export function createHealthService({
     return {
       ok: storageStatus.ok,
       version,
+      // V1.5 additive fields: the activation-frozen running identity. They are
+      // never derived from the current disk state (docs/V1.5-CONTRACTS.md §9).
+      buildCommit: identity === null ? null : identity.buildCommit,
+      loadedVersion: identity === null ? version : identity.loadedVersion,
       hostEpoch,
       devMode,
       storage: {

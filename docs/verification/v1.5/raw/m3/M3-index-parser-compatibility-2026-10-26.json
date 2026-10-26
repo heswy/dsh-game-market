@@ -1,0 +1,61 @@
+{
+  "id": "M3-index-public-parser-compatibility",
+  "at": "2026-10-26T03:18:49.991Z",
+  "evidenceLevel": "installed rc.3 public parser + local dry-run; no publication",
+  "release": "f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+  "hostVersion": "0.2.1-rc.3",
+  "checks": [
+    {
+      "name": "generated-index-accepted-by-official-rc3-parser",
+      "ok": true,
+      "required": true,
+      "detail": "dsh-game-market"
+    },
+    {
+      "name": "generated-index-accepted-by-restricted-parser",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "official-install-target-pins-release",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "promotion-is-dry-run-and-writes-nothing",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "mode": "dry-run",
+        "written": false
+      }
+    },
+    {
+      "name": "floating-commit-official-rejects",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "floating-commit-restricted-rejects",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "short-commit-official-rejects",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "short-commit-restricted-rejects",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ],
+  "passed": true
+}

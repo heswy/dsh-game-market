@@ -1,0 +1,4231 @@
+{
+  "id": "M3-V0-discovery-matrix",
+  "title": "Fixed-URL discovery policy matrix through real Host routes (isolated host + transport fixture)",
+  "commands": [
+    "node scripts/verification/v1.5/m3/run-v0-discovery-matrix.mjs"
+  ],
+  "startedAt": "2026-10-20T12:10:36.951Z",
+  "finishedAt": "2026-10-20T12:12:16.694Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "runtime-extraction-matches-installed-app",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "runtime-expected-version",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.2"
+        },
+        "desktopRuntime": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.2"
+        },
+        "dsh": {
+          "name": "@deepseek-ai/dsh",
+          "version": "0.2.1-rc.2"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.2"
+        }
+      }
+    },
+    {
+      "name": "fixture-proxy-listening",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "port": 59703
+      }
+    },
+    {
+      "name": "fixture-scenarios-available",
+      "ok": true,
+      "required": true,
+      "detail": [
+        "valid",
+        "server-error",
+        "malformed-json",
+        "oversize",
+        "slow",
+        "timeout",
+        "abort",
+        "redirect-http",
+        "redirect-loop"
+      ]
+    },
+    {
+      "name": "valid/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 604
+      }
+    },
+    {
+      "name": "valid/discovery-reaches-ready-with-target",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 302
+      }
+    },
+    {
+      "name": "valid/http-200-envelope-ok",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "requestId": "req_b59250d074a46a03",
+          "serverTime": "2026-10-20T12:10:42.253Z"
+        }
+      }
+    },
+    {
+      "name": "valid/discovery-index-url-is-frozen-official-url",
+      "ok": true,
+      "required": true,
+      "detail": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json"
+    },
+    {
+      "name": "valid/discovery-channel-defaults-to-stable",
+      "ok": true,
+      "required": true,
+      "detail": "stable"
+    },
+    {
+      "name": "valid/discovery-state-ready",
+      "ok": true,
+      "required": true,
+      "detail": "ready"
+    },
+    {
+      "name": "valid/discovery-last-error-null",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "valid/target-version-is-index-version",
+      "ok": true,
+      "required": true,
+      "detail": "1.2.0"
+    },
+    {
+      "name": "valid/target-commit-is-bound-40hex",
+      "ok": true,
+      "required": true,
+      "detail": "f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+    },
+    {
+      "name": "valid/target-spec-is-git-url-plus-commit",
+      "ok": true,
+      "required": true,
+      "detail": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+    },
+    {
+      "name": "valid/target-id-is-opaque-pattern",
+      "ok": true,
+      "required": true,
+      "detail": "tgt_79d2227971971d4f"
+    },
+    {
+      "name": "valid/target-published-at-iso",
+      "ok": true,
+      "required": true,
+      "detail": "2025-10-20T22:40:00.000Z"
+    },
+    {
+      "name": "valid/schema-version-1",
+      "ok": true,
+      "required": true,
+      "detail": 1
+    },
+    {
+      "name": "valid/host-identity-shape",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.2.0",
+        "commit": null,
+        "hostEpoch": "he_c5d9b5707f39430a",
+        "loadedAt": "2026-10-20T12:10:39.687Z"
+      }
+    },
+    {
+      "name": "valid/installed-bundle-identity-shape",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "bundleId": "dsh-game-market",
+        "spec": null,
+        "specShape": "unknown",
+        "version": null,
+        "enabled": null,
+        "loadedVersion": "1.2.0",
+        "loadedCommit": null,
+        "devRowShadow": true
+      }
+    },
+    {
+      "name": "valid/capability-shape",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "hmr": "present",
+        "updatePath": "in-place-hmr",
+        "canBeginUpdate": false,
+        "reasonKey": "update.reason.devSource"
+      }
+    },
+    {
+      "name": "valid/capability-blocked-in-dev-row-profile",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "hmr": "present",
+        "updatePath": "in-place-hmr",
+        "canBeginUpdate": false,
+        "reasonKey": "update.reason.devSource"
+      }
+    },
+    {
+      "name": "valid/cache-file-written-atomically-parsable",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exists": true,
+        "value": {
+          "schemaVersion": 1,
+          "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+          "indexHash": "d01831187948a54ffde774d9d3f26aa6626127a948480bb435ed0a25bd72546b",
+          "channel": "stable",
+          "fetchedAt": "2026-10-20T12:10:39.765Z",
+          "checkedAt": "2026-10-20T12:10:39.785Z",
+          "target": {
+            "id": "tgt_79d2227971971d4f",
+            "version": "1.2.0",
+            "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+            "channel": "stable",
+            "publishedAt": "2025-10-20T22:40:00.000Z",
+            "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+          },
+          "previousTarget": null
+        }
+      }
+    },
+    {
+      "name": "valid/cache-target-matches-discovery-target",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_79d2227971971d4f",
+        "version": "1.2.0",
+        "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      }
+    },
+    {
+      "name": "valid/cache-schema-and-index-url",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "schemaVersion": 1,
+        "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json"
+      }
+    },
+    {
+      "name": "valid/cache-index-hash-64hex",
+      "ok": true,
+      "required": true,
+      "detail": "d01831187948a54ffde774d9d3f26aa6626127a948480bb435ed0a25bd72546b"
+    },
+    {
+      "name": "valid/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 59708,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 6759,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-valid",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "refresh-throttle/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 602
+      }
+    },
+    {
+      "name": "refresh-throttle/initial-discovery-ready",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 301
+      }
+    },
+    {
+      "name": "refresh-throttle/refresh-http-envelope-ok",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "requestId": "req_4e6661ca629a7f79",
+          "serverTime": "2026-10-20T12:10:47.990Z"
+        }
+      }
+    },
+    {
+      "name": "refresh-throttle/refresh-throttled-true",
+      "ok": true,
+      "required": true,
+      "detail": true
+    },
+    {
+      "name": "refresh-throttle/refresh-refreshed-false",
+      "ok": true,
+      "required": true,
+      "detail": false
+    },
+    {
+      "name": "refresh-throttle/throttled-refresh-made-no-network-request",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": 2,
+        "after": 2
+      }
+    },
+    {
+      "name": "refresh-throttle/discovery-can-refresh-false",
+      "ok": true,
+      "required": true,
+      "detail": false
+    },
+    {
+      "name": "refresh-throttle/discovery-next-check-in-future",
+      "ok": true,
+      "required": true,
+      "detail": "2026-10-20T12:11:45.159Z"
+    },
+    {
+      "name": "refresh-throttle/inspect-after-throttle-still-200",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "refresh-throttle/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 59730,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 6897,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-refresh-throttle",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "refresh-allowed/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 601
+      }
+    },
+    {
+      "name": "refresh-allowed/seeded-cache-target-served-before-refresh",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_7960c1cd6641dc95",
+        "version": "1.2.0",
+        "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      }
+    },
+    {
+      "name": "refresh-allowed/seeded-cache-can-refresh-true",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "channel": "stable",
+        "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "state": "ready",
+        "fetchedAt": "2026-10-20T12:00:48.504Z",
+        "checkedAt": "2026-10-20T12:00:48.504Z",
+        "nextCheckAt": "2026-10-20T18:00:48.504Z",
+        "lastError": null,
+        "canRefresh": true,
+        "anomaly": null
+      }
+    },
+    {
+      "name": "refresh-allowed/refresh-not-throttled",
+      "ok": true,
+      "required": true,
+      "detail": false
+    },
+    {
+      "name": "refresh-allowed/refresh-refreshed-true",
+      "ok": true,
+      "required": true,
+      "detail": true
+    },
+    {
+      "name": "refresh-allowed/refresh-made-one-network-request",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": 2,
+        "after": 3
+      }
+    },
+    {
+      "name": "refresh-allowed/target-updated-to-new-pin",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_9190204d8e5ca2bd",
+        "version": "1.2.2",
+        "commit": "c106ac101e064a72f408c58b2516aad5118f513f",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f"
+      }
+    },
+    {
+      "name": "refresh-allowed/no-anomaly-for-different-version",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "refresh-allowed/cache-updated-to-new-target",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_9190204d8e5ca2bd",
+        "version": "1.2.2",
+        "commit": "c106ac101e064a72f408c58b2516aad5118f513f",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f"
+      }
+    },
+    {
+      "name": "refresh-allowed/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 59748,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 7162,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-refresh-allowed",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "oversize/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 603
+      }
+    },
+    {
+      "name": "oversize/settles-to-invalid-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 301,
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "oversize/state-is-invalid",
+      "ok": true,
+      "required": true,
+      "detail": "invalid"
+    },
+    {
+      "name": "oversize/last-error-code-update-index-unavailable",
+      "ok": true,
+      "required": true,
+      "detail": "GM-5039"
+    },
+    {
+      "name": "oversize/last-error-reason-matches",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "too-large",
+        "expected": "too-large"
+      }
+    },
+    {
+      "name": "oversize/target-is-null",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "oversize/inspect-http-200-even-when-invalid",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "requestId": "req_0d4599a332b34e7b",
+          "serverTime": "2026-10-20T12:10:59.239Z"
+        }
+      }
+    },
+    {
+      "name": "oversize/games-routes-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "oversize/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 59765,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 7401,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-oversize",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "timeout/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 603
+      }
+    },
+    {
+      "name": "timeout/settles-to-offline-or-invalid",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "elapsedMs": 3114,
+        "state": "offline"
+      }
+    },
+    {
+      "name": "timeout/state-offline",
+      "ok": true,
+      "required": true,
+      "detail": "offline"
+    },
+    {
+      "name": "timeout/last-error-reason-timeout",
+      "ok": true,
+      "required": true,
+      "detail": "timeout"
+    },
+    {
+      "name": "timeout/timeout-retryable",
+      "ok": true,
+      "required": true,
+      "detail": true
+    },
+    {
+      "name": "timeout/target-is-null",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "timeout/timeout-enforced-within-budget",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "elapsedMs": 3114,
+        "budgetMs": 20000,
+        "note": "fixture delays 8s; fetchBytes whole-index budget is 5s (fetch abort) plus polling granularity"
+      }
+    },
+    {
+      "name": "timeout/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 59793,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 8539,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-timeout",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "malformed-json/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 603
+      }
+    },
+    {
+      "name": "malformed-json/settles-to-invalid-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 302,
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "malformed-json/state-is-invalid",
+      "ok": true,
+      "required": true,
+      "detail": "invalid"
+    },
+    {
+      "name": "malformed-json/last-error-code-update-index-unavailable",
+      "ok": true,
+      "required": true,
+      "detail": "GM-5039"
+    },
+    {
+      "name": "malformed-json/last-error-reason-matches",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "json",
+        "expected": "json"
+      }
+    },
+    {
+      "name": "malformed-json/target-is-null",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "malformed-json/inspect-http-200-even-when-invalid",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "requestId": "req_6efa415fe45061f8",
+          "serverTime": "2026-10-20T12:11:13.140Z"
+        }
+      }
+    },
+    {
+      "name": "malformed-json/games-routes-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "malformed-json/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 59818,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10003,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-malformed-json",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "unbound-repo/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 603
+      }
+    },
+    {
+      "name": "unbound-repo/settles-to-invalid-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 300,
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "unbound-repo/state-is-invalid",
+      "ok": true,
+      "required": true,
+      "detail": "invalid"
+    },
+    {
+      "name": "unbound-repo/last-error-code-update-index-unavailable",
+      "ok": true,
+      "required": true,
+      "detail": "GM-5039"
+    },
+    {
+      "name": "unbound-repo/last-error-reason-matches",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "binding",
+        "expected": "binding"
+      }
+    },
+    {
+      "name": "unbound-repo/target-is-null",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "unbound-repo/inspect-http-200-even-when-invalid",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "requestId": "req_6af9febdcd7a47ea",
+          "serverTime": "2026-10-20T12:11:18.757Z"
+        }
+      }
+    },
+    {
+      "name": "unbound-repo/games-routes-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "unbound-repo/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 59847,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10159,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-unbound-repo",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "file-source/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 603
+      }
+    },
+    {
+      "name": "file-source/settles-to-invalid-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 302,
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "file-source/state-is-invalid",
+      "ok": true,
+      "required": true,
+      "detail": "invalid"
+    },
+    {
+      "name": "file-source/last-error-code-update-index-unavailable",
+      "ok": true,
+      "required": true,
+      "detail": "GM-5039"
+    },
+    {
+      "name": "file-source/last-error-reason-matches",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "format",
+        "expected": "format"
+      }
+    },
+    {
+      "name": "file-source/target-is-null",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "file-source/inspect-http-200-even-when-invalid",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "requestId": "req_b55ef208acc65085",
+          "serverTime": "2026-10-20T12:11:24.435Z"
+        }
+      }
+    },
+    {
+      "name": "file-source/games-routes-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "file-source/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 59966,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10313,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-file-source",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "short-sha/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 603
+      }
+    },
+    {
+      "name": "short-sha/settles-to-invalid-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 310,
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "short-sha/state-is-invalid",
+      "ok": true,
+      "required": true,
+      "detail": "invalid"
+    },
+    {
+      "name": "short-sha/last-error-code-update-index-unavailable",
+      "ok": true,
+      "required": true,
+      "detail": "GM-5039"
+    },
+    {
+      "name": "short-sha/last-error-reason-matches",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "format",
+        "expected": "format"
+      }
+    },
+    {
+      "name": "short-sha/target-is-null",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "short-sha/inspect-http-200-even-when-invalid",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "requestId": "req_f2ca378279916725",
+          "serverTime": "2026-10-20T12:11:30.150Z"
+        }
+      }
+    },
+    {
+      "name": "short-sha/games-routes-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "short-sha/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 60034,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10468,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-short-sha",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "redirect-http/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 602
+      }
+    },
+    {
+      "name": "redirect-http/settles-to-invalid-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 302,
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "redirect-http/state-is-invalid",
+      "ok": true,
+      "required": true,
+      "detail": "invalid"
+    },
+    {
+      "name": "redirect-http/last-error-code-update-index-unavailable",
+      "ok": true,
+      "required": true,
+      "detail": "GM-5039"
+    },
+    {
+      "name": "redirect-http/last-error-reason-matches",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "redirect",
+        "expected": "redirect"
+      }
+    },
+    {
+      "name": "redirect-http/target-is-null",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "redirect-http/inspect-http-200-even-when-invalid",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "requestId": "req_2a8f3f0af8e32846",
+          "serverTime": "2026-10-20T12:11:35.784Z"
+        }
+      }
+    },
+    {
+      "name": "redirect-http/games-routes-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "redirect-http/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 60079,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10605,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-redirect-http",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "redirect-loop/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 603
+      }
+    },
+    {
+      "name": "redirect-loop/settles-to-invalid-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 302,
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "redirect-loop/state-is-invalid",
+      "ok": true,
+      "required": true,
+      "detail": "invalid"
+    },
+    {
+      "name": "redirect-loop/last-error-code-update-index-unavailable",
+      "ok": true,
+      "required": true,
+      "detail": "GM-5039"
+    },
+    {
+      "name": "redirect-loop/last-error-reason-matches",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "redirect",
+        "expected": "redirect"
+      }
+    },
+    {
+      "name": "redirect-loop/target-is-null",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "redirect-loop/inspect-http-200-even-when-invalid",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "requestId": "req_a7f820791c282986",
+          "serverTime": "2026-10-20T12:11:41.530Z"
+        }
+      }
+    },
+    {
+      "name": "redirect-loop/games-routes-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "redirect-loop/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 60186,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10783,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-redirect-loop",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "offline-keeps-target/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 602
+      }
+    },
+    {
+      "name": "offline-keeps-target/settles-offline",
+      "ok": true,
+      "required": true,
+      "detail": "offline"
+    },
+    {
+      "name": "offline-keeps-target/state-offline",
+      "ok": true,
+      "required": true,
+      "detail": "offline"
+    },
+    {
+      "name": "offline-keeps-target/last-error-reason-network",
+      "ok": true,
+      "required": true,
+      "detail": "network"
+    },
+    {
+      "name": "offline-keeps-target/last-successful-target-retained",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_7960c1cd6641dc95",
+        "version": "1.2.0",
+        "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      }
+    },
+    {
+      "name": "offline-keeps-target/retryable-true",
+      "ok": true,
+      "required": true,
+      "detail": true
+    },
+    {
+      "name": "offline-keeps-target/inspect-http-200",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "offline-keeps-target/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 60272,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10917,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-offline-keeps-target",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "anomaly-same-version-different-commit/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 603
+      }
+    },
+    {
+      "name": "anomaly-same-version-different-commit/seeded-target-served",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_7960c1cd6641dc95",
+        "version": "1.2.0",
+        "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      }
+    },
+    {
+      "name": "anomaly-same-version-different-commit/refresh-succeeded",
+      "ok": true,
+      "required": true,
+      "detail": true
+    },
+    {
+      "name": "anomaly-same-version-different-commit/new-target-has-same-version-other-commit",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_aa402aab156676d3",
+        "version": "1.2.0",
+        "commit": "c106ac101e064a72f408c58b2516aad5118f513f",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f"
+      }
+    },
+    {
+      "name": "anomaly-same-version-different-commit/anomaly-detected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "kind": "same-version-different-commit",
+        "version": "1.2.0",
+        "expectedCommit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "foundCommit": "c106ac101e064a72f408c58b2516aad5118f513f",
+        "source": "previous-target"
+      }
+    },
+    {
+      "name": "anomaly-same-version-different-commit/anomaly-expected-commit-is-previous",
+      "ok": true,
+      "required": true,
+      "detail": "f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+    },
+    {
+      "name": "anomaly-same-version-different-commit/anomaly-found-commit-is-new",
+      "ok": true,
+      "required": true,
+      "detail": "c106ac101e064a72f408c58b2516aad5118f513f"
+    },
+    {
+      "name": "anomaly-same-version-different-commit/anomaly-source-is-previous-target",
+      "ok": true,
+      "required": true,
+      "detail": "previous-target"
+    },
+    {
+      "name": "anomaly-same-version-different-commit/can-begin-update-false",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "hmr": "present",
+        "updatePath": "in-place-hmr",
+        "canBeginUpdate": false,
+        "reasonKey": "update.reason.devSource"
+      }
+    },
+    {
+      "name": "anomaly-same-version-different-commit/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 60359,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 11032,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-anomaly-same-version-different-commit",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "prerelease-stable/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 602
+      }
+    },
+    {
+      "name": "prerelease-stable/state-ready-with-no-target",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "ready",
+        "target": null
+      }
+    },
+    {
+      "name": "prerelease-stable/stable-channel-filtered-prerelease",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "ready",
+        "target": null,
+        "lastError": null
+      }
+    },
+    {
+      "name": "prerelease-stable/can-begin-update-false-without-target",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "hmr": "present",
+        "updatePath": "in-place-hmr",
+        "canBeginUpdate": false,
+        "reasonKey": "update.reason.devSource"
+      }
+    },
+    {
+      "name": "prerelease-stable/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 60419,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 11146,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-prerelease-stable",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "test-channel-optin/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 603
+      }
+    },
+    {
+      "name": "test-channel-optin/test-channel-discovers-prerelease",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 302
+      }
+    },
+    {
+      "name": "test-channel-optin/discovery-channel-is-test",
+      "ok": true,
+      "required": true,
+      "detail": "test"
+    },
+    {
+      "name": "test-channel-optin/target-is-prerelease-version",
+      "ok": true,
+      "required": true,
+      "detail": "1.3.0-alpha.1"
+    },
+    {
+      "name": "test-channel-optin/target-commit-bound",
+      "ok": true,
+      "required": true,
+      "detail": "c106ac101e064a72f408c58b2516aad5118f513f"
+    },
+    {
+      "name": "test-channel-optin/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 60440,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 11293,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-test-channel-optin",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "client-report/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 604
+      }
+    },
+    {
+      "name": "client-report/client-report-valid-accepted",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "data": {
+          "accepted": true,
+          "state": "idle",
+          "expected": {
+            "buildVersion": "1.2.0",
+            "buildCommit": null
+          }
+        },
+        "envelope": {
+          "ok": true,
+          "requestId": "req_c2dff00b11bf390b",
+          "serverTime": "2026-10-20T12:12:08.974Z"
+        }
+      }
+    },
+    {
+      "name": "client-report/client-report-state-idle-before-update",
+      "ok": true,
+      "required": true,
+      "detail": "idle"
+    },
+    {
+      "name": "client-report/client-report-invalid-build-version-rejected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 400,
+        "envelope": {
+          "ok": false,
+          "requestId": "req_e96a073af910be2c",
+          "serverTime": "2026-10-20T12:12:09.283Z"
+        }
+      }
+    },
+    {
+      "name": "client-report/client-report-invalid-build-commit-rejected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 400,
+        "envelope": {
+          "ok": false,
+          "requestId": "req_771fad1ebf53e157",
+          "serverTime": "2026-10-20T12:12:09.590Z"
+        }
+      }
+    },
+    {
+      "name": "client-report/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 60470,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 11407,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-client-report",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "begin-fail-closed/routes-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 606
+      }
+    },
+    {
+      "name": "begin-fail-closed/valid-target-discovered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_79d2227971971d4f",
+        "version": "1.2.0",
+        "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      }
+    },
+    {
+      "name": "begin-fail-closed/begin-does-not-silently-succeed",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "currentEnvelope": {
+          "ok": false,
+          "requestId": "req_847088710d6284d1",
+          "serverTime": "2026-10-20T12:12:15.248Z"
+        },
+        "h1FailClosed": false
+      }
+    },
+    {
+      "name": "begin-fail-closed/forged-target-rejected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "forgedStatus": 409,
+        "forgedEnvelope": {
+          "ok": false,
+          "requestId": "req_16cd96ca76e5176d",
+          "serverTime": "2026-10-20T12:12:15.507Z"
+        }
+      }
+    },
+    {
+      "name": "begin-fail-closed/no-operation-started",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "begin-fail-closed/h1-skeleton-detected-or-h2-adapter-present",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "h1FailClosed": false,
+        "note": "H1: begin answers GM-5038 (adapter unavailable) before H2; H2 will answer GM-4090 for forged target ids"
+      }
+    },
+    {
+      "name": "begin-fail-closed/case-cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ports": [
+          {
+            "port": 60494,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 11561,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-begin-fail-closed",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "all-case-cleanups-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "caseCleanups": 17,
+        "allCaseOk": true,
+        "finalCleanup": {
+          "label": "discovery-matrix-final-cleanup",
+          "ok": true,
+          "checkedAt": "2026-10-20T12:12:16.694Z",
+          "ports": [
+            {
+              "port": 59703,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 59708,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 59730,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 59748,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 59765,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 59793,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 59818,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 59847,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 59966,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 60034,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 60079,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 60186,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 60272,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 60359,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 60419,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 60440,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 60470,
+              "accepting": false,
+              "listenerPids": []
+            },
+            {
+              "port": 60494,
+              "accepting": false,
+              "listenerPids": []
+            }
+          ],
+          "pids": [],
+          "dirs": [
+            {
+              "dir": "/tmp/dsh-v15/m3/fixture-v0-discovery-mvgn63gp-8e589d/tls",
+              "exists": false
+            },
+            {
+              "dir": "/tmp/dsh-v15/m3/fixture-v0-discovery-mvgn63gp-8e589d",
+              "exists": false
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "runTag": "v0-discovery-mvgn63gp-8e589d",
+  "evidenceLevel": "isolated-host + transport fixture + real Host routes (discovery only; H1 skeleton)",
+  "notCoveredUntilH2": [
+    "native adapter installBundle branches (begin/applied/activating/updated/pending-restart/verification-failed/cancel/too-late)",
+    "coordination gate and multi-window idempotency",
+    "Client UI-driven operations (V1/V2)",
+    "forged-target GM-4090 rejection once the H2 adapter exists (H1 fail-closed GM-5038 recorded)"
+  ],
+  "fixedIndexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+  "fixtureMethod": "selective TLS interception (NODE_USE_ENV_PROXY + NODE_EXTRA_CA_CERTS); exact fixed host+path fixture, real passthrough for other paths, opaque tunnels for other hosts",
+  "gitHead": "4201bdecda6a09917eb1cc2815c1d238503a019f",
+  "cases": [
+    {
+      "id": "valid",
+      "title": "valid format-1 index discovers the pinned official target",
+      "scenario": "valid",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 6759,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "valid/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 604
+          }
+        },
+        {
+          "name": "valid/discovery-reaches-ready-with-target",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 302
+          }
+        },
+        {
+          "name": "valid/http-200-envelope-ok",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "status": 200,
+            "envelope": {
+              "ok": true,
+              "requestId": "req_b59250d074a46a03",
+              "serverTime": "2026-10-20T12:10:42.253Z"
+            }
+          }
+        },
+        {
+          "name": "valid/discovery-index-url-is-frozen-official-url",
+          "ok": true,
+          "required": true,
+          "detail": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json"
+        },
+        {
+          "name": "valid/discovery-channel-defaults-to-stable",
+          "ok": true,
+          "required": true,
+          "detail": "stable"
+        },
+        {
+          "name": "valid/discovery-state-ready",
+          "ok": true,
+          "required": true,
+          "detail": "ready"
+        },
+        {
+          "name": "valid/discovery-last-error-null",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "valid/target-version-is-index-version",
+          "ok": true,
+          "required": true,
+          "detail": "1.2.0"
+        },
+        {
+          "name": "valid/target-commit-is-bound-40hex",
+          "ok": true,
+          "required": true,
+          "detail": "f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+        },
+        {
+          "name": "valid/target-spec-is-git-url-plus-commit",
+          "ok": true,
+          "required": true,
+          "detail": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+        },
+        {
+          "name": "valid/target-id-is-opaque-pattern",
+          "ok": true,
+          "required": true,
+          "detail": "tgt_79d2227971971d4f"
+        },
+        {
+          "name": "valid/target-published-at-iso",
+          "ok": true,
+          "required": true,
+          "detail": "2025-10-20T22:40:00.000Z"
+        },
+        {
+          "name": "valid/schema-version-1",
+          "ok": true,
+          "required": true,
+          "detail": 1
+        },
+        {
+          "name": "valid/host-identity-shape",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "version": "1.2.0",
+            "commit": null,
+            "hostEpoch": "he_c5d9b5707f39430a",
+            "loadedAt": "2026-10-20T12:10:39.687Z"
+          }
+        },
+        {
+          "name": "valid/installed-bundle-identity-shape",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "bundleId": "dsh-game-market",
+            "spec": null,
+            "specShape": "unknown",
+            "version": null,
+            "enabled": null,
+            "loadedVersion": "1.2.0",
+            "loadedCommit": null,
+            "devRowShadow": true
+          }
+        },
+        {
+          "name": "valid/capability-shape",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "hmr": "present",
+            "updatePath": "in-place-hmr",
+            "canBeginUpdate": false,
+            "reasonKey": "update.reason.devSource"
+          }
+        },
+        {
+          "name": "valid/capability-blocked-in-dev-row-profile",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "hmr": "present",
+            "updatePath": "in-place-hmr",
+            "canBeginUpdate": false,
+            "reasonKey": "update.reason.devSource"
+          }
+        },
+        {
+          "name": "valid/cache-file-written-atomically-parsable",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "exists": true,
+            "value": {
+              "schemaVersion": 1,
+              "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+              "indexHash": "d01831187948a54ffde774d9d3f26aa6626127a948480bb435ed0a25bd72546b",
+              "channel": "stable",
+              "fetchedAt": "2026-10-20T12:10:39.765Z",
+              "checkedAt": "2026-10-20T12:10:39.785Z",
+              "target": {
+                "id": "tgt_79d2227971971d4f",
+                "version": "1.2.0",
+                "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+                "channel": "stable",
+                "publishedAt": "2025-10-20T22:40:00.000Z",
+                "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+              },
+              "previousTarget": null
+            }
+          }
+        },
+        {
+          "name": "valid/cache-target-matches-discovery-target",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "id": "tgt_79d2227971971d4f",
+            "version": "1.2.0",
+            "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+            "channel": "stable",
+            "publishedAt": "2025-10-20T22:40:00.000Z",
+            "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+          }
+        },
+        {
+          "name": "valid/cache-schema-and-index-url",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "schemaVersion": 1,
+            "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json"
+          }
+        },
+        {
+          "name": "valid/cache-index-hash-64hex",
+          "ok": true,
+          "required": true,
+          "detail": "d01831187948a54ffde774d9d3f26aa6626127a948480bb435ed0a25bd72546b"
+        },
+        {
+          "name": "valid/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 59708,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 6759,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-valid",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-valid-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:10:42.546Z",
+        "ports": [
+          {
+            "port": 59708,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 6759,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-valid",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "refresh-throttle",
+      "title": "manual refresh within 60s is throttled and does not re-fetch",
+      "scenario": "valid",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 6897,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "refresh-throttle/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 602
+          }
+        },
+        {
+          "name": "refresh-throttle/initial-discovery-ready",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 301
+          }
+        },
+        {
+          "name": "refresh-throttle/refresh-http-envelope-ok",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "status": 200,
+            "envelope": {
+              "ok": true,
+              "requestId": "req_4e6661ca629a7f79",
+              "serverTime": "2026-10-20T12:10:47.990Z"
+            }
+          }
+        },
+        {
+          "name": "refresh-throttle/refresh-throttled-true",
+          "ok": true,
+          "required": true,
+          "detail": true
+        },
+        {
+          "name": "refresh-throttle/refresh-refreshed-false",
+          "ok": true,
+          "required": true,
+          "detail": false
+        },
+        {
+          "name": "refresh-throttle/throttled-refresh-made-no-network-request",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "before": 2,
+            "after": 2
+          }
+        },
+        {
+          "name": "refresh-throttle/discovery-can-refresh-false",
+          "ok": true,
+          "required": true,
+          "detail": false
+        },
+        {
+          "name": "refresh-throttle/discovery-next-check-in-future",
+          "ok": true,
+          "required": true,
+          "detail": "2026-10-20T12:11:45.159Z"
+        },
+        {
+          "name": "refresh-throttle/inspect-after-throttle-still-200",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "refresh-throttle/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 59730,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 6897,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-refresh-throttle",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-refresh-throttle-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:10:48.504Z",
+        "ports": [
+          {
+            "port": 59730,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 6897,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-refresh-throttle",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "refresh-allowed",
+      "title": "refresh after throttle window re-checks and updates the cached target",
+      "scenario": "valid",
+      "startupCheck": false,
+      "channel": "stable",
+      "cacheSeeded": true,
+      "boot": {
+        "pid": 7162,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "refresh-allowed/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 601
+          }
+        },
+        {
+          "name": "refresh-allowed/seeded-cache-target-served-before-refresh",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "id": "tgt_7960c1cd6641dc95",
+            "version": "1.2.0",
+            "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+            "channel": "stable",
+            "publishedAt": "2025-10-20T22:40:00.000Z",
+            "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+          }
+        },
+        {
+          "name": "refresh-allowed/seeded-cache-can-refresh-true",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "channel": "stable",
+            "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+            "state": "ready",
+            "fetchedAt": "2026-10-20T12:00:48.504Z",
+            "checkedAt": "2026-10-20T12:00:48.504Z",
+            "nextCheckAt": "2026-10-20T18:00:48.504Z",
+            "lastError": null,
+            "canRefresh": true,
+            "anomaly": null
+          }
+        },
+        {
+          "name": "refresh-allowed/refresh-not-throttled",
+          "ok": true,
+          "required": true,
+          "detail": false
+        },
+        {
+          "name": "refresh-allowed/refresh-refreshed-true",
+          "ok": true,
+          "required": true,
+          "detail": true
+        },
+        {
+          "name": "refresh-allowed/refresh-made-one-network-request",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "before": 2,
+            "after": 3
+          }
+        },
+        {
+          "name": "refresh-allowed/target-updated-to-new-pin",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "id": "tgt_9190204d8e5ca2bd",
+            "version": "1.2.2",
+            "commit": "c106ac101e064a72f408c58b2516aad5118f513f",
+            "channel": "stable",
+            "publishedAt": "2025-10-20T22:40:00.000Z",
+            "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f"
+          }
+        },
+        {
+          "name": "refresh-allowed/no-anomaly-for-different-version",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "refresh-allowed/cache-updated-to-new-target",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "id": "tgt_9190204d8e5ca2bd",
+            "version": "1.2.2",
+            "commit": "c106ac101e064a72f408c58b2516aad5118f513f",
+            "channel": "stable",
+            "publishedAt": "2025-10-20T22:40:00.000Z",
+            "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f"
+          }
+        },
+        {
+          "name": "refresh-allowed/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 59748,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 7162,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-refresh-allowed",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-refresh-allowed-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:10:54.160Z",
+        "ports": [
+          {
+            "port": 59748,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 7162,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-refresh-allowed",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "oversize",
+      "title": ">256 KiB index is rejected without a target",
+      "scenario": "oversize",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 7401,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "oversize/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 603
+          }
+        },
+        {
+          "name": "oversize/settles-to-invalid-state",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 301,
+            "state": "invalid"
+          }
+        },
+        {
+          "name": "oversize/state-is-invalid",
+          "ok": true,
+          "required": true,
+          "detail": "invalid"
+        },
+        {
+          "name": "oversize/last-error-code-update-index-unavailable",
+          "ok": true,
+          "required": true,
+          "detail": "GM-5039"
+        },
+        {
+          "name": "oversize/last-error-reason-matches",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "reason": "too-large",
+            "expected": "too-large"
+          }
+        },
+        {
+          "name": "oversize/target-is-null",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "oversize/inspect-http-200-even-when-invalid",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "status": 200,
+            "envelope": {
+              "ok": true,
+              "requestId": "req_0d4599a332b34e7b",
+              "serverTime": "2026-10-20T12:10:59.239Z"
+            }
+          }
+        },
+        {
+          "name": "oversize/games-routes-unaffected",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "oversize/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 59765,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 7401,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-oversize",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-oversize-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:10:59.818Z",
+        "ports": [
+          {
+            "port": 59765,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 7401,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-oversize",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "timeout",
+      "title": "5s whole-index timeout is enforced and surfaced as retryable offline",
+      "scenario": "timeout",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 8539,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "timeout/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 603
+          }
+        },
+        {
+          "name": "timeout/settles-to-offline-or-invalid",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "elapsedMs": 3114,
+            "state": "offline"
+          }
+        },
+        {
+          "name": "timeout/state-offline",
+          "ok": true,
+          "required": true,
+          "detail": "offline"
+        },
+        {
+          "name": "timeout/last-error-reason-timeout",
+          "ok": true,
+          "required": true,
+          "detail": "timeout"
+        },
+        {
+          "name": "timeout/timeout-retryable",
+          "ok": true,
+          "required": true,
+          "detail": true
+        },
+        {
+          "name": "timeout/target-is-null",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "timeout/timeout-enforced-within-budget",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "elapsedMs": 3114,
+            "budgetMs": 20000,
+            "note": "fixture delays 8s; fetchBytes whole-index budget is 5s (fetch abort) plus polling granularity"
+          }
+        },
+        {
+          "name": "timeout/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 59793,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 8539,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-timeout",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-timeout-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:11:08.001Z",
+        "ports": [
+          {
+            "port": 59793,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 8539,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-timeout",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "malformed-json",
+      "title": "malformed JSON index is rejected",
+      "scenario": "malformed-json",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 10003,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "malformed-json/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 603
+          }
+        },
+        {
+          "name": "malformed-json/settles-to-invalid-state",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 302,
+            "state": "invalid"
+          }
+        },
+        {
+          "name": "malformed-json/state-is-invalid",
+          "ok": true,
+          "required": true,
+          "detail": "invalid"
+        },
+        {
+          "name": "malformed-json/last-error-code-update-index-unavailable",
+          "ok": true,
+          "required": true,
+          "detail": "GM-5039"
+        },
+        {
+          "name": "malformed-json/last-error-reason-matches",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "reason": "json",
+            "expected": "json"
+          }
+        },
+        {
+          "name": "malformed-json/target-is-null",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "malformed-json/inspect-http-200-even-when-invalid",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "status": 200,
+            "envelope": {
+              "ok": true,
+              "requestId": "req_6efa415fe45061f8",
+              "serverTime": "2026-10-20T12:11:13.140Z"
+            }
+          }
+        },
+        {
+          "name": "malformed-json/games-routes-unaffected",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "malformed-json/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 59818,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 10003,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-malformed-json",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-malformed-json-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:11:13.686Z",
+        "ports": [
+          {
+            "port": 59818,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10003,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-malformed-json",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "unbound-repo",
+      "title": "index bound to a non-official repository is rejected",
+      "scenario": "valid",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 10159,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "unbound-repo/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 603
+          }
+        },
+        {
+          "name": "unbound-repo/settles-to-invalid-state",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 300,
+            "state": "invalid"
+          }
+        },
+        {
+          "name": "unbound-repo/state-is-invalid",
+          "ok": true,
+          "required": true,
+          "detail": "invalid"
+        },
+        {
+          "name": "unbound-repo/last-error-code-update-index-unavailable",
+          "ok": true,
+          "required": true,
+          "detail": "GM-5039"
+        },
+        {
+          "name": "unbound-repo/last-error-reason-matches",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "reason": "binding",
+            "expected": "binding"
+          }
+        },
+        {
+          "name": "unbound-repo/target-is-null",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "unbound-repo/inspect-http-200-even-when-invalid",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "status": 200,
+            "envelope": {
+              "ok": true,
+              "requestId": "req_6af9febdcd7a47ea",
+              "serverTime": "2026-10-20T12:11:18.757Z"
+            }
+          }
+        },
+        {
+          "name": "unbound-repo/games-routes-unaffected",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "unbound-repo/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 59847,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 10159,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-unbound-repo",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-unbound-repo-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:11:19.361Z",
+        "ports": [
+          {
+            "port": 59847,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10159,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-unbound-repo",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "file-source",
+      "title": "file: source in the index is rejected",
+      "scenario": "valid",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 10313,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "file-source/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 603
+          }
+        },
+        {
+          "name": "file-source/settles-to-invalid-state",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 302,
+            "state": "invalid"
+          }
+        },
+        {
+          "name": "file-source/state-is-invalid",
+          "ok": true,
+          "required": true,
+          "detail": "invalid"
+        },
+        {
+          "name": "file-source/last-error-code-update-index-unavailable",
+          "ok": true,
+          "required": true,
+          "detail": "GM-5039"
+        },
+        {
+          "name": "file-source/last-error-reason-matches",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "reason": "format",
+            "expected": "format"
+          }
+        },
+        {
+          "name": "file-source/target-is-null",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "file-source/inspect-http-200-even-when-invalid",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "status": 200,
+            "envelope": {
+              "ok": true,
+              "requestId": "req_b55ef208acc65085",
+              "serverTime": "2026-10-20T12:11:24.435Z"
+            }
+          }
+        },
+        {
+          "name": "file-source/games-routes-unaffected",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "file-source/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 59966,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 10313,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-file-source",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-file-source-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:11:25.039Z",
+        "ports": [
+          {
+            "port": 59966,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10313,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-file-source",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "short-sha",
+      "title": "short commit SHA in the index is rejected",
+      "scenario": "valid",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 10468,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "short-sha/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 603
+          }
+        },
+        {
+          "name": "short-sha/settles-to-invalid-state",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 310,
+            "state": "invalid"
+          }
+        },
+        {
+          "name": "short-sha/state-is-invalid",
+          "ok": true,
+          "required": true,
+          "detail": "invalid"
+        },
+        {
+          "name": "short-sha/last-error-code-update-index-unavailable",
+          "ok": true,
+          "required": true,
+          "detail": "GM-5039"
+        },
+        {
+          "name": "short-sha/last-error-reason-matches",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "reason": "format",
+            "expected": "format"
+          }
+        },
+        {
+          "name": "short-sha/target-is-null",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "short-sha/inspect-http-200-even-when-invalid",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "status": 200,
+            "envelope": {
+              "ok": true,
+              "requestId": "req_f2ca378279916725",
+              "serverTime": "2026-10-20T12:11:30.150Z"
+            }
+          }
+        },
+        {
+          "name": "short-sha/games-routes-unaffected",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "short-sha/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 60034,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 10468,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-short-sha",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-short-sha-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:11:30.735Z",
+        "ports": [
+          {
+            "port": 60034,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10468,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-short-sha",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "redirect-http",
+      "title": "redirect downgrade to http is rejected",
+      "scenario": "redirect-http",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 10605,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "redirect-http/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 602
+          }
+        },
+        {
+          "name": "redirect-http/settles-to-invalid-state",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 302,
+            "state": "invalid"
+          }
+        },
+        {
+          "name": "redirect-http/state-is-invalid",
+          "ok": true,
+          "required": true,
+          "detail": "invalid"
+        },
+        {
+          "name": "redirect-http/last-error-code-update-index-unavailable",
+          "ok": true,
+          "required": true,
+          "detail": "GM-5039"
+        },
+        {
+          "name": "redirect-http/last-error-reason-matches",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "reason": "redirect",
+            "expected": "redirect"
+          }
+        },
+        {
+          "name": "redirect-http/target-is-null",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "redirect-http/inspect-http-200-even-when-invalid",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "status": 200,
+            "envelope": {
+              "ok": true,
+              "requestId": "req_2a8f3f0af8e32846",
+              "serverTime": "2026-10-20T12:11:35.784Z"
+            }
+          }
+        },
+        {
+          "name": "redirect-http/games-routes-unaffected",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "redirect-http/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 60079,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 10605,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-redirect-http",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-redirect-http-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:11:36.423Z",
+        "ports": [
+          {
+            "port": 60079,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10605,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-redirect-http",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "redirect-loop",
+      "title": "redirect loop exceeding maxRedirects is rejected",
+      "scenario": "redirect-loop",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 10783,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "redirect-loop/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 603
+          }
+        },
+        {
+          "name": "redirect-loop/settles-to-invalid-state",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 302,
+            "state": "invalid"
+          }
+        },
+        {
+          "name": "redirect-loop/state-is-invalid",
+          "ok": true,
+          "required": true,
+          "detail": "invalid"
+        },
+        {
+          "name": "redirect-loop/last-error-code-update-index-unavailable",
+          "ok": true,
+          "required": true,
+          "detail": "GM-5039"
+        },
+        {
+          "name": "redirect-loop/last-error-reason-matches",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "reason": "redirect",
+            "expected": "redirect"
+          }
+        },
+        {
+          "name": "redirect-loop/target-is-null",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "redirect-loop/inspect-http-200-even-when-invalid",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "status": 200,
+            "envelope": {
+              "ok": true,
+              "requestId": "req_a7f820791c282986",
+              "serverTime": "2026-10-20T12:11:41.530Z"
+            }
+          }
+        },
+        {
+          "name": "redirect-loop/games-routes-unaffected",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "redirect-loop/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 60186,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 10783,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-redirect-loop",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 6,
+      "cleanup": {
+        "label": "case-redirect-loop-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:11:42.112Z",
+        "ports": [
+          {
+            "port": 60186,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10783,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-redirect-loop",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "offline-keeps-target",
+      "title": "network failure keeps the last successful target and reports offline",
+      "scenario": "abort",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": true,
+      "boot": {
+        "pid": 10917,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "offline-keeps-target/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 602
+          }
+        },
+        {
+          "name": "offline-keeps-target/settles-offline",
+          "ok": true,
+          "required": true,
+          "detail": "offline"
+        },
+        {
+          "name": "offline-keeps-target/state-offline",
+          "ok": true,
+          "required": true,
+          "detail": "offline"
+        },
+        {
+          "name": "offline-keeps-target/last-error-reason-network",
+          "ok": true,
+          "required": true,
+          "detail": "network"
+        },
+        {
+          "name": "offline-keeps-target/last-successful-target-retained",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "id": "tgt_7960c1cd6641dc95",
+            "version": "1.2.0",
+            "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+            "channel": "stable",
+            "publishedAt": "2025-10-20T22:40:00.000Z",
+            "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+          }
+        },
+        {
+          "name": "offline-keeps-target/retryable-true",
+          "ok": true,
+          "required": true,
+          "detail": true
+        },
+        {
+          "name": "offline-keeps-target/inspect-http-200",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "status": 200
+          }
+        },
+        {
+          "name": "offline-keeps-target/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 60272,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 10917,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-offline-keeps-target",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-offline-keeps-target-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:11:47.477Z",
+        "ports": [
+          {
+            "port": 60272,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 10917,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-offline-keeps-target",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "anomaly-same-version-different-commit",
+      "title": "same version pinned to a different commit is reported as an anomaly (previous target)",
+      "scenario": "valid",
+      "startupCheck": false,
+      "channel": "stable",
+      "cacheSeeded": true,
+      "boot": {
+        "pid": 11032,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "anomaly-same-version-different-commit/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 603
+          }
+        },
+        {
+          "name": "anomaly-same-version-different-commit/seeded-target-served",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "id": "tgt_7960c1cd6641dc95",
+            "version": "1.2.0",
+            "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+            "channel": "stable",
+            "publishedAt": "2025-10-20T22:40:00.000Z",
+            "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+          }
+        },
+        {
+          "name": "anomaly-same-version-different-commit/refresh-succeeded",
+          "ok": true,
+          "required": true,
+          "detail": true
+        },
+        {
+          "name": "anomaly-same-version-different-commit/new-target-has-same-version-other-commit",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "id": "tgt_aa402aab156676d3",
+            "version": "1.2.0",
+            "commit": "c106ac101e064a72f408c58b2516aad5118f513f",
+            "channel": "stable",
+            "publishedAt": "2025-10-20T22:40:00.000Z",
+            "spec": "https://github.com/heswy/dsh-game-market.git#c106ac101e064a72f408c58b2516aad5118f513f"
+          }
+        },
+        {
+          "name": "anomaly-same-version-different-commit/anomaly-detected",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "kind": "same-version-different-commit",
+            "version": "1.2.0",
+            "expectedCommit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+            "foundCommit": "c106ac101e064a72f408c58b2516aad5118f513f",
+            "source": "previous-target"
+          }
+        },
+        {
+          "name": "anomaly-same-version-different-commit/anomaly-expected-commit-is-previous",
+          "ok": true,
+          "required": true,
+          "detail": "f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+        },
+        {
+          "name": "anomaly-same-version-different-commit/anomaly-found-commit-is-new",
+          "ok": true,
+          "required": true,
+          "detail": "c106ac101e064a72f408c58b2516aad5118f513f"
+        },
+        {
+          "name": "anomaly-same-version-different-commit/anomaly-source-is-previous-target",
+          "ok": true,
+          "required": true,
+          "detail": "previous-target"
+        },
+        {
+          "name": "anomaly-same-version-different-commit/can-begin-update-false",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "hmr": "present",
+            "updatePath": "in-place-hmr",
+            "canBeginUpdate": false,
+            "reasonKey": "update.reason.devSource"
+          }
+        },
+        {
+          "name": "anomaly-same-version-different-commit/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 60359,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 11032,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-anomaly-same-version-different-commit",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-anomaly-same-version-different-commit-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:11:53.143Z",
+        "ports": [
+          {
+            "port": 60359,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 11032,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-anomaly-same-version-different-commit",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "prerelease-stable",
+      "title": "prerelease-only index yields no stable target",
+      "scenario": "valid",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 11146,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "prerelease-stable/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 602
+          }
+        },
+        {
+          "name": "prerelease-stable/state-ready-with-no-target",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "state": "ready",
+            "target": null
+          }
+        },
+        {
+          "name": "prerelease-stable/stable-channel-filtered-prerelease",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "state": "ready",
+            "target": null,
+            "lastError": null
+          }
+        },
+        {
+          "name": "prerelease-stable/can-begin-update-false-without-target",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "hmr": "present",
+            "updatePath": "in-place-hmr",
+            "canBeginUpdate": false,
+            "reasonKey": "update.reason.devSource"
+          }
+        },
+        {
+          "name": "prerelease-stable/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 60419,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 11146,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-prerelease-stable",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-prerelease-stable-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:11:58.510Z",
+        "ports": [
+          {
+            "port": 60419,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 11146,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-prerelease-stable",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "test-channel-optin",
+      "title": "test channel explicit opt-in selects a prerelease; stable never does",
+      "scenario": "valid",
+      "startupCheck": true,
+      "channel": "test",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 11293,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "test-channel-optin/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 603
+          }
+        },
+        {
+          "name": "test-channel-optin/test-channel-discovers-prerelease",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 302
+          }
+        },
+        {
+          "name": "test-channel-optin/discovery-channel-is-test",
+          "ok": true,
+          "required": true,
+          "detail": "test"
+        },
+        {
+          "name": "test-channel-optin/target-is-prerelease-version",
+          "ok": true,
+          "required": true,
+          "detail": "1.3.0-alpha.1"
+        },
+        {
+          "name": "test-channel-optin/target-commit-bound",
+          "ok": true,
+          "required": true,
+          "detail": "c106ac101e064a72f408c58b2516aad5118f513f"
+        },
+        {
+          "name": "test-channel-optin/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 60440,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 11293,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-test-channel-optin",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-test-channel-optin-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:12:03.874Z",
+        "ports": [
+          {
+            "port": 60440,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 11293,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-test-channel-optin",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "client-report",
+      "title": "client-report accepts a per-window self-reported identity and rejects invalid ones",
+      "scenario": "valid",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 11407,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "client-report/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 604
+          }
+        },
+        {
+          "name": "client-report/client-report-valid-accepted",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "status": 200,
+            "data": {
+              "accepted": true,
+              "state": "idle",
+              "expected": {
+                "buildVersion": "1.2.0",
+                "buildCommit": null
+              }
+            },
+            "envelope": {
+              "ok": true,
+              "requestId": "req_c2dff00b11bf390b",
+              "serverTime": "2026-10-20T12:12:08.974Z"
+            }
+          }
+        },
+        {
+          "name": "client-report/client-report-state-idle-before-update",
+          "ok": true,
+          "required": true,
+          "detail": "idle"
+        },
+        {
+          "name": "client-report/client-report-invalid-build-version-rejected",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "status": 400,
+            "envelope": {
+              "ok": false,
+              "requestId": "req_e96a073af910be2c",
+              "serverTime": "2026-10-20T12:12:09.283Z"
+            }
+          }
+        },
+        {
+          "name": "client-report/client-report-invalid-build-commit-rejected",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "status": 400,
+            "envelope": {
+              "ok": false,
+              "requestId": "req_771fad1ebf53e157",
+              "serverTime": "2026-10-20T12:12:09.590Z"
+            }
+          }
+        },
+        {
+          "name": "client-report/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 60470,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 11407,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-client-report",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-client-report-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:12:09.860Z",
+        "ports": [
+          {
+            "port": 60470,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 11407,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-client-report",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "begin-fail-closed",
+      "title": "begin before H2 adapter: fail-closed, accepts only the current validator target id, no operation started",
+      "scenario": "valid",
+      "startupCheck": true,
+      "channel": "stable",
+      "cacheSeeded": false,
+      "boot": {
+        "pid": 11561,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:59703",
+          "httpProxy": "http://127.0.0.1:59703",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-discovery-mvgn63gp-8e589d"
+        }
+      },
+      "checks": [
+        {
+          "name": "begin-fail-closed/routes-registered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "waitedMs": 606
+          }
+        },
+        {
+          "name": "begin-fail-closed/valid-target-discovered",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "id": "tgt_79d2227971971d4f",
+            "version": "1.2.0",
+            "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+            "channel": "stable",
+            "publishedAt": "2025-10-20T22:40:00.000Z",
+            "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+          }
+        },
+        {
+          "name": "begin-fail-closed/begin-does-not-silently-succeed",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "currentEnvelope": {
+              "ok": false,
+              "requestId": "req_847088710d6284d1",
+              "serverTime": "2026-10-20T12:12:15.248Z"
+            },
+            "h1FailClosed": false
+          }
+        },
+        {
+          "name": "begin-fail-closed/forged-target-rejected",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "forgedStatus": 409,
+            "forgedEnvelope": {
+              "ok": false,
+              "requestId": "req_16cd96ca76e5176d",
+              "serverTime": "2026-10-20T12:12:15.507Z"
+            }
+          }
+        },
+        {
+          "name": "begin-fail-closed/no-operation-started",
+          "ok": true,
+          "required": true,
+          "detail": null
+        },
+        {
+          "name": "begin-fail-closed/h1-skeleton-detected-or-h2-adapter-present",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "h1FailClosed": false,
+            "note": "H1: begin answers GM-5038 (adapter unavailable) before H2; H2 will answer GM-4090 for forged target ids"
+          }
+        },
+        {
+          "name": "begin-fail-closed/case-cleanup-proven",
+          "ok": true,
+          "required": true,
+          "detail": {
+            "ports": [
+              {
+                "port": 60494,
+                "accepting": false,
+                "listenerPids": []
+              }
+            ],
+            "pids": [
+              {
+                "pid": 11561,
+                "alive": false
+              }
+            ],
+            "dirs": [
+              {
+                "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-begin-fail-closed",
+                "exists": false
+              }
+            ]
+          }
+        }
+      ],
+      "requestsAddedDuringCase": 3,
+      "cleanup": {
+        "label": "case-begin-fail-closed-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T12:12:16.141Z",
+        "ports": [
+          {
+            "port": 60494,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 11561,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-discovery-v0-discovery-mvgn63gp-8e589d-begin-fail-closed",
+            "exists": false
+          }
+        ]
+      }
+    }
+  ],
+  "fixtureAuditSummary": {
+    "fixtureRequests": 20,
+    "passthroughRequests": 34,
+    "tunnelConnects": 0,
+    "rejectedPlainHttp": 0,
+    "tlsHandshakeErrors": 36
+  },
+  "environment": {
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "repoRoot": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update"
+  },
+  "thrown": null,
+  "failedRequired": []
+}

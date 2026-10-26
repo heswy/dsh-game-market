@@ -1,0 +1,647 @@
+{
+  "id": "M3-V0-harness",
+  "title": "Isolated-DSH M3 verification harness self-proof (runtime + probe operator + real page + cleanup)",
+  "commands": [
+    "node scripts/verification/v1.5/m3/run-v0-harness.mjs"
+  ],
+  "startedAt": "2026-10-20T11:48:47.689Z",
+  "finishedAt": "2026-10-20T11:48:57.208Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "runtime-installed-app-asar-present",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "asarPath": "/Applications/DeepSeek Harness.app/Contents/Resources/app.asar",
+        "asarSha256": "b9ec4c2bbc20c9dbc3e39fa4c961434a943434ab0a803052b26753dd15f3b066",
+        "asarBytes": 182833898,
+        "appModifiedAt": "2026-10-17T09:39:02.000Z"
+      }
+    },
+    {
+      "name": "runtime-expected-version",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.2"
+        },
+        "desktopRuntime": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.2"
+        },
+        "dsh": {
+          "name": "@deepseek-ai/dsh",
+          "version": "0.2.1-rc.2"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.2"
+        }
+      }
+    },
+    {
+      "name": "runtime-dsh-bin-under-m3-root",
+      "ok": true,
+      "required": true,
+      "detail": "/tmp/dsh-v15/m3/asar/dsh/node_modules/@deepseek-ai/dsh/lib/bin.js"
+    },
+    {
+      "name": "runtime-extraction-matches-installed-app",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "rel": "package.json",
+          "matchesApp": true
+        },
+        {
+          "rel": "dsh/package.json",
+          "matchesApp": true
+        },
+        {
+          "rel": "dsh/desktop-runtime.json",
+          "matchesApp": true
+        },
+        {
+          "rel": "dsh/node_modules/@deepseek-ai/dsh/package.json",
+          "matchesApp": true
+        },
+        {
+          "rel": "dsh/node_modules/@deepseek-ai/dsh-plugin-manager/package.json",
+          "matchesApp": true
+        },
+        {
+          "rel": "dsh/node_modules/@deepseek-ai/dsh/lib/bin.js",
+          "matchesApp": true
+        }
+      ]
+    },
+    {
+      "name": "isolated-home-under-m3-scratch",
+      "ok": true,
+      "required": true,
+      "detail": "/tmp/dsh-v15/m3/home-v0-harness-v0-harness-mvgme18o-808825"
+    },
+    {
+      "name": "isolated-home-is-not-daily-profile",
+      "ok": true,
+      "required": true,
+      "detail": "/tmp/dsh-v15/m3/home-v0-harness-v0-harness-mvgme18o-808825"
+    },
+    {
+      "name": "host-boot-wrote-probe-boot-record",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "bootTag": "v0-harness-mvgme18o-808825",
+        "pid": 51729
+      }
+    },
+    {
+      "name": "probe-operator-uses-independent-fiber",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ownerEntryId": "include:plugin-manager",
+        "ownerContextIsProbeContext": false,
+        "ctor": "PluginManager",
+        "methods": [
+          "@deepseek-ai/dsh-typert-protocol/remote-methods",
+          "bundleRows",
+          "cancelInstall",
+          "change",
+          "configure",
+          "declaredRows",
+          "diskState",
+          "inspect",
+          "installBundle",
+          "listBundles",
+          "listPlugins",
+          "listVersionExemptions",
+          "protectsManager",
+          "publishAndReload",
+          "readRestoredFiles",
+          "refreshPackages",
+          "registries",
+          "reload",
+          "removeBundle",
+          "restoreFiles",
+          "runPnpm",
+          "selectBundle",
+          "setBundleEnabled",
+          "setPluginEnabled",
+          "setVersionExemption",
+          "waitForInstall"
+        ]
+      }
+    },
+    {
+      "name": "probe-operator-real-pluginManager-methods",
+      "ok": true,
+      "required": true,
+      "detail": [
+        "@deepseek-ai/dsh-typert-protocol/remote-methods",
+        "bundleRows",
+        "cancelInstall",
+        "change",
+        "configure",
+        "declaredRows",
+        "diskState",
+        "inspect",
+        "installBundle",
+        "listBundles",
+        "listPlugins",
+        "listVersionExemptions",
+        "protectsManager",
+        "publishAndReload",
+        "readRestoredFiles",
+        "refreshPackages",
+        "registries",
+        "reload",
+        "removeBundle",
+        "restoreFiles",
+        "runPnpm",
+        "selectBundle",
+        "setBundleEnabled",
+        "setPluginEnabled",
+        "setVersionExemption",
+        "waitForInstall"
+      ]
+    },
+    {
+      "name": "probe-operator-hmr-capability-present",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "at": "2026-10-20T11:48:52.018Z",
+        "probeScopeHmr": true,
+        "managerContextHmr": true,
+        "managerContextHmrCtor": "Hmr",
+        "managerContextHmrHasRunExclusive": true,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": {
+            "__jsExpr": "!ctx.get('profileContext')"
+          },
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 110
+        },
+        "samplesSinceBoot": 2
+      }
+    },
+    {
+      "name": "host-env-marker-received",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "hasUseEnvProxy": null,
+        "httpsProxy": "http://127.0.0.1:7897",
+        "httpProxy": "http://127.0.0.1:7897",
+        "noProxy": "127.0.0.1,localhost,::1,[::1]",
+        "extraCaCerts": null,
+        "fixtureRunTag": "v0-harness-mvgme18o-808825"
+      }
+    },
+    {
+      "name": "host-env-proxy-injection-recorded",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "keys": [
+          "ALL_PROXY",
+          "HTTPS_PROXY",
+          "HTTP_PROXY",
+          "M3_FIXTURE_RUN_TAG",
+          "NO_PROXY",
+          "npm_config_http_proxy",
+          "npm_config_https_proxy",
+          "npm_config_proxy"
+        ],
+        "entries": [
+          {
+            "key": "HTTPS_PROXY",
+            "value": "http://127.0.0.1:7897"
+          },
+          {
+            "key": "HTTP_PROXY",
+            "value": "http://127.0.0.1:7897"
+          },
+          {
+            "key": "ALL_PROXY",
+            "value": "http://127.0.0.1:7897"
+          },
+          {
+            "key": "npm_config_https_proxy",
+            "value": "http://127.0.0.1:7897"
+          },
+          {
+            "key": "npm_config_http_proxy",
+            "value": "http://127.0.0.1:7897"
+          },
+          {
+            "key": "npm_config_proxy",
+            "value": "http://127.0.0.1:7897"
+          },
+          {
+            "key": "NO_PROXY",
+            "value": "127.0.0.1,localhost"
+          },
+          {
+            "key": "M3_FIXTURE_RUN_TAG",
+            "value": "v0-harness-mvgme18o-808825"
+          }
+        ]
+      }
+    },
+    {
+      "name": "host-url-token-free-origin",
+      "ok": true,
+      "required": true,
+      "detail": "http://127.0.0.1:53994"
+    },
+    {
+      "name": "probe-ping-ok",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "pid": 51729,
+        "bootPid": 51729
+      }
+    },
+    {
+      "name": "probe-observation-profile-dir-in-home",
+      "ok": true,
+      "required": true,
+      "detail": "/tmp/dsh-v15/m3/home-v0-harness-v0-harness-mvgme18o-808825/profiles/web"
+    },
+    {
+      "name": "probe-observation-sees-game-market-dev-row-running",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "dsh-game-market",
+        "name": "file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/index.js",
+        "disabled": null,
+        "hasFiber": true,
+        "fiberState": 2,
+        "fiberUid": 183
+      }
+    },
+    {
+      "name": "probe-observation-health-route-registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "available": true,
+        "routeRegistered": true
+      }
+    },
+    {
+      "name": "probe-observation-health-200",
+      "ok": true,
+      "required": true,
+      "detail": 200
+    },
+    {
+      "name": "probe-observation-health-envelope-ok",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "requestId": "req_323aad8781469b92",
+        "serverTime": "2026-10-20T11:48:52.755Z"
+      }
+    },
+    {
+      "name": "probe-observation-health-version-string",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.2.0",
+        "hostEpochPresent": true
+      }
+    },
+    {
+      "name": "probe-observation-hmr-loader-row-has-fiber",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": {
+            "__jsExpr": "!ctx.get('profileContext')"
+          },
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 110
+        },
+        {
+          "id": "v15-m3-probe",
+          "name": "file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/probe-m3-host.js",
+          "disabled": null,
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 48
+        },
+        {
+          "id": "dsh-game-market",
+          "name": "file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/index.js",
+          "disabled": null,
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 183
+        }
+      ]
+    },
+    {
+      "name": "host-profile-dependency-null-in-dev-row-mode",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "dependency": null,
+        "note": "dev row is injected via cordis.patch.yml, not profile dependencies"
+      }
+    },
+    {
+      "name": "in-process-route-health-200",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "requestId": "req_d05b08de823c420e",
+          "serverTime": "2026-10-20T11:48:52.914Z"
+        }
+      }
+    },
+    {
+      "name": "real-dsh-page-loaded-complete",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ready": "complete",
+        "origin": "http://127.0.0.1:53994",
+        "title": "DeepSeek Harness",
+        "bodyHtmlLength": 38446
+      }
+    },
+    {
+      "name": "real-dsh-page-origin-is-isolated-host",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "origin": "http://127.0.0.1:53994",
+        "expected": "http://127.0.0.1:53994"
+      }
+    },
+    {
+      "name": "real-dsh-page-has-nonempty-title",
+      "ok": true,
+      "required": true,
+      "detail": "DeepSeek Harness"
+    },
+    {
+      "name": "real-dsh-page-health-200",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "bodyVersion": "1.2.0"
+      }
+    },
+    {
+      "name": "page-fetch-health-200-json-envelope",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelopeOk": true
+      }
+    },
+    {
+      "name": "page-fetch-installed-200",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelopeOk": true
+      }
+    },
+    {
+      "name": "real-dsh-page-screenshot",
+      "ok": true,
+      "required": false,
+      "detail": "docs/verification/v1.5/raw/m3/screenshots/M3-V0-harness-v0-harness-mvgme18o-808825.png"
+    },
+    {
+      "name": "probe-operator-alive-after-page",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "pid": 51729
+      }
+    },
+    {
+      "name": "probe-operator-same-fiber-after-page",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": 48,
+        "after": 48
+      }
+    },
+    {
+      "name": "cleanup-ports-refused-pids-dead-dirs-gone",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "v0-harness-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T11:48:57.148Z",
+        "ports": [
+          {
+            "port": 53994,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 54005,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 51821,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-harness-v0-harness-mvgme18o-808825",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-54005",
+            "exists": false
+          }
+        ]
+      }
+    }
+  ],
+  "runTag": "v0-harness-mvgme18o-808825",
+  "evidenceLevel": "isolated-browser + isolated-host (real installed DSH runtime, real DSH page)",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v24.14.0",
+    "chrome": "chrome-headless-cdp",
+    "repoRoot": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update",
+    "workRoot": "/tmp/dsh-v15/m3"
+  },
+  "runtime": {
+    "checkedAt": "2026-10-20T11:48:47.812Z",
+    "evidenceLevel": "installed-runtime (read-only extraction)",
+    "installedApp": {
+      "asarPath": "/Applications/DeepSeek Harness.app/Contents/Resources/app.asar",
+      "asarSha256": "b9ec4c2bbc20c9dbc3e39fa4c961434a943434ab0a803052b26753dd15f3b066",
+      "asarBytes": 182833898,
+      "appModifiedAt": "2026-10-17T09:39:02.000Z"
+    },
+    "extractedRoot": "/tmp/dsh-v15/m3/asar",
+    "dshBin": "/tmp/dsh-v15/m3/asar/dsh/node_modules/@deepseek-ai/dsh/lib/bin.js",
+    "expectedVersion": "0.2.1-rc.2",
+    "versions": {
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.2"
+      },
+      "desktopRuntime": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.2"
+      },
+      "dsh": {
+        "name": "@deepseek-ai/dsh",
+        "version": "0.2.1-rc.2"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.2"
+      }
+    },
+    "versionsMatchExpected": {
+      "electronApp": true,
+      "desktopRuntime": true,
+      "dsh": true,
+      "pluginManager": true
+    },
+    "identityFiles": [
+      {
+        "rel": "package.json",
+        "extracted": true,
+        "extractedSha256": "53ee01d3b1accfbd037d245fb4752fb5fa5f8e2a76b7de634a4223558ee54bb9",
+        "appSha256": "53ee01d3b1accfbd037d245fb4752fb5fa5f8e2a76b7de634a4223558ee54bb9",
+        "matchesApp": true,
+        "bytes": 797
+      },
+      {
+        "rel": "dsh/package.json",
+        "extracted": true,
+        "extractedSha256": "b67a65b9719272b2eb54093b63c121d05907da062a1393e8c9f871e1cd18f94e",
+        "appSha256": "b67a65b9719272b2eb54093b63c121d05907da062a1393e8c9f871e1cd18f94e",
+        "matchesApp": true,
+        "bytes": 17100
+      },
+      {
+        "rel": "dsh/desktop-runtime.json",
+        "extracted": true,
+        "extractedSha256": "3b264f1d9d4d3dc01e37aa382b2575a9dda6e34480af04982921b7d7720f0ef0",
+        "appSha256": "3b264f1d9d4d3dc01e37aa382b2575a9dda6e34480af04982921b7d7720f0ef0",
+        "matchesApp": true,
+        "bytes": 4045863
+      },
+      {
+        "rel": "dsh/node_modules/@deepseek-ai/dsh/package.json",
+        "extracted": true,
+        "extractedSha256": "bea4288aa88eb54efe829686553100a75fdf09d11c5e3bf6b329badb9a0368dd",
+        "appSha256": "bea4288aa88eb54efe829686553100a75fdf09d11c5e3bf6b329badb9a0368dd",
+        "matchesApp": true,
+        "bytes": 7989
+      },
+      {
+        "rel": "dsh/node_modules/@deepseek-ai/dsh-plugin-manager/package.json",
+        "extracted": true,
+        "extractedSha256": "09239c828830d5ea3ecdf98ebe322bd55183f8d6ccbe2319eb25d0f8ac43ed4e",
+        "appSha256": "09239c828830d5ea3ecdf98ebe322bd55183f8d6ccbe2319eb25d0f8ac43ed4e",
+        "matchesApp": true,
+        "bytes": 3591
+      },
+      {
+        "rel": "dsh/node_modules/@deepseek-ai/dsh/lib/bin.js",
+        "extracted": true,
+        "extractedSha256": "80112efe368efb1a39720c7ada0af00442e5131fb2744edaaff8a3e8bb499e6f",
+        "appSha256": "80112efe368efb1a39720c7ada0af00442e5131fb2744edaaff8a3e8bb499e6f",
+        "matchesApp": true,
+        "bytes": 11772
+      }
+    ],
+    "missing": [],
+    "mismatched": [],
+    "extractionVerifiedAgainstInstalledApp": true
+  },
+  "probeRowId": "v15-m3-probe",
+  "checksRequired": 32,
+  "thrown": null,
+  "cleanupProof": {
+    "label": "v0-harness-cleanup",
+    "ok": true,
+    "checkedAt": "2026-10-20T11:48:57.148Z",
+    "ports": [
+      {
+        "port": 53994,
+        "accepting": false,
+        "listenerPids": []
+      },
+      {
+        "port": 54005,
+        "accepting": false,
+        "listenerPids": []
+      }
+    ],
+    "pids": [
+      {
+        "pid": 51821,
+        "alive": false
+      }
+    ],
+    "dirs": [
+      {
+        "dir": "/tmp/dsh-v15/m3/home-v0-harness-v0-harness-mvgme18o-808825",
+        "exists": false
+      },
+      {
+        "dir": "/tmp/dsh-v15/m3/chrome-54005",
+        "exists": false
+      }
+    ]
+  },
+  "listenerPidsAfterCleanup": [
+    {
+      "port": 53994,
+      "listenerPids": []
+    },
+    {
+      "port": 54005,
+      "listenerPids": []
+    }
+  ],
+  "failedRequired": []
+}

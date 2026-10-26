@@ -122,6 +122,18 @@ export const ROUTES = Object.freeze({
   PREVIEW: `${API_BASE}/preview`,
   /** Registered only when config.devMode === true. */
   DEV_AGENT_STATE: `${API_BASE}/dev/agent-state`,
+  /**
+   * V1.5 platform update routes (docs/V1.5-CONTRACTS.md §9, m3-decisions §2).
+   * Inspect/refresh/begin/observe/cancel/coordinate/client-report; every route
+   * is registered unconditionally and fails closed when capability is unknown.
+   */
+  PLATFORM_UPDATE: `${API_BASE}/platform-update`,
+  PLATFORM_UPDATE_REFRESH: `${API_BASE}/platform-update/refresh`,
+  PLATFORM_UPDATE_BEGIN: `${API_BASE}/platform-update/begin`,
+  PLATFORM_UPDATE_OBSERVE: `${API_BASE}/platform-update/observe`,
+  PLATFORM_UPDATE_CANCEL: `${API_BASE}/platform-update/cancel`,
+  PLATFORM_UPDATE_COORDINATE: `${API_BASE}/platform-update/coordinate`,
+  PLATFORM_UPDATE_CLIENT_REPORT: `${API_BASE}/platform-update/client-report`,
 });
 
 /**

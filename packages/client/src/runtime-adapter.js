@@ -73,7 +73,7 @@ export async function pauseRuntime(controller) {
         error: makeGameError(GM.SAVE_WRITE_FAILED, null, { retryable: true }),
       };
     }
-    return { ok: true, saveStale: result.saveStale === true, unresponsive: false, error: null };
+    return { ok: true, saveStale: result.saveStale !== false, unresponsive: false, error: null };
   } catch (error) {
     return {
       ok: false,
@@ -113,8 +113,7 @@ export async function pauseRuntimeBounded(controller, timeoutMs) {
 export function resumeRuntime(controller) {
   if (!controller || typeof controller.resume !== 'function') return false;
   try {
-    controller.resume();
-    return true;
+    return controller.resume() !== false;
   } catch (_error) {
     return false;
   }

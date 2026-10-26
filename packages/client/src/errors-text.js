@@ -71,6 +71,10 @@ const ERROR_KEYS = Object.freeze({
   [GM.INSTALL_DOWNLOAD_TIMEOUT]: 'error.gm.downloadTimeout',
   [GM.INSTALL_IO]: 'error.gm.write',
   [GM.INSTALL_CORRUPT]: 'error.gm.verify',
+  [GM.UPDATE_TARGET_INVALID]: 'error.gm.updateTarget',
+  [GM.UPDATE_ADAPTER_UNAVAILABLE]: 'error.gm.updateAdapter',
+  [GM.UPDATE_OBSERVE_TIMEOUT]: 'error.gm.updateObserve',
+  [GM.UPDATE_INDEX_UNAVAILABLE]: 'error.gm.updateIndex',
 });
 
 const DOWNLOAD_STAGE_ERRORS = Object.freeze([
@@ -155,6 +159,27 @@ export function installStageTextKey(stage, percent) {
     default:
       return 'detail.install.stage.preparing';
   }
+}
+
+/**
+ * Action-level copy for update requests. The generic GM copy for GM-4091 talks
+ * about *game* installs, so update-specific keys are used instead.
+ */
+const UPDATE_ACTION_ERROR_KEYS = Object.freeze({
+  [GM.UPDATE_TARGET_INVALID]: 'update.error.targetInvalid',
+  [GM.UPDATE_ADAPTER_UNAVAILABLE]: 'update.error.adapterUnavailable',
+  [GM.UPDATE_OBSERVE_TIMEOUT]: 'update.error.observeTimeout',
+  [GM.UPDATE_INDEX_UNAVAILABLE]: 'update.error.indexUnavailable',
+  [GM.INSTALL_IN_PROGRESS]: 'update.error.inProgress',
+  [GM.HOST_UNAVAILABLE]: 'update.error.host',
+});
+
+/** Locale key for an update action failure (falls back to the generic GM key). */
+export function updateActionErrorKey(code) {
+  if (typeof code === 'string' && Object.prototype.hasOwnProperty.call(UPDATE_ACTION_ERROR_KEYS, code)) {
+    return UPDATE_ACTION_ERROR_KEYS[code];
+  }
+  return errorTextKey(code);
 }
 
 /** Whether the operation failed because the Host/registry is unreachable. */

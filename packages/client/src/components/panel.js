@@ -7,6 +7,9 @@ import { isBuiltin, screenshotsFor } from '../catalog.js';
 import { acknowledgeCompleted, beginGame, cancelInstall, closeDetail, installLocalGame, launchModeFor, loadCatalog, loadDetail, localInstallOptionsFromDialog, openDetail, pushToast, refreshRegistryAction, startInstall, uninstallGame } from '../actions.js';
 import { getApiClient, getMarketApi } from '../api.js';
 import { makeT, detectLocale } from '../locale.js';
+import { CLIENT_BUILD } from '../build-identity.js';
+import { deriveUpdateView } from '../update-state.js';
+import { getUpdateManager } from '../update-manager.js';
 import { formatBytes } from '../format.js';
 import { LOCAL_INSTALL_ACCEPT, findLocalOverwriteTarget, validateLocalInstallSelection } from '../local-install.js';
 import { BackIcon, MoreIcon, RefreshIcon, UploadIcon } from '../icons.js';
@@ -15,10 +18,11 @@ import { backToConversation, openGameMarket } from '../navigation.js';
 import { useActivePanel, useClock, useSessionBinding, useStoreState } from '../hooks.js';
 import { isImeComposing, isSearchShortcut, resolveEscapeAction } from '../keyboard.js';
 import { RuntimeView } from './runtime.js';
+import { UpdateBanner, UpdateSection } from './update-section.js';
 import { MarketHome } from './market-home.js';
 import { MyGamesPage } from './my-games.js';
 import { GameDetail } from './detail.js';
-import { ConfirmDialog, Lightbox } from './dialogs.js';
+import { ConfirmDialog, Lightbox, PlatformUpdateDialog } from './dialogs.js';
 import { ToastViewport } from './toast.js';
 import { PopoverMenu } from './menu.js';
 import { SearchBox, SearchToggle } from './search-box.js';
@@ -66,6 +70,10 @@ export function GameMarketPanel(props) {
 
   const sessionId = binding.sessionId || state.bindingSessionId;
   const api = getMarketApi();
+  const updateManager = getUpdateManager();
+  const updateView = deriveUpdateView(
+    Object.assign({}, state.update, { clientIdentity: CLIENT_BUILD, now: now })
+  );
   const detailGame = state.detail.view ? state.detail.view.game : null;
   const detailScreenshots = detailGame ? screenshotsFor(detailGame, MAX_SCREENSHOTS) : [];
   const scrollKey = pageScrollKey(state.page);
@@ -186,6 +194,12 @@ export function GameMarketPanel(props) {
         if (intent && intent.kind === 'heading') {
           const headingNode = root.querySelector('[data-page-heading]');
           if (headingNode && typeof headingNode.focus === 'function') headingNode.focus();
+          store.dispatch(focusConsumed());
+          return;
+        }
+        if (intent && intent.kind === 'update') {
+          const updateButton = root.querySelector('[data-action="refresh-update"]');
+          if (updateButton && typeof updateButton.focus === 'function') updateButton.focus();
           store.dispatch(focusConsumed());
           return;
         }
@@ -450,6 +464,46 @@ export function GameMarketPanel(props) {
     store.dispatch(toastDismissed(toast.id));
   }
 
+  function openPlatformUpdateDialog() {
+    const target = updateView.update ? updateView.update.target : null;
+    if (!target || typeof target.id !== 'string') return;
+    const capability = updateView.inspection ? updateView.inspection.capability : null;
+    store.dispatch(
+      dialogOpened('platform-update', null, {
+        targetId: target.id,
+        targetVersion: target.version,
+        targetCommit: target.commit,
+        currentVersion: updateView.update.currentVersion,
+        channel: target.channel,
+        restartPossible: capability ? capability.hmr === 'absent' || capability.updatePath === 'restart-required' : false,
+        returnFocus: { kind: 'update' },
+      })
+    );
+  }
+
+  function refreshPlatformUpdate() {
+    void updateManager.refresh();
+  }
+
+  function cancelPlatformUpdate() {
+    void updateManager.cancel();
+  }
+
+  function reloadUpdatePage() {
+    if (typeof window !== 'undefined' && window.location && typeof window.location.reload === 'function') {
+      window.location.reload();
+    }
+  }
+
+  async function confirmPlatformUpdate() {
+    const dialog = store.getState().dialog;
+    if (!dialog || dialog.kind !== 'platform-update') return;
+    store.dispatch(dialogBusyChanged(true));
+    await updateManager.begin(dialog.targetId);
+    store.dispatch(dialogBusyChanged(false));
+    store.dispatch(dialogClosed());
+  }
+
   const headerMenuItems =
     detailGame && detailGame.installed && !isBuiltin(detailGame)
       ? [
@@ -706,6 +760,13 @@ export function GameMarketPanel(props) {
           )
         )
       : null,
+    state.page === PAGES.MARKET
+      ? h(UpdateBanner, {
+          view: updateView,
+          t: t,
+          onOpenUpdate: openPlatformUpdateDialog,
+        })
+      : null,
     h(
       'main',
       { className: 'dgm-content', ref: scrollRef },
@@ -717,8 +778,11 @@ export function GameMarketPanel(props) {
           role: isDetail ? undefined : 'tabpanel',
           'aria-labelledby': isDetail ? undefined : state.page === PAGES.MY_GAMES ? 'dgm-tab-mygames' : 'dgm-tab-market',
         },
-        isDetail
-          ? h(GameDetail, {
+        h(
+          React.Fragment,
+          null,
+          isDetail
+            ? h(GameDetail, {
               state: state,
               t: t,
               locale: locale,
@@ -793,7 +857,20 @@ export function GameMarketPanel(props) {
                 onRefreshRegistry: function refresh() {
                   void refreshRegistryAction({ store: store, api: api });
                 },
+              }),
+          isDetail
+            ? null
+            : h(UpdateSection, {
+                view: updateView,
+                t: t,
+                locale: locale,
+                now: now,
+                onRefresh: refreshPlatformUpdate,
+                onOpenUpdate: openPlatformUpdateDialog,
+                onCancel: cancelPlatformUpdate,
+                onRefreshPage: reloadUpdatePage,
               })
+        )
       )
     ),
     state.ui.lightbox !== null && detailScreenshots.length > 0
@@ -809,7 +886,16 @@ export function GameMarketPanel(props) {
           },
         })
       : null,
-    state.dialog
+    state.dialog && state.dialog.kind === 'platform-update'
+      ? h(PlatformUpdateDialog, {
+          dialog: state.dialog,
+          t: t,
+          onClose: function close() {
+            store.dispatch(dialogClosed());
+          },
+          onConfirm: confirmPlatformUpdate,
+        })
+      : state.dialog
       ? h(ConfirmDialog, {
           dialog: state.dialog,
           t: t,

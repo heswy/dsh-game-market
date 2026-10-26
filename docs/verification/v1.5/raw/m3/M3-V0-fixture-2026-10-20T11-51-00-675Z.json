@@ -1,0 +1,451 @@
+{
+  "id": "M3-V0-fixture",
+  "title": "Transport fixture for the fixed official index URL inside the isolated real DSH host",
+  "commands": [
+    "node scripts/verification/v1.5/m3/run-v0-fixture.mjs"
+  ],
+  "startedAt": "2026-10-20T11:51:00.676Z",
+  "finishedAt": "2026-10-20T11:51:11.902Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "runtime-extraction-matches-installed-app",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "runtime-expected-version",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.2"
+        },
+        "desktopRuntime": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.2"
+        },
+        "dsh": {
+          "name": "@deepseek-ai/dsh",
+          "version": "0.2.1-rc.2"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.2"
+        }
+      }
+    },
+    {
+      "name": "production-index-exists-before-run-snapshot-recorded",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exists": false
+      }
+    },
+    {
+      "name": "fixture-ca-and-leaf-generated",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "openssl": "OpenSSL 3.6.1 27 Jan 2026 (Library: OpenSSL 3.6.1 27 Jan 2026)",
+        "caPemSha256": "70cf417b1c385bbb0ca132887bc6a497cca443a14d2f773e8f98975d78303905",
+        "leafPemSha256": "7bbe197e9c3553e42b696e182d099b3e1bf97039fe40d2a67875cb62d67977b9",
+        "leafFingerprintSha256": "8E:7F:0C:1D:FB:AD:39:C0:10:66:CB:A8:7E:7C:4B:12:EC:B0:26:57:B9:12:D4:B6:57:66:9C:A0:46:67:9F:C2",
+        "subjectAltName": "DNS:raw.githubusercontent.com",
+        "commands": [
+          "openssl req -x509 -newkey rsa:2048 -sha256 -nodes -days 3 -keyout /tmp/dsh-v15/m3/fixture-v0-fixture-mvgmgvuq-b61f46/tls/fixture-ca.key -out /tmp/dsh-v15/m3/fixture-v0-fixture-mvgmgvuq-b61f46/tls/fixture-ca.pem -subj /CN=DSH V1.5 M3 Verification Fixture CA -addext basicConstraints=critical,CA:TRUE,pathlen:0 -addext keyUsage=critical,keyCertSign,cRLSign",
+          "openssl req -newkey rsa:2048 -sha256 -nodes -keyout /tmp/dsh-v15/m3/fixture-v0-fixture-mvgmgvuq-b61f46/tls/fixture-leaf.key -out /tmp/dsh-v15/m3/fixture-v0-fixture-mvgmgvuq-b61f46/tls/fixture-leaf.csr -subj /CN=raw.githubusercontent.com",
+          "openssl x509 -req -in /tmp/dsh-v15/m3/fixture-v0-fixture-mvgmgvuq-b61f46/tls/fixture-leaf.csr -CA /tmp/dsh-v15/m3/fixture-v0-fixture-mvgmgvuq-b61f46/tls/fixture-ca.pem -CAkey /tmp/dsh-v15/m3/fixture-v0-fixture-mvgmgvuq-b61f46/tls/fixture-ca.key -CAcreateserial -out /tmp/dsh-v15/m3/fixture-v0-fixture-mvgmgvuq-b61f46/tls/fixture-leaf.pem -days 3 -sha256 -extfile /tmp/dsh-v15/m3/fixture-v0-fixture-mvgmgvuq-b61f46/tls/fixture-leaf.ext.cnf"
+        ]
+      }
+    },
+    {
+      "name": "fixture-leaf-is-scoped-to-fixed-host",
+      "ok": true,
+      "required": true,
+      "detail": "DNS:raw.githubusercontent.com"
+    },
+    {
+      "name": "fixture-proxy-listening",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "port": 54582,
+        "origin": "http://127.0.0.1:54582"
+      }
+    },
+    {
+      "name": "fixture-env-derived",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "NODE_USE_ENV_PROXY": "1",
+        "NODE_EXTRA_CA_CERTS": "/tmp/dsh-v15/m3/fixture-v0-fixture-mvgmgvuq-b61f46/tls/fixture-ca.pem",
+        "HTTPS_PROXY": "http://127.0.0.1:54582",
+        "HTTP_PROXY": "http://127.0.0.1:54582",
+        "ALL_PROXY": "http://127.0.0.1:54582",
+        "npm_config_https_proxy": "http://127.0.0.1:54582",
+        "npm_config_http_proxy": "http://127.0.0.1:54582",
+        "npm_config_proxy": "http://127.0.0.1:54582",
+        "NO_PROXY": "127.0.0.1,localhost",
+        "M3_FIXTURE_RUN_TAG": "v0-fixture-mvgmgvuq-b61f46"
+      }
+    },
+    {
+      "name": "fixture-body-has-sha256",
+      "ok": true,
+      "required": true,
+      "detail": "02b4b09fcbd57564a974a102897cc91e622adb1f86a3b4f8ce96a65d78ff6df9"
+    },
+    {
+      "name": "child-fetch-fixed-url-via-fixture-200",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "bytes": 365,
+        "sha256": "02b4b09fcbd57564a974a102897cc91e622adb1f86a3b4f8ce96a65d78ff6df9",
+        "error": null,
+        "env": {
+          "NODE_USE_ENV_PROXY": "1",
+          "hasExtraCaCerts": true,
+          "httpsProxy": "http://127.0.0.1:54582",
+          "noProxy": "127.0.0.1,localhost"
+        }
+      }
+    },
+    {
+      "name": "child-fetch-fixed-url-body-is-fixture",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "got": "02b4b09fcbd57564a974a102897cc91e622adb1f86a3b4f8ce96a65d78ff6df9",
+        "expected": "02b4b09fcbd57564a974a102897cc91e622adb1f86a3b4f8ce96a65d78ff6df9"
+      }
+    },
+    {
+      "name": "audit-recorded-fixture-mode-fixed-path",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "at": "2026-10-20T11:51:01.069Z",
+        "mode": "fixture",
+        "host": "raw.githubusercontent.com",
+        "method": "GET",
+        "path": "/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "scenario": "valid",
+        "status": 200,
+        "bytes": 365,
+        "sha256": "02b4b09fcbd57564a974a102897cc91e622adb1f86a3b4f8ce96a65d78ff6df9",
+        "contentType": "application/json"
+      }
+    },
+    {
+      "name": "only-fixed-url-is-replaced-passthrough-attempted",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "at": "2026-10-20T11:51:01.171Z",
+        "mode": "passthrough",
+        "host": "raw.githubusercontent.com",
+        "method": "GET",
+        "path": "/heswy/dsh-game-market/main/package.json",
+        "scenario": "valid",
+        "status": 200,
+        "bytes": 2943,
+        "sha256": "9d128773076ebb609f00b4db4a74edbd7c732bf63280356ca27ef4f6288b4311"
+      }
+    },
+    {
+      "name": "passthrough-serves-real-not-fixture-bytes",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "sha256": "cefc2dbe9a80fd74e8b392e8badcd9dca0167e3da591352335cd076caa6ea4ee",
+        "bodyPrefix": "{\n  \"name\": \"dsh-game-market\",\n  \"version\": \"1.2.0\",\n  \"description\": \"Game market and runtime for DeepSeek Harness — play small games while the Agent works.\",\n  \"type\": \"module\",\n  \"main\": \"index.js\",\n  \"exports\": {\n    \".\": \"./index.js\",\n    \"./client\": \"./client.js\",\n    \"./package.json\": \"./package.json\",\n    \"./locale/*.json\": \"./locale/*.json\"\n  },\n  \"files\": [\n    \"index.js\",\n    \"client.js\",\n    \"cordis.patch.yml\",\n    \"icon.svg\",\n    \"locale/*.json\",\n    \"packages/host/**\",\n    \"packages/shared/*",
+        "error": null,
+        "note": "requires the machine network/proxy; transport attempt is asserted above even if the network call fails"
+      }
+    },
+    {
+      "name": "scenario-server-error-503",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 503,
+        "bytes": 24,
+        "scenario": {
+          "scenario": "server-error",
+          "bodyBytes": 24,
+          "status": 503
+        }
+      }
+    },
+    {
+      "name": "audit-recorded-server-error-scenario",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "at": "2026-10-20T11:51:01.695Z",
+        "mode": "fixture",
+        "host": "raw.githubusercontent.com",
+        "method": "GET",
+        "path": "/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "scenario": "server-error",
+        "status": 503,
+        "bytes": 24,
+        "sha256": "7ddfd7879c2482c65e27d721a106187cf52ade794c0a9f0065c88fd803bbe4be",
+        "contentType": "text/plain"
+      }
+    },
+    {
+      "name": "scenario-oversize-body-over-256kib",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "bytes": 307215,
+        "sha256": "ab3e69bb04616b15c10560ef019a78eae7eacb27649e70c9e79be09dfb6baa8f",
+        "note": "discovery MUST reject >256 KiB; this proves the fixture can produce that case"
+      }
+    },
+    {
+      "name": "scenario-slow-delays-response",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "elapsedMs": 4121,
+        "status": 200
+      }
+    },
+    {
+      "name": "negative-control-without-fixture-ca-fails-cert-validation",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "child": {
+          "ok": false,
+          "error": "fetch failed",
+          "causeCode": "SELF_SIGNED_CERT_IN_CHAIN",
+          "stderr": ""
+        },
+        "newTlsHandshakeErrors": 0,
+        "note": "a client-side certificate rejection may not produce a server-side TLS error event; the certificate error code is the decisive proof"
+      }
+    },
+    {
+      "name": "negative-control-did-not-serve-fixture-body",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "other-host-tunnelled-not-intercepted",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "at": "2026-10-20T11:51:06.133Z",
+          "target": "api.github.com:443"
+        }
+      ]
+    },
+    {
+      "name": "other-host-tunnel-real-response",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "status": 200,
+        "bytes": 35,
+        "error": null
+      }
+    },
+    {
+      "name": "isolated-dsh-host-boots-with-fixture-env",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "pid": 55943,
+        "nodeVersion": "v24.14.0",
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:54582",
+          "httpProxy": "http://127.0.0.1:54582",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-fixture-mvgmgvuq-b61f46"
+        },
+        "managerMethodsPresent": true
+      }
+    },
+    {
+      "name": "host-env-carries-fixture-ca-and-env-proxy",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:54582",
+          "httpProxy": "http://127.0.0.1:54582",
+          "noProxy": "127.0.0.1,localhost,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "v0-fixture-mvgmgvuq-b61f46"
+        },
+        "expectedCaBasename": "fixture-ca.pem"
+      }
+    },
+    {
+      "name": "host-process-fetch-fixed-url-returns-fixture",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "bytes": 365,
+        "sha256": "02b4b09fcbd57564a974a102897cc91e622adb1f86a3b4f8ce96a65d78ff6df9",
+        "bodyPrefix": "{\n  \"schemaVersion\": 1,\n  \"plugins\": [\n    {\n      \"name\": \"dsh-game-market\",\n      \"version\": \"1.2.0\",\n      \"channel\": \"stable\",\n      \"source\": {\n        \"type\": \"git\",\n        \"url\": \"https://github.com/heswy/dsh-game-market.git\",\n        \"commit\": \"f422e8d04b3b3de3f920a794317c0d28ee1246a2\"\n      },\n      \"publishedAt\": \"2026-10-18T00:00:00.000Z\"\n    }\n  ]\n}\n",
+        "error": null,
+        "hostPid": 55943
+      }
+    },
+    {
+      "name": "host-fetch-observed-by-fixture-audit",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "requestCountDuringHost": 1,
+        "fixedRequest": {
+          "at": "2026-10-20T11:51:11.609Z",
+          "mode": "fixture",
+          "host": "raw.githubusercontent.com",
+          "method": "GET",
+          "path": "/heswy/dsh-game-market/main/platform-updates/plugins.json",
+          "scenario": "valid",
+          "status": 200,
+          "bytes": 365,
+          "sha256": "02b4b09fcbd57564a974a102897cc91e622adb1f86a3b4f8ce96a65d78ff6df9",
+          "contentType": "application/json"
+        }
+      }
+    },
+    {
+      "name": "host-fetch-recorded-as-fixture-not-passthrough",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "at": "2026-10-20T11:51:11.609Z",
+        "mode": "fixture",
+        "host": "raw.githubusercontent.com",
+        "method": "GET",
+        "path": "/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "scenario": "valid",
+        "status": 200,
+        "bytes": 365,
+        "sha256": "02b4b09fcbd57564a974a102897cc91e622adb1f86a3b4f8ce96a65d78ff6df9",
+        "contentType": "application/json"
+      }
+    },
+    {
+      "name": "production-index-not-written-or-modified",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": {
+          "exists": false
+        },
+        "after": {
+          "exists": false
+        },
+        "repoPath": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/platform-updates/plugins.json"
+      }
+    },
+    {
+      "name": "cleanup-ports-refused-pids-dead-dirs-gone",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "v0-fixture-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T11:51:11.902Z",
+        "ports": [
+          {
+            "port": 54582,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 54607,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-fixture-v0-fixture-mvgmgvuq-b61f46",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/fixture-v0-fixture-mvgmgvuq-b61f46/tls",
+            "exists": false
+          }
+        ]
+      }
+    }
+  ],
+  "runTag": "v0-fixture-mvgmgvuq-b61f46",
+  "evidenceLevel": "isolated transport fixture (isolated real DSH host process + real Node global fetch; production index untouched)",
+  "notProven": [
+    "the real production index content",
+    "real Desktop/Electron main-process networking (fixture is verified against the isolated `dsh web` process)",
+    "that the fixed URL is currently served with this fixture body (fixture bodies are verification data)"
+  ],
+  "fixtureMethod": "selective TLS interception proxy (NODE_USE_ENV_PROXY + NODE_EXTRA_CA_CERTS) with exact host+path fixture, real passthrough for other paths and opaque tunnels for other hosts",
+  "fixedIndexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+  "fixture": {
+    "tls": {
+      "caPemSha256": "70cf417b1c385bbb0ca132887bc6a497cca443a14d2f773e8f98975d78303905",
+      "leafPemSha256": "7bbe197e9c3553e42b696e182d099b3e1bf97039fe40d2a67875cb62d67977b9",
+      "leafFingerprintSha256": "8E:7F:0C:1D:FB:AD:39:C0:10:66:CB:A8:7E:7C:4B:12:EC:B0:26:57:B9:12:D4:B6:57:66:9C:A0:46:67:9F:C2",
+      "subjectAltName": "DNS:raw.githubusercontent.com"
+    }
+  },
+  "cleanupProof": {
+    "label": "v0-fixture-cleanup",
+    "ok": true,
+    "checkedAt": "2026-10-20T11:51:11.902Z",
+    "ports": [
+      {
+        "port": 54582,
+        "accepting": false,
+        "listenerPids": []
+      },
+      {
+        "port": 54607,
+        "accepting": false,
+        "listenerPids": []
+      }
+    ],
+    "pids": [],
+    "dirs": [
+      {
+        "dir": "/tmp/dsh-v15/m3/home-v0-fixture-v0-fixture-mvgmgvuq-b61f46",
+        "exists": false
+      },
+      {
+        "dir": "/tmp/dsh-v15/m3/fixture-v0-fixture-mvgmgvuq-b61f46/tls",
+        "exists": false
+      }
+    ]
+  },
+  "environment": {
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "repoRoot": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update"
+  },
+  "thrown": null,
+  "failedRequired": []
+}

@@ -33,12 +33,18 @@ export function createInstallLock({
   logger = null,
   heartbeatMs = LOCK_HEARTBEAT_MS,
   staleMs = LOCK_STALE_MS,
+  /** Storage-relative directory holding the lock file (default: staging). */
+  directory = STAGING_DIR,
+  /** Lock file name; V1.5 uses a second, profile-scoped update lock. */
+  fileName = INSTALL_LOCK_FILE,
+  /** Message used for both codes when provided (platform update vs game install). */
+  busyMessage = null,
 }) {
   let held = false;
   const waiters = [];
 
   function lockPath() {
-    return storage.filePath(STAGING_DIR, INSTALL_LOCK_FILE);
+    return storage.filePath(directory, fileName);
   }
 
   function passOwnership() {
@@ -186,9 +192,10 @@ export function createInstallLock({
     const factory = () =>
       busyError(
         busyCode,
-        busyCode === GM.UNINSTALL_BUSY
-          ? 'Another install or uninstall is in progress'
-          : 'Another install is in progress'
+        busyMessage ||
+          (busyCode === GM.UNINSTALL_BUSY
+            ? 'Another install or uninstall is in progress'
+            : 'Another install is in progress')
       );
     const releaseProcess = await acquireInProcess(deadline, factory);
     let releaseFile = null;
@@ -199,6 +206,40 @@ export function createInstallLock({
       if (releaseFile) await releaseFile().catch(() => undefined);
       releaseProcess();
     }
+  }
+
+  /**
+   * Acquire the lock and return a release function (long-running operations that
+   * must release asynchronously, e.g. a platform update held across an install).
+   *
+   * @param {{waitMs?: number, busyCode?: string}} [options]
+   * @returns {Promise<() => Promise<void>>}
+   */
+  async function acquire({ waitMs = 0, busyCode = GM.INSTALL_IN_PROGRESS } = {}) {
+    const deadline = Date.now() + Math.max(0, waitMs);
+    const factory = () =>
+      busyError(
+        busyCode,
+        busyMessage ||
+          (busyCode === GM.UNINSTALL_BUSY
+            ? 'Another install or uninstall is in progress'
+            : 'Another install is in progress')
+      );
+    const releaseProcess = await acquireInProcess(deadline, factory);
+    let releaseFile = null;
+    try {
+      releaseFile = await acquireFile(deadline, factory);
+    } catch (error) {
+      releaseProcess();
+      throw error;
+    }
+    let released = false;
+    return async () => {
+      if (released) return;
+      released = true;
+      if (releaseFile) await releaseFile().catch(() => undefined);
+      releaseProcess();
+    };
   }
 
   /** Non-blocking attempt used by startup maintenance. */
@@ -214,5 +255,5 @@ export function createInstallLock({
     }
   }
 
-  return { run, tryRun, lockPath, isHeld: () => held };
+  return { run, tryRun, acquire, lockPath, isHeld: () => held };
 }

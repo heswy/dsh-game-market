@@ -2,6 +2,7 @@
 import React from 'react';
 import { CloseIcon, ChevronLeftIcon, ChevronRightIcon, TrashIcon } from '../icons.js';
 import { trapTabIndex } from '../keyboard.js';
+import { platformUpdateDialogCopy } from '../update-copy.js';
 
 const h = React.createElement;
 
@@ -357,5 +358,99 @@ export function Lightbox(props) {
           )
         )
       : null
+  );
+}
+
+
+/**
+ * V1.5 M3 platform-update confirmation (m3-decisions §2/§4).
+ *
+ * Explicit copy: the update affects every session in the current profile, may
+ * require a DSH restart, and targets an exact version + full 40-hex commit.
+ */
+export function PlatformUpdateDialog(props) {
+  const dialog = props.dialog;
+  const t = props.t;
+  const rootRef = React.useRef(null);
+  const busy = Boolean(dialog && dialog.busy === true);
+  useFocusTrap(
+    rootRef,
+    function escape() {
+      if (!busy) props.onClose();
+    },
+    true
+  );
+  if (!dialog) return null;
+  const copy = platformUpdateDialogCopy(dialog, t);
+  return h(
+    'div',
+    {
+      className: 'dgm-overlay dgm-dialog-overlay',
+      role: 'presentation',
+      onMouseDown: function backdrop(event) {
+        if (event.target === event.currentTarget && !busy) props.onClose();
+      },
+    },
+    h(
+      'div',
+      {
+        className: 'dgm-dialog dgm-update-dialog',
+        role: 'alertdialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'dgm-dialog-title',
+        'aria-describedby': 'dgm-dialog-body',
+        ref: rootRef,
+      },
+      h('h2', { className: 'dgm-dialog-title', id: 'dgm-dialog-title' }, copy.title),
+      h('p', { className: 'dgm-dialog-body', id: 'dgm-dialog-body' }, copy.body),
+      h(
+        'dl',
+        { className: 'dgm-dialog-meta dgm-update-dialog-meta' },
+        copy.meta.map(function row(entry, index) {
+          return h(
+            'div',
+            { className: 'dgm-dialog-meta-row', key: 'meta-' + String(index) },
+            h('dt', null, entry.label),
+            h(entry.mono ? 'dd' : 'dd', { className: entry.mono ? 'dgm-mono dgm-update-dialog-commit' : undefined }, entry.value)
+          );
+        })
+      ),
+      h(
+        'ul',
+        { className: 'dgm-update-dialog-warnings' },
+        copy.warnings.map(function warning(text, index) {
+          return h('li', { key: 'warning-' + String(index) }, text);
+        })
+      ),
+      h(
+        'div',
+        { className: 'dgm-dialog-actions' },
+        h(
+          'button',
+          {
+            type: 'button',
+            className: 'dgm-btn dgm-btn-quiet',
+            'data-autofocus': 'true',
+            disabled: busy,
+            onClick: function cancel() {
+              if (!busy) props.onClose();
+            },
+          },
+          t('common.cancel')
+        ),
+        h(
+          'button',
+          {
+            type: 'button',
+            className: 'dgm-btn dgm-btn-primary',
+            disabled: busy,
+            onClick: function confirm() {
+              if (!busy) props.onConfirm();
+            },
+          },
+          busy ? copy.busyLabel : copy.primary
+        )
+      )
+    )
   );
 }

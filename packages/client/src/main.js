@@ -15,6 +15,7 @@ import { reportDiagnostic } from './diagnostics.js';
 import { configureNavigation, backToConversation, openGameMarket } from './navigation.js';
 import { getApiClient } from './api.js';
 import { createAgentPoller } from './agent-polling.js';
+import { getUpdateManager } from './update-manager.js';
 import { GameMarketPanel } from './components/panel.js';
 import { GameEntryView } from './components/game-entry-view.js';
 import { GameMarketSidebarIcon } from './components/sidebar-icon.js';
@@ -167,6 +168,32 @@ export function apply(ctx) {
     );
   });
   if (gameTabController === null) reportDiagnostic('game-tab-registration-failed');
+
+  ctx.effect(
+    function startPlatformUpdates() {
+      // V1.5 M3: identity reporting + discovery/observation polling run for the
+      // whole page lifetime (not only while the Market panel is mounted), so an
+      // idle window can answer the Host coordination phase and a refreshed page
+      // resumes the persisted operation.
+      const manager = getUpdateManager();
+      manager.start();
+      const doc = typeof document !== 'undefined' ? document : null;
+      if (!doc || typeof doc.addEventListener !== 'function') {
+        return function stopUpdates() {
+          manager.stop();
+        };
+      }
+      function onVisibilityChange() {
+        manager.setVisibility(doc.visibilityState === 'hidden' ? 'hidden' : 'visible');
+      }
+      doc.addEventListener('visibilitychange', onVisibilityChange);
+      return function stopUpdates() {
+        doc.removeEventListener('visibilitychange', onVisibilityChange);
+        manager.stop();
+      };
+    },
+    'dsh-game-market: platform updates'
+  );
 
   ctx.effect(
     function startAgentPolling() {

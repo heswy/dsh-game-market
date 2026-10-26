@@ -18,7 +18,7 @@ function requireObjectBody(body) {
 }
 
 export function createRouteTable({ services, devMode = false }) {
-  const { health, games, saves, sessions, scores, preferences, agent, entry, install, registry } = services;
+  const { health, platformUpdate, updates, games, saves, sessions, scores, preferences, agent, entry, install, registry } = services;
 
   const routeList = [
     {
@@ -189,6 +189,51 @@ export function createRouteTable({ services, devMode = false }) {
         if (!renewed) throw hostError(GM.INVALID_PARAM, 'Unknown or expired game instance');
         return renewed;
       },
+    },
+
+    // V1.5 platform update (docs/V1.5-CONTRACTS.md §9, m3-decisions §2).
+    // Inspect always answers 200; failures are discovery state, never HTTP errors.
+    {
+      path: ROUTES.PLATFORM_UPDATE,
+      methods: ['GET', 'HEAD'],
+      handler: async () => platformUpdate.inspect(),
+    },
+    {
+      path: ROUTES.PLATFORM_UPDATE_REFRESH,
+      methods: ['POST'],
+      optionalBody: true,
+      handler: async () => {
+        const result = await platformUpdate.refresh();
+        return { ...(await platformUpdate.inspect()), refreshed: result.refreshed === true, throttled: result.throttled === true };
+      },
+    },
+    {
+      path: ROUTES.PLATFORM_UPDATE_BEGIN,
+      methods: ['POST'],
+      handler: async ({ body }) => updates.begin(requireObjectBody(body)),
+    },
+    {
+      path: ROUTES.PLATFORM_UPDATE_OBSERVE,
+      methods: ['GET'],
+      handler: async ({ url }) => {
+        const operationId = queryValue(url, 'operationId', { maxLength: 64 });
+        return updates.observe(operationId);
+      },
+    },
+    {
+      path: ROUTES.PLATFORM_UPDATE_CANCEL,
+      methods: ['POST'],
+      handler: async ({ body }) => updates.cancel(requireObjectBody(body)),
+    },
+    {
+      path: ROUTES.PLATFORM_UPDATE_COORDINATE,
+      methods: ['POST'],
+      handler: async ({ body }) => updates.coordinate(requireObjectBody(body)),
+    },
+    {
+      path: ROUTES.PLATFORM_UPDATE_CLIENT_REPORT,
+      methods: ['POST'],
+      handler: async ({ body }) => updates.clientReport(requireObjectBody(body)),
     },
     {
       path: ROUTES.ENTRY,

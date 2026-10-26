@@ -100,3 +100,117 @@ export const HEADER_HEIGHT = 52;
 
 /** Minimum viewport width where the header search stays expanded (PRD 9.3.5). */
 export const SEARCH_EXPANDED_MIN_WIDTH = 840;
+
+/**
+ * V1.5 M3 platform-update routes (docs/verification/v1.5/m3-decisions.md §2).
+ * Client-owned copies so this bundle never depends on Host-only modules.
+ */
+export const UPDATE_ROUTES = Object.freeze({
+  inspect: 'platform-update',
+  refresh: 'platform-update/refresh',
+  begin: 'platform-update/begin',
+  observe: 'platform-update/observe',
+  cancel: 'platform-update/cancel',
+  coordinate: 'platform-update/coordinate',
+  clientReport: 'platform-update/client-report',
+});
+
+/**
+ * Contract §9.1 observation states. The UI may only render these, and
+ * `applied` is an intermediate state that must never read as success.
+ */
+export const UPDATE_STATES = Object.freeze([
+  'inspecting',
+  'installing',
+  'applied',
+  'activating',
+  'updated',
+  'pending-restart',
+  'already-at-target',
+  'verification-failed',
+  'stale-runtime',
+  'too-late',
+  'cancelled',
+  'failed',
+]);
+
+/** States where the Host operation is still running (poll `observe`). */
+export const UPDATE_ACTIVE_STATES = Object.freeze(['inspecting', 'installing', 'applied', 'activating']);
+
+/**
+ * Terminal states retained by the Host until the next `begin` (mirrors
+ * packages/shared/src/platform-update.js). `too-late` is NOT terminal: the
+ * install continues and the Client must keep observing to the real result.
+ */
+export const UPDATE_TERMINAL_STATES = Object.freeze([
+  'updated',
+  'pending-restart',
+  'already-at-target',
+  'verification-failed',
+  'stale-runtime',
+  'cancelled',
+  'failed',
+]);
+
+/** States where the Host observation can still progress (poll `observe`). */
+export const UPDATE_CONTINUES_STATES = Object.freeze(UPDATE_ACTIVE_STATES.concat(['too-late']));
+
+/** The only success terminal state (Host + Client identity both verified). */
+export const UPDATE_SUCCESS_STATE = 'updated';
+
+/** Ordered progress stages; only these four labels may be shown. */
+export const UPDATE_PROGRESS_STATES = Object.freeze(['inspecting', 'installing', 'applied', 'activating']);
+
+/** `/platform-update/cancel` results (contract §2). */
+export const UPDATE_CANCEL_RESULTS = Object.freeze(['cancelled', 'too-late', 'not-running']);
+
+/** Acceptance states surfaced while a discovery check is in flight/idle. */
+export const UPDATE_DISCOVERY_STATES = Object.freeze([
+  'never',
+  'checking',
+  'ready',
+  'stale',
+  'offline',
+  'invalid',
+  'unknown',
+]);
+
+/** Installed spec shapes that mean "development source" (never auto-migrated). */
+export const UPDATE_DEV_SPEC_SHAPES = Object.freeze(['path', 'file']);
+
+/**
+ * Mirrors of frozen shared contract enums (packages/shared/src/platform-update.js).
+ * Kept local so the browser bundle does not pull the Host-side validator module;
+ * packages/client/test/update-contract-mirror.test.js fails on drift.
+ */
+export const UPDATE_SPEC_SHAPES = Object.freeze(['git-url', 'registry', 'path', 'file', 'unknown']);
+export const UPDATE_VERIFICATION_FAILED_REASONS = Object.freeze(['response-lost', 'version-mismatch', 'ambiguous-install']);
+export const UPDATE_STALE_RUNTIME_REASONS = Object.freeze(['client-old', 'host-old', 'dev-row-shadows-package']);
+
+/** How long a manual discovery refresh stays throttled by the Host (default). */
+export const UPDATE_REFRESH_THROTTLE_MS = 60000;
+
+/** Observation / inspection polling cadence (Client side). */
+export const UPDATE_TIMING = Object.freeze({
+  /** Re-read `/platform-update` while visible and no operation is active. */
+  inspectVisibleMs: 3000,
+  /**
+   * Same, when the page is hidden. It must stay well inside the Host's 15s
+   * coordination window: a hidden window may still own an active game and has
+   * to pause+save it before the package change.
+   */
+  inspectHiddenMs: 3000,
+  /** Poll `/platform-update/observe` while an operation is active. */
+  observeMs: 1000,
+  /** Backoff cap after observe/inspect failures (resume after RPC loss). */
+  backoffMaxMs: 8000,
+  /** Re-report the embedded client identity while an update is running. */
+  clientReportMs: 15000,
+  /** How long to keep retrying `/coordinate` before surfacing a failure. */
+  coordinateAttempts: 3,
+  /** Retry delay for a failed coordinate report. */
+  coordinateRetryMs: 800,
+});
+
+/** Update-specific error codes that the UI maps to actionable copy. */
+export const UPDATE_ERROR_CODES = Object.freeze(['GM-4090', 'GM-5038', 'GM-5040', 'GM-4091']);

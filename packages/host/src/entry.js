@@ -203,6 +203,13 @@ export function createEntryService({
   now = () => new Date(),
   timing = {},
   resources = null,
+  /**
+   * Host-authoritative update admission barrier (audit M3-AUD-03). While a
+   * platform update is between coordination and package change, new game
+   * launches are rejected with a retryable busy code. Optional so isolated
+   * entry tests can run without a host barrier.
+   */
+  admission = null,
 }) {
   const instanceBindings = new Map();
   const frameAncestors = Array.isArray(settings?.security?.frameAncestors)
@@ -346,6 +353,9 @@ export function createEntryService({
   }
 
   async function launch(body) {
+    // Fail fast BEFORE any side effect: the update barrier must reject new
+    // entries (start and resume-paused alike) while a package change may occur.
+    if (admission) admission.assertEntryAllowed();
     if (body === null || typeof body !== 'object' || Array.isArray(body)) {
       throw hostError(GM.INVALID_PARAM, 'Request body must be an object');
     }
@@ -467,6 +477,19 @@ export function createEntryService({
       entryExpiresAt: createdAtMs + bindingTtlMs,
       expiresAt: createdAtMs + bindingTtlMs,
     });
+    // Second admission check at the end of the (async) launch: a launch that
+    // passed the first check just before the Host set the update barrier must
+    // not leave a live instance behind. Remove the binding/credential and fail
+    // closed with the same retryable busy code.
+    if (admission) {
+      try {
+        admission.assertEntryAllowed();
+      } catch (error) {
+        instanceBindings.delete(instanceId);
+        if (resources) resources.release(instanceId, gameId);
+        throw error;
+      }
+    }
     return {
       instanceId,
       nonce,
@@ -712,6 +735,38 @@ export function createEntryService({
     throw hostError(GM.ASSET_NOT_FOUND, 'Asset not found', { retryable: false });
   }
 
+  /**
+   * Active runtime instances (launch bindings whose TTL has not expired).
+   *
+   * V1.5 coordination needs the authoritative Host-side list: an update may not
+   * change the package until every live instance in this profile has paused,
+   * saved and confirmed (docs/V1.5-CONTRACTS.md §9, m3-decisions §4). Instance
+   * bindings are renewed by `POST /runtime-renew`, so an abandoned page stops
+   * blocking updates once its TTL lapses.
+   *
+   * @returns {Array<{instanceId:string, gameId:string, version:string, dshSessionId:string|null, createdAt:string}>}
+   */
+  function listActiveInstances() {
+    const stamp = now().getTime();
+    const active = [];
+    for (const [instanceId, binding] of instanceBindings) {
+      if (binding.expiresAt <= stamp) {
+        instanceBindings.delete(instanceId);
+        if (resources) resources.release(instanceId, binding.gameId);
+        continue;
+      }
+      active.push({
+        instanceId,
+        gameId: binding.gameId,
+        version: binding.version,
+        dshSessionId: typeof binding.dshSessionId === 'string' ? binding.dshSessionId : null,
+        createdAt: binding.createdAt,
+      });
+    }
+    active.sort((left, right) => (left.createdAt < right.createdAt ? -1 : left.createdAt > right.createdAt ? 1 : 0));
+    return active;
+  }
+
   function hasActiveInstance(gameId) {
     const stamp = now().getTime();
     for (const [instanceId, binding] of instanceBindings) {
@@ -798,6 +853,7 @@ export function createEntryService({
     serveEntry,
     servePreview,
     hasActiveInstance,
+    listActiveInstances,
     invalidateGame,
     releaseGame,
     renewInstance,

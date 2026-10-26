@@ -1,0 +1,431 @@
+{
+  "id": "M3-V2-save-coordination",
+  "title": "Active-game save failure blocks the package change before install; retry succeeds (real UI)",
+  "commands": [
+    "node scripts/verification/v1.5/m3/run-v2-save-coordination.mjs --a 8fdd599a67b4c344d75b65d47801cd4ef8a4b6ec --b 0ba9f5006fa874c7e98d0238ccb04804183b4ce2 --final a9d94a2486746a44163b990389aae789eb207e84"
+  ],
+  "startedAt": "2026-10-25T14:46:18.496Z",
+  "finishedAt": "2026-10-25T14:47:54.080Z",
+  "passed": false,
+  "failed": [
+    "window2-real-game-instance-running",
+    "scenario-completed-without-throw"
+  ],
+  "checks": [
+    {
+      "name": "runtime-extraction-matches-installed-app",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "expected-client-identity-B",
+      "ok": true,
+      "required": true,
+      "detail": "1d76e8ed5aa93e9fa4d7f15864ec8f275e8dbd7c"
+    },
+    {
+      "name": "host-network-env-selfcheck",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "gitVersion": "git version 2.39.5 (Apple Git-154)",
+        "envKeys": [
+          "ALL_PROXY",
+          "GIT_CONFIG_NOSYSTEM",
+          "HTTPS_PROXY",
+          "HTTP_PROXY",
+          "M3_FIXTURE_RUN_TAG",
+          "M3_NETWORK_MODE",
+          "M3_NETWORK_MODE_LABEL",
+          "NODE_EXTRA_CA_CERTS",
+          "NODE_OPTIONS",
+          "NODE_USE_ENV_PROXY",
+          "NO_PROXY",
+          "npm_config_fetch_retries",
+          "npm_config_fetch_retry_maxtimeout",
+          "npm_config_fetch_timeout",
+          "npm_config_http_proxy",
+          "npm_config_https_proxy",
+          "npm_config_network_concurrency",
+          "npm_config_noproxy",
+          "npm_config_proxy"
+        ],
+        "full": {
+          "ok": true,
+          "attempts": [
+            {
+              "attempt": 1,
+              "ok": true,
+              "status": 0,
+              "stderr": "",
+              "stdout": "40d701678e96d99e777520debb43e25b28ae2d0c\tHEAD"
+            }
+          ]
+        },
+        "scrubbed": {
+          "ok": true,
+          "attempts": [
+            {
+              "attempt": 1,
+              "ok": true,
+              "status": 0,
+              "stderr": "",
+              "stdout": "40d701678e96d99e777520debb43e25b28ae2d0c\tHEAD"
+            }
+          ]
+        },
+        "networkMode": "real-github",
+        "networkModeLabel": "real GitHub transport (pinned reachable IPs via git config; network-dependent, explicitly opted in)",
+        "pinned": {
+          "github.com": "140.82.112.3",
+          "codeload.github.com": "140.82.112.3",
+          "raw.githubusercontent.com": "185.199.108.133"
+        }
+      }
+    },
+    {
+      "name": "R_A-installed-applied",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "stage": "enable",
+        "target": "dsh-game-market",
+        "enabled": true,
+        "changed": true,
+        "application": "applied",
+        "registries": [
+          null
+        ],
+        "packageResult": {
+          "exitCode": 0,
+          "output": "Progress: resolved 0, reused 1, downloaded 0, added 0\n\ndependencies:\n+ dsh-game-market github:heswy/dsh-game-market#8fdd599a67b4c344d75b65d47801cd4ef8a4b6ec\n\nPackages: +3\n+++\nProgress: resolved 3, reused 3, downloaded 0, added 3, done\nDone in 1.9s using pnpm v10.28.2\n",
+          "truncated": false,
+          "logPath": "/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvnxxksf-61d8e5/profiles/web/.plugin-manager/logs/operation-ym0sRJ/pnpm.log"
+        },
+        "bundle": "dsh-game-market",
+        "version": "1.2.1",
+        "warnings": []
+      }
+    },
+    {
+      "name": "R_A-applied-to-disk-and-running",
+      "ok": true,
+      "required": true,
+      "detail": true
+    },
+    {
+      "name": "window1-real-game-instance-running",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "rows": [
+          "orbit-courier",
+          "snake"
+        ],
+        "runtimeMounted": true
+      }
+    },
+    {
+      "name": "window2-real-game-instance-running",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "rows": [],
+        "runtimeMounted": false
+      }
+    },
+    {
+      "name": "scenario-completed-without-throw",
+      "ok": false,
+      "required": true,
+      "detail": "Error: could not launch real game instances for the save-coordination scenario\n    at body (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v2-save-coordination.mjs:161:11)\n    at async file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v2-save-coordination.mjs:270:3"
+    },
+    {
+      "name": "cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "run-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-25T14:47:54.044Z",
+        "ports": [
+          {
+            "port": 61305,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 61331,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 61414,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 20055,
+            "alive": false
+          },
+          {
+            "pid": 20250,
+            "alive": false
+          },
+          {
+            "pid": 20386,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvnxxksf-61d8e5",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-61331",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-61414",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "transport-and-tls-cleaned",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "v2-save-transport-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-25T14:47:54.080Z",
+        "ports": [
+          {
+            "port": 61296,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/scenario-v2-save-coordination-mvnxxksf-61d8e5/tls",
+            "exists": false
+          }
+        ]
+      }
+    }
+  ],
+  "runTag": "v2-save-coordination-mvnxxksf-61d8e5",
+  "targets": {
+    "a": "8fdd599a67b4c344d75b65d47801cd4ef8a4b6ec",
+    "b": "0ba9f5006fa874c7e98d0238ccb04804183b4ce2",
+    "final": "a9d94a2486746a44163b990389aae789eb207e84",
+    "versionA": "1.2.1",
+    "versionB": "1.2.2",
+    "versionFinal": "1.3.0",
+    "homeSuffix": null
+  },
+  "evidenceLevel": "isolated-browser (two real DSH pages, real game instances, real UI clicks) + real filesystem save-failure injection + isolated transport fixture",
+  "windows": [
+    {
+      "index": 1,
+      "port": 61331
+    },
+    {
+      "index": 2,
+      "port": 61414
+    }
+  ],
+  "games": [
+    {
+      "window": 1,
+      "gameId": "snake",
+      "rows": [
+        "orbit-courier",
+        "snake"
+      ],
+      "launch": {
+        "row": {
+          "id": "snake",
+          "playText": "开始",
+          "menu": true
+        },
+        "play": {
+          "label": "row-play:snake",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "开始",
+            "className": "dgm-btn dgm-row-play",
+            "rect": {
+              "x": 1209,
+              "y": 339,
+              "width": 92,
+              "height": 40
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 1209,
+            "y": 339,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "runtime": {
+          "state": "launching",
+          "stage": true,
+          "savePill": null,
+          "controls": [
+            {
+              "label": "返回市场",
+              "disabled": false
+            },
+            {
+              "label": "暂停菜单",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "runtimeMounted": true
+    },
+    {
+      "window": 2,
+      "gameId": "2048",
+      "rows": [],
+      "launch": {
+        "row": null,
+        "play": {
+          "label": "row-play:2048",
+          "clicked": false,
+          "reason": "not-found"
+        },
+        "runtime": null
+      },
+      "runtimeMounted": false
+    }
+  ],
+  "saveInjection": null,
+  "restore": null,
+  "coordination": [],
+  "transitions": [],
+  "beforeBlock": null,
+  "blockedUi": null,
+  "retry": null,
+  "afterRetry": null,
+  "dataPreservation": {
+    "before": {
+      "files": {
+        "marker": {
+          "present": true,
+          "sha256": "8b34b510426a9b73ee6c6dfc3fe397357609fbc6aaa23db100236e5b30a02cb6"
+        },
+        "save": {
+          "present": true,
+          "sha256": "df056caff869b0d5253206b479f46d8cd8ab5d186867a86543381b4e0890db6b"
+        },
+        "preferences": {
+          "present": true,
+          "sha256": "99ee26567cf00279b1fb76957d6892cb633e7d685975d13a42260502e9ac4a64"
+        }
+      }
+    }
+  },
+  "screenshots": [],
+  "cleanup": {
+    "hosts": [
+      {
+        "pid": 20055,
+        "closed": {
+          "pid": 20055,
+          "port": 61305,
+          "closed": true,
+          "alreadyClosed": false
+        }
+      }
+    ],
+    "pages": [
+      {
+        "chromePid": 20250,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-61331"
+      },
+      {
+        "chromePid": 20386,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-61414"
+      }
+    ],
+    "homes": [
+      {
+        "home": "/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvnxxksf-61d8e5",
+        "removed": true
+      }
+    ],
+    "proof": {
+      "label": "run-cleanup",
+      "ok": true,
+      "checkedAt": "2026-10-25T14:47:54.044Z",
+      "ports": [
+        {
+          "port": 61305,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 61331,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 61414,
+          "accepting": false,
+          "listenerPids": []
+        }
+      ],
+      "pids": [
+        {
+          "pid": 20055,
+          "alive": false
+        },
+        {
+          "pid": 20250,
+          "alive": false
+        },
+        {
+          "pid": 20386,
+          "alive": false
+        }
+      ],
+      "dirs": [
+        {
+          "dir": "/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvnxxksf-61d8e5",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-61331",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-61414",
+          "exists": false
+        }
+      ]
+    }
+  },
+  "thrown": "Error: could not launch real game instances for the save-coordination scenario\n    at body (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v2-save-coordination.mjs:161:11)\n    at async file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v2-save-coordination.mjs:270:3",
+  "environment": {
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "repoRoot": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update"
+  },
+  "failedRequired": [
+    "window2-real-game-instance-running",
+    "scenario-completed-without-throw"
+  ]
+}

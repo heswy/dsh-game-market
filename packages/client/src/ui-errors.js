@@ -38,6 +38,11 @@ export function runtimeErrorTitleKey(code) {
       return 'runtime.error.saveCorrupt';
     case GM.NO_RUNTIME:
       return 'runtime.error.noRuntime';
+    case GM.INSTALL_IN_PROGRESS:
+      // The Host reuses GM-4091 for the platform-plugin update lock (launch
+      // admission, task-10). In the runtime/launch context that means a plugin
+      // update is running, not an ordinary game install.
+      return 'runtime.error.updateBusy.title';
     case GM.ENTRY_LAUNCH_CONSUMED:
       return 'runtime.error.entryConsumed';
     case GM.RESOURCE_CREDENTIAL_INVALID:
@@ -70,6 +75,8 @@ export function runtimeErrorBodyKey(code) {
       return 'runtime.error.saveCorrupt.body';
     case GM.NO_RUNTIME:
       return 'runtime.error.noRuntime.body';
+    case GM.INSTALL_IN_PROGRESS:
+      return 'runtime.error.updateBusy.body';
     case GM.ENTRY_LAUNCH_CONSUMED:
       return 'runtime.error.entryConsumed.body';
     case GM.RESOURCE_CREDENTIAL_INVALID:

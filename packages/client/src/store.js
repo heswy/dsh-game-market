@@ -6,10 +6,10 @@
  * Reducers are pure; timestamps are always passed in by the caller.
  */
 import { DSH_SESSION_ID_PATTERN } from '../../shared/src/constants.js';
-import { PAGES, RUNTIME_STATES, PAUSED_REASONS, CATEGORY_FILTERS, CATEGORY_ALL, INSTALL_JOB_STAGES, TOAST_LIMIT } from './constants.js';
+import { PAGES, RUNTIME_STATES, PAUSED_REASONS, CATEGORY_FILTERS, CATEGORY_ALL, INSTALL_JOB_STAGES, TOAST_LIMIT, UPDATE_STATES, UPDATE_ACTIVE_STATES, UPDATE_CONTINUES_STATES, UPDATE_PROGRESS_STATES } from './constants.js';
 
 const AGENT_STATES = Object.freeze(['idle', 'running', 'waiting-user', 'completed', 'error']);
-const DIALOG_KINDS = Object.freeze(['uninstall', 'delete-data', 'restart', 'install-local']);
+const DIALOG_KINDS = Object.freeze(['uninstall', 'delete-data', 'restart', 'install-local', 'platform-update']);
 
 function initialRuntime() {
   return {
@@ -59,6 +59,28 @@ function initialMarket() {
   };
 }
 
+/**
+ * V1.5 M3 platform-update slice. Raw Host payloads are normalized by
+ * `update-state.js`; this slice only stores the latest normalized inspection /
+ * observation plus local request flags, never any invented progress.
+ */
+function initialUpdate() {
+  return {
+    /** 'idle' | 'loading' | 'ready' | 'error' | 'unsupported' */
+    status: 'idle',
+    inspection: null,
+    operation: null,
+    error: null,
+    /** Error from a user action (begin/cancel/coordinate), separate from inspection. */
+    actionError: null,
+    fetchedAt: 0,
+    refreshing: false,
+    starting: false,
+    coordination: null,
+    lastClientReportAt: 0,
+  };
+}
+
 /** Fresh state; every test starts from here so module singletons never leak. */
 export function createInitialState(overrides) {
   const base = {
@@ -72,6 +94,7 @@ export function createInitialState(overrides) {
     waitEntry: { sessionId: null, turnId: null, ignoredTurnId: null },
     runtime: initialRuntime(),
     market: initialMarket(),
+    update: initialUpdate(),
     detail: initialDetail(),
     ui: initialUi(),
     scroll: { market: 0, 'my-games': 0 },
@@ -90,6 +113,7 @@ export function createInitialState(overrides) {
     waitEntry: { ...base.waitEntry, ...(overrides.waitEntry || {}) },
     runtime: { ...base.runtime, ...(overrides.runtime || {}) },
     market: { ...base.market, ...(overrides.market || {}) },
+    update: { ...base.update, ...(overrides.update || {}) },
     detail: { ...base.detail, ...(overrides.detail || {}) },
     ui: { ...base.ui, ...(overrides.ui || {}) },
     scroll: { ...base.scroll, ...(overrides.scroll || {}) },
@@ -186,6 +210,60 @@ function normalizePercent(value) {
   if (value < 0) return 0;
   if (value > 100) return 100;
   return Math.round(value);
+}
+
+/** Accept only observations produced by `update-state.normalizeObservation`. */
+function isUpdateObservation(value) {
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      typeof value.operationId === 'string' &&
+      value.operationId.length > 0 &&
+      typeof value.state === 'string' &&
+      UPDATE_STATES.indexOf(value.state) !== -1
+  );
+}
+
+function updateProgressIndex(state) {
+  if (!state || typeof state.state !== 'string') return -1;
+  return UPDATE_PROGRESS_STATES.indexOf(state.state);
+}
+
+/**
+ * Never walk the observation backwards: polling `/platform-update` and
+ * `/platform-update/observe` race, and a terminal state must not be replaced by
+ * an older in-flight progress state. `applied`/`activating` stay monotonic.
+ */
+function mergeObservation(previous, next) {
+  if (!isUpdateObservation(next)) return previous;
+  if (!isUpdateObservation(previous) || previous.operationId !== next.operationId) return next;
+  const previousTerminal = UPDATE_CONTINUES_STATES.indexOf(previous.state) === -1;
+  const nextTerminal = UPDATE_CONTINUES_STATES.indexOf(next.state) === -1;
+  if (previousTerminal && !nextTerminal) return previous;
+  if (!previousTerminal && !nextTerminal) {
+    const previousIndex = updateProgressIndex(previous);
+    const nextIndex = updateProgressIndex(next);
+    if (previousIndex !== -1 && nextIndex !== -1 && nextIndex < previousIndex) return previous;
+  }
+  return next;
+}
+
+function normalizeUpdateError(error) {
+  if (!error || typeof error !== 'object') return null;
+  return {
+    code: typeof error.code === 'string' && error.code.length > 0 ? error.code : 'GM-5000',
+    retryable: error.retryable === true,
+  };
+}
+
+function normalizeUpdateCoordination(value) {
+  if (!value || typeof value !== 'object') return null;
+  return {
+    operationId: typeof value.operationId === 'string' ? value.operationId : null,
+    status: value.status === 'working' || value.status === 'reported' || value.status === 'failed' ? value.status : 'working',
+    failedCount: typeof value.failedCount === 'number' && Number.isFinite(value.failedCount) ? value.failedCount : 0,
+    at: typeof value.at === 'number' && Number.isFinite(value.at) ? value.at : 0,
+  };
 }
 
 function toastId(action) {
@@ -441,7 +519,7 @@ export function reduce(state, action) {
 
     case 'dialog-open': {
       if (DIALOG_KINDS.indexOf(action.kind) === -1) return state;
-      if (!isGameId(action.gameId) && action.kind !== 'install-local') return state;
+      if (!isGameId(action.gameId) && action.kind !== 'install-local' && action.kind !== 'platform-update') return state;
       return {
         ...state,
         dialog: {
@@ -459,6 +537,14 @@ export function reduce(state, action) {
           formatLabel: typeof action.formatLabel === 'string' ? action.formatLabel : null,
           overwrite: action.overwrite && typeof action.overwrite === 'object' ? action.overwrite : null,
           returnFocus: action.returnFocus && typeof action.returnFocus === 'object' ? action.returnFocus : null,
+          // V1.5 M3 platform update confirmation (all fields copied verbatim
+          // from the verified inspection; the dialog never invents a target).
+          targetId: typeof action.targetId === 'string' ? action.targetId : null,
+          targetVersion: typeof action.targetVersion === 'string' ? action.targetVersion : null,
+          targetCommit: typeof action.targetCommit === 'string' ? action.targetCommit : null,
+          currentVersion: typeof action.currentVersion === 'string' ? action.currentVersion : null,
+          channel: typeof action.channel === 'string' ? action.channel : null,
+          restartPossible: action.restartPossible === true,
         },
       };
     }
@@ -577,6 +663,116 @@ export function reduce(state, action) {
       const health = action.health && typeof action.health === 'object' ? action.health : null;
       if (!health) return state;
       return { ...state, health: health };
+    }
+
+    case 'update-inspect-start': {
+      if (state.update.status === 'unsupported') return state;
+      const status = state.update.inspection === null ? 'loading' : state.update.status;
+      if (status === state.update.status) return state;
+      return { ...state, update: { ...state.update, status: status } };
+    }
+
+    case 'update-action-failed': {
+      const error = normalizeUpdateError(action.error);
+      if (error === null) return state;
+      return { ...state, update: { ...state.update, actionError: error, starting: false } };
+    }
+
+    case 'update-action-cleared': {
+      if (state.update.actionError === null && state.update.starting === false) return state;
+      return { ...state, update: { ...state.update, actionError: null, starting: false } };
+    }
+
+    case 'update-inspect-ready': {
+      const inspection = action.inspection && typeof action.inspection === 'object' ? action.inspection : null;
+      if (!inspection) return state;
+      const operation = mergeObservation(state.update.operation, inspection.operation);
+      return {
+        ...state,
+        update: {
+          ...state.update,
+          status: 'ready',
+          inspection: inspection,
+          operation: operation,
+          error: null,
+          actionError: null,
+          fetchedAt: typeof action.at === 'number' ? action.at : state.update.fetchedAt,
+        },
+      };
+    }
+
+    case 'update-inspect-failed': {
+      const error = normalizeUpdateError(action.error);
+      if (state.update.inspection !== null) {
+        // Keep the last successful inspection visible (offline/stale state).
+        return { ...state, update: { ...state.update, error: error } };
+      }
+      return { ...state, update: { ...state.update, status: 'error', error: error } };
+    }
+
+    case 'update-unsupported': {
+      if (state.update.status === 'unsupported' && state.update.inspection === null) return state;
+      return { ...state, update: { ...state.update, status: 'unsupported', inspection: null, operation: null, error: null } };
+    }
+
+    case 'update-refresh-start': {
+      if (state.update.refreshing) return state;
+      return { ...state, update: { ...state.update, refreshing: true } };
+    }
+
+    case 'update-refresh-done': {
+      const inspection = action.inspection && typeof action.inspection === 'object' ? action.inspection : null;
+      const operation = inspection ? mergeObservation(state.update.operation, inspection.operation) : state.update.operation;
+      return {
+        ...state,
+        update: {
+          ...state.update,
+          refreshing: false,
+          status: inspection ? 'ready' : state.update.status,
+          inspection: inspection || state.update.inspection,
+          operation: operation,
+          fetchedAt: typeof action.at === 'number' ? action.at : state.update.fetchedAt,
+        },
+      };
+    }
+
+    case 'update-starting': {
+      const starting = action.starting === true;
+      if (starting === state.update.starting) return state;
+      return { ...state, update: { ...state.update, starting: starting, actionError: starting ? null : state.update.actionError } };
+    }
+
+    case 'update-operation': {
+      const operation = mergeObservation(state.update.operation, action.operation);
+      if (operation === state.update.operation && state.update.starting === false) return state;
+      return {
+        ...state,
+        update: {
+          ...state.update,
+          operation: operation,
+          starting: false,
+          fetchedAt: typeof action.at === 'number' ? action.at : state.update.fetchedAt,
+        },
+      };
+    }
+
+    case 'update-operation-reset': {
+      if (state.update.operation === null) return state;
+      return { ...state, update: { ...state.update, operation: null } };
+    }
+
+    case 'update-coordination': {
+      const coordination = normalizeUpdateCoordination(action.coordination);
+      if (coordination === null) return state;
+      return { ...state, update: { ...state.update, coordination: coordination } };
+    }
+
+    case 'update-client-reported': {
+      return { ...state, update: { ...state.update, lastClientReportAt: typeof action.at === 'number' ? action.at : state.update.lastClientReportAt } };
+    }
+
+    case 'update-reset': {
+      return { ...state, update: initialUpdate() };
     }
 
     case 'runtime-start': {
@@ -845,6 +1041,62 @@ export function healthReady(health) {
   return { type: 'health-ready', health: health };
 }
 
+export function updateInspectStarted() {
+  return { type: 'update-inspect-start' };
+}
+
+export function updateInspectReady(inspection, at) {
+  return { type: 'update-inspect-ready', inspection: inspection, at: at };
+}
+
+export function updateInspectFailed(error) {
+  return { type: 'update-inspect-failed', error: error };
+}
+
+export function updateUnsupported() {
+  return { type: 'update-unsupported' };
+}
+
+export function updateRefreshStarted() {
+  return { type: 'update-refresh-start' };
+}
+
+export function updateRefreshFinished(at, inspection) {
+  return { type: 'update-refresh-done', at: at, inspection: inspection || null };
+}
+
+export function updateStarting(starting) {
+  return { type: 'update-starting', starting: starting === true };
+}
+
+export function updateActionFailed(error) {
+  return { type: 'update-action-failed', error: error };
+}
+
+export function updateActionCleared() {
+  return { type: 'update-action-cleared' };
+}
+
+export function updateObservation(operation, at) {
+  return { type: 'update-operation', operation: operation, at: at };
+}
+
+export function updateObservationCleared() {
+  return { type: 'update-operation-reset' };
+}
+
+export function updateCoordinated(coordination) {
+  return { type: 'update-coordination', coordination: coordination };
+}
+
+export function updateClientReported(at) {
+  return { type: 'update-client-reported', at: at };
+}
+
+export function updateReset() {
+  return { type: 'update-reset' };
+}
+
 export function runtimeStarted(gameId, mode, sessionId, autoResume) {
   return { type: 'runtime-start', gameId: gameId, mode: mode, sessionId: sessionId, autoResume: autoResume === true };
 }
@@ -971,4 +1223,9 @@ export function selectInstallJob(state, gameId) {
 /** Active dialog (or null). */
 export function selectDialog(state) {
   return state && state.dialog ? state.dialog : null;
+}
+
+/** V1.5 M3 platform-update slice (see update-state.js for the projection). */
+export function selectUpdateState(state) {
+  return state && state.update ? state.update : null;
 }

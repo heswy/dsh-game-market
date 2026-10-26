@@ -71,18 +71,38 @@ function safeDispose(disposer, logger) {
  *
  * @returns {string|null} e.g. `http://127.0.0.1:54663`
  */
+/**
+ * Read an optional service without declaring it in `inject` (see
+ * `resolveDshWebOrigin` below for why activation must not depend on it).
+ *
+ * @returns {object|null}
+ */
+function readOptionalService(ctx, name) {
+  try {
+    if (ctx && typeof ctx.reflect === 'object' && typeof ctx.reflect.get === 'function') {
+      const reflected = ctx.reflect.get(name, false);
+      if (reflected !== undefined && reflected !== null) return reflected;
+    }
+  } catch (_error) {
+    // Fall through to `ctx.get` below.
+  }
+  try {
+    if (ctx && typeof ctx.get === 'function') {
+      const service = ctx.get(name);
+      return service === undefined ? null : service;
+    }
+  } catch (_error) {
+    // A missing optional service is never fatal.
+  }
+  return null;
+}
+
 function resolveDshWebOrigin(ctx, logger) {
   try {
     // `ctx.reflect.get(name, false)` reads a service WITHOUT declaring it in
     // `inject`: the plugin must keep activating on hosts that serve no web UI,
     // so `webServer` stays optional rather than a hard dependency.
-    let webServer = null;
-    if (ctx && typeof ctx.reflect === 'object' && typeof ctx.reflect.get === 'function') {
-      webServer = ctx.reflect.get('webServer', false);
-    }
-    if (!webServer && typeof ctx.get === 'function') {
-      webServer = ctx.get('webServer');
-    }
+    const webServer = readOptionalService(ctx, 'webServer');
     if (!webServer || typeof webServer.getOrigin !== 'function') return null;
     const origin = webServer.getOrigin();
     if (typeof origin !== 'string' || origin.length === 0) return null;
@@ -238,7 +258,28 @@ export function apply(ctx, config) {
     // `frame-ancestors` so only the app page can frame the wrapper /
     // asset-zip-v2 entry document (contract §7.5.2).
     const dshWebOrigin = resolveDshWebOrigin(ctx, logger);
-    const host = createHost({ config, logger, http: dshWebOrigin === null ? {} : { dshWebOrigin } });
+    // V1.5 platform update needs the native plugin manager (H2 adapter) and the
+    // HMR capability probe; both are optional so activation never depends on
+    // them. They are read here (the plugin's own context), not imported from a
+    // private module. Production discovery uses the global `fetch`; the Host
+    // transport seam exists only so tests/probes can inject a fixture.
+    // Lazy resolvers: DSH registers services asynchronously (M0: `hmr` missing
+    // at t=0, present ≈0.5s later). Reading the manager once at activation would
+    // freeze a transient `null` and disable one-click update forever, so the
+    // adapter re-reads these on every call and fails closed until present.
+    const pluginManagerResolver = () => readOptionalService(ctx, 'pluginManager');
+    const hmrResolver = () => readOptionalService(ctx, 'hmr');
+    const fetchImpl = typeof globalThis.fetch === 'function' ? globalThis.fetch.bind(globalThis) : null;
+    const host = createHost({
+      config,
+      logger,
+      pluginManagerResolver,
+      hmrResolver,
+      http: {
+        ...(dshWebOrigin === null ? {} : { dshWebOrigin }),
+        ...(fetchImpl === null ? {} : { platformUpdateFetch: fetchImpl }),
+      },
+    });
     registerHttpRoutes(ctx, host, logger);
     registerAgentEvents(ctx, host, logger);
     registerAgentSessionEvents(ctx, host, logger);

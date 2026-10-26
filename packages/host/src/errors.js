@@ -89,6 +89,8 @@ export function statusForGm(code) {
   if (text === GM.ENTRY_CREDENTIAL_CONSUMED) return 401;
   // V1.5 archive/descriptor/catalog/inline semantics are all 422 (§8.1/§8.3).
   if (numeric >= 4270 && numeric < 4290) return 422;
+  // V1.5 update observation timeout is documented as 504 (contract §8.3).
+  if (text === GM.UPDATE_OBSERVE_TIMEOUT) return 504;
   if (numeric >= 5030 && numeric < 6000) return 503;
   if (numeric >= 5000) return 500;
   if (numeric >= 4290 && numeric < 4300) return 429;

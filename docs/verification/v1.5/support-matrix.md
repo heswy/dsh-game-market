@@ -1,9 +1,16 @@
 # V1.5 支持矩阵（M0 冻结草案）
 
-> 状态：**M0 草案**。每条给出实测依据或明确标注「未验证」。冻结前由 Lead 按 M0 探针结论校准。
+> **M3 重启核对（2026-10-26）**：本文原 M3 表格为 10 月 20–21 日的检查点快照；旧候选、not-run 与失败记录保持历史含义。当前候选及最新逐项结论统一见 [M3 重启验收](./m3-restart-acceptance.md)。M0–M2 历史证据不因本轮重跑而改变；真实 Electron、生产索引推广仍单列。
+
+
+> 状态：**M0 冻结草案（已按 M0 探针校准；2026-10-20 追加 M3 更新能力行，V1/V2 证据落地前状态为 not-run）**。
+> 每条给出实测依据或明确标注「未验证」。
 > 对应指南 §3「正式支持的 DSH 矩阵」与 §5.1/§5.3 的更新能力边界；契约细节见 `docs/V1.5-CONTRACTS.md`。
 >
 > 记录日期：2026-10-19。基线 `v1.2.0@f422e8d`，开发分支 `feat/v1.5-m0`。
+> **M3 追加（2026-10-20）**：§9 = M3 平台插件持续更新能力矩阵；§10 = M0 未验证项在 M3 的去向
+> （resolved / pending / residual）；§11 = M3 残留未验证项。M0～M2 行保持原实测依据不变；
+> M3 行只有拿到 committed 原始证据后才允许把状态改为「通过」。
 
 ## 1. 实测环境身份
 
@@ -114,3 +121,63 @@ Lead 实测反例：`apply()` 时读得 `hmr=false`（`Service.init` 未完成�
 | A7 | CSP **按 origin 匹配**：`connect-src <resourceOrigin>` 是运行时权威边界；validator 对绝对/协议相对 URL 的拒绝是**创作期可移植性规则，不是安全证明** | CR-P1 复核修正 |
 | A8 | ZIP 条目口径以**总条目**为准（含 `dsh-package.json`）≤512 → `files[]` ≤511 | 复核意见 + Lead 裁决（消除「512+1」歧义） |
 | A9 | 更新终态唯一：`inspecting → installing → applied → activating → updated`；`applied` 为中间态，核验前不得显示「已更新」；非成功分支含 `pending-restart`/`already-at-target`/`verification-failed`/`stale-runtime`/`cancelled`/`failed`（`too-late` 不是回滚） | 复核意见 + 契约 §9.5.1 |
+
+## 9. M3 平台插件持续更新能力矩阵
+
+> 证据级别同 M3：`automated` / `isolated-host`（隔离 `dsh web` + 真实插件服务）/ `isolated-browser`（CDP + 真实 DSH 页面）/
+> `isolated transport fixture` / `real-Desktop` / `not-run`。状态列只按 `docs/verification/v1.5/raw/m3/` 的 committed 证据
+> 与 `plugin-update-m3.md` 的结果填；V1/V2 未跑前一律 not-run。骨架/门禁见 `acceptance-matrix.md` §13–§21。
+
+| 能力 | 判定来源 | 状态（2026-10-20） | 依据 / 缺口 |
+|---|---|---|---|
+| 官方固定索引发现：URL 常量、HTTPS、≤256 KiB、5s 总超时、重定向 ≤3 且不降级、单飞、启动静默 ≤6h、手动刷新 60s 节流、缓存/离线保留上次 target、同版本不同 commit 异常检测 | 真实 Host 路由 + 隔离传输夹具 | **已实测（isolated-host + isolated transport fixture）** | 发现矩阵 160/160 exit 0（`acceptance-matrix.md` §21）；契约 §17.2 条目 1/3 |
+| 格式 1 严格校验 + 官方绑定：插件名 `dsh-game-market`、仓库 `github.com/heswy/dsh-game-market`、`source.type='git'`、完整 40-hex、精确 semver；拒绝 branch/tag/短 SHA/本地路径/`file:`/任意仓库/裸包名 | shared 校验器 + 夹具恶意索引矩阵 | **已实测（automated + fixture）** | 共享契约 13/13；V0 矩阵 `unbound-repo`/`file-source`/`short-sha`/`redirect-http`/`redirect-loop`/畸形 JSON/超限/超时；契约 §17.1 |
+| stable 通道默认排除 prerelease；test 通道只能配置显式 opt-in（普通 UI 无一键切换） | shared 选择器 + 夹具 | **已实测（automated + fixture）** | V0 `prerelease-stable`/`test-channel-optin`；契约 §9.4/§17.2 条目 3 |
+| HMR 原位更新（A→B→C，无需进程重启，`/health` 报新版本） | M0 Host-only 探针（真实 `pluginManager`，独立操作者） | **Host 层已实测（M0，隔离 profile）**；**M3 真实 Client UI 链路 not-run** | `docs/verification/v1.5/plugin-update.md` §1/§3 U2-3..U2-8；M3 V1-1 待跑 |
+| 非 HMR：`restart-required` + `restartReason:"no-hmr"` → 重启后新版本；重启前磁盘新/运行旧 | M0 Host-only 探针（显式禁用 `hmr` row 的隔离 profile） | **Host 层已实测（M0）**；**M3 链路 not-run** | `plugin-update.md` §3 U1-1..U1-5；M3 V1-5 待跑 |
+| 状态机 `inspecting→installing→applied(中间态)→activating→updated` 与非成功分支 | Host 目标测试（假 manager）+ client 状态映射测试 | **实现层通过（automated）**；真实双端核验 **not-run** | 契约 §9.5.1；`packages/host/test/cases/v1.5-platform-update-operations.js` + client 套件；V1 待跑 |
+| 双端身份语义：Host 激活冻结 `loadedVersion`/`buildCommit`；Client 只上报自身 `{buildVersion, buildCommit}`；`updated` 需双方 + `/health` 同时匹配 | 契约 §9.5.1 + 目标测试 | **实现层通过（automated）**；真实 **not-run** | 契约 §17.2 条目 7/8/9；V1-1/V1-2 待跑 |
+| 重复点击/多窗口幂等：同目标返回同一 `operationId`；不同 target 在途 → `GM-4091`（文案区别于游戏安装） | Host 目标测试 | **实现层通过（automated）**；真实双窗口 **not-run** | 契约 §17.2 条目 13；V2-1 待跑 |
+| profile 范围更新锁（跨进程写锁/心跳/陈旧接管/忙码） | Host 目标测试（复用安装锁语义） | **实现层通过（automated）**；跨进程真实竞争 **未验证** | 契约 §17.3 未验证项 3 |
+| 活跃实例保存协调：包变更前必须所有实例 pause+save 确认；失败/超时中止且无包变更；`idle` 窗口不带实例 | Host 目标测试（假实例表） | **实现层通过（automated）**；真实游戏实例故障注入 **not-run** | 契约 §17.2 条目 14；V2-2 待跑 |
+| 能力 unknown fail-closed：`canBeginUpdate=false`、原因可读、市场/游戏不受影响、原生恢复入口 | Host 目标测试 + M0 时序实测 | **实现层通过**；真实构造 **not-run** | 契约 §9.2；V2-6 待跑 |
+| dev row 遮蔽：识别 `stale-runtime(dev-row-shadows-package)`、禁用更新、给原生插件管理指引、不静默迁移 | M0 U2-10 行为实测 + Host 目标测试 | **行为已实测（M0，Host-only）**；真实 M3 阻断 **not-run** | `plugin-update.md` §1.7 / U2-10；V2-7 待跑 |
+| RPC 丢失 / Client 刷新 / HMR dispose 恢复：持久记录、重读实际身份、无伪成功 | Host 目标测试（`reopen()` 模拟新激活/重启） | **实现层通过（automated）**；真实浏览器 **not-run** | 契约 §17.2 条目 15；V1-2/V1-3 待跑 |
+| 旧 Client + 新 Host → `stale-runtime(client-old)`，刷新后 `updated` | Host 目标测试 | **实现层通过**；真实 **not-run** | 契约 §9.5.1 规则 6；V1-6 待跑 |
+| 不伪报已升级：`applied` 中间态；`pending-restart`/`verification-failed`/`stale-runtime` 不得显示成功；无伪百分比 | client 状态映射测试 + Host 目标测试 | **实现层通过（automated）**；真实 UI **not-run** | M3-V1 待跑 |
+| 隔离验证环境自证：运行时身份/解包一致性/真实 DSH 页面/端口与进程清理 | V0 harness | **已实测（isolated-browser）** | [M3-V0-harness](raw/m3/M3-V0-harness-2026-10-20T11-48-47-688Z.json) 33/32，exit 0 |
+| 验证专用 probe releases 身份（`A2`=1.2.1 / `B4`=1.2.2 / `R_final7`=1.3.0；固定代码树）与精确 commit 安装性 | 只读 git 身份核对 + probe-release acceptance 证据 + V1 真实安装 | **`A2` 身份与 remote fetch 已验证（79/79，已提交证据）；`B4`/`R_final7` 完整身份值待 Lead 回填、probe-release acceptance 待重跑；真实安装/更新链 not-run** | 历史验收证据 [M3-probe-release-acceptance-01-31-27](raw/m3/M3-probe-release-acceptance-2026-10-21T01-31-27-629Z.json)（FINAL=`R_final6`，历史）；`acceptance-matrix.md` §14；V1 待跑 |
+| 真实缺陷 A：client manual-refresh 与自动检查节流耦合（6h 调度） | V1 partial run（isolated-browser，`af99227` 上）→ 修复 `c19bfe1` → 重建固定代码树 probe releases（`A2`/`B3`/`B4`） | **缺陷已发现并修复（修复提交已入库）；`B4`/`R_final7` 端到端复验 not-run** | 修复 `c19bfe1`；fixed-tree preflight 30/30（历史目标，证明刷新门禁修复后行为）；本节不得写成已通过 |
+| 真实缺陷 B：release 身份 repo 形态解析 + 恢复窗口 | V1 非 HMR 真实进程重启（`A2→B2`，`R_final4` 上）→ 宿主修复 `91237c6`（契约 §17.5；Host 298/298、shared 13/13） | **缺陷已发现并修复；`B4`/`R_final7` 非 HMR 复验 not-run** | 缺陷发现证据 [M3-v1-nonhmr-restart-00-11-21](raw/m3/M3-v1-nonhmr-restart-2026-10-21T00-11-21-752Z.json)；修复归一化 release repo URL + `recoveryClientWaitMs` 30min |
+| 真实缺陷 C：终态保留隐藏下一次更新入口 | V1 两跳真实链（`A2→B3→R_final6`，两跳均 updated）→ 客户端修复 `8f10705`（契约 §17.5 补 `begin` 回归语义）→ 重建 `B4`/`R_final7` | **缺陷已发现并修复；`B4`/`R_final7` 复验 not-run** | 缺陷发现证据 [M3-v1-hmr-chain-07-01-44](raw/m3/M3-v1-hmr-chain-2026-10-21T07-01-44-682Z.json)（98 checks/95 通过，3 项失败即缺陷 C）；Host 298/298 |
+| probe-release 链一致性缺陷（`B2` 早于身份修复、`B3` 早于缺陷 C 修复） | 依次重建 `B3`、`B4` 并重新生成 head | **已重建；新链 V1/V2 待跑** | `acceptance-matrix.md` §20.13；旧 probe releases 仅保留历史 |
+| V1/V2 探针/harness 自身修复（非产品缺陷） | 直连/固定 IP 网络模式 `472de10`/`df3732d`、面板/更新区渲染与截图助手、失败运行如实保留 | **工具修复已入库；不计入产品缺陷** | 见 `acceptance-matrix.md` §20.14 |
+| 旧 head/旧 probe releases 被取代（`5c23344` / `af99227` / `f218ea8` / `bf6c37f` / `d29e45f` / `9bad078` / `B2` / `B3` / `R_A` / `R_B`） | 见 `acceptance-matrix.md` §20.10 | **不得再作为验证目标**；仅作历史/缺陷发现/旧构建确定性参考 | 当前唯一目标：`R_final7` + `A2`/`B4` |
+
+## 10. M0 未验证项在 M3 的去向（resolved / pending / residual）
+
+> M0 §7 原表暂不删行：与更新相关的 3 项只有 V1/V2 证据落地后才迁到这里并标注“已由 M3 关闭 → 证据链接”。
+> 在此之前两边都不得写成通过。
+
+| M0 未验证项（§7 原行） | M3 去向 | 状态 | 证据 / 缺口 |
+|---|---|---|---|
+| 客户端半在 bundle 替换时的销毁时序、RPC 响应丢失 | M3 V1-2/V1-3（Client 刷新/丢 RPC/HMR dispose 存活） | **pending（not-run）** | V1 证据提交后改为 closed；当前只有 Host 目标测试（假 manager）作为实现层参考 |
+| 多窗口/profile 更新锁、多窗口并发 renew/release | 更新锁 → M3 V2-1/V2-2 + Host 目标测试；**资源凭证 renew/release 竞争仍属 M1 遗留**（M3 不覆盖） | **部分覆盖（实现层）；真实并发 not-run** | 契约 §17.3 未验证项 3；V2 待跑 |
+| 更新状态机 `updated` 的双端核验实测 | M3 V1-1/V1-2/V2-1 | **pending（not-run）** | V1 证据提交后改 closed |
+| 真实 Desktop / headed Electron 窗口 | M3 仍不碰真实 Desktop（隔离 `dsh web` + headless Chrome） | **residual 未验证** | 见 §11 |
+| 非 Chromium 引擎的导航阻断与资源加载 | M3 不覆盖（与更新链路无关） | **residual 未验证** | 见 §11 |
+| 其余 M0 项（真实模型问答、真实面板问答、`@font-face`、ENOSPC 等） | 与 M3 更新链路无关 | **residual（保持 §7 原状）** | §7 原行保留 |
+
+## 11. M3 残留未验证项（不得写成已支持）
+
+| 项 | 为什么未验证 / 需要什么证据 |
+|---|---|
+| 真实 Desktop / Electron 主进程内的发现网络栈、原生窗口 UI、真实用户 profile | 本轮不碰 `~/.dsh`；证据全部来自隔离 `dsh web` + headless Chrome |
+| 生产官方索引的真实内容与格式正确性 | 从未抓取/写入生产索引；夹具 body 是验证数据 |
+| V1/V2 全部端到端场景（HMR `A2→B4→R_final7`、恢复、非 HMR 真实重启、混合态、多窗口、协调、取消、能力 unknown、dev-row、恶意索引、失败恢复） | `not-run`（V1 已在 `R_final4`/`R_final5`/`R_final6` 上真实跑并逐层发现 3 个真实产品缺陷 + probe-release 链一致性问题，均已修复/重建进 `B4`/`R_final7`；`R_final7` 的 acceptance 79/79 与 preflight 28/28 已生成待提交，HMR 全链仍受原生安装 `GM-5033` 阻塞，待重跑证据），见 `plugin-update-m3.md` §3/§4 与 `acceptance-matrix.md` §15–§19 |
+| 跨进程 profile 更新锁竞争 | 实现复用已验证安装锁；真实两进程压测未做 |
+| 真实 ENOSPC/权限/游戏运行中保存失败注入 | 自动化用假 manager/注入；隔离 profile 真实故障归 V2 |
+| 非 Chromium 引擎 / headed 窗口 / 长时 soak | 未覆盖 |
+| 夹具方法对 Electron 主进程的适用性 | `NODE_USE_ENV_PROXY` 为 Node 24 行为；Electron 主进程未验证 |
+| 真实 stable promote / 撤回 / 旧通道用户升级 | 本轮只 dry-run + 身份核对，不写生产索引、不发布、不打 tag |
+| `html-v1` wrapper 化 | M3 不涉及；仍为 **M4 前置独立提交**，不得宣称所有格式已阻断包外导航 |

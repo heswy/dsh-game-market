@@ -275,6 +275,8 @@ export class Cdp {
     cdp.id = 0;
     cdp.pending = new Map();
     cdp.sessions = [];
+    cdp.sendTimeoutMs = 60000;
+    cdp.evalTimeoutMs = 45000;
     cdp.errors = [];
     cdp.console = [];
     cdp.ws.onmessage = (event) => {
@@ -301,9 +303,25 @@ export class Cdp {
   }
 
   send(method, params = {}, sessionId) {
-    return new Promise((resolve) => {
+    const timeoutMs = typeof this.sendTimeoutMs === 'number' ? this.sendTimeoutMs : 60000;
+    return new Promise((resolve, reject) => {
       const id = ++this.id;
-      this.pending.set(id, resolve);
+      let settled = false;
+      const timer = timeoutMs > 0
+        ? setTimeout(() => {
+          if (settled) return;
+          settled = true;
+          this.pending.delete(id);
+          reject(new Error(`cdp-send-timeout:${method}:${timeoutMs}ms`));
+        }, timeoutMs)
+        : null;
+      if (timer && typeof timer.unref === 'function') timer.unref();
+      this.pending.set(id, (result) => {
+        if (settled) return;
+        settled = true;
+        if (timer) clearTimeout(timer);
+        resolve(result);
+      });
       const message = { id, method, params };
       if (sessionId) message.sessionId = sessionId;
       this.ws.send(JSON.stringify(message));
@@ -311,7 +329,42 @@ export class Cdp {
   }
 
   async eval(expression) {
-    const result = await this.send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
+    // One bounded retry: after an HMR re-apply the renderer can be briefly busy
+    // and a single long evaluate may time out even though the page is healthy.
+    const attempts = 2;
+    let lastError = null;
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      try {
+        return await this.evalOnce(expression);
+      } catch (error) {
+        lastError = error;
+        const message = String(error && error.message ? error.message : error);
+        if (!message.includes('cdp-eval-timeout') || attempt === attempts) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+    }
+    throw lastError;
+  }
+
+  async evalOnce(expression) {
+    const evalTimeoutMs = typeof this.evalTimeoutMs === 'number' ? this.evalTimeoutMs : 45000;
+    let timer = null;
+    const guard = new Promise((resolve, reject) => {
+      timer = setTimeout(() => {
+        try { this.send('Runtime.terminateExecution', {}).catch(() => {}); } catch { /* ignore */ }
+        reject(new Error(`cdp-eval-timeout:${evalTimeoutMs}ms`));
+      }, evalTimeoutMs + 5000);
+      if (typeof timer.unref === 'function') timer.unref();
+    });
+    let result;
+    try {
+      result = await Promise.race([
+        this.send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true, timeout: evalTimeoutMs }),
+        guard,
+      ]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
     if (result && result.exceptionDetails) {
       const details = result.exceptionDetails;
       throw new Error(`evaluate failed: ${(details.exception || {}).description || details.text}`);

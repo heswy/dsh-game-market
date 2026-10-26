@@ -1,0 +1,953 @@
+{
+  "id": "M3-V0-exact-install",
+  "title": "One-time exact-commit install (pluginManager.installBundle) into a fresh isolated profile",
+  "commands": [
+    "node scripts/verification/v1.5/m3/install-exact-commit.mjs --commit f422e8d04b3b3de3f920a794317c0d28ee1246a2 --version 1.2.0"
+  ],
+  "startedAt": "2026-10-20T11:51:54.705Z",
+  "finishedAt": "2026-10-20T11:52:04.757Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "runtime-extraction-matches-installed-app",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "runtime-expected-version",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.2"
+        },
+        "desktopRuntime": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.2"
+        },
+        "dsh": {
+          "name": "@deepseek-ai/dsh",
+          "version": "0.2.1-rc.2"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.2"
+        }
+      }
+    },
+    {
+      "name": "install-target",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "expectedVersion": "1.2.0"
+      }
+    },
+    {
+      "name": "fresh-isolated-home-under-m3-scratch",
+      "ok": true,
+      "required": true,
+      "detail": "/tmp/dsh-v15/m3/home-v0-install-mvgmi1jk-8162d8"
+    },
+    {
+      "name": "isolated-host-boots-before-install",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "pid": 57152,
+        "node": "v24.14.0"
+      }
+    },
+    {
+      "name": "probe-operator-drives-real-pluginManager",
+      "ok": true,
+      "required": true,
+      "detail": [
+        "@deepseek-ai/dsh-typert-protocol/remote-methods",
+        "bundleRows",
+        "cancelInstall",
+        "change",
+        "configure",
+        "declaredRows",
+        "diskState",
+        "inspect",
+        "installBundle",
+        "listBundles",
+        "listPlugins",
+        "listVersionExemptions",
+        "protectsManager",
+        "publishAndReload",
+        "readRestoredFiles",
+        "refreshPackages",
+        "registries",
+        "reload",
+        "removeBundle",
+        "restoreFiles",
+        "runPnpm",
+        "selectBundle",
+        "setBundleEnabled",
+        "setPluginEnabled",
+        "setVersionExemption",
+        "waitForInstall"
+      ]
+    },
+    {
+      "name": "hmr-capability-present-on-default-profile",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "at": "2026-10-20T11:51:59.029Z",
+        "probeScopeHmr": true,
+        "managerContextHmr": true,
+        "managerContextHmrCtor": "Hmr",
+        "managerContextHmrHasRunExclusive": true,
+        "hmrLoaderRow": {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": {
+            "__jsExpr": "!ctx.get('profileContext')"
+          },
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 110
+        },
+        "samplesSinceBoot": 2
+      }
+    },
+    {
+      "name": "fresh-profile-has-no-game-market-dependency",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "dependency": null
+      }
+    },
+    {
+      "name": "fresh-profile-has-no-disk-package",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "diskPackage": null
+      }
+    },
+    {
+      "name": "fresh-profile-has-no-health-route",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "routeRegistered": false
+      }
+    },
+    {
+      "name": "storage-fixture-seeded",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "markerSha256": "180117f8e1a279c2684d96d8b3adf98b4809103a9ddf7c796256631967b3412d",
+        "saveSha256": "d50f9d2b47cf1675d8da1d8aab757ddba6eeaa6880c7d0893cbfd90258ba21c5"
+      }
+    },
+    {
+      "name": "install-remote-result",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "stage": "enable",
+        "target": "dsh-game-market",
+        "enabled": true,
+        "changed": true,
+        "application": "applied",
+        "registries": [
+          null
+        ],
+        "packageResult": {
+          "exitCode": 0,
+          "output": "Progress: resolved 0, reused 1, downloaded 0, added 0\n\ndependencies:\n+ dsh-game-market github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2\n\nPackages: +1\n+\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\nDone in 2.2s using pnpm v10.28.2\n",
+          "truncated": false,
+          "logPath": "/tmp/dsh-v15/m3/home-v0-install-mvgmi1jk-8162d8/profiles/web/.plugin-manager/logs/operation-WrZR7q/pnpm.log"
+        },
+        "bundle": "dsh-game-market",
+        "version": "1.2.0",
+        "warnings": []
+      }
+    },
+    {
+      "name": "install-result-application-applied-or-restart-required",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "application": "applied",
+        "changed": true,
+        "stage": "enable",
+        "target": "dsh-game-market"
+      }
+    },
+    {
+      "name": "install-result-version-matches",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.2.0",
+        "expected": "1.2.0"
+      }
+    },
+    {
+      "name": "install-pnpm-exit-code-zero",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exitCode": 0,
+        "output": "Progress: resolved 0, reused 1, downloaded 0, added 0\n\ndependencies:\n+ dsh-game-market github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2\n\nPackages: +1\n+\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\nDone in 2.2s using pnpm v10.28.2\n",
+        "truncated": false,
+        "logPath": "/tmp/dsh-v15/m3/home-v0-install-mvgmi1jk-8162d8/profiles/web/.plugin-manager/logs/operation-WrZR7q/pnpm.log"
+      }
+    },
+    {
+      "name": "install-changed-true",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "changed": true
+      }
+    },
+    {
+      "name": "install-threw-nothing",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "installed-state-observed-within-120s",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "waitedMs": 302
+      }
+    },
+    {
+      "name": "post-install-observation",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "dependency": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "diskPackage": {
+          "name": "dsh-game-market",
+          "version": "1.2.0"
+        },
+        "health": {
+          "path": "/api/game-market/health",
+          "method": "GET",
+          "available": true,
+          "connectionScope": "probeScope",
+          "routeRegistered": true,
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "requestId": "req_0c34ae48af660408",
+            "serverTime": "2026-10-20T11:52:03.933Z"
+          },
+          "body": {
+            "ok": true,
+            "version": "1.2.0",
+            "hostEpoch": "he_effdc949bc7aa710",
+            "devMode": false,
+            "storage": {
+              "ok": true,
+              "root": "/tmp/dsh-v15/m3/home-v0-install-mvgmi1jk-8162d8/storages/dsh-game-market",
+              "readOnly": false
+            },
+            "uptimeMs": 433,
+            "registry": {
+              "state": "seed",
+              "sourceUrl": "/private/tmp/dsh-v15/m3/home-v0-install-mvgmi1jk-8162d8/profiles/web/node_modules/dsh-game-market/registry/games.json",
+              "fetchedAt": "2026-10-20T11:52:03.520Z",
+              "truncated": false,
+              "count": 3,
+              "lastError": null,
+              "activeSource": "seed",
+              "fallback": true,
+              "official": {
+                "state": "missing",
+                "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+                "fetchedAt": null,
+                "truncated": false,
+                "count": 0,
+                "lastError": null
+              },
+              "seed": {
+                "state": "fresh",
+                "count": 3,
+                "sourceUrl": "/private/tmp/dsh-v15/m3/home-v0-install-mvgmi1jk-8162d8/profiles/web/node_modules/dsh-game-market/registry/games.json"
+              }
+            },
+            "installations": {
+              "count": 0,
+              "updateAvailable": 0
+            },
+            "sessions": {
+              "running": 0,
+              "staleRunningPreserved": true
+            },
+            "games": {
+              "builtinCount": 1,
+              "issues": []
+            }
+          },
+          "bodyTextPrefix": "{\"ok\":true,\"data\":{\"ok\":true,\"version\":\"1.2.0\",\"hostEpoch\":\"he_effdc949bc7aa710\",\"devMode\":false,\"storage\":{\"ok\":true,\"root\":\"/tmp/dsh-v15/m3/home-v0-install-mvgmi1jk-8162d8/storages/dsh-game-market\",\"readOnly\":false},\"uptimeMs\":433,\"registry\":{\"state\":\"seed\",\"sourceUrl\":\"/private/tmp/dsh-v15/m3/home-v0-install-mvgmi1jk-8162d8/profiles/web/node_modules/dsh-game-market/registry/games.json\",\"fetchedAt\":\"2026-10-20T11:52:03.520Z\",\"truncated\":false,\"count\":3,\"lastError\":null,\"activeSource\":\"seed\",\"fallback\":true,\"official\":{\"state\":\"missing\",\"sourceUrl\":\"https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json\",\"fetchedAt\":null,\"truncated\":false,\"count\":0,\"lastError\":null},\"seed\":{\"state\":\"fresh\",\"count\":3,\"sourceUrl\":\"/private/tmp/dsh-v15/m3/home-v0-install-mvgmi1jk-8162d8/profiles/web/node_modules/dsh-game-market/registry/games.json\"}},\"installations\":{\"count\":0,\"updateAvailable\":0},\"sessions\":{\"running\":0,\"staleRunningPreserved\":true},\"games\":{\"builtinCount\":1,\"issues\":[]}},\"requestId\":\"req_0c34ae48af660408\",\"serverTime\":\"2026-10-20T11:52:03.933Z\"}"
+        },
+        "bundles": [
+          {
+            "name": "@deepseek-ai/dsh-base",
+            "version": "0.2.1-rc.2",
+            "enabled": true,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-web-app",
+            "version": "0.2.1-rc.2",
+            "enabled": true,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "dsh-game-market",
+            "version": "1.2.0",
+            "enabled": true,
+            "installed": true,
+            "removable": true,
+            "availability": "profile",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-acp-app",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-experimental-agent-team-profile",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-experimental-inspector-profile",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-headless",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-sdk-app",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-sdk-minimal",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-experimental-voice-input-bundle",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-experimental-auto-review",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-experimental-cot-translation-bundle",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-experimental-badge-skill-bundle",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-experimental-ralph-bundle",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-experimental-session-titles-bundle",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-experimental-terminal-bundle",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-experimental-session-search",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-experimental-tool-worktree",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-experimental-plugin-market-bundle",
+            "version": "0.2.1-rc.2",
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "installation",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-subagent-claude-code",
+            "version": null,
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "missing",
+            "devMode": null,
+            "error": null
+          },
+          {
+            "name": "@deepseek-ai/dsh-subagent-codex",
+            "version": null,
+            "enabled": false,
+            "installed": false,
+            "removable": false,
+            "availability": "missing",
+            "devMode": null,
+            "error": null
+          }
+        ],
+        "loaderRows": [
+          {
+            "id": "hmr",
+            "name": "@deepseek-ai/dsh-hmr",
+            "disabled": {
+              "__jsExpr": "!ctx.get('profileContext')"
+            },
+            "hasFiber": true,
+            "fiberState": 2,
+            "fiberUid": 110
+          },
+          {
+            "id": "v15-m3-probe",
+            "name": "file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/probe-m3-host.js",
+            "disabled": null,
+            "hasFiber": true,
+            "fiberState": 2,
+            "fiberUid": 48
+          },
+          {
+            "id": "dsh-game-market",
+            "name": "dsh-game-market",
+            "disabled": null,
+            "hasFiber": true,
+            "fiberState": 2,
+            "fiberUid": 337
+          }
+        ],
+        "capability": {
+          "at": "2026-10-20T11:52:03.932Z",
+          "probeScopeHmr": true,
+          "managerContextHmr": true,
+          "managerContextHmrCtor": "Hmr",
+          "managerContextHmrHasRunExclusive": true,
+          "hmrLoaderRow": {
+            "id": "hmr",
+            "name": "@deepseek-ai/dsh-hmr",
+            "disabled": {
+              "__jsExpr": "!ctx.get('profileContext')"
+            },
+            "hasFiber": true,
+            "fiberState": 2,
+            "fiberUid": 110
+          },
+          "samplesSinceBoot": 2
+        }
+      }
+    },
+    {
+      "name": "profile-dependency-is-normalised-github-spec",
+      "ok": true,
+      "required": true,
+      "detail": "github:heswy/dsh-game-market#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+    },
+    {
+      "name": "disk-package-version-matches-target",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "name": "dsh-game-market",
+        "version": "1.2.0"
+      }
+    },
+    {
+      "name": "health-route-200-with-envelope",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "requestId": "req_0c34ae48af660408",
+          "serverTime": "2026-10-20T11:52:03.933Z"
+        }
+      }
+    },
+    {
+      "name": "health-version-matches-target",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.2.0",
+        "expected": "1.2.0"
+      }
+    },
+    {
+      "name": "listed-bundle-version-matches-target",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "name": "@deepseek-ai/dsh-base",
+          "version": "0.2.1-rc.2",
+          "enabled": true,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-web-app",
+          "version": "0.2.1-rc.2",
+          "enabled": true,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "dsh-game-market",
+          "version": "1.2.0",
+          "enabled": true,
+          "installed": true,
+          "removable": true,
+          "availability": "profile",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-acp-app",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-experimental-agent-team-profile",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-experimental-inspector-profile",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-headless",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-sdk-app",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-sdk-minimal",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-experimental-voice-input-bundle",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-experimental-auto-review",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-experimental-cot-translation-bundle",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-experimental-badge-skill-bundle",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-experimental-ralph-bundle",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-experimental-session-titles-bundle",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-experimental-terminal-bundle",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-experimental-session-search",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-experimental-tool-worktree",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-experimental-plugin-market-bundle",
+          "version": "0.2.1-rc.2",
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "installation",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-subagent-claude-code",
+          "version": null,
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "missing",
+          "devMode": null,
+          "error": null
+        },
+        {
+          "name": "@deepseek-ai/dsh-subagent-codex",
+          "version": null,
+          "enabled": false,
+          "installed": false,
+          "removable": false,
+          "availability": "missing",
+          "devMode": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "name": "bundle-loader-row-running-after-apply",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "id": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "disabled": {
+            "__jsExpr": "!ctx.get('profileContext')"
+          },
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 110
+        },
+        {
+          "id": "v15-m3-probe",
+          "name": "file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/probe-m3-host.js",
+          "disabled": null,
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 48
+        },
+        {
+          "id": "dsh-game-market",
+          "name": "dsh-game-market",
+          "disabled": null,
+          "hasFiber": true,
+          "fiberState": 2,
+          "fiberUid": 337
+        }
+      ]
+    },
+    {
+      "name": "storage-after-package-change",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "root": "/tmp/dsh-v15/m3/home-v0-install-mvgmi1jk-8162d8/storages/dsh-game-market",
+        "markerSha256": "180117f8e1a279c2684d96d8b3adf98b4809103a9ddf7c796256631967b3412d",
+        "saveSha256": "d50f9d2b47cf1675d8da1d8aab757ddba6eeaa6880c7d0893cbfd90258ba21c5",
+        "markerPresent": true,
+        "savePresent": true
+      }
+    },
+    {
+      "name": "storage-marker-bytes-preserved",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": "180117f8e1a279c2684d96d8b3adf98b4809103a9ddf7c796256631967b3412d",
+        "after": "180117f8e1a279c2684d96d8b3adf98b4809103a9ddf7c796256631967b3412d"
+      }
+    },
+    {
+      "name": "storage-save-bytes-preserved",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": "d50f9d2b47cf1675d8da1d8aab757ddba6eeaa6880c7d0893cbfd90258ba21c5",
+        "after": "d50f9d2b47cf1675d8da1d8aab757ddba6eeaa6880c7d0893cbfd90258ba21c5"
+      }
+    },
+    {
+      "name": "probe-operator-alive-after-install",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "pid": 57152
+      }
+    },
+    {
+      "name": "probe-operator-fiber-survived-install",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": 48,
+        "after": 48
+      }
+    },
+    {
+      "name": "cleanup-ports-refused-pids-dead-dirs-gone",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "v0-exact-install-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-20T11:52:04.757Z",
+        "ports": [
+          {
+            "port": 54696,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v0-install-mvgmi1jk-8162d8",
+            "exists": false
+          }
+        ]
+      }
+    }
+  ],
+  "runTag": "v0-install-mvgmi1jk-8162d8",
+  "evidenceLevel": "isolated-host + real pnpm network install (exact git commit through real pluginManager)",
+  "helperPurpose": "one-time bootstrap install for M3 A/B/C verification and user migration; M3-code-agnostic, commit/version are arguments",
+  "probeReleasesStatus": "not-run: verification-only A/B/C probe commits are not pushed yet (Lead git operation); this run proves the helper against the published v1.2.0 commit",
+  "environment": {
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "repoRoot": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update"
+  },
+  "keptHome": null,
+  "cleanupProof": {
+    "label": "v0-exact-install-cleanup",
+    "ok": true,
+    "checkedAt": "2026-10-20T11:52:04.757Z",
+    "ports": [
+      {
+        "port": 54696,
+        "accepting": false,
+        "listenerPids": []
+      }
+    ],
+    "pids": [],
+    "dirs": [
+      {
+        "dir": "/tmp/dsh-v15/m3/home-v0-install-mvgmi1jk-8162d8",
+        "exists": false
+      }
+    ]
+  },
+  "thrown": null,
+  "failedRequired": []
+}
