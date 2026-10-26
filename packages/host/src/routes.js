@@ -95,6 +95,16 @@ export function createRouteTable({ services, devMode = false }) {
       },
     },
     {
+      path: ROUTES.SAVE_EXPORT,
+      methods: ['GET'],
+      handler: async ({url})=>saves.exportTransfer(queryValue(url,'gameId',{maxLength:48}),{backup:url.searchParams.get('backup')==='true'}),
+    },
+    {
+      path: ROUTES.SAVE_IMPORT,
+      methods: ['POST'],
+      handler: async ({body})=>saves.importTransfer(requireObjectBody(body)),
+    },
+    {
       path: ROUTES.SAVE_REMOVE,
       methods: ['POST'],
       handler: async ({ body }) => saves.remove(requireObjectBody(body)),

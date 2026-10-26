@@ -267,6 +267,9 @@ export function createMarketApi(options) {
     getGame: function getGame(gameId) {
       return request('game', { query: { id: gameId }, timeoutMs: timeouts.game });
     },
+    downloadSaveTransfer: function(gameId,backup) { return request('save-export',{query:{gameId,backup:backup===true?'true':undefined}}); },
+    importSaveTransfer: function(body) { return request('save-import',{method:'POST',body}); },
+    saveTransferState: function(gameId) { return request('save',{query:{gameId}}); },
     listInstalled: function listInstalled() {
       return request('installed', { timeoutMs: timeouts.installed });
     },

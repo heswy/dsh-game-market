@@ -352,6 +352,19 @@ export function createEntryService({
     return { icon, cover };
   }
 
+  const importingGames=new Set();
+  function assertNotImporting(gameId){
+    if(importingGames.has(gameId))throw hostError(GM.INSTALL_IN_PROGRESS,'Saved progress is being imported',{retryable:true});
+  }
+  async function withInactiveGame(gameId,run){
+    assertNotImporting(gameId);
+    importingGames.add(gameId);
+    try{
+      if(hasActiveInstance(gameId))throw hostError(GM.UPDATE_GAME_RUNNING,'Close this game in every window before importing');
+      return await run();
+    }finally{importingGames.delete(gameId);}
+  }
+
   async function launch(body) {
     // Fail fast BEFORE any side effect: the update barrier must reject new
     // entries (start and resume-paused alike) while a package change may occur.
@@ -360,6 +373,7 @@ export function createEntryService({
       throw hostError(GM.INVALID_PARAM, 'Request body must be an object');
     }
     const gameId = validateGameId(body.gameId);
+    assertNotImporting(gameId);
     const mode = body.mode === undefined || body.mode === null ? 'start' : body.mode;
     if (!LAUNCH_MODES_SET.has(mode)) throw hostError(GM.INVALID_PARAM, 'Invalid launch mode');
     const dshSessionId = validateDshSessionId(body.dshSessionId);
@@ -481,9 +495,10 @@ export function createEntryService({
     // passed the first check just before the Host set the update barrier must
     // not leave a live instance behind. Remove the binding/credential and fail
     // closed with the same retryable busy code.
-    if (admission) {
+    {
       try {
-        admission.assertEntryAllowed();
+        assertNotImporting(gameId);
+        if(admission)admission.assertEntryAllowed();
       } catch (error) {
         instanceBindings.delete(instanceId);
         if (resources) resources.release(instanceId, gameId);
@@ -842,6 +857,7 @@ export function createEntryService({
 
   return {
     launch,
+    withInactiveGame,
     serveEntry,
     servePreview,
     hasActiveInstance,

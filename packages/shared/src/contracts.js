@@ -108,6 +108,8 @@ export const ROUTES = Object.freeze({
   UNINSTALL: `${API_BASE}/uninstall`,
   REGISTRY_REFRESH: `${API_BASE}/registry-refresh`,
   SAVE: `${API_BASE}/save`,
+  SAVE_EXPORT: `${API_BASE}/save-export`,
+  SAVE_IMPORT: `${API_BASE}/save-import`,
   SAVE_REMOVE: `${API_BASE}/save-remove`,
   SESSION: `${API_BASE}/session`,
   SCORES: `${API_BASE}/scores`,

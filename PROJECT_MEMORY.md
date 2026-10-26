@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**交付 V1.5 M4，随后执行 M5 正式首版验收**。M0–M2 已合入；M3 已按用户授权通过 PR #9 合入 main（`bcc7b6d`）。M4 的 HTML wrapper、正式鲸鱼、游戏内普通问答已实现，实际 Electron 与隔离原生链路验证已通过，证据已归档，等待 PR 复核。M4 未合入、V1.5 未正式发布；当前安排见 §6.1。
+- 当前目标：**完成 V1.5 M5 工程与验收准备**。M0–M4 已合入；M4 PR #10 合并提交 `e700eea445e3982adfb80dacf4efc9f6c60c702e`。M5 新增受控存档迁移并通过真实 App 独立环境导入/重开验证；正式候选安装与持续升级、最终发行包/内容 pin 仍在验收。用户只有自己的账号，独立外部作者 P01 未通过；V1.5 尚未正式发布。当前事实以 `docs/verification/v1.5/m5-acceptance.md` 为准，以下较早阶段记录保留为历史。
 - 历史：V1 验收/修复过程（M3 自动化、真机代执行、codex 两轮 review CR-01..09）见 `docs/V1-VERIFICATION.md`、`docs/verification/v1/AUTOMATED-EVIDENCE.md`、`docs/reviews/2026-10-19-codex-acceptance-review.md` 与 `git log`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2 + V1.1 呈现修订 + 社区投稿 §8.14 / D-038**；第 8–12 章为开发权威来源；全出血/安全区见 §9.6.1、D-037）
 - 开始记录：2026-10-18

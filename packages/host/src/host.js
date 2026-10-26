@@ -85,7 +85,8 @@ export function createHost({
     staleMs: http.lockStaleMs,
   });
   const resolver = createGameResolver({ catalog, installations, devCatalog });
-  const saves = createSavesService({ storage, catalog: resolver, logger, now });
+  let entry;
+  const saves = createSavesService({ storage, catalog: resolver, logger, now, withInactiveGame:(gameId,run)=>entry.withInactiveGame(gameId,run) });
   const sessions = createSessionsService({ storage, catalog: resolver, logger, now });
   const scores = createScoresService({ storage, catalog: resolver, logger, now });
   const preferences = createPreferencesService({ storage, logger });
@@ -107,7 +108,7 @@ export function createHost({
   // NEW game entries only while an update is between coordination and package
   // change; non-game routes are unaffected.
   const admission = createUpdateAdmissionBarrier({ now });
-  const entry = createEntryService({
+  entry = createEntryService({
     catalog,
     devCatalog,
     installations,

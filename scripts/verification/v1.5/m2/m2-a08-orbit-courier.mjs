@@ -21,6 +21,8 @@
  * Usage: node scripts/verification/v1.5/m2/m2-a08-orbit-courier.mjs [--keep]
  * Exit 0 iff every required check passed. Evidence: raw/m2/<id>-<ts>.json.
  */
+import {startDesktopLab} from '../m5/desktop-lab.mjs';
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -49,8 +51,9 @@ import {
 
 const PORTS = Object.freeze({ bootstrap: 58480, host: 58481, chrome: 9527 });
 const KEEP = process.argv.includes('--keep');
+const DESKTOP = process.argv.includes('--desktop');
 const GAME_ID = 'orbit-courier';
-const EVIDENCE_ID = 'M2-A08-orbit-courier';
+const EVIDENCE_ID = DESKTOP ? 'M5-Desktop-orbit-courier' : 'M2-A08-orbit-courier';
 const STATION_ANGLE = -Math.PI / 2;
 const MIN_ACTIVE_MS = 300000;
 const RUN_TARGET_MS = 120000;
@@ -540,13 +543,13 @@ async function main() {
   wall.startedAt = new Date().toISOString();
 
   try {
-    hostHandle = await startIsolatedHost({ name: `probe-m2-a08-${runTag}`, ports: PORTS });
-    cdp = await Cdp.launch({ port: PORTS.chrome });
+    hostHandle = DESKTOP ? await startDesktopLab({name:`m5-orbit-${runTag}`}) : await startIsolatedHost({ name: `probe-m2-a08-${runTag}`, ports: PORTS });
+    cdp = DESKTOP ? hostHandle.page : await Cdp.launch({ port: PORTS.chrome });
     await cdp.send('Emulation.setFocusEmulationEnabled', { enabled: true }).catch(() => {});
     await cdp.send('Page.setWebLifecycleState', { state: 'active' }).catch(() => {});
     capture = createCdpCapture(cdp);
     await capture.start();
-    await cdp.navigate(hostHandle.host.url);
+    if(!DESKTOP)await cdp.navigate(hostHandle.host.url);
     const boot = await waitForDshPage(cdp, hostHandle.hostOrigin);
     check('dsh-page-loads-and-host-api-answers', boot.health && boot.health.status === 200, { status: boot.health && boot.health.status });
     await dismissOverlays(cdp);
@@ -892,6 +895,8 @@ async function main() {
     // restart action is confirmed with a real Enter key press, no UI relaunch
     // round-trip (which is covered separately by the Continue section).
     stage('extend to >= 5 minutes of active play');
+    await launchFromRow(cdp,capture,GAME_ID);
+    await waitForProbeHook(capture,30000);
     let extraRuns = 0;
     let safety = 0;
     while (wall.activePlayMs < MIN_ACTIVE_MS && safety < 8) {
@@ -982,8 +987,8 @@ async function main() {
     {
       id: EVIDENCE_ID,
       title: 'M2 A08: builtin orbit-courier played for real (~120 s run + >= 5 min active wall-clock play)',
-      command: `node scripts/verification/v1.5/m2/m2-a08-orbit-courier.mjs${KEEP ? ' --keep' : ''}`,
-      environment: { dsh: identity, chrome: 'headless CDP', gameId: GAME_ID, ports: PORTS },
+      command: `node scripts/verification/v1.5/m2/m2-a08-orbit-courier.mjs${KEEP ? ' --keep' : ''}${DESKTOP ? ' --desktop' : ''}`,
+      environment: { dsh: identity, chrome: DESKTOP ? 'installed Electron 44.7.0 (isolated profile, CDP real inputs)' : 'headless CDP', gameId: GAME_ID, ports: PORTS },
       checks,
       extra: { scenario },
     },
@@ -997,7 +1002,9 @@ async function main() {
   if (cleanupError) process.stderr.write(`[m2] cleanup failed: ${cleanupError && cleanupError.message ? cleanupError.message : cleanupError}\n`);
 }
 
-main().catch((error) => {
+export {driveWithBot,readState,pressKey,clickGameControl,waitForProbeHook,compactSnapshot};
+
+if(process.argv[1] && fileURLToPath(import.meta.url)===path.resolve(process.argv[1]))main().catch((error) => {
   process.stderr.write(`[m2-a08] fatal: ${String(error && error.stack ? error.stack : error)}\n`);
   process.exitCode = 1;
 });

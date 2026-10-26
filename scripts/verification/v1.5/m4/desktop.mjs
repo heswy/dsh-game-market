@@ -1,13 +1,13 @@
 /** Launch only an isolated instance of the installed Electron app. */
 import fs from 'node:fs';import path from 'node:path';import {spawn} from 'node:child_process';
 import {Cdp,sleep} from '../lib/harness.mjs';
-export async function openDesktop(home,{port=9491}={}) {
+export async function openDesktop(home,{port=9491,env={}}={}) {
   if(!home.startsWith('/tmp/dsh-v15/') && !home.startsWith('/private/tmp/dsh-v15/'))throw Error('refusing non-isolated home');
-  fs.cpSync(path.join(home,'profiles/web'),path.join(home,'profiles/desktop'),{recursive:true});
+  if(!fs.existsSync(path.join(home,'profiles/desktop/package.json')))fs.cpSync(path.join(home,'profiles/web'),path.join(home,'profiles/desktop'),{recursive:true});
   const logFile=path.join(home,'m4-electron.log');const log=fs.openSync(logFile,'w');
   const child=spawn('/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness',[
     '--user-data-dir='+path.join(home,'electron-user-data'),'--remote-debugging-port='+port,
-  ],{env:{...process.env,DSH_HOME:home},stdio:['ignore',log,log]});
+  ],{env:{...process.env,...env,DSH_HOME:home},stdio:['ignore',log,log]});
   fs.closeSync(log);
   async function stop(){
     if(child.exitCode===null && child.signalCode===null)child.kill('SIGTERM');

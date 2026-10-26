@@ -6,6 +6,7 @@
  * and revision CAS, then writes atomically through `HostStorage`.
  */
 
+import { portableSave, validatePortableSave } from './save-transfer.js';
 import { LIMITS } from '../../shared/src/constants.js';
 import { GM } from '../../shared/src/errors.js';
 import { GM_STORE_READONLY, hostError } from './errors.js';
@@ -30,7 +31,7 @@ function validateReason(value) {
   return SAVE_REASONS.has(value) ? value : 'manual';
 }
 
-export function createSavesService({ storage, catalog, logger = null, now }) {
+export function createSavesService({ storage, catalog, logger = null, now, withInactiveGame = null }) {
   const serialiseSave = createKeyedSerialiser();
 
   function paths(gameId) {
@@ -345,5 +346,43 @@ export function createSavesService({ storage, catalog, logger = null, now }) {
     return { gameId, key: body.key, removed: true, revision: result.revision, updatedAt: result.updatedAt };
   }
 
-  return { get, save, remove, meta, revision, paths, readCurrent };
+  async function exportTransfer(gameId, {backup = false} = {}) {
+    validateGameId(gameId);
+    if(backup){
+      const record=await storage.readJson(storage.filePath('saves',gameId,'transfer-backup.json'),{schemaVersion:1});
+      if(!record)throw hostError(GM.SAVE_NOT_FOUND,'No import backup');
+      return validatePortableSave(record.value.portable);
+    }
+    const info=await catalog.get(gameId);
+    const current=await readCurrent(gameId);
+    if(!current || !Object.keys(current.values).length)throw hostError(GM.SAVE_NOT_FOUND,'No saved progress');
+    checkSchema(current,info);
+    return portableSave({gameId,gameVersion:info.manifest.version,saveSchemaVersion:current.saveSchemaVersion,values:copyValues(current)});
+  }
+
+  async function importTransfer(body) {
+    if(!isPlainObject(body))throw hostError(GM.INVALID_PARAM,'Invalid transfer request');
+    const gameId=validateGameId(body.gameId);
+    const portable=validatePortableSave(body.portable);
+    if(portable.gameId!==gameId)throw hostError(GM.INVALID_PARAM,'Portable save belongs to another game');
+    if(!Number.isSafeInteger(body.expectedRevision)||body.expectedRevision<0)throw hostError(GM.INVALID_PARAM,'expectedRevision is required');
+    if(typeof withInactiveGame!=='function')throw hostError(GM.HOST_UNAVAILABLE,'Import coordination unavailable');
+    return serialiseSave(gameId,()=>withInactiveGame(gameId,async()=>{
+      const info=await catalog.get(gameId);
+      if(!info.manifest.capabilities?.includes('storage'))throw hostError(GM.CAPABILITY_DENIED,'Game has no storage capability');
+      if(portable.saveSchemaVersion!==saveSchemaVersionFor(info))throw hostError(GM.SAVE_SCHEMA_TOO_NEW,'Install a game with the same save schema before importing');
+      const current=await readCurrent(gameId);
+      const storedMeta=current ? await readMeta(gameId) : null;
+      const currentRevision=current ? (Number.isInteger(current.revision)?current.revision:Number.isInteger(storedMeta?.revision)?storedMeta.revision:1) : 0;
+      if(body.expectedRevision!==currentRevision)throw hostError(GM.STORAGE_CONFLICT,'Progress changed; review before importing again');
+      if(current && Object.keys(current.values).length){
+        const before=portableSave({gameId,gameVersion:info.manifest.version,saveSchemaVersion:current.saveSchemaVersion,values:copyValues(current)});
+        await storage.writeJson(storage.filePath('saves',gameId,'transfer-backup.json'),{schemaVersion:1,portable:before});
+      }
+      return writeValues({gameId,info,currentRevision,storedMeta,values:portable.values,reason:'manual'});
+    }));
+  }
+
+  return { get, save, remove, meta, revision, paths, readCurrent, exportTransfer, importTransfer };
+
 }

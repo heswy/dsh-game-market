@@ -10,9 +10,9 @@ V1.1 验收：`npm run verify` **787/787**、`CHECK OK (23)`；真机与隔离�
 
 ### V1.5 开发进度（2026-10-26）
 
-M0–M2 已通过 PR #6/#7/#8 合入；M3 插件持续更新已通过 PR #9 合入 main。M4 已实现旧 HTML wrapper 迁移、正式鲸鱼/气泡和游戏内普通问答，并通过实际 DSH rc.3 桌面窗口的隔离验证，待 PR 复核合入。V1.5 尚未正式发布。
+M0–M2 已通过 PR #6/#7/#8 合入；M3 插件持续更新已通过 PR #9 合入 main。M4 已实现旧 HTML wrapper 迁移、正式鲸鱼/气泡和游戏内普通问答，并通过实际 DSH rc.3 桌面窗口的隔离验证，已通过 PR #10 合入 main。M5 正在验收，新增受控游戏存档导出/导入并完成真实 App 独立资料环境重开恢复。独立外部作者尚缺，V1.5 尚未正式发布。
 
-具体结果与范围见 [M4 验收](./docs/verification/v1.5/m4-acceptance.md)、[M3 更新验收](./docs/verification/v1.5/m3-restart-acceptance.md) 和 [项目记忆](./PROJECT_MEMORY.md)。下一阶段 M5 验证干净用户正式安装升级、长局/数据和外部作者流程，再准备正式发行。开发候选版本与本文“当前发布 v1.2.0”分别看待。
+具体结果与范围见 [M4 验收](./docs/verification/v1.5/m4-acceptance.md)、[M3 更新验收](./docs/verification/v1.5/m3-restart-acceptance.md) 和 [项目记忆](./PROJECT_MEMORY.md)。M5 当前证据与未完成项见 [M5 验收](./docs/verification/v1.5/m5-acceptance.md)，迁移与恢复操作见 [恢复指南](./docs/releases/v1.5.0-recovery.md)。开发候选版本与本文“当前发布 v1.2.0”分别看待。
 
 ### V1.1 主要变化
 

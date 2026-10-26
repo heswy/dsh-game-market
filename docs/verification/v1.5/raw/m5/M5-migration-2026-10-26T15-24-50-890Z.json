@@ -1,0 +1,74 @@
+{
+  "id": "M5-Desktop-migration",
+  "title": "Native UI save portability and App restart",
+  "commands": [
+    "DSH_V15_WORK=/tmp/dsh-v15/m3 node scripts/verification/v1.5/m5/migration.mjs"
+  ],
+  "startedAt": "2026-10-26T15:24:50.891Z",
+  "finishedAt": "2026-10-26T15:25:14.574Z",
+  "passed": false,
+  "failed": [
+    "completed"
+  ],
+  "checks": [
+    {
+      "name": "runtime",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-26T02:36:18.385Z"
+      }
+    },
+    {
+      "name": "source actual game has live elapsed progress",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "elapsedMs": 3616,
+        "score": 0
+      }
+    },
+    {
+      "name": "native export reports download start",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "browser produced portable file",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "export contains game progress only",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "completed",
+      "ok": false,
+      "required": true,
+      "detail": "Error: evaluate failed: TypeError: Cannot read properties of null (reading 'click')\n    at <anonymous>:1:82\n    at Cdp.evalOnce (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-public-acceptance/scripts/verification/v1.5/lib/harness.mjs:370:13)\n    at async Cdp.eval (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-public-acceptance/scripts/verification/v1.5/lib/harness.mjs:338:16)\n    at async menu (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-public-acceptance/scripts/verification/v1.5/m5/migration.mjs:16:60)"
+    },
+    {
+      "name": "owned Desktop instances stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}
