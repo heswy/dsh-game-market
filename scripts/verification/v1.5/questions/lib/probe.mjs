@@ -27,7 +27,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = path.resolve(HERE, '../../../../..');
 export const BUNDLE = path.join(REPO_ROOT, 'scripts/verification/v1.5/questions/probe-bundle');
 export const BUNDLE_INDEX = path.join(BUNDLE, 'index.js');
-export const RAW_DIR = path.join(REPO_ROOT, 'docs/verification/v1.5/raw/questions');
+export const RAW_DIR = process.env.DSH_V15_QUESTION_RAW_DIR || path.join(REPO_ROOT, 'docs/verification/v1.5/raw/questions');
 /** Scratch root; all probe-owned mutable state lives here. */
 export const SCRATCH = path.join(WORK, 'questions');
 

@@ -225,7 +225,9 @@ test('browser source keeps the zero-dependency import rules', function () {
     const source = fs.readFileSync(file, 'utf8');
     assert.equal(/\bimport\s*\(/.test(source), false, 'dynamic import in ' + file);
     assert.equal(source.includes('document.body.appendChild'), false, 'body append in ' + file);
-    assert.equal(source.includes('@deepseek-ai/'), false, 'host package import in ' + file);
+    // §12 runtime FishLogo is the only reviewed optional host capability.
+    const checked = file.endsWith('/brand.js') ? source.replaceAll('@deepseek-ai/dsh-client-ui-primitives', '') : source;
+    assert.equal(checked.includes('@deepseek-ai/'), false, 'host package import in ' + file);
     const lines = source.split('\n');
     for (const line of lines) {
       if (!line.startsWith('import ')) continue;

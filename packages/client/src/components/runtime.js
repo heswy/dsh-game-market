@@ -3,6 +3,9 @@
  * the Agent Presence and every leave/error flow from PRD 9.2 / 9.6.
  */
 import React from 'react';
+import { questionBridge } from '../questions.js';
+import { createQuestionFlow } from '../question-flow.js';
+import { QuestionPanel } from './questions.js';
 import { TIMING } from '../../../shared/src/constants.js';
 import { GM } from '../../../shared/src/errors.js';
 import { store, agentSnapshotReceived, runtimePatched, runtimeFailed, runtimeRetried, runtimeLaunchInfo, runtimeLaunchInfoRefreshed, surfaceChanged, leaveCompleted } from '../store.js';
@@ -201,6 +204,18 @@ export function RuntimeView(props) {
   const [credentialRefresh, setCredentialRefresh] = React.useState(false);
   const pausePrimaryRef = React.useRef(null);
 
+  const questionSessionId = runtime.bindingSessionId || state.bindingSessionId;
+  React.useSyncExternalStore(questionBridge.subscribe, questionBridge.getSnapshot, questionBridge.getSnapshot);
+  const questionCard = questionBridge.read(questionSessionId);
+  const questionFlow = React.useMemo(() => createQuestionFlow({
+    bridge:questionBridge,sessionId:questionSessionId,
+    pause:()=>pauseRuntimeBounded(controllerRef.current),
+    recoverStorage:async()=>{const api=getApiClient();if(!api || typeof api.health!=='function')throw new Error('health-unavailable');await api.health();},
+    setHold:(id,on)=>{const c=controllerRef.current;if(c && typeof c.setUpdateHold==='function')c.setUpdateHold(id,on);},
+  }),[questionSessionId,runtime.gameId,runtime.attempt]);
+  const questionState = React.useSyncExternalStore(questionFlow.subscribe,questionFlow.getSnapshot,questionFlow.getSnapshot);
+  React.useEffect(()=>()=>questionFlow.dispose(),[questionFlow]);
+
   const gameId = runtime.gameId;
   const attempt = runtime.attempt;
   const mode = runtime.mode;
@@ -208,7 +223,8 @@ export function RuntimeView(props) {
   // Game-tab return: the click is the confirmation. Skip the platform resume
   // dialog and start playing right away (D-024 dialog stays for other paths).
   const autoResuming = runtime.autoResume === true && runtime.mode === 'resume-paused' && !resumeConfirmed;
-  const showPauseOverlay = runtime.state === 'paused' && !runtime.error && !autoResuming;
+  const questionCollapsed = !questionState.open && questionState.card && questionCard.key === questionState.card.key && ['ready','awaiting','save-failed'].includes(questionState.phase);
+  const showPauseOverlay = runtime.state === 'paused' && !runtime.error && !autoResuming && !questionState.open && !questionCollapsed;
 
   React.useEffect(
     function bootRuntime() {
@@ -626,6 +642,10 @@ export function RuntimeView(props) {
 
   function handlePresenceAction(kind) {
     if (busy || leavingRef.current) return;
+    if (kind === 'waiting' && questionCard.capability === 'available') {
+      void questionFlow.open();
+      return;
+    }
     if (kind === 'waiting') {
       void requestLeave('conversation', 'waiting-user');
       return;
@@ -756,7 +776,7 @@ export function RuntimeView(props) {
             onClick: handlePauseToggle,
             'aria-label': runtime.state === 'paused' ? t('runtime.action.resume') : t('runtime.action.pause'),
             title: runtime.state === 'paused' ? t('runtime.action.resume') : t('runtime.action.pause'),
-            disabled: busy || runtime.state === 'saving' || (runtime.state !== 'playing' && runtime.state !== 'paused'),
+            disabled: busy || questionState.open || runtime.state === 'saving' || (runtime.state !== 'playing' && runtime.state !== 'paused'),
           },
           runtime.state === 'paused' ? h(PlayIcon, { size: 15 }) : h(PauseIcon, { size: 15 })
         )
@@ -779,7 +799,7 @@ export function RuntimeView(props) {
     ),
     !loading && !showError && !showExited
       ? h(AgentPresence, {
-          presence: presence,
+          presence: questionCard.capability === 'available' ? 'waiting-user' : presence,
           agent: agent,
           t: t,
           busy: busy || runtime.state === 'saving',
@@ -787,6 +807,8 @@ export function RuntimeView(props) {
           onAction: handlePresenceAction,
         })
       : null,
+    h(QuestionPanel, {flow:questionFlow,state:questionState,t:t,onResume:resumeGame,
+      onConversation:()=>{questionFlow.close();void requestLeave('conversation','waiting-user');}}),
     showPauseOverlay
       ? h(
           'div',
@@ -803,6 +825,7 @@ export function RuntimeView(props) {
             'div',
             { className: 'dgm-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': isResumeMode ? t('runtime.resume.title') : t('runtime.pause.title') },
             h('h2', { className: 'dgm-modal-title' }, isResumeMode ? t('runtime.resume.title') : t('runtime.pause.title')),
+            questionCard.capability === 'available' ? h('button',{type:'button',className:'dgm-btn',onClick:()=>{void questionFlow.open();}},t('question.open')) : null,
             isResumeMode ? h('p', { className: 'dgm-modal-body' }, t('runtime.resume.body')) : null,
             isResumeMode
               ? null

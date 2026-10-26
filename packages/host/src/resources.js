@@ -227,6 +227,7 @@ function safeEqual(left, right) {
  * only: no wildcards, no credentials, no path.
  */
 function normaliseWebOrigin(value) {
+  if (value === 'dsh-app://app') return value; // exact privileged Desktop origin, never a scheme wildcard
   if (typeof value !== 'string' || value.length === 0 || value.length > 256) return null;
   let url;
   try {
@@ -812,7 +813,7 @@ export function createResourceService({
       const entryAncestors = webOrigin !== null ? [webOrigin, requireOrigin()] : ancestors;
       headers['content-security-policy'] = instance.format === ASSET_ZIP_V2
         ? buildAssetContentSecurityPolicy({ resourceOrigin: requireOrigin(), frameAncestors: entryAncestors })
-        : buildContentSecurityPolicy(requireOrigin(), { frameAncestors: ancestors });
+        : buildContentSecurityPolicy(requireOrigin(), { frameAncestors: entryAncestors });
     }
     // The entry hash header keeps its V1 semantics: entry document only.
     if (isEntry) headers['x-entry-sha256'] = file.sha256;

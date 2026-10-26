@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {resolveFishLogo} from '../packages/client/src/brand.js';
+test('host FishLogo capability is optional and never replaced by invented artwork',()=>{const FishLogo=()=>{};assert.equal(resolveFishLogo(()=>({FishLogo})),FishLogo);assert.equal(resolveFishLogo(()=>{throw new Error('missing')}),null);assert.equal(resolveFishLogo(()=>({FishLogo:'bad'})),null);});

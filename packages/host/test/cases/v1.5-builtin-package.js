@@ -486,7 +486,7 @@ test('snake (html-v1 builtin) does not regress and is not joined by an unbuilt o
   assert.match(info.entryUrl, /^\/api\/game-market\/entry\?/);
   assert.equal(info.package.format, 'html-v1');
   assert.equal(info.package.filesDigest, null);
-  assert.equal(info.wrapperUrl, undefined);
+  assert.equal(new URL(info.wrapperUrl).pathname, '/wrapper');
   const entry = await host.request(info.entryUrl);
   assert.equal(entry.status, 200);
   assert.equal(entry.headers.get('content-type'), 'text/html; charset=utf-8');

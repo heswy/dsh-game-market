@@ -8,6 +8,7 @@
  *   - `ctx.layout.selectPanel(id | null)` for panel navigation
  */
 import React from 'react';
+import { configureQuestions } from './questions.js';
 import { NS, ZH, EN, translate } from './locale.js';
 import { store } from './store.js';
 import { MAIN_PANEL_KEY, SIDEBAR_ORDER } from './constants.js';
@@ -168,6 +169,8 @@ export function apply(ctx) {
     );
   });
   if (gameTabController === null) reportDiagnostic('game-tab-registration-failed');
+
+  ctx.effect(function startQuestions() { return configureQuestions(ctx); }, 'dsh-game-market: questions');
 
   ctx.effect(
     function startPlatformUpdates() {

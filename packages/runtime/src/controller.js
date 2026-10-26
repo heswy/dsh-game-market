@@ -38,7 +38,7 @@ import { normalizeZipPath } from '../../shared/src/package-v2.js';
 import { BRIDGE_VERSION, EVENTS, METHODS, isPlainObject } from '../../shared/src/protocol.js';
 import { isAbsoluteHttpUrl, normalizeResourceOrigin, sharesOrigin } from '../../shared/src/resources.js';
 import { createRuntimeBridge } from './bridge.js';
-import { buildWrapperFrameUrl, isEntryResourceUrl, isResourceBase, isSafeEntryUrl, withLaunchQuery } from './launch-url.js';
+import { buildWrapperFrameUrl, isEntryResourceUrl, isResourceBase, isSafeEntryUrl, isSafeLegacyEntryUrl, withLaunchQuery } from './launch-url.js';
 import { createRequestService } from './requests.js';
 import { createSaveScheduler } from './scheduler.js';
 import { createStateMachine } from './state-machine.js';
@@ -169,7 +169,7 @@ function normalizeResourceFields(info) {
   const wrapperResourceUrl = normalizeWrapperField(info.wrapperResourceUrl, origin.value, 'wrapperResourceUrl');
   // html-v1 keeps the V1 direct `/api/.../entry` navigation; only
   // asset-zip-v2 needs the wrapper (Lead decision, M1 scope).
-  const useWrapper = pkg.format === 'asset-zip-v2';
+  const useWrapper = pkg.format === 'asset-zip-v2' || wrapperUrl !== null;
   return {
     useWrapper,
     resourceOrigin: origin.value,
@@ -214,18 +214,21 @@ function normalizeLaunchInfo(info) {
     query.get('gameVersion') ||
     '0.0.0';
   const resources = normalizeResourceFields(info);
+  const entryUrl = resources.useWrapper && resources.packageFormat === 'html-v1' && isSafeLegacyEntryUrl(info.entryUrl)
+    ? `${resources.entryResourceUrl}?launch=${encodeURIComponent(info.nonce)}`
+    : info.entryUrl;
   if (resources.useWrapper) {
     // Inside the wrapper the game URL must be an absolute resource-origin URL:
     // a same-origin relative path would resolve against the wrapper origin, and
     // a foreign URL would let the Host redirect the instance elsewhere.
-    if (!isSafeEntryUrl(info.entryUrl) || !isAbsoluteHttpUrl(info.entryUrl) || !sharesOrigin(info.entryUrl, resources.resourceOrigin)) {
+    if (!isSafeEntryUrl(entryUrl) || !isAbsoluteHttpUrl(entryUrl) || !sharesOrigin(entryUrl, resources.resourceOrigin)) {
       throw makeGameError(GM.INVALID_PARAM, 'LaunchInfo.entryUrl must be an absolute resource-origin URL for asset-zip-v2');
     }
   }
   return {
     gameId,
     gameVersion,
-    entryUrl: info.entryUrl,
+    entryUrl,
     instanceId: info.instanceId,
     nonce: info.nonce,
     mode: info.mode === 'resume-paused' ? 'resume-paused' : 'start',
