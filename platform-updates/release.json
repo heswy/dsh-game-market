@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "version": "1.2.1",
+  "clientBuildCommit": "134d2fc5081ba17a9b79f2c7159bfe9bf4827c93",
+  "repo": "https://github.com/heswy/dsh-game-market",
+  "artifacts": {
+    "algorithm": "sha256-tree-v1",
+    "roots": [
+      "client.js",
+      "games",
+      "registry"
+    ],
+    "sha256": "428aa6de1502f791eb38aecab90af9603766d35dc7132f8f0da93aa59493b729",
+    "files": 93,
+    "bytes": 3412754
+  }
+}
