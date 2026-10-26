@@ -1,0 +1,137 @@
+{
+  "id": "M4-product",
+  "title": "Real Game Market UI, native questions and HTML wrapper",
+  "commands": [
+    "DSH_V15_WORK=/tmp/dsh-v15/m3 node scripts/verification/v1.5/m4/run.mjs"
+  ],
+  "startedAt": "2026-10-26T07:35:49.535Z",
+  "finishedAt": "2026-10-26T07:36:23.171Z",
+  "passed": false,
+  "failed": [
+    "actual snake runtime playing",
+    "run completed"
+  ],
+  "checks": [
+    {
+      "name": "runtime",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-26T02:36:18.385Z"
+      }
+    },
+    {
+      "name": "installed Electron uses isolated profile",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "browserIdentity",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "protocolVersion": "1.3",
+        "product": "Chrome/152.0.7977.130",
+        "revision": "@d08a630c09c06ef2f93c0bf418c98054a99e71b9",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) @deepseek-ai/dsh-desktop/0.2.1-rc.3 Chrome/152.0.7977.130 Electron/44.7.0 Safari/537.36",
+        "jsVersion": "15.2.124.28"
+      }
+    },
+    {
+      "name": "session bound",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "game tab registered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real Game Market mounted",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "snake product play button",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "actual snake runtime playing",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "failureEvents",
+      "ok": true,
+      "required": false,
+      "detail": [
+        {
+          "seq": 0,
+          "type": "permission/preset"
+        },
+        {
+          "seq": 1,
+          "type": "sandbox/mode"
+        },
+        {
+          "seq": 2,
+          "type": "approval/policy"
+        }
+      ]
+    },
+    {
+      "name": "failureNativePending",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "session-2a87faa8-a87c-4bff-ae0b-8970e3c85d02": {
+          "running": false,
+          "completionUnread": false,
+          "pending": null,
+          "hasPendingObject": false
+        }
+      }
+    },
+    {
+      "name": "failureDom",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "page": "runtime",
+        "text": "游戏加载超时\n\n可以重新加载，最近的存档会恢复。\n\n重试\n返回市场\n问题编号 GM-5011\n复制问题编号\nAgent 遇到问题。"
+      }
+    },
+    {
+      "name": "run completed",
+      "ok": false,
+      "required": true,
+      "detail": "Error: actual snake runtime playing\n    at check (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-presence-questions/scripts/verification/v1.5/m4/run.mjs:18:130)\n    at async file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-presence-questions/scripts/verification/v1.5/m4/run.mjs:42:2"
+    },
+    {
+      "name": "isolated Host stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}

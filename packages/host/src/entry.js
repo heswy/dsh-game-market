@@ -521,18 +521,10 @@ export function createEntryService({
               entry: resolved.entry,
               filesDigest: format === ASSET_ZIP_V2 ? resolved.filesDigest ?? resolved.record?.fileManifestDigest ?? null : null,
             },
-            // §7.5.1/M1-D: the Runtime frames the platform wrapper for
-            // `asset-zip-v2`; these two additively convey the wrapper URLs so
-            // it does not have to guess the document path. `wrapperUrl` embeds
-            // the one-shot launch URL, `wrapperResourceUrl` the repeatable
-            // resource URL. `html-v1` does not use the wrapper in M1, so it
-            // deliberately receives neither field.
-            ...(format === ASSET_ZIP_V2
-              ? {
-                  wrapperUrl: resourceInfo.wrapperUrl,
-                  wrapperResourceUrl: resourceInfo.wrapperResourceUrl,
-                }
-              : {}),
+            // M4: additive wrapper fields protect html-v1 too; entryUrl stays
+            // on the legacy route for older Clients.
+            wrapperUrl: resourceInfo.wrapperUrl,
+            wrapperResourceUrl: resourceInfo.wrapperResourceUrl,
           }
         : {}),
     };

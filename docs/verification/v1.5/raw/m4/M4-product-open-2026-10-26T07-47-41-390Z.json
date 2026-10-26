@@ -1,0 +1,279 @@
+{
+  "id": "M4-product",
+  "title": "Real Game Market UI, native questions and HTML wrapper",
+  "commands": [
+    "DSH_V15_WORK=/tmp/dsh-v15/m3 node scripts/verification/v1.5/m4/run.mjs --scenario=open --save-fault"
+  ],
+  "startedAt": "2026-10-26T07:47:41.392Z",
+  "finishedAt": "2026-10-26T07:47:53.198Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "source",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "head": "96718e19486b8a20f0edd7b014e7d7c6adab1428",
+        "sourceChanges": [],
+        "clientSha256": "99a1b0dbbf45964660670a8cfd03e7e17f4c5319215c55aa88fd6feae7aaf444",
+        "loading": "local development row in isolated profile; not a new immutable release/install claim"
+      }
+    },
+    {
+      "name": "runtime",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-26T02:36:18.385Z"
+      }
+    },
+    {
+      "name": "native probe control loaded",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "session bound",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "game tab registered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real Game Market mounted",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "snake product play button",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "actual snake runtime playing",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "html game runs through resource wrapper",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "outer wrapper is trusted (no sandbox)",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "officialLogo",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "viewBox": "0 0 23.16 17.04",
+        "pathLength": 3448
+      }
+    },
+    {
+      "name": "native pending delivered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "whale reflects pending question",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real disk write failure blocks product question",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "failed save exposes no submit",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "product question ready after save",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "official FishLogo exact outline",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "viewBox": "0 0 23.16 17.04",
+        "sha256": "5bee701f39229e6dbb3950e8ed7fe69aedc6de462df916ace5e84563715abc47"
+      }
+    },
+    {
+      "name": "lightLogoColor",
+      "ok": true,
+      "required": false,
+      "detail": "rgb(65, 118, 230)"
+    },
+    {
+      "name": "hidden page stops presence animation",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "visible event cannot resume game while question owns hold",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "narrow sheet stays within viewport and clear of top controls",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "darkLogoColor",
+      "ok": true,
+      "required": false,
+      "detail": "rgb(65, 118, 230)"
+    },
+    {
+      "name": "reduced motion stops whale",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "IME Enter does not submit",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapse removes only product dialog",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapsed dialog returns focus to an unobstructed whale",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapse keeps native question answerable",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapse emits no ASK_CANCELLED",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "reopened panel ready",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "draft selection survives collapse",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "native settlement confirmed in product",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "same native call contains exact product answer",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "seq": 19,
+        "type": "tool/result",
+        "callId": "qprobe_call_1_mvoyf9h9",
+        "isError": false,
+        "errorCode": null,
+        "result": {
+          "pending": false,
+          "callId": null,
+          "answers": [
+            {
+              "id": "probe-q1",
+              "selected": [
+                "QPROBE_OPT_A"
+              ],
+              "custom": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "no native cancellation",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "game stays paused until explicit resume",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "explicit continue resumes actual game",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "owned browser stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "isolated Host stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}

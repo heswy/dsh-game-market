@@ -1,5 +1,7 @@
 /** Inline SVG icons. Every glyph follows `currentColor` and carries no text. */
 import React from 'react';
+import { resolveFishLogo } from './brand.js';
+import { reportDiagnostic } from './diagnostics.js';
 
 const h = React.createElement;
 
@@ -196,61 +198,13 @@ export function ShieldIcon(props) {
   );
 }
 
-/**
- * V0 placeholder whale (D-007). Kept at `viewBox="0 0 48 48"` with the four
- * groups the final artwork must preserve: body, spout, eye, halo.
- */
+/** Official host FishLogo; missing capability hides the mark without disabling actions. */
+let officialLogo;
 export function WhaleIcon(props) {
-  const size = props && typeof props.size === 'number' ? props.size : 48;
-  const state = props && typeof props.state === 'string' ? props.state : 'idle';
-  return h(
-    'svg',
-    {
-      className: 'dgm-whale',
-      'data-state': state,
-      width: size,
-      height: size,
-      viewBox: '0 0 48 48',
-      fill: 'none',
-      xmlns: 'http://www.w3.org/2000/svg',
-      'aria-hidden': 'true',
-      focusable: 'false',
-    },
-    h(
-      'g',
-      { id: 'whale-halo', className: 'dgm-whale-halo' },
-      h('circle', { cx: 24, cy: 27, r: 21, stroke: 'currentColor', strokeWidth: 1.5, opacity: 0.5 })
-    ),
-    h(
-      'g',
-      { id: 'whale-spout', className: 'dgm-whale-spout' },
-      h('path', { d: 'M22.5 14.5c.2-2.5 1-4.4 2.5-5.8', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round' }),
-      h('path', { d: 'M22.5 14.5c-.2-2.2-.9-3.9-2.1-5.1', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round' })
-    ),
-    h(
-      'g',
-      { id: 'whale-body', className: 'dgm-whale-body' },
-      h('path', {
-        d: 'M9.6 27.4c0-6.2 5.2-11.1 11.7-11.1h5.1c4.7 0 8.9 2.7 10.9 6.9l2.6 5.5c.6 1.3-.3 2.8-1.7 2.8h-2.9c-.8 0-1.5-.5-1.8-1.3l-.6-1.5H20.4c-2.9 2.4-7.3 3.4-10.8 2.2v-3.5Z',
-        fill: 'currentColor',
-        opacity: 0.92,
-      }),
-      h('path', {
-        d: 'M12 18.2c-2.7.6-4.9 1.9-6.4 3.9-.5.7-.2 1.6.6 1.9.5.2 1.1.1 1.5-.3l2.1-2.1 1.5 1.8c.4.5 1.1.6 1.6.3.6-.3.9-1 .7-1.6l-1.6-3.9Z',
-        fill: 'currentColor',
-        opacity: 0.55,
-      }),
-      h('path', {
-        d: 'M15.5 32.2c4 3.4 13.7 3.6 19.3-.4-1.6 4.3-5.4 6.4-10.5 6.4-4.1 0-7.3-2.2-8.8-6Z',
-        fill: 'currentColor',
-        opacity: 0.28,
-      })
-    ),
-    h(
-      'g',
-      { id: 'whale-eye', className: 'dgm-whale-eye' },
-      h('circle', { cx: 32.6, cy: 24.4, r: 2.2, fill: 'var(--dsw-alias-bg-base, #ffffff)' }),
-      h('circle', { cx: 33.1, cy: 24.6, r: 1.1, fill: 'var(--dsw-alias-label-primary, #1f2328)' })
-    )
-  );
+  if (officialLogo === undefined) {
+    officialLogo = resolveFishLogo(name => require(name));
+    if (!officialLogo) reportDiagnostic('brand-host-unavailable');
+  }
+  return officialLogo ? h(officialLogo,{size:props && props.size || 48,className:'dgm-whale'})
+    : h('span', {className:'dgm-brand-fallback','aria-hidden':'true'}, 'DS');
 }

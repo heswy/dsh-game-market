@@ -9,6 +9,7 @@
 
 import { GM } from '../../shared/src/errors.js';
 import { createHost } from './host.js';
+import { dshPageOrigin } from './page-origin.js';
 
 export const inject = ['connection'];
 
@@ -98,6 +99,8 @@ function readOptionalService(ctx, name) {
 }
 
 function resolveDshWebOrigin(ctx, logger) {
+  const desktop = dshPageOrigin(null);
+  if (desktop) return desktop;
   try {
     // `ctx.reflect.get(name, false)` reads a service WITHOUT declaring it in
     // `inject`: the plugin must keep activating on hosts that serve no web UI,

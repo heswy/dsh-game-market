@@ -1,4 +1,4 @@
-/** Agent Presence: placeholder whale + one-line bubble with one action. */
+/** Agent Presence: official whale + one-line bubble with one action. */
 import React from 'react';
 import { WhaleIcon } from '../icons.js';
 import { PRESENCE, presenceActionKey, presenceBubbleDefaultOpen, presenceLabelKey, presencePillKey } from '../presence.js';
@@ -28,6 +28,13 @@ export function AgentPresence(props) {
   const busy = props.busy === true;
   const dimmed = props.dimmed === true;
   const defaultOpen = presenceBubbleDefaultOpen(presence);
+  const [visible,setVisible] = React.useState(typeof document === 'undefined' || document.visibilityState !== 'hidden');
+  React.useEffect(function watchVisibility(){
+    if(typeof document==='undefined')return undefined;
+    const update=()=>setVisible(document.visibilityState!=='hidden');
+    document.addEventListener('visibilitychange',update);
+    return ()=>document.removeEventListener('visibilitychange',update);
+  },[]);
   const [open, setOpen] = React.useState(defaultOpen);
   const [collapsed, setCollapsed] = React.useState(!defaultOpen);
 
@@ -77,12 +84,12 @@ export function AgentPresence(props) {
 
   return h(
     'div',
-    { className: 'dgm-presence', 'data-presence': presence, style: dimmed ? { opacity: 0.7 } : undefined },
+    { className: 'dgm-presence', 'data-presence': presence, 'data-visible': visible ? 'true' : 'false', style: dimmed ? { opacity: 0.7 } : undefined },
     showBubble
       ? h(
           'div',
-          { className: 'dgm-whale-bubble', role: 'status', 'aria-label': t('agent.a11y.bubble') },
-          h('p', { className: 'dgm-bubble-text' }, busy ? t('agent.a11y.saveBusy') : label),
+          { className: 'dgm-whale-bubble', 'aria-label': t('agent.a11y.bubble') },
+          h('p', { className: 'dgm-bubble-text', role: 'status' }, busy ? t('agent.a11y.saveBusy') : label),
           h(
             'button',
             { type: 'button', className: 'dgm-bubble-action', onClick: runAction, disabled: busy },

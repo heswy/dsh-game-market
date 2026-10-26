@@ -1,0 +1,529 @@
+{
+  "id": "M4-product",
+  "title": "Real Game Market UI, native questions and HTML wrapper",
+  "commands": [
+    "DSH_V15_WORK=/tmp/dsh-v15/m3 node scripts/verification/v1.5/m4/run.mjs"
+  ],
+  "startedAt": "2026-10-26T07:31:18.449Z",
+  "finishedAt": "2026-10-26T07:31:49.636Z",
+  "passed": false,
+  "failed": [
+    "product question ready after save",
+    "run completed"
+  ],
+  "checks": [
+    {
+      "name": "runtime",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-26T02:36:18.385Z"
+      }
+    },
+    {
+      "name": "native probe control loaded",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "session bound",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "game tab registered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real Game Market mounted",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "snake product play button",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "actual snake runtime playing",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "html game runs through resource wrapper",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "outer wrapper is trusted (no sandbox)",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "officialLogo",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "viewBox": "0 0 23.16 17.04",
+        "pathLength": 3448
+      }
+    },
+    {
+      "name": "native pending delivered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "whale reflects pending question",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real disk write failure blocks product question",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "failed save exposes no submit",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "product question ready after save",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "failureEvents",
+      "ok": true,
+      "required": false,
+      "detail": [
+        {
+          "seq": 0,
+          "type": "permission/preset"
+        },
+        {
+          "seq": 1,
+          "type": "sandbox/mode"
+        },
+        {
+          "seq": 2,
+          "type": "approval/policy"
+        },
+        {
+          "seq": 3,
+          "type": "agent/inbox/spliced"
+        },
+        {
+          "seq": 4,
+          "type": "turn/start",
+          "turn": 1
+        },
+        {
+          "seq": 5,
+          "type": "agent/inbox/spliced"
+        },
+        {
+          "seq": 6,
+          "type": "step/start",
+          "step": 1,
+          "turn": 1
+        },
+        {
+          "seq": 7,
+          "type": "system/message"
+        },
+        {
+          "seq": 8,
+          "type": "user/message",
+          "source": {
+            "kind": "user",
+            "rpcId": "qprobe-mvoxu797-38jv7d8rfbt"
+          },
+          "reply": {
+            "unparsed": true
+          }
+        },
+        {
+          "seq": 9,
+          "type": "user/message",
+          "source": {
+            "kind": "runtime-context",
+            "form": "snapshot",
+            "sections": [
+              {
+                "name": "working-directory:current",
+                "text": "Current working directory: \"/tmp/dgm-m4-open-2026-10-26T07-31-18-448Z\"."
+              },
+              {
+                "name": "sandbox:policy",
+                "text": "Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/tmp/dgm-m4-open-2026-10-26T07-31-18-448Z\". Some platform temporary areas may also be writable."
+              },
+              {
+                "name": "approval:policy",
+                "text": "Approval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+              },
+              {
+                "name": "harness:source",
+                "text": "Current DeepSeek Harness implementation checkout: \"/private/tmp/dsh-v15/m3/asar/dsh/\"."
+              },
+              {
+                "name": "app:web-surface",
+                "text": "Current DeepSeek Harness Web GUI URL: \"http://127.0.0.1:58361\"."
+              }
+            ]
+          },
+          "reply": {
+            "unparsed": true
+          }
+        },
+        {
+          "seq": 10,
+          "type": "user/message",
+          "source": {
+            "kind": "skill-catalog",
+            "form": "catalog",
+            "entries": [
+              {
+                "name": "architecture-decision-records",
+                "description": "Write and maintain Architecture Decision Records (ADRs) following best practices for technical decision documentation. Use when documenting significant technical decisions, reviewing past architectural choices, or establishing decision processes."
+              },
+              {
+                "name": "code-review-excellence",
+                "description": "Master effective code review practices to provide constructive feedback, catch bugs early, and foster knowledge sharing while maintaining team morale. Use when reviewing pull requests, establishing review standards, or mentoring developers."
+              },
+              {
+                "name": "dispatching-parallel-agents",
+                "description": "Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies"
+              },
+              {
+                "name": "enter",
+                "description": "Use this skill to operate enter.pro through the verified enter-cli workflow. Trigger when the user wants to create, inspect, iterate on, publish, remix, or share an Enter project; inspect thread turns, messages, diffs, domains, workspace members, or project URLs; or recover from Enter CLI / API drift. Do not use for the local enter_agent_sdk or general local code execution."
+              },
+              {
+                "name": "enter-pro-guide",
+                "description": "Enter.pro product expert for actionable guidance on this AI-powered web development platform. Use for questions about onboarding; workspaces and teams; creating or editing projects; AI chat, Plan mode, code editing, visual editing, sessions, templates, and components; publishing, domains, sharing, and downloads; credits, plans, billing, invoices, and upgrades; GitHub, Supabase, and Stripe integrations; Enter Analytics and i18n; Enter AI All models, credits, chatbots, and multi-session AI apps..."
+              },
+              {
+                "name": "error-handling-patterns",
+                "description": "Master error handling patterns across languages including exceptions, Result types, error propagation, and graceful degradation to build resilient applications. Use when implementing error handling, designing APIs, or improving application reliability."
+              },
+              {
+                "name": "executing-plans",
+                "description": "Use when you have a written implementation plan to execute in a separate session with review checkpoints"
+              },
+              {
+                "name": "finishing-a-development-branch",
+                "description": "Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup"
+              },
+              {
+                "name": "frontend-design",
+                "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics."
+              },
+              {
+                "name": "git-advanced-workflows",
+                "description": "Master advanced Git workflows including rebasing, cherry-picking, bisect, worktrees, and reflog to maintain clean history and recover from any situation. Use when managing complex Git histories, collaborating on feature branches, or troubleshooting repository issues."
+              },
+              {
+                "name": "lark-approval",
+                "description": "飞书审批：查询和处理审批待办/已办/实例，搜索可发起审批定义、查看定义详情并发起原生审批实例。当用户要处理审批任务、查看审批实例、搜索或发起审批时使用。审批待办不是飞书任务；非审批类待办走 lark-task。不负责创建审批定义；三方审批定义不走原生提单。"
+              },
+              {
+                "name": "lark-apps",
+                "description": "妙搭（Spark/Miaoda）应用开发与托管：应用创建、本地全栈开发、云端生成迭代、创意设计（UI mockup / 可交互原型 / 线框图 / 落地页 / 仪表盘 / 幻灯片 deck / 视觉探索）、AI相关能力和飞书平台能力或者其他外部能力集成、日志/Trace/监控指标/PV/UV 查询、环境变量管理、应用协作者与协作权限设置、应用角色与成员管理、自动化触发器（定时/记录变更/Webhook/飞书审批）。当用户要开发/新建一个系统·工具·平台·应用，或要本地开发 / 云端开发 / 修改 / 部署 / 发布 / 上线 / 拿可分享链接，或用 HTML 做页面·网站·部署到妙搭，或要设计 / design / mockup / prototype / wireframe / 做 PPT / deck / 视觉探索，或提到妙搭/Spark/Miaoda（应用运行时域名形如 *.aiforce.cloud）、应用数据库、应用文件存储、开放 API Key、可见范围、应用协作者/开发权限、应用角色/角色成员、线上日志、接口请求量、错误量、延迟、访问量、环境变量、给妙搭应用配自动化..."
+              },
+              {
+                "name": "lark-attendance",
+                "description": "飞书考勤打卡：查询自己的考勤打卡记录"
+              },
+              {
+                "name": "lark-base",
+                "description": "飞书多维表格（Base）操作：建表、字段、记录、视图、统计、公式/lookup、表单、仪表盘、应用模式（BaseApp/AppMode 页面与组件）、Workspace 目录、workflow、角色权限、模板中心（多维表格模板分类/列表/搜索）；遇到 Base/多维表格/bitable、BaseApp/AppMode、/base/ 或 /app/ 链接时使用。BaseApp 不走 lark-apps；文件导入/导出转 lark-drive，认证/授权转 lark-shared。"
+              },
+              {
+                "name": "lark-calendar",
+                "description": "飞书日历：管理日历日程和会议室。查看/搜索日程、创建/更新日程、管理参会人、查询忙闲和推荐时段、预定会议室。当用户需要查看日程安排、创建/修改会议、查询/预定会议室时使用。不负责：查询过去的视频会议记录（走 lark-meeting）、待办任务（走 lark-task）。"
+              },
+              {
+                "name": "lark-contact",
+                "description": "飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名,以及按关键词搜索当前用户可见的机器人 / 智能体(agent)。当用户提到一个名字要下一步发消息 / 排日程,或拿到 open_id 想查具体信息时使用。不负责部门树遍历、按部门列员工、组织架构图,这类需求走原生 OpenAPI。"
+              },
+              {
+                "name": "lark-doc",
+                "description": "飞书云文档（Docx / Wiki）内容操作：读取、创建、编辑文档，插入或下载图片附件，以及操作思维笔记。用户提供文档 URL/token（包括 doubao.com 的 /docx/、/wiki/）时使用；按 URL 路径/token 而非域名路由。文档内嵌资源按读取参考中的统一规则分流。独立评论操作走 lark-drive；随正文读取评论使用 docs +fetch。表格或 Base 内部数据操作不在本 skill。"
+              },
+              {
+                "name": "lark-drive",
+                "description": "飞书云空间（云盘/云存储）：管理 Drive 文件和文件夹，包含上传/下载、创建文件夹、复制/移动/删除、查看元数据、查询权限设置、评论/权限/订阅、标题、版本、飞书文档密级标签（secure labels）和本地文件导入。用户需要整理云盘目录、处理云空间资源 URL/token、判断链接类型/真实 token/标题，或导入 Word/Markdown/Excel/CSV/PPTX/.base 为 docx/sheet/bitable/slides 时使用；doubao.com 云空间 URL/token 也按资源路径和 token 路由，不回退 WebFetch。不负责：文档内容编辑（走 lark-doc）、表格/Base 表内数据操作（走 lark-sheets/lark-base）、知识空间节点/成员管理（走 lark-wiki）、原生 Markdown 文件读写/patch/diff（走 lark-markdown）。"
+              },
+              {
+                "name": "lark-event",
+                "description": "Lark/Feishu real-time event listening / subscribing / consuming: stream events as NDJSON via `lark-cli event consume <EventKey>` (covers IM messages/reactions/chat changes, Approval status changes, Task updates, VC meeting started/joined/ended, Minutes generated, Whiteboard updated, etc.). Use for Lark bots, real-time message processing, long-running subscribers, streaming webhook/push handlers. Supports `--max-events` / `--timeout` bounded runs and a stderr ready-marker contract — designed f..."
+              },
+              {
+                "name": "lark-im",
+                "description": "飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员、上传下载图片和文件、管理表情回复、发送应用内/短信/电话加急、发送和处理交互卡片（Interactive Card）、监听卡片按钮回调（card.action.trigger）。当用户需要发消息、查看或搜索聊天记录、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据、管理 Feed 置顶（添加/移除/查询置顶会话）、管理标签数据、处理卡片回调时使用。"
+              },
+              {
+                "name": "lark-mail",
+                "description": "飞书邮箱：Use when user mentions 起草邮件、写邮件、草稿、发送/回复/转发邮件、查阅邮件、看邮件、搜索邮件、邮件文件夹、邮件标签、邮件联系人、监听新邮件、邮件收信规则等；use for mail/email intent only. Do not use for docs/sheets/calendar/auth setup/pure contact lookup/IM chat tasks."
+              },
+              {
+                "name": "lark-markdown",
+                "description": "飞书 Markdown：查看、创建、上传、编辑和比较飞书中的原生 Markdown 文件。当用户要操作飞书 Markdown 文件，或比较其远端版本及本地草稿时使用。纯本地 Markdown 文件操作不触发本 skill。不负责将 Markdown 导入为飞书在线文档，也不负责文件搜索、权限、评论、移动、删除等云空间管理操作。"
+              },
+              {
+                "name": "lark-meeting",
+                "description": "飞书视频会议：查询会议记录与会议产物(纪要/逐字稿/妙记)、妙记搜索/上传/下载/编辑、机器人参与会议；查询进行中的会议、实时会议内容(发言/聊天/共享文档)问答(会上/会里)、发送会中聊天/表情；基于 meeting_id、meeting_no、event_id、note_id、minute_token、vc-node-id 或妙记 URL 查询相关信息。预约会议、忙闲和会议室管理走 lark-calendar。"
+              },
+              {
+                "name": "lark-minutes",
+                "description": "仅当用户或上游配置显式指定 lark-minutes 时使用，相关请求统一交由 lark-meeting 技能处理。"
+              },
+              {
+                "name": "lark-note",
+                "description": "仅当用户或上游配置显式指定 lark-note 时使用，相关请求统一交由 lark-meeting 技能处理。"
+              },
+              {
+                "name": "lark-okr",
+                "description": "飞书 OKR：管理目标与关键结果。查看和编辑 OKR 周期、目标、关键结果、对齐关系、量化指标和进展记录。当用户需要查看或创建 OKR、管理目标和关键结果、查看对齐关系时使用。不负责：待办任务管理（lark-task）、日程/会议安排（lark-calendar）、绩效评估"
+              },
+              {
+                "name": "lark-openapi-explorer",
+                "description": "飞书/Lark 原生 OpenAPI 探索：从官方文档库中挖掘未经 CLI 封装的原生 OpenAPI 接口。当用户的需求无法被现有 lark-* skill 或 lark-cli 已注册命令满足，需要查找并调用原生飞书 OpenAPI 时使用。"
+              },
+              {
+                "name": "lark-shared",
+                "description": "Use for lark-cli setup/auth tasks: auth login/status/logout, user vs bot identity, business-domain permissions (--domain, including all/docs/drive), missing scopes, revoking authorization, or handling _notice JSON."
+              },
+              {
+                "name": "lark-sheets",
+                "description": "飞书电子表格：创建和操作电子表格。支持工作表与行列结构（增删/合并/尺寸/隐藏/冻结/分组）、单元格读写（值/公式/样式/批注/单元格图片）、区域复制移动排序填充、查找替换、批量更新，图表、透视表、条件格式、筛选器与筛选视图、下拉列表、迷你图、浮动图片等对象的创建与维护，以及公式校验、历史版本回滚、本地 Excel/CSV 与飞书表格的导入导出。当用户需要创建或编辑表格、统计汇总与可视化、表格美化、公式计算（含 Excel 公式迁移）、金融/财务建模（DCF、三张表、预算、Sensitivity 等）时使用。多维表格（Base/bitable）请改用 lark-base；若用户是想按名称或关键词搜索云空间（云盘/云存储）里的表格文件，请改用 lark-drive 的 drive +search 先定位资源。当用户给出 doubao.com 的 /sheets/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域名。"
+              },
+              {
+                "name": "lark-skill-maker",
+                "description": "创建 lark-cli 的自定义 Skill。当用户需要把飞书 API 操作封装成可复用的 Skill（包装原子 API 或编排多步流程）时使用。"
+              },
+              {
+                "name": "lark-slides",
+                "description": "飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。当用户给出 doubao.com 的 /slides/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域名。不负责：云文档内容编辑（走 lark-doc）、云文档里的独立画板对象（走 lark-whiteboard）、上传或下载普通文件（走 lark-drive）。"
+              },
+              {
+                "name": "lark-task",
+                "description": "飞书任务：管理任务、清单和任务智能体。创建待办任务、查看和更新任务状态、拆分子任务、组织任务清单、分配协作成员、上传任务附件、注册或注销任务智能体、更新任务智能体的主页数据、写入智能体任务记录。当用户需要创建待办事项、查看任务列表、跟踪任务进度、管理项目清单或给他人分配任务、为任务上传附件文件、注册注销任务智能体、更新智能体主页数据、写入任务记录时使用。"
+              },
+              {
+                "name": "lark-vc",
+                "description": "仅当用户或上游配置显式指定 lark-vc 时使用，相关请求统一交由 lark-meeting 技能处理。"
+              },
+              {
+                "name": "lark-vc-agent",
+                "description": "仅当用户或上游配置显式指定 lark-vc-agent 时使用，相关请求统一交由 lark-meeting 技能处理。"
+              },
+              {
+                "name": "lark-whiteboard",
+                "description": "飞书画板：查询和编辑飞书云文档中的画板。支持导出画板为预览图片、导出原始节点结构、使用多种格式更新画板内容。 当用户需要查看画板内容、导出画板图片、编辑画板时使用此 skill。不负责：飞书云文档内容编辑（lark-doc）、文档内嵌电子表格/Base（lark-sheets / lark-base）。"
+              },
+              {
+                "name": "lark-wiki",
+                "description": "飞书知识库：管理知识空间、空间成员和文档节点。创建和查询知识空间、查看和管理空间成员、管理节点层级结构、在知识库中组织文档和快捷方式。当用户需要在知识库中查找或创建文档、浏览知识空间结构、查看或管理空间成员、移动或复制节点时使用。当用户给出 doubao.com 的 /wiki/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域名。不负责：上传文件到知识库节点下（走 lark-drive）、编辑文档/表格/Base 内容（走 lark-doc / lark-sheets / lark-base）。"
+              },
+              {
+                "name": "lark-workflow-meeting-summary",
+                "description": "会议纪要整理工作流：汇总指定时间范围内的会议纪要并生成结构化报告。当用户需要整理会议纪要、生成会议周报、回顾一段时间内的会议内容时使用。"
+              },
+              {
+                "name": "lark-workflow-standup-report",
+                "description": "日程待办摘要：编排 calendar +agenda 和 task +get-my-tasks，生成指定日期的日程与未完成任务摘要。适用于了解今天/明天/本周的安排。"
+              },
+              {
+                "name": "officecli",
+                "description": "Create, analyze, proofread, and modify Office documents (.docx, .xlsx, .pptx) using the officecli CLI tool. Use when the user wants to create, inspect, check formatting, find issues, add charts, or modify Office documents."
+              },
+              {
+                "name": "receiving-code-review",
+                "description": "Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation"
+              },
+              {
+                "name": "systematic-debugging",
+                "description": "Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes"
+              },
+              {
+                "name": "test-driven-development",
+                "description": "Use when implementing any feature or bugfix, before writing implementation code"
+              },
+              {
+                "name": "ui-ux-pro-max",
+                "description": "UI/UX design intelligence + implementation guidance: 84 styles, 161 palettes, 99 UX rules, 25 chart types, 16 stacks (React, Next.js, Vue, Svelte, Astro, Nuxt, SwiftUI, Flutter, Tailwind, shadcn/ui, Angular, Laravel). Use when designing, building, reviewing, fixing, or improving UI/UX for websites, landing pages, dashboards, e-commerce, SaaS, or mobile apps; or when choosing color, typography, layout, spacing, motion, accessibility, or design systems. 当用户要求设计/创建/审查/优化界面、选择配色字体布局风格或生成设计系统时使用。"
+              },
+              {
+                "name": "using-git-worktrees",
+                "description": "Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification"
+              },
+              {
+                "name": "verification-before-completion",
+                "description": "Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always"
+              }
+            ]
+          },
+          "reply": {
+            "unparsed": true
+          }
+        },
+        {
+          "seq": 11,
+          "type": "user/message",
+          "source": {
+            "kind": "time-context",
+            "form": "snapshot",
+            "sections": [
+              {
+                "name": "time-context",
+                "text": "Time sampled while preparing turn 1, step 1: 2026-10-26T15:31:27+08:00[Asia/Shanghai]\nBrowser time zone for this request: unavailable. Ask the user to clarify otherwise-unqualified dates and times.\nElapsed since the preceding model-visible message: unavailable."
+              }
+            ]
+          },
+          "reply": {
+            "unparsed": true
+          }
+        },
+        {
+          "seq": 12,
+          "type": "request/header",
+          "config": {
+            "provider": "qprobe",
+            "model": "qprobe-script"
+          }
+        },
+        {
+          "seq": 13,
+          "type": "request/context"
+        },
+        {
+          "seq": 14,
+          "type": "session/title"
+        },
+        {
+          "seq": 15,
+          "type": "session/title-llm-request"
+        },
+        {
+          "seq": 16,
+          "type": "assistant/message"
+        },
+        {
+          "seq": 17,
+          "type": "tool/call",
+          "callId": "qprobe_call_1_mvoxu7bl",
+          "name": "ask_user_question",
+          "arguments": {
+            "timeout": -1,
+            "questions": [
+              {
+                "id": "probe-q1",
+                "multiSelect": false,
+                "optionLabels": [
+                  "QPROBE_OPT_A",
+                  "QPROBE_OPT_B"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "seq": 18,
+          "type": "session/title"
+        }
+      ]
+    },
+    {
+      "name": "failureNativePending",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "session-1c135198-cf35-4d55-95c1-5f35eadcc9c2": {
+          "running": true,
+          "completionUnread": false,
+          "pending": {
+            "kind": "question",
+            "key": "question:<credential-32hex>:1",
+            "sessionId": "session-1c135198-cf35-4d55-95c1-5f35eadcc9c2",
+            "callId": null,
+            "dismissal": "cancel",
+            "isReview": false,
+            "hasWaterfall": true,
+            "snapshot": {
+              "state": "open",
+              "waitState": "counting",
+              "channel": "waterfall",
+              "closed": false,
+              "countdown": null
+            },
+            "questions": [
+              {
+                "id": "probe-q1",
+                "header": "Probe question",
+                "question": "QPROBE_OPEN_QUESTION",
+                "multiSelect": false,
+                "optionLabels": [
+                  "QPROBE_OPT_A",
+                  "QPROBE_OPT_B"
+                ],
+                "kind": null
+              }
+            ]
+          },
+          "hasPendingObject": true
+        }
+      }
+    },
+    {
+      "name": "failureDom",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "page": "runtime",
+        "phase": "save-failed",
+        "text": "重试保存\n\n需要你回答一个问题\n\n去处理\n\n游戏已暂停 · 当前会话\n\nAgent 正在等你\n收起\n\n进度尚未保存。请重试保存后再回答；游戏保持暂停。\n\n重试保存\n回到会话处理\nAgent 需要你处理。按下按钮回到会话。"
+      }
+    },
+    {
+      "name": "run completed",
+      "ok": false,
+      "required": true,
+      "detail": "Error: product question ready after save\n    at check (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-presence-questions/scripts/verification/v1.5/m4/run.mjs:16:130)\n    at async file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-presence-questions/scripts/verification/v1.5/m4/run.mjs:50:2"
+    },
+    {
+      "name": "isolated Host stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}

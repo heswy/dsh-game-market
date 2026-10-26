@@ -1,0 +1,263 @@
+{
+  "id": "M4-product",
+  "title": "Real Game Market UI, native questions and HTML wrapper",
+  "commands": [
+    "DSH_V15_WORK=/tmp/dsh-v15/m3 node scripts/verification/v1.5/m4/run.mjs"
+  ],
+  "startedAt": "2026-10-26T07:44:47.506Z",
+  "finishedAt": "2026-10-26T07:45:01.959Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "runtime",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-26T02:36:18.385Z"
+      }
+    },
+    {
+      "name": "native probe control loaded",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "session bound",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "game tab registered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real Game Market mounted",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "snake product play button",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "actual snake runtime playing",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "html game runs through resource wrapper",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "outer wrapper is trusted (no sandbox)",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "officialLogo",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "viewBox": "0 0 23.16 17.04",
+        "pathLength": 3448
+      }
+    },
+    {
+      "name": "native pending delivered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "whale reflects pending question",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "product question ready after save",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "official FishLogo exact outline",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "viewBox": "0 0 23.16 17.04",
+        "sha256": "5bee701f39229e6dbb3950e8ed7fe69aedc6de462df916ace5e84563715abc47"
+      }
+    },
+    {
+      "name": "narrow sheet stays within viewport and clear of top controls",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "reduced motion stops whale",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "IME Enter does not submit",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapse removes only product dialog",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapsed dialog returns focus to an unobstructed whale",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapse keeps native question answerable",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapse emits no ASK_CANCELLED",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "reopened panel ready",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "draft selection survives collapse",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "native settlement confirmed in product",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "same native call contains exact product answer",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "seq": 19,
+        "type": "tool/result",
+        "callId": "qprobe_call_1_mvoybl8p",
+        "isError": false,
+        "errorCode": null,
+        "result": {
+          "pending": false,
+          "callId": null,
+          "answers": [
+            {
+              "id": "probe-q1",
+              "selected": [
+                "QPROBE_OPT_A",
+                "QPROBE_OPT_B"
+              ],
+              "custom": "补充"
+            },
+            {
+              "id": "probe-q2",
+              "selected": [],
+              "custom": "中文输入"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "multi batch preserves both selected labels and exact custom text",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "seq": 19,
+        "type": "tool/result",
+        "callId": "qprobe_call_1_mvoybl8p",
+        "isError": false,
+        "errorCode": null,
+        "result": {
+          "pending": false,
+          "callId": null,
+          "answers": [
+            {
+              "id": "probe-q1",
+              "selected": [
+                "QPROBE_OPT_A",
+                "QPROBE_OPT_B"
+              ],
+              "custom": "补充"
+            },
+            {
+              "id": "probe-q2",
+              "selected": [],
+              "custom": "中文输入"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "no native cancellation",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "game stays paused until explicit resume",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "explicit continue resumes actual game",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "isolated Host stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}

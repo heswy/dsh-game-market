@@ -1,0 +1,294 @@
+{
+  "id": "M4-product",
+  "title": "Real Game Market UI, native questions and HTML wrapper",
+  "commands": [
+    "DSH_V15_WORK=/tmp/dsh-v15/m3 node scripts/verification/v1.5/m4/run.mjs --scenario=continued"
+  ],
+  "startedAt": "2026-10-26T07:56:31.953Z",
+  "finishedAt": "2026-10-26T07:56:48.162Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "source",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "head": "cef4cb921a39f3f23f11143aa69f623d58116a0b",
+        "sourceChanges": [],
+        "clientSha256": "f51778f561c9fe57941bf375aef9b6e1e591a9d84a898efade88fe170d03c0a5",
+        "loading": "local development row in isolated profile; not a new immutable release/install claim"
+      }
+    },
+    {
+      "name": "runtime",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-26T02:36:18.385Z"
+      }
+    },
+    {
+      "name": "native probe control loaded",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "session bound",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "game tab registered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real Game Market mounted",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "snake product play button",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "actual snake runtime playing",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "html game runs through resource wrapper",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "outer wrapper is trusted (no sandbox)",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "officialLogo",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "viewBox": "0 0 23.16 17.04",
+        "pathLength": 3448
+      }
+    },
+    {
+      "name": "running whale follows native running turn",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "native pending delivered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "native continued RPC face delivered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "whale reflects pending question",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "product question ready after save",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "official FishLogo exact outline",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "viewBox": "0 0 23.16 17.04",
+        "sha256": "5bee701f39229e6dbb3950e8ed7fe69aedc6de462df916ace5e84563715abc47"
+      }
+    },
+    {
+      "name": "light host theme applied",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "lightLogoColor",
+      "ok": true,
+      "required": false,
+      "detail": "rgb(65, 118, 230)"
+    },
+    {
+      "name": "hidden page stops presence animation",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "visible event cannot resume game while question owns hold",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "dark host theme applied",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "narrow sheet stays within viewport and clear of top controls",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "darkLogoColor",
+      "ok": true,
+      "required": false,
+      "detail": "rgb(122, 170, 255)"
+    },
+    {
+      "name": "reduced motion stops whale",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "IME Enter does not submit",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapse removes only product dialog",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapsed dialog returns focus to an unobstructed whale",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapse keeps native question answerable",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapse emits no ASK_CANCELLED",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "reopened panel ready",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "draft selection survives collapse",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "native settlement confirmed in product",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "continued answer settles original call through native steer",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "kind": "user-question-reply",
+        "callId": "qprobe_call_1_mvoyqo1y",
+        "outcome": "answered"
+      }
+    },
+    {
+      "name": "no native cancellation",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "completed whale follows native turn completion",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "game stays paused until explicit resume",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "explicit continue resumes actual game",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "error whale follows native failed turn",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "error mark remains static",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "owned browser stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "isolated Host stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}

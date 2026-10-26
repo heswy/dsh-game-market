@@ -1,0 +1,176 @@
+{
+  "id": "M4-html-boundary",
+  "title": "HTML-v1 wrapper navigation falsifiable A/B",
+  "commands": [
+    "DSH_V15_WORK=/tmp/dsh-v15/m3 node scripts/verification/v1.5/m4/html-boundary.mjs"
+  ],
+  "startedAt": "2026-10-26T07:31:08.943Z",
+  "finishedAt": "2026-10-26T07:31:21.942Z",
+  "passed": false,
+  "failed": [
+    "completed"
+  ],
+  "checks": [
+    {
+      "name": "runtime",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-26T02:36:18.385Z"
+      }
+    },
+    {
+      "name": "host installs valid hostile html-v1",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "gameId": "m4-html-navigation",
+          "version": "1.0.0",
+          "sha256": null,
+          "installedAt": "2026-10-26T07:31:16.187Z",
+          "changed": true,
+          "source": "local",
+          "warnings": [],
+          "installation": {
+            "id": "m4-html-navigation",
+            "version": "1.0.0",
+            "source": "local",
+            "packagePath": "m4-html-navigation/1.0.0",
+            "sha256": null,
+            "sizeBytes": 1198,
+            "format": "html-v1",
+            "entry": "entry.html",
+            "fileManifestDigest": null,
+            "fileCount": null,
+            "unpackedBytes": null,
+            "previousVersion": null,
+            "previousFormat": null,
+            "installedAt": "2026-10-26T07:31:16.187Z",
+            "updatedAt": "2026-10-26T07:31:16.187Z",
+            "manifest": {
+              "manifestVersion": 1,
+              "id": "m4-html-navigation",
+              "name": "Jump",
+              "version": "1.0.0",
+              "author": {
+                "name": "Test Studio"
+              },
+              "description": "A test game package used by host tests.",
+              "categories": [
+                "arcade"
+              ],
+              "capabilities": [
+                "storage",
+                "score"
+              ],
+              "sdkVersion": "^1.0.0",
+              "runtimeVersion": "^1.0.0",
+              "score": {
+                "direction": "higher-better",
+                "min": 0,
+                "max": 1000000,
+                "integer": true
+              },
+              "save": {
+                "schemaVersion": 1
+              }
+            },
+            "compatibility": {
+              "status": "ok",
+              "sdkVersion": "1.0.0",
+              "runtimeVersion": "1.0.0",
+              "sdkRange": "^1.0.0",
+              "runtimeRange": "^1.0.0",
+              "checkedAt": "2026-10-26T07:31:16.187Z",
+              "reasons": []
+            },
+            "update": {
+              "available": false,
+              "latestVersion": "1.0.0",
+              "checkedAt": "2026-10-26T07:31:16.187Z",
+              "reason": null
+            },
+            "warnings": []
+          }
+        },
+        "requestId": "req_9c8e9ecea9d14911",
+        "serverTime": "2026-10-26T07:31:16.174Z"
+      }
+    },
+    {
+      "name": "host issues legacy URL plus additive wrapper",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "keys": [
+          "instanceId",
+          "nonce",
+          "entryUrl",
+          "preview",
+          "runtimeVersion",
+          "sdkVersion",
+          "protocolVersion",
+          "gameId",
+          "gameVersion",
+          "capabilities",
+          "limits",
+          "viewport",
+          "hostEpoch",
+          "mode",
+          "entrySha256",
+          "resourceOrigin",
+          "resourceBase",
+          "resourceTtlMs",
+          "entryResourceUrl",
+          "package",
+          "wrapperUrl",
+          "wrapperResourceUrl"
+        ]
+      }
+    },
+    {
+      "name": "positive control: legacy direct game really escapes to sink",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "at": 1792999877086,
+          "method": "GET",
+          "path": "/escape",
+          "search": "",
+          "origin": null,
+          "secFetchSite": "cross-site",
+          "referer": null,
+          "bodyPrefix": ""
+        }
+      ]
+    },
+    {
+      "name": "completed",
+      "ok": false,
+      "required": true,
+      "detail": "Error: no attached target matched \n    at Cdp.evaluateInFrame (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-presence-questions/scripts/verification/v1.5/lib/harness.mjs:382:11)\n    at async file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-presence-questions/scripts/verification/v1.5/m4/html-boundary.mjs:27:18"
+    },
+    {
+      "name": "owned host stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}

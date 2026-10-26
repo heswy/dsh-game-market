@@ -18,7 +18,7 @@ import { createReport, writeJson } from '../lib/harness.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 /** Resolve the repo root from this file's real path (`%20` safe). */
 const REPO_ROOT = path.resolve(HERE, '../../../..');
-const RAW_DIR = path.join(REPO_ROOT, 'docs/verification/v1.5/raw/questions');
+const RAW_DIR = process.env.DSH_V15_QUESTION_RAW_DIR || path.join(REPO_ROOT, 'docs/verification/v1.5/raw/questions');
 
 const PROBES = [
   { id: 'S-Q1', script: 'q1-open-in-game-panel.mjs' },

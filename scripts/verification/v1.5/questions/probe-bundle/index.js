@@ -283,13 +283,15 @@ export function apply(ctx, config = {}) {
         yield* textStream('QPROBE_TITLE');
         return;
       }
+      const scenario = readScenario();
+      if(scenario.mode === 'model-error') throw new Error('QPROBE_SYNTHETIC_MODEL_ERROR');
+      if(call.askCallsInHistory === 0 && scenario.delayMs) await new Promise(resolve=>setTimeout(resolve,Math.min(3000,Number(scenario.delayMs)||0)));
       if (call.askCallsInHistory > 0) {
         // The native ask_user_question tool already ran in this turn/thread.
         call.emitted = 'final-text';
         yield* textStream('QPROBE_TURN_DONE');
         return;
       }
-      const scenario = readScenario();
       state.askSequence += 1;
       const callId = `qprobe_call_${state.askSequence}_${Date.now().toString(36)}`;
       call.emitted = 'ask-tool-call';

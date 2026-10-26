@@ -343,3 +343,16 @@ test('the bundler external allowlist stays the reviewed minimal set and client.j
     assert.ok(EXTERNAL_MODULES.includes(specifier), `client.js requires un-allowlisted "${specifier}"`);
   }
 });
+
+ test('M4 html-v1 additive wrapper uses resource entry and relay while old Host stays direct', async () => {
+  const ctx = makeRuntimeContext();
+  const info = zipLaunchInfo({package: {format:'html-v1',entry:'entry.html',filesDigest:null}, entryUrl:legacyLaunchInfo().entryUrl,
+    wrapperUrl: RESOURCE_ORIGIN + '/wrapper?src=' + encodeURIComponent(ENTRY_RESOURCE_URL + '?launch=' + NONCE),
+    wrapperResourceUrl: RESOURCE_ORIGIN + '/wrapper?src=' + encodeURIComponent(ENTRY_RESOURCE_URL)});
+  await ctx.controller.launch(info);
+  const frame = ctx.container.children[0];
+  assert.equal(new URL(frame.getAttribute('src')).pathname, '/wrapper');
+  assert.equal(new URL(new URL(frame.getAttribute('src')).searchParams.get('src')).origin, RESOURCE_ORIGIN);
+  assert.equal(frame.getAttribute('sandbox'), null);
+  ctx.controller.destroy();
+ });

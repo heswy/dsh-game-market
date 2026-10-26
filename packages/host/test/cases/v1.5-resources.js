@@ -469,9 +469,16 @@ test('LaunchInfo keeps html-v1 entryUrl on the V1 /entry route and still adds re
   assert.equal(info.package.filesDigest, null);
   assert.equal(info.entryResourceUrl, `${info.resourceBase}/entry.html`);
   assert.equal(info.resourceTtlMs, TTL_MS);
-  // Lead decision: M1 does not put html-v1 behind the wrapper.
-  assert.equal(info.wrapperUrl, undefined);
-  assert.equal(info.wrapperResourceUrl, undefined);
+  // M4 adds wrapper navigation without breaking an older Client's /entry URL.
+  assert.equal(new URL(info.wrapperUrl).origin, info.resourceOrigin);
+  const target = new URL(info.wrapperUrl).searchParams.get('src');
+  assert.equal(target, info.entryResourceUrl + '?launch=' + info.nonce);
+  const document = await fetch(target);
+  assert.equal(document.status, 200);
+  assert.ok(document.headers.get('content-security-policy').includes(info.resourceOrigin));
+  assert.equal(await document.text(), entryBytes.toString('utf8'));
+  assert.equal((await fetch(target)).status, 410);
+  assert.equal((await fetch(info.entryResourceUrl)).status, 200);
 
   // The legacy /entry path is behaviourally unchanged: repeated GET, V1 CSP.
   const legacyUrl = new URL(info.entryUrl, DSH_ORIGIN);
@@ -1373,8 +1380,8 @@ test('createHost wires the resource origin into launch and disposes it cleanly',
   assert.equal(typeof info.resourceTtlMs, 'number');
   assert.ok(info.resourceTtlMs > 0);
   assert.equal(info.entryResourceUrl, `${info.resourceBase}/entry.html`);
-  assert.equal(info.wrapperUrl, undefined);
-  assert.equal(info.wrapperResourceUrl, undefined);
+  assert.equal(new URL(info.wrapperUrl).pathname, '/wrapper');
+  assert.equal(new URL(info.wrapperResourceUrl).pathname, '/wrapper');
 
   // The wired origin really serves the launched entry resource.
   const served = await rawRequest(new URL(info.resourceOrigin).origin, new URL(info.entryResourceUrl).pathname);
@@ -1431,3 +1438,14 @@ export function register() {
 }
 
 register();
+
+test('M4 packaged Desktop pins wrapper and both game formats to dsh-app://app',async t=>{
+ const bytes=Buffer.from(htmlV1Files()['entry.html']);
+ const stack=await createStack(t,{dshWebOrigin:'dsh-app://app',games:[{record:htmlV1Record('legacy','2.1.0',sha256(bytes)),files:htmlV1Files()}]});
+ const info=await stack.launch('legacy');
+ const wrapper=await fetch(info.wrapperUrl);const csp=wrapper.headers.get('content-security-policy');
+ assert.ok(csp.includes('frame-ancestors dsh-app://app'));assert.ok(!csp.includes('127.0.0.1:*'));
+ const entry=await fetch(info.entryResourceUrl);assert.ok(entry.headers.get('content-security-policy').includes('dsh-app://app'));
+ const zip=await createStack(t,{dshWebOrigin:'dsh-app://app',games:[{record:zipRecord('demo','1.0.0'),files:zipGameFiles()}]});const z=await zip.launch('demo');
+ const doc=await fetch(z.entryResourceUrl);assert.ok(doc.headers.get('content-security-policy').includes('frame-ancestors dsh-app://app '+z.resourceOrigin));
+});
