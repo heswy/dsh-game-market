@@ -573,7 +573,7 @@ export function createUpdateOperationService({
         }
         let result;
         try {
-          result = await adapter.install(op.target, { requestId: op.requestId });
+          result = await adapter.install(op.target, { requestId: op.requestId, enabled: op.previous?.enabled !== false });
         } catch (error) {
           finaliseFailed(op, sanitisedDiagnostic(error?.message) || 'Plugin update could not start');
           return;

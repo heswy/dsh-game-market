@@ -266,7 +266,7 @@ export function createPlatformUpdateAdapter({
    * Returns the native folded result object (never throws for management
    * failures; only a missing capability throws).
    */
-  async function install(target, { requestId } = {}) {
+  async function install(target, { requestId, enabled = true } = {}) {
     const manager = resolveManager();
     if (manager === null) {
       throw hostError(GM.UPDATE_ADAPTER_UNAVAILABLE, 'Plugin update capability is unavailable', {
@@ -281,8 +281,12 @@ export function createPlatformUpdateAdapter({
         retryable: false,
       });
     }
+    // Preserve an existing disabled choice, including a disable made while
+    // the game windows were coordinating. Installation must not enable it.
+    const bundles = await safeListBundles(manager);
+    const installed = Array.isArray(bundles) ? bundles.find(entry => entry?.name === BUNDLE_ID) : null;
     const result = await manager.installBundle(spec, {
-      enabled: true,
+      enabled: enabled !== false && installed?.enabled !== false,
       requestId,
       saveExact: true,
     });
