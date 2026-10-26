@@ -100,7 +100,7 @@ export function discoverProfile({ env = process.env, settings = {}, bundleRoot =
   if (typeof configured === 'string' && configured.length > 0) {
     const dependencies = readProfileDependencies(configured);
     if (dependencies !== null) {
-      return { dir: configured, source: 'config', dependencies, devSource: false };
+      return { dir: configured, source: 'config', dependencies, devSource: profilePatchMentions(configured, bundleRoot) || ['path', 'file'].includes(profileDependencySpecShape(dependencies[BUNDLE_ID])) };
     }
   }
 
@@ -142,7 +142,7 @@ export function discoverProfile({ env = process.env, settings = {}, bundleRoot =
     const spec = declared[0].dependencies[BUNDLE_ID];
     const shape = profileDependencySpecShape(spec);
     const target = localSpecTarget(declared[0].dir, spec);
-    const devSource = shape === 'path' || shape === 'file' || (bundleReal !== null && target === bundleReal);
+    const devSource = shape === 'path' || shape === 'file' || (bundleReal !== null && target === bundleReal) || profilePatchMentions(declared[0].dir, bundleRoot);
     return { dir: declared[0].dir, source: 'single-profile', dependencies: declared[0].dependencies, devSource };
   }
   // Multiple (or zero) declared profiles: only a dev row that points at the

@@ -528,7 +528,7 @@ test('failed terminal op keeps retry and still allows the update offer', functio
   assert.equal(view.operation.showRecovery, true);
 });
 
-test('pending-restart / too-late / already-at-target suppress a new offer', function () {
+test('pending-restart / too-late suppress new offers; an old already-at-target does not', function () {
   const pendingRestart = viewOf(
     updatedInspection({
       host: { version: '1.2.0', commit: COMMIT_A },
@@ -544,7 +544,7 @@ test('pending-restart / too-late / already-at-target suppress a new offer', func
   assert.equal(tooLate.update.offerable, false, 'too-late is still observing the running install');
 
   const already = viewOf(updatedInspection({ operation: observation('already-at-target', { reason: 'already-installed' }) }));
-  assert.equal(already.update.offerable, false);
+  assert.equal(already.update.offerable, true, 'a later newer target remains offerable');
 });
 
 test('no operation with a newer verified target is offerable (baseline)', function () {
@@ -577,4 +577,10 @@ test('banner and section offer gate on the derived offerable flag only (regressi
   assert.equal(/view\.operation\s*(===|!==)\s*null/.test(source), false, 'no raw operation-null gating');
   assert.equal((source.match(/view\.update\.offerable\s*(===|!==)\s*true/g) || []).length, 2, 'banner + section offer use offerable');
   assert.match(source, /if \(!view \|\| view\.hidden \|\| !view\.update \|\| view\.update\.offerable !== true\) return null;/);
+});
+
+test('a retained already-at-target result does not hide a later newer release', () => {
+  const view = viewOf(updatedInspection({ operation: observation('already-at-target', { reason: 'same-commit' }) }));
+  assert.equal(view.update.kind, 'available');
+  assert.equal(view.update.offerable, true);
 });

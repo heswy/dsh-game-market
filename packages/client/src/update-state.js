@@ -300,7 +300,7 @@ export function compareTarget(inspection) {
  * action; a new begin must not be offered while they are on screen.
  * (`updated` is NOT here: a newer discovery target must still be offerable.)
  */
-const OFFER_SUPPRESSED_STATES = Object.freeze(['pending-restart', 'already-at-target', 'too-late', 'stale-runtime']);
+const OFFER_SUPPRESSED_STATES = Object.freeze(['pending-restart', 'too-late', 'stale-runtime']);
 
 /**
  * True when a retained operation blocks a *new* update offer. Terminal
