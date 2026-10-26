@@ -45,7 +45,9 @@ try{
  report.add('html game runs through resource wrapper',await page.eval(`document.querySelector('.dgm-stage-canvas iframe')?.src.includes('/wrapper?')`));
  report.add('outer wrapper is trusted (no sandbox)',await page.eval(`document.querySelector('.dgm-stage-canvas iframe')?.getAttribute('sandbox')===null`));
  report.record('officialLogo',await page.eval(`(()=>{const svg=document.querySelector('.dgm-whale-btn svg');return svg?{viewBox:svg.getAttribute('viewBox'),pathLength:svg.querySelector('path')?.getAttribute('d').length}:null;})()`));
- await bridge.setScenario({mode:scenario==='continued'?'timed':scenario,timeoutSeconds:2});await page.eval(`window.__QPROBE__.promptSession(${JSON.stringify(sessionId)},'M4 product question')`);
+ await bridge.setScenario({mode:scenario==='continued'?'timed':scenario,timeoutSeconds:2,delayMs:2000});await page.eval(`window.__QPROBE__.promptSession(${JSON.stringify(sessionId)},'M4 product question')`);
+ await check('running whale follows native running turn',`Boolean(document.querySelector('.dgm-whale-btn[data-state="running"]'))`);
+ await page.shot(path.join(raw,'m4-running-'+stamp+'.png'));
  await check('native pending delivered',`window.__QPROBE__.statusOf(${JSON.stringify(sessionId)})?.hasPendingObject===true`);
  if(scenario==='continued')await check('native continued RPC face delivered',`window.__QPROBE__.statusOf(${JSON.stringify(sessionId)})?.pending?.snapshot?.channel==='rpc'`);
  if(saveFault){restoreWrites=blockGameSaveWrites(home,['snake']);}
@@ -61,6 +63,7 @@ try{
  const logo=await page.eval(`(async()=>{const svg=document.querySelector('.dgm-whale-btn svg');if(!svg)return null;const d=svg.querySelector('path').getAttribute('d');const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(d));return {viewBox:svg.getAttribute('viewBox'),sha256:[...new Uint8Array(hash)].map(x=>x.toString(16).padStart(2,'0')).join('')};})()`);
  report.add('official FishLogo exact outline',logo?.sha256==='5bee701f39229e6dbb3950e8ed7fe69aedc6de462df916ace5e84563715abc47'&&logo?.viewBox==='0 0 23.16 17.04',logo);
  await page.send('Emulation.setEmulatedMedia',{features:[{name:'prefers-color-scheme',value:'light'}]});
+ await check('light host theme applied',`!document.body.hasAttribute('data-ds-dark-theme')`);
  await page.shot(path.join(raw,'m4-question-light-'+stamp+'.png'));
  report.record('lightLogoColor',await page.eval(`getComputedStyle(document.querySelector('.dgm-whale')).color`));
  await page.eval(`Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});document.dispatchEvent(new Event('visibilitychange'));`);
@@ -69,6 +72,7 @@ try{
  report.add('visible event cannot resume game while question owns hold',await page.eval(`document.querySelector('.dgm-runtime')?.getAttribute('data-runtime-state')==='paused'`));
  await page.send('Emulation.setDeviceMetricsOverride',{width:375,height:812,deviceScaleFactor:1,mobile:false});
  await page.send('Emulation.setEmulatedMedia',{features:[{name:'prefers-color-scheme',value:'dark'},{name:'prefers-reduced-motion',value:'reduce'}]});
+ await check('dark host theme applied',`document.body.hasAttribute('data-ds-dark-theme')`);
  await check('narrow sheet stays within viewport and clear of top controls',`(()=>{const r=document.querySelector('.dgm-question-panel')?.getBoundingClientRect();return r && r.left>=15 && r.right<=360 && r.top>=112 && r.bottom<=812;})()`);
  report.record('darkLogoColor',await page.eval(`getComputedStyle(document.querySelector('.dgm-whale')).color`));
  report.add('reduced motion stops whale',await page.eval(`getComputedStyle(document.querySelector('.dgm-whale')).animationName==='none'`));
@@ -99,9 +103,17 @@ try{
  }
 
  report.add('no native cancellation',!JSON.stringify(events).includes('ASK_CANCELLED'));
+ await check('completed whale follows native turn completion',`Boolean(document.querySelector('.dgm-whale-btn[data-state="completed"]'))`);
+ await page.shot(path.join(raw,'m4-completed-'+stamp+'.png'));
  report.add('game stays paused until explicit resume',await page.eval(`document.querySelector('.dgm-runtime')?.getAttribute('data-runtime-state')==='paused'`));
  await page.eval(`document.querySelector('.dgm-question-footer .dgm-btn-primary').click()`);
  await check('explicit continue resumes actual game',`document.querySelector('.dgm-runtime')?.getAttribute('data-runtime-state')==='playing'`);
+ await bridge.setScenario({mode:'model-error'});
+ await page.eval(`window.__QPROBE__.promptSession(${JSON.stringify(sessionId)},'M4 synthetic model failure for presence')`);
+ await check('error whale follows native failed turn',`Boolean(document.querySelector('.dgm-whale-btn[data-state="error"]'))`);
+ report.add('error mark remains static',await page.eval(`getComputedStyle(document.querySelector('.dgm-whale-btn')).animationName==='none' && getComputedStyle(document.querySelector('.dgm-whale')).animationName==='none'`));
+ await page.shot(path.join(raw,'m4-error-'+stamp+'.png'));
+
 }catch(error){if(bridge&&sessionId)report.record('failureEvents',await bridge.events(sessionId).catch(()=>null));if(page){report.record('failureNativePending',await page.eval('window.__QPROBE__.statusAll()').catch(()=>null));report.record('failureDom',await page.eval(`({page:document.querySelector('.dgm-root')?.getAttribute('data-page'),phase:document.querySelector('[data-question-phase]')?.getAttribute('data-question-phase'),text:document.querySelector('.dgm-root')?.innerText?.slice(-1600)})`).catch(()=>null));await page.shot(path.join(raw,'m4-failure-'+stamp+'.png')).catch(()=>{});}report.add('run completed',false,String(error?.stack||error).split('\n').slice(0,5).join('\n'));}
 finally{if(restoreWrites)restoreGameSaveWrites(restoreWrites);try{page?.dispose();}catch{}if(host)await host.stop();report.add('owned browser stopped',!page?.chrome||page.chrome.exitCode!==null||page.chrome.signalCode!==null);report.add('isolated Host stopped',!host||host.child?.exitCode!==null||host.child?.signalCode!==null);}
 const result=report.finish();fs.writeFileSync(path.join(raw,'M4-product-'+stamp+'.json'),JSON.stringify(sanitiseM3(result),null,2)+'\n');console.log(JSON.stringify({passed:result.passed,checks:result.checks},null,2));process.exitCode=result.passed?0:1;
