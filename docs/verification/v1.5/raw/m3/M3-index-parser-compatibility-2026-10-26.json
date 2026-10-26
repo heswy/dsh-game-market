@@ -1,0 +1,56 @@
+{
+  "id": "M3-index-public-parser-compatibility",
+  "at": "2026-10-26T02:55:36.480Z",
+  "evidenceLevel": "installed rc.3 public parser + local dry-run; no publication",
+  "release": "a321bc72c95ae3f246c3b7081731ea4e6e541f19",
+  "hostVersion": "0.2.1-rc.3",
+  "promoteMode": "dry-run",
+  "written": false,
+  "checks": [
+    {
+      "name": "generated-index-accepted-by-official-rc3-parser",
+      "ok": true,
+      "required": true,
+      "detail": "dsh-game-market"
+    },
+    {
+      "name": "generated-index-accepted-by-restricted-parser",
+      "ok": true,
+      "required": true,
+      "detail": true
+    },
+    {
+      "name": "official-install-target-pins-release",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "spec": "git+https://github.com/heswy/dsh-game-market.git#a321bc72c95ae3f246c3b7081731ea4e6e541f19"
+      }
+    },
+    {
+      "name": "floating-commit-official-rejects",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "floating-commit-restricted-rejects",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "short-commit-official-rejects",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "short-commit-restricted-rejects",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ],
+  "passed": true
+}

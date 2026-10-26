@@ -1,0 +1,1464 @@
+{
+  "id": "M3-V2-save-coordination",
+  "title": "Active-game save failure blocks the package change before install; retry succeeds (real UI)",
+  "commands": [
+    "node scripts/verification/v1.5/m3/run-v2-save-coordination.mjs --a f623ee6ac12471ee1193ec01ddef4bfc97d095be --b 5719d483bd5516629e2f61b59a6034562da2b7e3 --final 889bf78b7c15ff8894880612d267340c75a1a7b6"
+  ],
+  "startedAt": "2026-10-26T02:36:17.485Z",
+  "finishedAt": "2026-10-26T02:41:03.543Z",
+  "passed": false,
+  "failed": [
+    "ui-shows-failed-with-recovery",
+    "ui-offers-actionable-recovery-entry",
+    "retry-does-not-fail-coordination",
+    "window1-refresh-action-clicked",
+    "window2-refresh-action-clicked",
+    "window1-page-reloaded",
+    "window2-page-reloaded",
+    "update-completes-to-updated-after-retry",
+    "window1-host-running-R_B",
+    "window1-health-R_B",
+    "window1-client-identity-R_B",
+    "window2-host-running-R_B",
+    "window2-health-R_B",
+    "window2-client-identity-R_B",
+    "orbit-courier-real-sdk-save-retained"
+  ],
+  "checks": [
+    {
+      "name": "runtime-extraction-matches-installed-app",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "expected-client-identity-B",
+      "ok": true,
+      "required": true,
+      "detail": "43e162a320ccd08c00a38cdbcc94686a43d5b3f2"
+    },
+    {
+      "name": "host-network-env-selfcheck",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "gitVersion": "git version 2.39.5 (Apple Git-154)",
+        "envKeys": [
+          "ALL_PROXY",
+          "GIT_CONFIG_NOSYSTEM",
+          "HTTPS_PROXY",
+          "HTTP_PROXY",
+          "M3_FIXTURE_RUN_TAG",
+          "M3_NETWORK_MODE",
+          "M3_NETWORK_MODE_LABEL",
+          "NODE_EXTRA_CA_CERTS",
+          "NODE_OPTIONS",
+          "NODE_USE_ENV_PROXY",
+          "NO_PROXY",
+          "npm_config_fetch_retries",
+          "npm_config_fetch_retry_maxtimeout",
+          "npm_config_fetch_timeout",
+          "npm_config_http_proxy",
+          "npm_config_https_proxy",
+          "npm_config_network_concurrency",
+          "npm_config_noproxy",
+          "npm_config_proxy"
+        ],
+        "full": {
+          "ok": true,
+          "attempts": [
+            {
+              "attempt": 1,
+              "ok": true,
+              "status": 0,
+              "stderr": "",
+              "stdout": "40d701678e96d99e777520debb43e25b28ae2d0c\tHEAD"
+            }
+          ]
+        },
+        "scrubbed": {
+          "ok": true,
+          "attempts": [
+            {
+              "attempt": 1,
+              "ok": true,
+              "status": 0,
+              "stderr": "",
+              "stdout": "40d701678e96d99e777520debb43e25b28ae2d0c\tHEAD"
+            }
+          ]
+        },
+        "networkMode": "real-github",
+        "networkModeLabel": "real GitHub transport (pinned reachable IPs via git config; network-dependent, explicitly opted in)",
+        "pinned": {
+          "github.com": "140.82.112.3",
+          "codeload.github.com": "140.82.112.3",
+          "raw.githubusercontent.com": "185.199.108.133"
+        }
+      }
+    },
+    {
+      "name": "R_A-installed-applied",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "stage": "enable",
+        "target": "dsh-game-market",
+        "enabled": true,
+        "changed": true,
+        "application": "applied",
+        "registries": [
+          null
+        ],
+        "packageResult": {
+          "exitCode": 0,
+          "output": "\n   ╭──────────────────────────────────────────╮\n   │                                          │\n   │   Update available! 10.28.2 → 12.15.0.   │\n   │   Changelog: https://pnpm.io/v/12.15.0   │\n   │     To update, run: pnpm add -g pnpm     │\n   │                                          │\n   ╰──────────────────────────────────────────╯\n\nPackages are cloned from the content-addressable store to the virtual store.\n  Content-addressable store is at: /Users/<user>/Library/pnpm/store/v10\n  Virtual store is at:             node_modules/.pnpm\nProgress: resolved 0, reused 0, downloaded 1, added 0\n\ndependencies:\n+ dsh-game-market github:heswy/dsh-game-market#f623ee6ac12471ee1193ec01ddef4bfc97d095be\n\nPackages: +3\n+++\nProgress: resolved 3, reused 2, downloaded 1, added 3, done\nDone in 10.5s using pnpm v10.28.2\n",
+          "truncated": false,
+          "logPath": "/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvonamdo-bdf624/profiles/web/.plugin-manager/logs/operation-EulbiY/pnpm.log"
+        },
+        "bundle": "dsh-game-market",
+        "version": "1.2.1",
+        "warnings": []
+      }
+    },
+    {
+      "name": "R_A-applied-to-disk-and-running",
+      "ok": true,
+      "required": true,
+      "detail": true
+    },
+    {
+      "name": "window1-real-game-instance-running",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "rows": [
+          "orbit-courier",
+          "snake"
+        ],
+        "runtimeMounted": true
+      }
+    },
+    {
+      "name": "window2-real-game-instance-running",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "rows": [
+          "orbit-courier",
+          "snake"
+        ],
+        "runtimeMounted": true
+      }
+    },
+    {
+      "name": "window1-update-banner",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "text": "Game Market 1.2.2 可更新 · 当前 1.2.1查看更新",
+        "actions": [
+          {
+            "action": "open-update",
+            "text": "查看更新"
+          }
+        ]
+      }
+    },
+    {
+      "name": "save-failure-injected-readonly-saves-dir",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "modes": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvonamdo-bdf624/storages/dsh-game-market/saves/snake",
+            "mode": 493
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvonamdo-bdf624/storages/dsh-game-market/saves/orbit-courier",
+            "mode": 493
+          }
+        ],
+        "blocked": true
+      }
+    },
+    {
+      "name": "begin-under-save-failure-created-operation",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "operationIds": [
+          "upd_60883396d1fe8ff9"
+        ]
+      }
+    },
+    {
+      "name": "save-failure-blocks-update-before-install",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "failed",
+        "observation": {
+          "operationId": "upd_60883396d1fe8ff9",
+          "state": "failed",
+          "error": {
+            "code": "GM-4096",
+            "message": "Active game sessions could not pause and save; the update was not started"
+          },
+          "oldVersionStillRunning": true
+        }
+      }
+    },
+    {
+      "name": "no-package-change-before-install",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "dependency": "github:heswy/dsh-game-market#f623ee6ac12471ee1193ec01ddef4bfc97d095be",
+        "diskPackage": {
+          "name": "dsh-game-market",
+          "version": "1.2.1"
+        }
+      }
+    },
+    {
+      "name": "ui-shows-failed-with-recovery",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "ui-offers-actionable-recovery-entry",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "recovery": null,
+        "buttons": []
+      }
+    },
+    {
+      "name": "save-failure-injection-restored",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "restored": true
+      }
+    },
+    {
+      "name": "ui-retry-action-clicked",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "retryAction": {
+          "action": "retry-update",
+          "text": "重试更新",
+          "disabled": false
+        },
+        "retryStart": {
+          "clicked": true,
+          "label": "retry-update",
+          "target": {
+            "x": 376,
+            "y": 697.5,
+            "text": "重试更新",
+            "tag": "BUTTON",
+            "hitInsideTarget": true,
+            "atPoint": {
+              "tag": "BUTTON",
+              "className": "dgm-btn dgm-btn-primary",
+              "text": "重试更新"
+            }
+          },
+          "trusted": "Input.dispatchMouseEvent",
+          "waitedMs": 0
+        },
+        "confirm": {
+          "clicked": true,
+          "target": {
+            "x": 1020,
+            "y": 549.203125,
+            "text": "开始更新"
+          },
+          "trusted": "Input.dispatchMouseEvent"
+        }
+      }
+    },
+    {
+      "name": "retry-does-not-fail-coordination",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "state": "failed",
+        "observation": {
+          "operationId": "upd_60883396d1fe8ff9",
+          "state": "failed",
+          "error": {
+            "code": "GM-4096",
+            "message": "Active game sessions could not pause and save; the update was not started"
+          },
+          "oldVersionStillRunning": true
+        }
+      }
+    },
+    {
+      "name": "window1-refresh-action-clicked",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "note": "no refresh action visible; will reload directly and record it",
+        "operation": null
+      }
+    },
+    {
+      "name": "window2-refresh-action-clicked",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "note": "no refresh action visible; will reload directly and record it",
+        "operation": null
+      }
+    },
+    {
+      "name": "window1-page-reloaded",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "opened": {
+          "opened": true,
+          "steps": [
+            {
+              "sidebar": {
+                "label": "sidebar-market",
+                "clicked": true,
+                "target": {
+                  "tag": "BUTTON",
+                  "text": "游戏市场",
+                  "className": "kB3qhq_panelRow",
+                  "rect": {
+                    "x": 140,
+                    "y": 214,
+                    "width": 252,
+                    "height": 36
+                  },
+                  "hitInsideTarget": true
+                },
+                "point": {
+                  "x": 140,
+                  "y": 214,
+                  "trusted": "Input.dispatchMouseEvent"
+                }
+              }
+            }
+          ]
+        },
+        "mount": {
+          "ok": true,
+          "waitedMs": 20,
+          "state": {
+            "ready": "complete",
+            "root": false,
+            "sidebar": true
+          }
+        },
+        "attempts": [
+          {
+            "attempt": 1,
+            "mount": {
+              "ok": true,
+              "waitedMs": 5,
+              "state": {
+                "ready": "complete",
+                "root": false,
+                "sidebar": true
+              }
+            },
+            "served": {
+              "found": true,
+              "url": "http://127.0.0.1:49598/plugins/??@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-api-remote-access/client.js,@deepseek-ai/dsh-sessi",
+              "identity": {
+                "version": "1.2.1",
+                "buildCommit": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+              }
+            },
+            "identityOk": false
+          },
+          {
+            "attempt": 2,
+            "mount": {
+              "ok": true,
+              "waitedMs": 1,
+              "state": {
+                "ready": "complete",
+                "root": false,
+                "sidebar": true
+              }
+            },
+            "served": {
+              "found": true,
+              "url": "http://127.0.0.1:49598/plugins/??@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-api-remote-access/client.js,@deepseek-ai/dsh-sessi",
+              "identity": {
+                "version": "1.2.1",
+                "buildCommit": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+              }
+            },
+            "identityOk": false
+          },
+          {
+            "attempt": 3,
+            "mount": {
+              "ok": true,
+              "waitedMs": 2,
+              "state": {
+                "ready": "complete",
+                "root": false,
+                "sidebar": true
+              }
+            },
+            "served": {
+              "found": true,
+              "url": "http://127.0.0.1:49598/plugins/??@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-api-remote-access/client.js,@deepseek-ai/dsh-sessi",
+              "identity": {
+                "version": "1.2.1",
+                "buildCommit": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+              }
+            },
+            "identityOk": false
+          },
+          {
+            "attempt": 4,
+            "mount": {
+              "ok": true,
+              "waitedMs": 1,
+              "state": {
+                "ready": "complete",
+                "root": false,
+                "sidebar": true
+              }
+            },
+            "served": {
+              "found": true,
+              "url": "http://127.0.0.1:49598/plugins/??@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-api-remote-access/client.js,@deepseek-ai/dsh-sessi",
+              "identity": {
+                "version": "1.2.1",
+                "buildCommit": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+              }
+            },
+            "identityOk": false
+          },
+          {
+            "attempt": 5,
+            "mount": {
+              "ok": true,
+              "waitedMs": 20,
+              "state": {
+                "ready": "complete",
+                "root": false,
+                "sidebar": true
+              }
+            },
+            "served": {
+              "found": true,
+              "url": "http://127.0.0.1:49598/plugins/??@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-api-remote-access/client.js,@deepseek-ai/dsh-sessi",
+              "identity": {
+                "version": "1.2.1",
+                "buildCommit": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+              }
+            },
+            "identityOk": false
+          }
+        ],
+        "served": {
+          "found": true,
+          "url": "http://127.0.0.1:49598/plugins/??@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-api-remote-access/client.js,@deepseek-ai/dsh-sessi",
+          "identity": {
+            "version": "1.2.1",
+            "buildCommit": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+          }
+        },
+        "reNavigated": true,
+        "page": {
+          "ready": "complete"
+        }
+      }
+    },
+    {
+      "name": "window2-page-reloaded",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "opened": {
+          "opened": true,
+          "steps": [
+            {
+              "sidebar": {
+                "label": "sidebar-market",
+                "clicked": true,
+                "target": {
+                  "tag": "BUTTON",
+                  "text": "游戏市场",
+                  "className": "kB3qhq_panelRow",
+                  "rect": {
+                    "x": 140,
+                    "y": 214,
+                    "width": 252,
+                    "height": 36
+                  },
+                  "hitInsideTarget": true
+                },
+                "point": {
+                  "x": 140,
+                  "y": 214,
+                  "trusted": "Input.dispatchMouseEvent"
+                }
+              }
+            }
+          ]
+        },
+        "mount": {
+          "ok": true,
+          "waitedMs": 1,
+          "state": {
+            "ready": "complete",
+            "root": false,
+            "sidebar": true
+          }
+        },
+        "attempts": [
+          {
+            "attempt": 1,
+            "mount": {
+              "ok": true,
+              "waitedMs": 1,
+              "state": {
+                "ready": "complete",
+                "root": false,
+                "sidebar": true
+              }
+            },
+            "served": {
+              "found": true,
+              "url": "http://127.0.0.1:49598/plugins/??@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-api-remote-access/client.js,@deepseek-ai/dsh-sessi",
+              "identity": {
+                "version": "1.2.1",
+                "buildCommit": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+              }
+            },
+            "identityOk": false
+          },
+          {
+            "attempt": 2,
+            "mount": {
+              "ok": true,
+              "waitedMs": 2,
+              "state": {
+                "ready": "complete",
+                "root": false,
+                "sidebar": true
+              }
+            },
+            "served": {
+              "found": true,
+              "url": "http://127.0.0.1:49598/plugins/??@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-api-remote-access/client.js,@deepseek-ai/dsh-sessi",
+              "identity": {
+                "version": "1.2.1",
+                "buildCommit": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+              }
+            },
+            "identityOk": false
+          },
+          {
+            "attempt": 3,
+            "mount": {
+              "ok": true,
+              "waitedMs": 1,
+              "state": {
+                "ready": "complete",
+                "root": false,
+                "sidebar": true
+              }
+            },
+            "served": {
+              "found": true,
+              "url": "http://127.0.0.1:49598/plugins/??@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-api-remote-access/client.js,@deepseek-ai/dsh-sessi",
+              "identity": {
+                "version": "1.2.1",
+                "buildCommit": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+              }
+            },
+            "identityOk": false
+          },
+          {
+            "attempt": 4,
+            "mount": {
+              "ok": true,
+              "waitedMs": 2,
+              "state": {
+                "ready": "complete",
+                "root": false,
+                "sidebar": true
+              }
+            },
+            "served": {
+              "found": true,
+              "url": "http://127.0.0.1:49598/plugins/??@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-api-remote-access/client.js,@deepseek-ai/dsh-sessi",
+              "identity": {
+                "version": "1.2.1",
+                "buildCommit": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+              }
+            },
+            "identityOk": false
+          },
+          {
+            "attempt": 5,
+            "mount": {
+              "ok": true,
+              "waitedMs": 1,
+              "state": {
+                "ready": "complete",
+                "root": false,
+                "sidebar": true
+              }
+            },
+            "served": {
+              "found": true,
+              "url": "http://127.0.0.1:49598/plugins/??@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-api-remote-access/client.js,@deepseek-ai/dsh-sessi",
+              "identity": {
+                "version": "1.2.1",
+                "buildCommit": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+              }
+            },
+            "identityOk": false
+          }
+        ],
+        "served": {
+          "found": true,
+          "url": "http://127.0.0.1:49598/plugins/??@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-api-remote-access/client.js,@deepseek-ai/dsh-sessi",
+          "identity": {
+            "version": "1.2.1",
+            "buildCommit": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+          }
+        },
+        "reNavigated": true,
+        "page": {
+          "ready": "complete"
+        }
+      }
+    },
+    {
+      "name": "update-completes-to-updated-after-retry",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "state": "failed",
+        "observation": {
+          "operationId": "upd_bc2855a86de51e9b",
+          "state": "failed",
+          "error": {
+            "code": "GM-4096",
+            "message": "Active game sessions could not pause and save; the update was not started"
+          },
+          "oldVersionStillRunning": true
+        }
+      }
+    },
+    {
+      "name": "window1-host-running-R_B",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "version": "1.2.1",
+        "commit": "f623ee6ac12471ee1193ec01ddef4bfc97d095be",
+        "hostEpoch": "he_fa2ac2ee9b6eac5e",
+        "loadedAt": "2026-10-26T02:36:39.929Z"
+      }
+    },
+    {
+      "name": "window1-health-R_B",
+      "ok": false,
+      "required": true,
+      "detail": "1.2.1"
+    },
+    {
+      "name": "window1-client-identity-R_B",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "client": {
+          "commitAttr": "debe87d6af5e51e9dac259d60c4700a65a446e52",
+          "label": "Client 构建",
+          "version": "1.2.1",
+          "commitText": "debe87d6af5e",
+          "commitTitle": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+        },
+        "expected": "43e162a320ccd08c00a38cdbcc94686a43d5b3f2"
+      }
+    },
+    {
+      "name": "window2-host-running-R_B",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "version": "1.2.1",
+        "commit": "f623ee6ac12471ee1193ec01ddef4bfc97d095be",
+        "hostEpoch": "he_fa2ac2ee9b6eac5e",
+        "loadedAt": "2026-10-26T02:36:39.929Z"
+      }
+    },
+    {
+      "name": "window2-health-R_B",
+      "ok": false,
+      "required": true,
+      "detail": "1.2.1"
+    },
+    {
+      "name": "window2-client-identity-R_B",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "client": {
+          "commitAttr": "debe87d6af5e51e9dac259d60c4700a65a446e52",
+          "label": "Client 构建",
+          "version": "1.2.1",
+          "commitText": "debe87d6af5e",
+          "commitTitle": "debe87d6af5e51e9dac259d60c4700a65a446e52"
+        },
+        "expected": "43e162a320ccd08c00a38cdbcc94686a43d5b3f2"
+      }
+    },
+    {
+      "name": "user-data-preserved",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "preserved": true,
+        "changed": [],
+        "before": {
+          "marker": {
+            "present": true,
+            "sha256": "ce7868e2fcd317552e0af26cfdf2ccfeda61ef3ce64f0ae4a76fc01fcd2ba330"
+          },
+          "save": {
+            "present": true,
+            "sha256": "ccb315843ab63e687f7954275e44edd4dca6f864869ce2d3b1eff3e6d98cf9b6"
+          },
+          "preferences": {
+            "present": true,
+            "sha256": "1481a8fb7d647bae55ed657bb5559e3b6dd39cbfdaa44a670336276eea28ea43"
+          }
+        },
+        "after": {
+          "marker": {
+            "present": true,
+            "sha256": "ce7868e2fcd317552e0af26cfdf2ccfeda61ef3ce64f0ae4a76fc01fcd2ba330"
+          },
+          "save": {
+            "present": true,
+            "sha256": "ccb315843ab63e687f7954275e44edd4dca6f864869ce2d3b1eff3e6d98cf9b6"
+          },
+          "preferences": {
+            "present": true,
+            "sha256": "1481a8fb7d647bae55ed657bb5559e3b6dd39cbfdaa44a670336276eea28ea43"
+          }
+        }
+      }
+    },
+    {
+      "name": "snake-real-sdk-save-retained",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "gameId": "snake",
+        "keys": [
+          "current"
+        ]
+      }
+    },
+    {
+      "name": "orbit-courier-real-sdk-save-retained",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "keys": []
+      }
+    },
+    {
+      "name": "cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "run-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-26T02:41:03.510Z",
+        "ports": [
+          {
+            "port": 49598,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 49749,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 49834,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 49903,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 24797,
+            "alive": false
+          },
+          {
+            "pid": 25221,
+            "alive": false
+          },
+          {
+            "pid": 25336,
+            "alive": false
+          },
+          {
+            "pid": 25433,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvonamdo-bdf624",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-49749",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-49834",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-49903",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "transport-and-tls-cleaned",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "v2-save-transport-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-26T02:41:03.543Z",
+        "ports": [
+          {
+            "port": 49554,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/scenario-v2-save-coordination-mvonamdo-bdf624/tls",
+            "exists": false
+          }
+        ]
+      }
+    }
+  ],
+  "runTag": "v2-save-coordination-mvonamdo-bdf624",
+  "targets": {
+    "a": "f623ee6ac12471ee1193ec01ddef4bfc97d095be",
+    "b": "5719d483bd5516629e2f61b59a6034562da2b7e3",
+    "final": "889bf78b7c15ff8894880612d267340c75a1a7b6",
+    "versionA": "1.2.1",
+    "versionB": "1.2.2",
+    "versionFinal": "1.3.0",
+    "homeSuffix": null
+  },
+  "evidenceLevel": "isolated-browser (two real DSH game pages plus a third update-control page, real game instances, real UI clicks) + real filesystem save-failure injection + isolated transport fixture",
+  "windows": [
+    {
+      "index": 1,
+      "port": 49749
+    },
+    {
+      "index": 2,
+      "port": 49834
+    }
+  ],
+  "games": [
+    {
+      "window": 1,
+      "gameId": "snake",
+      "rows": [
+        "orbit-courier",
+        "snake"
+      ],
+      "launch": {
+        "row": {
+          "id": "snake",
+          "playText": "开始",
+          "menu": true
+        },
+        "play": {
+          "label": "row-play:snake",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "开始",
+            "className": "dgm-btn dgm-row-play",
+            "rect": {
+              "x": 1214,
+              "y": 339,
+              "width": 92,
+              "height": 40
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 1214,
+            "y": 339,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "runtime": {
+          "state": "launching",
+          "stage": true,
+          "savePill": null,
+          "controls": [
+            {
+              "label": "返回市场",
+              "disabled": false
+            },
+            {
+              "label": "暂停菜单",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "ready": {
+        "state": "playing",
+        "stage": true,
+        "savePill": null,
+        "controls": [
+          {
+            "label": "返回市场",
+            "disabled": false
+          },
+          {
+            "label": "暂停菜单",
+            "disabled": false
+          }
+        ]
+      },
+      "runtimeMounted": true
+    },
+    {
+      "window": 2,
+      "gameId": "orbit-courier",
+      "rows": [
+        "orbit-courier",
+        "snake"
+      ],
+      "launch": {
+        "row": {
+          "id": "orbit-courier",
+          "playText": "开始",
+          "menu": true
+        },
+        "play": {
+          "label": "row-play:orbit-courier",
+          "clicked": true,
+          "target": {
+            "tag": "BUTTON",
+            "text": "开始",
+            "className": "dgm-btn dgm-row-play",
+            "rect": {
+              "x": 1214,
+              "y": 233,
+              "width": 92,
+              "height": 40
+            },
+            "hitInsideTarget": true
+          },
+          "point": {
+            "x": 1214,
+            "y": 233,
+            "trusted": "Input.dispatchMouseEvent"
+          }
+        },
+        "runtime": {
+          "state": "launching",
+          "stage": true,
+          "savePill": null,
+          "controls": [
+            {
+              "label": "返回市场",
+              "disabled": false
+            },
+            {
+              "label": "暂停菜单",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "ready": {
+        "state": "playing",
+        "stage": true,
+        "savePill": null,
+        "controls": [
+          {
+            "label": "返回市场",
+            "disabled": false
+          },
+          {
+            "label": "暂停菜单",
+            "disabled": false
+          }
+        ]
+      },
+      "runtimeMounted": true
+    }
+  ],
+  "saveInjection": {
+    "modes": [
+      {
+        "dir": "/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvonamdo-bdf624/storages/dsh-game-market/saves/snake",
+        "mode": 493
+      },
+      {
+        "dir": "/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvonamdo-bdf624/storages/dsh-game-market/saves/orbit-courier",
+        "mode": 493
+      }
+    ],
+    "blocked": true
+  },
+  "restore": {
+    "restored": true
+  },
+  "coordination": [
+    {
+      "phase": "begin-under-save-failure",
+      "operationIds": [
+        "upd_60883396d1fe8ff9"
+      ],
+      "begins": [
+        {
+          "operationId": "upd_60883396d1fe8ff9",
+          "dialog": {
+            "title": "更新 Game Market 到 1.2.2？",
+            "body": "这会更新当前 profile 中的插件安装，影响当前 profile 的所有会话；更新完成后可能需要重启 DSH。更新前会暂停并保存正在运行的游戏。",
+            "meta": [
+              {
+                "label": "当前运行版本",
+                "value": "1.2.1"
+              },
+              {
+                "label": "目标版本",
+                "value": "1.2.2"
+              },
+              {
+                "label": "目标 commit",
+                "value": "5719d483bd5516629e2f61b59a6034562da2b7e3"
+              },
+              {
+                "label": "通道",
+                "value": "稳定"
+              }
+            ],
+            "warnings": [],
+            "primary": "开始更新"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "terminal-under-save-failure",
+      "state": "failed",
+      "transitions": [
+        "inspecting",
+        "failed"
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "scope": "save-failure",
+      "at": "2026-10-26T02:37:41.361Z",
+      "state": "inspecting",
+      "observation": {
+        "operationId": "upd_60883396d1fe8ff9",
+        "state": "inspecting",
+        "progress": null,
+        "coordination": {
+          "phase": "waiting",
+          "pending": 2
+        }
+      }
+    },
+    {
+      "scope": "save-failure",
+      "at": "2026-10-26T02:37:44.708Z",
+      "state": "failed",
+      "observation": {
+        "operationId": "upd_60883396d1fe8ff9",
+        "state": "failed",
+        "error": {
+          "code": "GM-4096",
+          "message": "Active game sessions could not pause and save; the update was not started"
+        },
+        "oldVersionStillRunning": true
+      }
+    },
+    {
+      "scope": "retry",
+      "at": "2026-10-26T02:38:16.335Z",
+      "state": "failed",
+      "observation": {
+        "operationId": "upd_60883396d1fe8ff9",
+        "state": "failed",
+        "error": {
+          "code": "GM-4096",
+          "message": "Active game sessions could not pause and save; the update was not started"
+        },
+        "oldVersionStillRunning": true
+      }
+    }
+  ],
+  "beforeBlock": {
+    "profile": {
+      "dir": "/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvonamdo-bdf624/profiles/web",
+      "packageJson": {
+        "name": "dsh-profile-web",
+        "dependencies": {
+          "dsh-game-market": "github:heswy/dsh-game-market#f623ee6ac12471ee1193ec01ddef4bfc97d095be"
+        },
+        "profileBundles": [
+          "@deepseek-ai/dsh-base",
+          "@deepseek-ai/dsh-web-app",
+          "dsh-game-market"
+        ]
+      },
+      "dependency": "github:heswy/dsh-game-market#f623ee6ac12471ee1193ec01ddef4bfc97d095be",
+      "diskPackage": {
+        "name": "dsh-game-market",
+        "version": "1.2.1"
+      },
+      "devRow": null,
+      "diskPackageRealPath": "/private/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvonamdo-bdf624/profiles/web/node_modules/dsh-game-market"
+    },
+    "operation": {
+      "operationId": "upd_60883396d1fe8ff9",
+      "state": "failed",
+      "error": {
+        "code": "GM-4096",
+        "message": "Active game sessions could not pause and save; the update was not started"
+      },
+      "oldVersionStillRunning": true
+    }
+  },
+  "blockedUi": {
+    "state": "inspecting",
+    "success": "false",
+    "title": "正在准备更新…",
+    "body": "正在等待其他窗口暂停并保存游戏（2 个窗口）",
+    "code": "",
+    "recovery": "",
+    "progressIndex": -1
+  },
+  "retry": {
+    "retryAction": {
+      "action": "retry-update",
+      "text": "重试更新",
+      "disabled": false
+    },
+    "retryStart": {
+      "clicked": true,
+      "label": "retry-update",
+      "target": {
+        "x": 376,
+        "y": 697.5,
+        "text": "重试更新",
+        "tag": "BUTTON",
+        "hitInsideTarget": true,
+        "atPoint": {
+          "tag": "BUTTON",
+          "className": "dgm-btn dgm-btn-primary",
+          "text": "重试更新"
+        }
+      },
+      "trusted": "Input.dispatchMouseEvent",
+      "waitedMs": 0
+    },
+    "confirm": {
+      "clicked": true,
+      "target": {
+        "x": 1020,
+        "y": 549.203125,
+        "text": "开始更新"
+      },
+      "trusted": "Input.dispatchMouseEvent"
+    }
+  },
+  "afterRetry": {
+    "settled": {
+      "ok": true,
+      "waitedMs": 105,
+      "state": "failed",
+      "observation": {
+        "operationId": "upd_bc2855a86de51e9b",
+        "state": "failed",
+        "error": {
+          "code": "GM-4096",
+          "message": "Active game sessions could not pause and save; the update was not started"
+        },
+        "oldVersionStillRunning": true
+      },
+      "transitions": [
+        {
+          "at": "2026-10-26T02:41:02.574Z",
+          "state": "failed",
+          "observation": {
+            "operationId": "upd_bc2855a86de51e9b",
+            "state": "failed",
+            "error": {
+              "code": "GM-4096",
+              "message": "Active game sessions could not pause and save; the update was not started"
+            },
+            "oldVersionStillRunning": true
+          }
+        }
+      ],
+      "inspect": {
+        "schemaVersion": 1,
+        "host": {
+          "version": "1.2.1",
+          "commit": "f623ee6ac12471ee1193ec01ddef4bfc97d095be",
+          "hostEpoch": "he_fa2ac2ee9b6eac5e",
+          "loadedAt": "2026-10-26T02:36:39.929Z"
+        },
+        "installed": {
+          "bundleId": "dsh-game-market",
+          "spec": "github:heswy/dsh-game-market#f623ee6ac12471ee1193ec01ddef4bfc97d095be",
+          "specShape": "git-url",
+          "version": "1.2.1",
+          "enabled": true,
+          "loadedVersion": "1.2.1",
+          "loadedCommit": "f623ee6ac12471ee1193ec01ddef4bfc97d095be",
+          "devRowShadow": false
+        },
+        "target": {
+          "id": "tgt_e34d8613d0fee4e0",
+          "version": "1.2.2",
+          "commit": "5719d483bd5516629e2f61b59a6034562da2b7e3",
+          "channel": "stable",
+          "publishedAt": "2025-10-20T22:40:00.000Z",
+          "spec": "https://github.com/heswy/dsh-game-market.git#5719d483bd5516629e2f61b59a6034562da2b7e3"
+        },
+        "discovery": {
+          "channel": "stable",
+          "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+          "state": "ready",
+          "fetchedAt": "2026-10-26T02:36:39.948Z",
+          "checkedAt": "2026-10-26T02:36:39.969Z",
+          "nextCheckAt": "2026-10-26T08:36:39.969Z",
+          "lastError": null,
+          "canRefresh": true,
+          "anomaly": null
+        },
+        "capability": {
+          "hmr": "present",
+          "updatePath": "in-place-hmr",
+          "canBeginUpdate": true,
+          "reasonKey": null
+        },
+        "operation": {
+          "operationId": "upd_bc2855a86de51e9b",
+          "state": "failed",
+          "error": {
+            "code": "GM-4096",
+            "message": "Active game sessions could not pause and save; the update was not started"
+          },
+          "oldVersionStillRunning": true
+        }
+      }
+    },
+    "pages": []
+  },
+  "dataPreservation": {
+    "before": {
+      "files": {
+        "marker": {
+          "present": true,
+          "sha256": "ce7868e2fcd317552e0af26cfdf2ccfeda61ef3ce64f0ae4a76fc01fcd2ba330"
+        },
+        "save": {
+          "present": true,
+          "sha256": "ccb315843ab63e687f7954275e44edd4dca6f864869ce2d3b1eff3e6d98cf9b6"
+        },
+        "preferences": {
+          "present": true,
+          "sha256": "1481a8fb7d647bae55ed657bb5559e3b6dd39cbfdaa44a670336276eea28ea43"
+        }
+      }
+    },
+    "after": {
+      "files": {
+        "marker": {
+          "present": true,
+          "sha256": "ce7868e2fcd317552e0af26cfdf2ccfeda61ef3ce64f0ae4a76fc01fcd2ba330"
+        },
+        "save": {
+          "present": true,
+          "sha256": "ccb315843ab63e687f7954275e44edd4dca6f864869ce2d3b1eff3e6d98cf9b6"
+        },
+        "preferences": {
+          "present": true,
+          "sha256": "1481a8fb7d647bae55ed657bb5559e3b6dd39cbfdaa44a670336276eea28ea43"
+        }
+      }
+    }
+  },
+  "screenshots": [
+    {
+      "name": "save-blocked",
+      "file": "docs/verification/v1.5/raw/m3/screenshots/M3-V2-save-v2-save-coordination-mvonamdo-bdf624-save-blocked.png"
+    },
+    {
+      "name": "updated-after-retry",
+      "file": "docs/verification/v1.5/raw/m3/screenshots/M3-V2-save-v2-save-coordination-mvonamdo-bdf624-updated-after-retry.png"
+    }
+  ],
+  "cleanup": {
+    "hosts": [
+      {
+        "pid": 24797,
+        "closed": {
+          "pid": 24797,
+          "port": 49598,
+          "closed": true,
+          "alreadyClosed": false
+        }
+      }
+    ],
+    "pages": [
+      {
+        "chromePid": 25221,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-49749"
+      },
+      {
+        "chromePid": 25336,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-49834"
+      },
+      {
+        "chromePid": 25433,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-49903"
+      }
+    ],
+    "homes": [
+      {
+        "home": "/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvonamdo-bdf624",
+        "removed": true
+      }
+    ],
+    "proof": {
+      "label": "run-cleanup",
+      "ok": true,
+      "checkedAt": "2026-10-26T02:41:03.510Z",
+      "ports": [
+        {
+          "port": 49598,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 49749,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 49834,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 49903,
+          "accepting": false,
+          "listenerPids": []
+        }
+      ],
+      "pids": [
+        {
+          "pid": 24797,
+          "alive": false
+        },
+        {
+          "pid": 25221,
+          "alive": false
+        },
+        {
+          "pid": 25336,
+          "alive": false
+        },
+        {
+          "pid": 25433,
+          "alive": false
+        }
+      ],
+      "dirs": [
+        {
+          "dir": "/tmp/dsh-v15/m3/home-v2-save-v2-save-coordination-mvonamdo-bdf624",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-49749",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-49834",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-49903",
+          "exists": false
+        }
+      ]
+    }
+  },
+  "thrown": null,
+  "environment": {
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "repoRoot": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update"
+  },
+  "failedRequired": [
+    "ui-shows-failed-with-recovery",
+    "ui-offers-actionable-recovery-entry",
+    "retry-does-not-fail-coordination",
+    "window1-refresh-action-clicked",
+    "window2-refresh-action-clicked",
+    "window1-page-reloaded",
+    "window2-page-reloaded",
+    "update-completes-to-updated-after-retry",
+    "window1-host-running-R_B",
+    "window1-health-R_B",
+    "window1-client-identity-R_B",
+    "window2-host-running-R_B",
+    "window2-health-R_B",
+    "window2-client-identity-R_B",
+    "orbit-courier-real-sdk-save-retained"
+  ]
+}
