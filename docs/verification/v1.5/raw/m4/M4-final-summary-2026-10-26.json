@@ -1,0 +1,104 @@
+{
+  "sourceHead": "cef4cb921a39f3f23f11143aa69f623d58116a0b",
+  "passed": true,
+  "serialRuns": [
+    {
+      "scenario": "desktop",
+      "exitCode": 0
+    },
+    {
+      "scenario": "multi",
+      "exitCode": 0
+    },
+    {
+      "scenario": "continued",
+      "exitCode": 0
+    },
+    {
+      "scenario": "save-fault",
+      "exitCode": 0
+    },
+    {
+      "scenario": "html-boundary",
+      "exitCode": 0
+    }
+  ],
+  "evidence": [
+    {
+      "file": "M4-html-boundary-2026-10-26T07-57-04-535Z.json",
+      "passed": true,
+      "required": 7,
+      "passedRequired": 7,
+      "source": {
+        "head": "cef4cb921a39f3f23f11143aa69f623d58116a0b",
+        "sourceChanges": [],
+        "clientSha256": "f51778f561c9fe57941bf375aef9b6e1e591a9d84a898efade88fe170d03c0a5",
+        "loading": "local development row in isolated profile; not a new immutable release/install claim"
+      }
+    },
+    {
+      "file": "M4-product-continued-2026-10-26T07-56-31-952Z.json",
+      "passed": true,
+      "required": 37,
+      "passedRequired": 37,
+      "source": {
+        "head": "cef4cb921a39f3f23f11143aa69f623d58116a0b",
+        "sourceChanges": [],
+        "clientSha256": "f51778f561c9fe57941bf375aef9b6e1e591a9d84a898efade88fe170d03c0a5",
+        "loading": "local development row in isolated profile; not a new immutable release/install claim"
+      }
+    },
+    {
+      "file": "M4-product-desktop-open-2026-10-26T07-55-58-477Z.json",
+      "passed": true,
+      "required": 36,
+      "passedRequired": 36,
+      "source": {
+        "head": "cef4cb921a39f3f23f11143aa69f623d58116a0b",
+        "sourceChanges": [],
+        "clientSha256": "f51778f561c9fe57941bf375aef9b6e1e591a9d84a898efade88fe170d03c0a5",
+        "loading": "local development row in isolated profile; not a new immutable release/install claim"
+      }
+    },
+    {
+      "file": "M4-product-open-2026-10-26T07-56-48-333Z.json",
+      "passed": true,
+      "required": 38,
+      "passedRequired": 38,
+      "source": {
+        "head": "cef4cb921a39f3f23f11143aa69f623d58116a0b",
+        "sourceChanges": [],
+        "clientSha256": "f51778f561c9fe57941bf375aef9b6e1e591a9d84a898efade88fe170d03c0a5",
+        "loading": "local development row in isolated profile; not a new immutable release/install claim"
+      }
+    },
+    {
+      "file": "M4-product-multi-2026-10-26T07-56-15-601Z.json",
+      "passed": true,
+      "required": 37,
+      "passedRequired": 37,
+      "source": {
+        "head": "cef4cb921a39f3f23f11143aa69f623d58116a0b",
+        "sourceChanges": [],
+        "clientSha256": "f51778f561c9fe57941bf375aef9b6e1e591a9d84a898efade88fe170d03c0a5",
+        "loading": "local development row in isolated profile; not a new immutable release/install claim"
+      }
+    }
+  ],
+  "nativeFaceRegression": {
+    "q1": 24,
+    "q2": 44,
+    "attachWait": 9
+  },
+  "packDryRun": {
+    "passed": true,
+    "requiredFilesPresent": true,
+    "fileCount": 371,
+    "size": 1660661
+  },
+  "release": {
+    "tag": false,
+    "productionIndex": false,
+    "newImmutablePackageClaim": false
+  }
+}

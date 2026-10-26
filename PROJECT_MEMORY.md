@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**交付 V1.5 M4，随后执行 M5 正式首版验收**。M0–M2 已合入；M3 已按用户授权通过 PR #9 合入 main（`bcc7b6d`）。M4 的 HTML wrapper、正式鲸鱼、游戏内普通问答已实现，实际 Electron 与隔离原生链路验证已通过，最终证据正在归档。M4 未合入、V1.5 未正式发布；当前安排见 §6.1。
+- 当前目标：**交付 V1.5 M4，随后执行 M5 正式首版验收**。M0–M2 已合入；M3 已按用户授权通过 PR #9 合入 main（`bcc7b6d`）。M4 的 HTML wrapper、正式鲸鱼、游戏内普通问答已实现，实际 Electron 与隔离原生链路验证已通过，证据已归档，等待 PR 复核。M4 未合入、V1.5 未正式发布；当前安排见 §6.1。
 - 历史：V1 验收/修复过程（M3 自动化、真机代执行、codex 两轮 review CR-01..09）见 `docs/V1-VERIFICATION.md`、`docs/verification/v1/AUTOMATED-EVIDENCE.md`、`docs/reviews/2026-10-19-codex-acceptance-review.md` 与 `git log`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2 + V1.1 呈现修订 + 社区投稿 §8.14 / D-038**；第 8–12 章为开发权威来源；全出血/安全区见 §9.6.1、D-037）
 - 开始记录：2026-10-18
@@ -412,10 +412,10 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 |---|---|---|
 | M0–M2 | 宿主契约、ZIP/双目录/资源服务、Orbit Courier 与开发投稿工具；PR #6/#7/#8 已合入 | M5 正式用户/外部作者回归 |
 | M3 | 更新发现、保存/运行冻结、DSH 精确安装、恢复、双端身份和发布工具；1543/1543；固定候选两跳/保存重试/非 HMR/多窗口均通过；PR #9 已合入 | 正式发行与生产推广在 M5 |
-| M4 | HTML wrapper 迁移、真实桌面来源修复、官方 FishLogo/气泡、open/continued 原地问答、保存失败恢复、草稿/焦点/窄窗/动效边界 | 最终门禁、交付 PR 复核与授权合入；结果以 M4 验收为准 |
+| M4 | HTML wrapper 迁移、真实桌面来源修复、官方 FishLogo/气泡、open/continued 原地问答、保存失败恢复、草稿/焦点/窄窗/动效边界 | 完整门禁 1564/1564、CHECK OK (44)；待 PR 复核与授权合入 |
 | M5 | 尚未完成 | 干净用户正式安装与持续升级、长局/重开/存档迁移、外部作者闭环、跨机数据、发行恢复说明与生产发布 |
 
-当前 M4 权威结论见 [M4 验收](./docs/verification/v1.5/m4-acceptance.md)；M3 的固定候选与历史证据见 [M3 验收](./docs/verification/v1.5/m3-restart-acceptance.md)。M4 产品源码提交 `96718e1`，后续验证脚本与证据提交单列；最终 PR 提交不能与 M3 的发行候选身份混淆。
+当前 M4 权威结论见 [M4 验收](./docs/verification/v1.5/m4-acceptance.md)；M3 的固定候选与历史证据见 [M3 验收](./docs/verification/v1.5/m3-restart-acceptance.md)。M4 功能提交 `96718e1`，最终受测源码/样式为 `cef4cb9`；后续证据提交单列；最终 PR 提交不能与 M3 的发行候选身份混淆。
 
 **M4 实测裁决**：真实 rc.3 Desktop renderer 为 `dsh-app://app`，不是后端 HTTP origin。只有打包 Electron Host 入口选取该精确来源；Web 使用自身 HTTP origin，不新增通配。HTML 保留旧 `/entry` 给旧 Client，新 Runtime 使用新增 wrapper 和资源凭据；SDK/存档格式不变。问答接原生活对象与原生 RPC，continued 只认 settled 投影、排队消失不等于完成；未知 face、计划审阅与危险审批回原生。独立 question hold 与 M3 hold 按 id 共存，收起不取消、不自动继续；权限修复后通过既有 health 探测并真实重存。
 

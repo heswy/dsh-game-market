@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "exitCode": 0,
+  "command": "npm run verify",
+  "node": "v24.14.0",
+  "sourceHead": "cef4cb921a39f3f23f11143aa69f623d58116a0b",
+  "tests": 1564,
+  "pass": 1564,
+  "fail": 0,
+  "skipped": 0,
+  "checkCount": 44,
+  "log": "M4-full-gate-2026-10-26.log",
+  "note": "Source was fixed and clean. Documentation/evidence additions were staged for tracking checks; delivery head is independently reverified in a clean checkout before PR completion."
+}

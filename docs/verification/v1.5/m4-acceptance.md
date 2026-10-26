@@ -15,19 +15,21 @@ M3 已由用户授权合入 main：PR #9，`bcc7b6d09fd9f208657088fd65cc36eba3a9
 
 ## 证据与运行范围
 
-产品源码固定提交：`96718e1`（最终 JSON 中 `source.head` 为完整 SHA、`sourceChanges=[]`，Client 字节 sha256 一致）。
+产品源码固定提交：`cef4cb9`（功能实现 `96718e1`、四态/主题验证 `2de91b3`；最终 JSON 中 `source.head` 为完整 SHA、`sourceChanges=[]`，Client 字节 sha256 一致）。
 
 | 项目 | 必需检查 | 证据 |
 |---|---|---|
-| 真实 Electron + 实际游戏 + open 问答 | 30/30 | [JSON](./raw/m4/M4-product-desktop-open-2026-10-26T07-47-03-698Z.json) |
-| 多选补充 + 第二题自由文本 + 375px/键盘/主题 | 31/31 | [JSON](./raw/m4/M4-product-multi-2026-10-26T07-47-15-937Z.json) |
-| continued 原生 RPC + settled 投影确认 | 31/31 | [JSON](./raw/m4/M4-product-continued-2026-10-26T07-47-27-521Z.json) |
-| 实际目录写失败→恢复权限→重新保存→回答 | 32/32 | [JSON](./raw/m4/M4-product-open-2026-10-26T07-47-41-390Z.json) |
-| HTML 同恶意字节导航正反对照 | 7/7 | [JSON](./raw/m4/M4-html-boundary-2026-10-26T07-47-53-379Z.json) |
+| 真实 Electron + 实际游戏 + open 问答 | 36/36 | [JSON](./raw/m4/M4-product-desktop-open-2026-10-26T07-55-58-477Z.json) |
+| 多选补充 + 第二题自由文本 + 375px/键盘/主题 | 37/37 | [JSON](./raw/m4/M4-product-multi-2026-10-26T07-56-15-601Z.json) |
+| continued 原生 RPC + settled 投影确认 | 37/37 | [JSON](./raw/m4/M4-product-continued-2026-10-26T07-56-31-952Z.json) |
+| 实际目录写失败→恢复权限→重新保存→回答 | 38/38 | [JSON](./raw/m4/M4-product-open-2026-10-26T07-56-48-333Z.json) |
+| HTML 同恶意字节导航正反对照 | 7/7 | [JSON](./raw/m4/M4-html-boundary-2026-10-26T07-57-04-535Z.json) |
 
-五个场景串行 exit 0，浏览器/独立 App 与 Host 均停止。普通问答在原生 Session 的同一调用落盘，未发生 ASK_CANCELLED；continued 记录原 callId 的 user-question-reply，未自动恢复游戏。官方 Logo 轮廓 sha256 与冻结值一致；截图：[桌面 375px](./raw/m4/m4-question-desktop-open-2026-10-26T07-47-03-698Z.png)、[多题 375px](./raw/m4/m4-question-multi-2026-10-26T07-47-15-937Z.png)。
+实际原生 turn 驱动 running/waiting/completed/error 四态，错误由脚本模型主动失败触发；错误标志静止，后台与 reduced-motion 断言通过。浅/深色均验证宿主主题属性真正切换后再截图；相同正式轮廓不变形。四态截图：[运行](./raw/m4/m4-running-desktop-open-2026-10-26T07-55-58-477Z.png)、[等待](./raw/m4/m4-question-desktop-open-2026-10-26T07-55-58-477Z.png)、[完成](./raw/m4/m4-completed-desktop-open-2026-10-26T07-55-58-477Z.png)、[错误](./raw/m4/m4-error-desktop-open-2026-10-26T07-55-58-477Z.png)。
 
-每次运行记录源码 commit、源文件是否有未提交变化、Client 字节 sha256、DSH build、退出结果和清理证明。此前失败 JSON 原样保留，不追认为通过。完整门禁结果见最终交付记录；阶段门禁曾在实现检查点通过 1559/1559，最终提交须独立重跑。
+五个场景串行 exit 0，浏览器/独立 App 与 Host 均停止。普通问答在原生 Session 的同一调用落盘，未发生 ASK_CANCELLED；continued 记录原 callId 的 user-question-reply，未自动恢复游戏。官方 Logo 轮廓 sha256 与冻结值一致；截图：[桌面 375px](./raw/m4/m4-question-desktop-open-2026-10-26T07-55-58-477Z.png)、[多题 375px](./raw/m4/m4-question-multi-2026-10-26T07-56-15-601Z.png)。
+
+每次运行记录源码 commit、源文件是否有未提交变化、Client 字节 sha256、DSH build、退出结果和清理证明。此前失败 JSON 原样保留，不追认为通过。固定源码完整门禁为 1564/1564、0 失败、0 跳过、CHECK OK (44)：[门禁摘要](./raw/m4/M4-full-gate-2026-10-26.json)、[脱敏日志](./raw/m4/M4-full-gate-2026-10-26.log)。最终交付提交另在独立干净 checkout 复跑，结果记入 PR。
 
 产品验证入口：
 
