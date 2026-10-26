@@ -378,7 +378,7 @@ export function createUpdateOperationService({
     if (coordination === null || typeof coordination.listActiveInstances !== 'function') return [];
     try {
       const list = coordination.listActiveInstances();
-      if (!Array.isArray(list)) return [];
+      if (!Array.isArray(list)) throw new Error('invalid active-instance inventory');
       return list.filter(
         (instance) =>
           instance !== null &&
@@ -388,7 +388,7 @@ export function createUpdateOperationService({
       );
     } catch (error) {
       logger?.warn?.(LOG, 'update-instance-list-failed', `code=${error?.code || 'E_UNKNOWN'}`);
-      return [];
+      throw hostError(GM.GAME_RUNNING, 'Could not inspect active game sessions; retry the update', { retryable: true });
     }
   }
 
@@ -749,6 +749,13 @@ export function createUpdateOperationService({
       return { operationId: operation.operationId };
     }
 
+    // A failed game save can latch HostStorage read-only even after the user
+    // repairs the filesystem. Explicit retry must re-probe it BEFORE collecting
+    // fresh save acknowledgements; only real subsequent writes can confirm saves.
+    if (typeof storage?.checkStatus === 'function') {
+      const status = await storage.checkStatus();
+      if (status.ok !== true) throw hostError(GM.STORE_IO, 'Storage is not writable; repair it and retry the update', { retryable: true });
+    }
     await acquireLock();
     let op = null;
     try {
