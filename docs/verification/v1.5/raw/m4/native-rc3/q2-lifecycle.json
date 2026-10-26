@@ -1,0 +1,1219 @@
+{
+  "id": "S-Q2",
+  "title": "Question lifecycle: timed/continued, REPLY_QUEUED, multi-window, dismiss, Session switch, native UI coexistence",
+  "commands": [
+    "node scripts/verification/v1.5/questions/q2-lifecycle.mjs"
+  ],
+  "startedAt": "2026-10-26T07:45:16.522Z",
+  "finishedAt": "2026-10-26T07:45:51.663Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "runtimeIdentity",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-26T02:36:18.385Z"
+      }
+    },
+    {
+      "name": "probe Client materialized in window 1",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "readyMs": 929
+      }
+    },
+    {
+      "name": "probe preset boot state",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "startedAt": "2026-10-26T07:45:19.065Z",
+        "adapterRegistered": true,
+        "timedPresetRegistered": true,
+        "timedPresetError": null,
+        "commands": 0
+      }
+    },
+    {
+      "name": "probe-only timed ask_user_question preset registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "registryAvailable": true,
+        "timedPresetRegistered": true,
+        "timedPresetError": null,
+        "presetAttempted": true,
+        "list": [
+          {
+            "id": "standard",
+            "broken": null
+          },
+          {
+            "id": "ptc",
+            "broken": null
+          },
+          {
+            "id": "minimal",
+            "broken": null
+          },
+          {
+            "id": "cordis",
+            "broken": null
+          },
+          {
+            "id": "qprobe-timed",
+            "broken": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "timed scenario prompt accepted",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "transport": "ok",
+        "requestId": "qprobe-mvoyc5tz-bj1ayi57yxj",
+        "result": {
+          "ok": true,
+          "value": {
+            "accepted": true
+          }
+        }
+      }
+    },
+    {
+      "name": "timed open question carries a native callId (wait.callId)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "kind": "question",
+        "key": "question:session-0be005d3-d815-4526-b0ed-b01c32885b4f:qprobe_call_1_mvoyc62g",
+        "sessionId": "session-0be005d3-d815-4526-b0ed-b01c32885b4f",
+        "callId": "qprobe_call_1_mvoyc62g",
+        "dismissal": "hide",
+        "isReview": false,
+        "hasWaterfall": true,
+        "snapshot": {
+          "state": "open",
+          "waitState": "counting",
+          "channel": "waterfall",
+          "closed": false,
+          "countdown": {
+            "remainingMs": 4962,
+            "running": true
+          }
+        },
+        "questions": [
+          {
+            "id": "probe-q1",
+            "header": "Probe question",
+            "question": "QPROBE_OPEN_QUESTION",
+            "multiSelect": false,
+            "optionLabels": [
+              "QPROBE_OPT_A",
+              "QPROBE_OPT_B"
+            ],
+            "kind": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "timed open question is a waterfall request with a host/client deadline",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "open",
+        "waitState": "counting",
+        "channel": "waterfall",
+        "closed": false,
+        "countdown": {
+          "remainingMs": 4962,
+          "running": true
+        }
+      }
+    },
+    {
+      "name": "client-owned countdown settled the call with a pending result (no fabricated answer)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "seq": 17,
+        "type": "tool/result",
+        "callId": "qprobe_call_1_mvoyc62g",
+        "isError": false,
+        "errorCode": null,
+        "result": {
+          "pending": true,
+          "callId": "qprobe_call_1_mvoyc62g",
+          "answers": null
+        }
+      }
+    },
+    {
+      "name": "pending result names the same tool callId",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "toolCallId": "qprobe_call_1_mvoyc62g",
+        "pendingCallId": "qprobe_call_1_mvoyc62g"
+      }
+    },
+    {
+      "name": "timed call remains answerable as `continued` in the userQuestions projection",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "active": [
+          {
+            "callId": "qprobe_call_1_mvoyc62g",
+            "state": "continued",
+            "questionIds": [
+              "probe-q1"
+            ]
+          }
+        ],
+        "settled": []
+      }
+    },
+    {
+      "name": "Agent turn ended after the pending result",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "idle": true,
+        "waitedMs": 0,
+        "agentId": "session-0be005d3-d815-4526-b0ed-b01c32885b4f"
+      }
+    },
+    {
+      "name": "continued card is published with the RPC channel",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "continued",
+        "waitState": "continued",
+        "channel": "rpc",
+        "closed": false,
+        "countdown": null
+      }
+    },
+    {
+      "name": "continued RPC refuses a batch that does not name the call question",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "transport": "ok",
+        "result": {
+          "ok": false,
+          "error": {
+            "code": "gateway/internal",
+            "details": {},
+            "isDSHRemoteError": true,
+            "name": "RemoteError"
+          }
+        }
+      }
+    },
+    {
+      "name": "probe Client materialized in window 2",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "readyMs": 1638
+      }
+    },
+    {
+      "name": "window 2 observes the continued PendingQuestion for the bound Session",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "seen": true,
+        "pending": {
+          "kind": "question",
+          "key": "question:session-0be005d3-d815-4526-b0ed-b01c32885b4f:qprobe_call_1_mvoyc62g",
+          "sessionId": "session-0be005d3-d815-4526-b0ed-b01c32885b4f",
+          "callId": "qprobe_call_1_mvoyc62g",
+          "dismissal": "hide",
+          "isReview": false,
+          "hasWaterfall": false,
+          "snapshot": {
+            "state": "continued",
+            "waitState": "continued",
+            "channel": "rpc",
+            "closed": false,
+            "countdown": null
+          },
+          "questions": [
+            {
+              "id": "probe-q1",
+              "header": "Probe question",
+              "question": "QPROBE_OPEN_QUESTION",
+              "multiSelect": false,
+              "optionLabels": [
+                "QPROBE_OPT_A",
+                "QPROBE_OPT_B"
+              ],
+              "kind": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "continued RPC accepted the reply in window 1",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "transport": "ok",
+        "result": {
+          "ok": true,
+          "value": true
+        }
+      }
+    },
+    {
+      "name": "second window cannot get a second reply accepted (REPLY_QUEUED or value:false)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "transport": "ok",
+        "result": {
+          "ok": false,
+          "error": {
+            "code": "gateway/internal",
+            "details": {},
+            "isDSHRemoteError": true,
+            "name": "RemoteError"
+          }
+        }
+      }
+    },
+    {
+      "name": "Agent finished the turn started by the continued reply",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "idle": true,
+        "waitedMs": 0,
+        "agentId": "session-0be005d3-d815-4526-b0ed-b01c32885b4f"
+      }
+    },
+    {
+      "name": "native Session logged the steered user-question-reply message",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "kind": "user-question-reply",
+        "callId": "qprobe_call_1_mvoyc62g",
+        "outcome": "answered"
+      }
+    },
+    {
+      "name": "reply carries the submitted answer batch",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "kind": "answer_to_pending_question",
+        "tool": "ask_user_question",
+        "callId": "qprobe_call_1_mvoyc62g",
+        "answers": [
+          {
+            "id": "probe-q1",
+            "selected": [
+              "QPROBE_OPT_A"
+            ],
+            "custom": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "the reply started a new Turn (turn 2)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "turnStarts": 2
+      }
+    },
+    {
+      "name": "a reply after admission is refused (no second steer)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "transport": "ok",
+        "result": {
+          "ok": true,
+          "value": false
+        }
+      }
+    },
+    {
+      "name": "projection moved the call from continued to settled",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "active": [],
+        "settled": [
+          {
+            "callId": "qprobe_call_1_mvoyc62g",
+            "answerIds": [
+              "probe-q1"
+            ],
+            "answerCount": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "continued card cleared from window 1 status",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "running": false,
+        "pending": null,
+        "hasPendingObject": false
+      }
+    },
+    {
+      "name": "multi-question prompt accepted",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "transport": "ok",
+        "requestId": "qprobe-mvoycgfp-jw367vj0ttm",
+        "result": {
+          "ok": true,
+          "value": {
+            "accepted": true
+          }
+        }
+      }
+    },
+    {
+      "name": "pending multi-question batch has two questions",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "id": "probe-q1",
+          "header": "Probe multi",
+          "question": "QPROBE_MULTI_SELECT",
+          "multiSelect": true,
+          "optionLabels": [
+            "QPROBE_OPT_A",
+            "QPROBE_OPT_B"
+          ],
+          "kind": null
+        },
+        {
+          "id": "probe-q2",
+          "header": "Probe text",
+          "question": "QPROBE_FREE_TEXT",
+          "multiSelect": false,
+          "optionLabels": [],
+          "kind": null
+        }
+      ]
+    },
+    {
+      "name": "first question is multi-select with two option labels",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "probe-q1",
+        "header": "Probe multi",
+        "question": "QPROBE_MULTI_SELECT",
+        "multiSelect": true,
+        "optionLabels": [
+          "QPROBE_OPT_A",
+          "QPROBE_OPT_B"
+        ],
+        "kind": null
+      }
+    },
+    {
+      "name": "multi-question batch settled from the game panel",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "elapsedMs": 1,
+        "summaryAfter": {
+          "kind": "question",
+          "key": "question:0bc32d6b165ef08cb10f598228cc95a4:1",
+          "sessionId": "session-dfe27ded-ce20-4e04-ba94-8c98041240da",
+          "callId": null,
+          "dismissal": "cancel",
+          "isReview": false,
+          "hasWaterfall": false,
+          "snapshot": {
+            "state": "open",
+            "waitState": "counting",
+            "channel": "none",
+            "closed": true,
+            "countdown": null
+          },
+          "questions": [
+            {
+              "id": "probe-q1",
+              "header": "Probe multi",
+              "question": "QPROBE_MULTI_SELECT",
+              "multiSelect": true,
+              "optionLabels": [
+                "QPROBE_OPT_A",
+                "QPROBE_OPT_B"
+              ],
+              "kind": null
+            },
+            {
+              "id": "probe-q2",
+              "header": "Probe text",
+              "question": "QPROBE_FREE_TEXT",
+              "multiSelect": false,
+              "optionLabels": [],
+              "kind": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "turn ended after the multi-question answer",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "idle": true,
+        "waitedMs": 0,
+        "agentId": "session-dfe27ded-ce20-4e04-ba94-8c98041240da"
+      }
+    },
+    {
+      "name": "tool result keeps both answers exactly",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "id": "probe-q1",
+          "selected": [
+            "QPROBE_OPT_A",
+            "QPROBE_OPT_B"
+          ],
+          "custom": null
+        },
+        {
+          "id": "probe-q2",
+          "selected": [],
+          "custom": "QPROBE_FREE_ANSWER"
+        }
+      ]
+    },
+    {
+      "name": "captured the live blocking PendingQuestion before closing",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "key": "question:0bc32d6b165ef08cb10f598228cc95a4:2",
+        "callId": null
+      }
+    },
+    {
+      "name": "native question card visible before closing",
+      "ok": true,
+      "required": false,
+      "detail": true
+    },
+    {
+      "name": "closing an unnamed blocking card cancelled the request (native dismiss=reject ASK_CANCELLED)",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "dismissed": {
+          "ok": true
+        },
+        "answeredCaptured": {
+          "ok": false,
+          "elapsedMs": 0,
+          "code": "Error",
+          "message": "no channel accepts an answer yet"
+        },
+        "result": {
+          "seq": 19,
+          "type": "tool/result",
+          "callId": "qprobe_call_3_mvoychnn",
+          "isError": true,
+          "errorCode": "ASK_CANCELLED",
+          "result": {
+            "unparsed": true
+          }
+        }
+      }
+    },
+    {
+      "name": "turn idle state after close/dismiss",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "idle": true,
+        "waitedMs": 121,
+        "agentId": "session-31e3b87a-4880-42c3-a61c-550bae43677b"
+      }
+    },
+    {
+      "name": "question is pending on Session A",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "kind": "question",
+        "key": "question:0bc32d6b165ef08cb10f598228cc95a4:3",
+        "sessionId": "session-443caaf9-d1c1-4a01-88bb-b67e99ba9bca",
+        "callId": null,
+        "dismissal": "cancel",
+        "isReview": false,
+        "hasWaterfall": true,
+        "snapshot": {
+          "state": "open",
+          "waitState": "counting",
+          "channel": "waterfall",
+          "closed": false,
+          "countdown": null
+        },
+        "questions": [
+          {
+            "id": "probe-q1",
+            "header": "Probe question",
+            "question": "QPROBE_OPEN_QUESTION",
+            "multiSelect": false,
+            "optionLabels": [
+              "QPROBE_OPT_A",
+              "QPROBE_OPT_B"
+            ],
+            "kind": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "main view switched to a different Session",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "mainAfterSwitch": "session-76c894f1-f531-4f34-a4ee-ccbb80cd4242",
+        "otherSession": "session-76c894f1-f531-4f34-a4ee-ccbb80cd4242"
+      }
+    },
+    {
+      "name": "pending question for Session A stays addressable from Session B view",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "running": true,
+        "pending": {
+          "kind": "question",
+          "key": "question:0bc32d6b165ef08cb10f598228cc95a4:3",
+          "sessionId": "session-443caaf9-d1c1-4a01-88bb-b67e99ba9bca",
+          "callId": null,
+          "dismissal": "cancel",
+          "isReview": false,
+          "hasWaterfall": true,
+          "snapshot": {
+            "state": "open",
+            "waitState": "counting",
+            "channel": "waterfall",
+            "closed": false,
+            "countdown": null
+          },
+          "questions": [
+            {
+              "id": "probe-q1",
+              "header": "Probe question",
+              "question": "QPROBE_OPEN_QUESTION",
+              "multiSelect": false,
+              "optionLabels": [
+                "QPROBE_OPT_A",
+                "QPROBE_OPT_B"
+              ],
+              "kind": null
+            }
+          ]
+        },
+        "hasPendingObject": true
+      }
+    },
+    {
+      "name": "Session A question can be settled while another Session owns the view",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "elapsedMs": 0,
+        "summaryAfter": {
+          "kind": "question",
+          "key": "question:0bc32d6b165ef08cb10f598228cc95a4:3",
+          "sessionId": "session-443caaf9-d1c1-4a01-88bb-b67e99ba9bca",
+          "callId": null,
+          "dismissal": "cancel",
+          "isReview": false,
+          "hasWaterfall": false,
+          "snapshot": {
+            "state": "open",
+            "waitState": "counting",
+            "channel": "none",
+            "closed": true,
+            "countdown": null
+          },
+          "questions": [
+            {
+              "id": "probe-q1",
+              "header": "Probe question",
+              "question": "QPROBE_OPEN_QUESTION",
+              "multiSelect": false,
+              "optionLabels": [
+                "QPROBE_OPT_A",
+                "QPROBE_OPT_B"
+              ],
+              "kind": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Session A turn ended after settlement",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "idle": true,
+        "waitedMs": 0,
+        "agentId": "session-443caaf9-d1c1-4a01-88bb-b67e99ba9bca"
+      }
+    },
+    {
+      "name": "Session A recorded the tool result with the answer",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "seq": 19,
+        "type": "tool/result",
+        "callId": "qprobe_call_4_mvoycioc",
+        "isError": false,
+        "errorCode": null,
+        "result": {
+          "pending": false,
+          "callId": null,
+          "answers": [
+            {
+              "id": "probe-q1",
+              "selected": [
+                "QPROBE_OPT_B"
+              ],
+              "custom": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "question pending while the conversation view is active",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "kind": "question",
+        "key": "question:0bc32d6b165ef08cb10f598228cc95a4:4",
+        "sessionId": "session-15e25e09-e7f1-471f-ab1e-9d1a8d5ee5bf",
+        "callId": null,
+        "dismissal": "cancel",
+        "isReview": false,
+        "hasWaterfall": true,
+        "snapshot": {
+          "state": "open",
+          "waitState": "counting",
+          "channel": "waterfall",
+          "closed": false,
+          "countdown": null
+        },
+        "questions": [
+          {
+            "id": "probe-q1",
+            "header": "Probe question",
+            "question": "QPROBE_OPEN_QUESTION",
+            "multiSelect": false,
+            "optionLabels": [
+              "QPROBE_OPT_A",
+              "QPROBE_OPT_B"
+            ],
+            "kind": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "native question card is rendered in the conversation composer",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "composerEditorCount": 1,
+        "questionTextVisible": true,
+        "probePanelVisible": false,
+        "url": "http://127.0.0.1:58174/"
+      }
+    },
+    {
+      "name": "third-party consumer reads the same pending object the native UI renders",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "running": true,
+        "pending": {
+          "kind": "question",
+          "key": "question:0bc32d6b165ef08cb10f598228cc95a4:4",
+          "sessionId": "session-15e25e09-e7f1-471f-ab1e-9d1a8d5ee5bf",
+          "callId": null,
+          "dismissal": "cancel",
+          "isReview": false,
+          "hasWaterfall": true,
+          "snapshot": {
+            "state": "open",
+            "waitState": "counting",
+            "channel": "waterfall",
+            "closed": false,
+            "countdown": null
+          },
+          "questions": [
+            {
+              "id": "probe-q1",
+              "header": "Probe question",
+              "question": "QPROBE_OPEN_QUESTION",
+              "multiSelect": false,
+              "optionLabels": [
+                "QPROBE_OPT_A",
+                "QPROBE_OPT_B"
+              ],
+              "kind": null
+            }
+          ]
+        },
+        "hasPendingObject": true
+      }
+    },
+    {
+      "name": "third-party answer accepted while the native UI is mounted",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "elapsedMs": 17,
+        "summaryAfter": {
+          "kind": "question",
+          "key": "question:0bc32d6b165ef08cb10f598228cc95a4:4",
+          "sessionId": "session-15e25e09-e7f1-471f-ab1e-9d1a8d5ee5bf",
+          "callId": null,
+          "dismissal": "cancel",
+          "isReview": false,
+          "hasWaterfall": false,
+          "snapshot": {
+            "state": "open",
+            "waitState": "counting",
+            "channel": "none",
+            "closed": true,
+            "countdown": null
+          },
+          "questions": [
+            {
+              "id": "probe-q1",
+              "header": "Probe question",
+              "question": "QPROBE_OPEN_QUESTION",
+              "multiSelect": false,
+              "optionLabels": [
+                "QPROBE_OPT_A",
+                "QPROBE_OPT_B"
+              ],
+              "kind": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "the pending native card is no longer published once the Session settles",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "idle": {
+          "idle": true,
+          "waitedMs": 0,
+          "agentId": "session-15e25e09-e7f1-471f-ab1e-9d1a8d5ee5bf"
+        },
+        "domAfter": {
+          "composerEditorCount": 1,
+          "questionTextVisible": true,
+          "probePanelVisible": false,
+          "url": "http://127.0.0.1:58174/"
+        }
+      }
+    },
+    {
+      "name": "recorded question text still visible in the transcript after settle (expected tool-call history)",
+      "ok": true,
+      "required": false,
+      "detail": true
+    },
+    {
+      "name": "Session recorded the answered tool result",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "seq": 19,
+        "type": "tool/result",
+        "callId": "qprobe_call_5_mvoycjza",
+        "isError": false,
+        "errorCode": null,
+        "result": {
+          "pending": false,
+          "callId": null,
+          "answers": [
+            {
+              "id": "probe-q1",
+              "selected": [
+                "QPROBE_OPT_A"
+              ],
+              "custom": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "question is pending before the browser disconnects",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "kind": "question",
+        "key": "question:0bc32d6b165ef08cb10f598228cc95a4:5",
+        "sessionId": "session-6139c94c-10d8-40b9-a22b-676c9b9553af",
+        "callId": null,
+        "dismissal": "cancel",
+        "isReview": false,
+        "hasWaterfall": true,
+        "snapshot": {
+          "state": "open",
+          "waitState": "counting",
+          "channel": "waterfall",
+          "closed": false,
+          "countdown": null
+        },
+        "questions": [
+          {
+            "id": "probe-q1",
+            "header": "Probe question",
+            "question": "QPROBE_OPEN_QUESTION",
+            "multiSelect": false,
+            "optionLabels": [
+              "QPROBE_OPT_A",
+              "QPROBE_OPT_B"
+            ],
+            "kind": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "reconnected browser materializes the probe Client",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "readyMs": 650
+      }
+    },
+    {
+      "name": "open question is delivered again to the reconnected browser",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "kind": "question",
+        "key": "question:aa5ac114ac5c4246460f7a12a2942bfb:1",
+        "sessionId": "session-6139c94c-10d8-40b9-a22b-676c9b9553af",
+        "callId": null,
+        "dismissal": "cancel",
+        "isReview": false,
+        "hasWaterfall": true,
+        "snapshot": {
+          "state": "open",
+          "waitState": "counting",
+          "channel": "waterfall",
+          "closed": false,
+          "countdown": null
+        },
+        "questions": [
+          {
+            "id": "probe-q1",
+            "header": "Probe question",
+            "question": "QPROBE_OPEN_QUESTION",
+            "multiSelect": false,
+            "optionLabels": [
+              "QPROBE_OPT_A",
+              "QPROBE_OPT_B"
+            ],
+            "kind": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "reconnected browser settles the same open call",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "elapsedMs": 0,
+        "summaryAfter": {
+          "kind": "question",
+          "key": "question:aa5ac114ac5c4246460f7a12a2942bfb:1",
+          "sessionId": "session-6139c94c-10d8-40b9-a22b-676c9b9553af",
+          "callId": null,
+          "dismissal": "cancel",
+          "isReview": false,
+          "hasWaterfall": false,
+          "snapshot": {
+            "state": "open",
+            "waitState": "counting",
+            "channel": "none",
+            "closed": true,
+            "countdown": null
+          },
+          "questions": [
+            {
+              "id": "probe-q1",
+              "header": "Probe question",
+              "question": "QPROBE_OPEN_QUESTION",
+              "multiSelect": false,
+              "optionLabels": [
+                "QPROBE_OPT_A",
+                "QPROBE_OPT_B"
+              ],
+              "kind": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Session recorded the answered tool result after reconnect",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "seq": 19,
+        "type": "tool/result",
+        "callId": "qprobe_call_6_mvoycl3u",
+        "isError": false,
+        "errorCode": null,
+        "result": {
+          "pending": false,
+          "callId": null,
+          "answers": [
+            {
+              "id": "probe-q1",
+              "selected": [
+                "QPROBE_OPT_B"
+              ],
+              "custom": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "delegation/teardown semantics",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "verified": false,
+        "reason": "requires unloading the native user-questions Client plugin at runtime; out of scope for this probe"
+      }
+    }
+  ],
+  "evidence": {
+    "runtime": {
+      "dshPackage": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.3"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.3"
+      },
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.3"
+      },
+      "asarExtractedAt": "2026-10-26T02:36:18.385Z"
+    },
+    "method": "scripted local model (provider qprobe) drives real Agent turns through the native ask_user_question tool",
+    "notProven": "NOT real DeepSeek model calls: the isolated profile has no model credentials.",
+    "hostUrl": "http://127.0.0.1:58174/?token=<redacted>",
+    "phases": {
+      "A-timed-continued": {
+        "ok": true,
+        "running": false,
+        "steps": [
+          {
+            "label": "create-session",
+            "at": "2026-10-26T07:45:24.520Z"
+          },
+          {
+            "label": "pending-seen",
+            "at": "2026-10-26T07:45:25.566Z"
+          },
+          {
+            "label": "wrong-batch",
+            "at": "2026-10-26T07:45:32.566Z"
+          },
+          {
+            "label": "open-window-2",
+            "at": "2026-10-26T07:45:32.584Z"
+          },
+          {
+            "label": "answer-window-1",
+            "at": "2026-10-26T07:45:37.397Z"
+          },
+          {
+            "label": "answer-window-2",
+            "at": "2026-10-26T07:45:37.462Z"
+          }
+        ],
+        "value": {
+          "sessionId": "session-0be005d3-d815-4526-b0ed-b01c32885b4f",
+          "timedCallId": "qprobe_call_1_mvoyc62g",
+          "turnStarts": 2
+        },
+        "elapsedMs": 13976
+      },
+      "B-multi-question": {
+        "ok": true,
+        "running": false,
+        "value": {
+          "sessionId": "session-dfe27ded-ce20-4e04-ba94-8c98041240da"
+        },
+        "elapsedMs": 1280
+      },
+      "C-dismiss": {
+        "ok": true,
+        "running": false,
+        "value": {
+          "sessionId": "session-31e3b87a-4880-42c3-a61c-550bae43677b",
+          "dismissed": {
+            "ok": true
+          },
+          "answeredCaptured": {
+            "ok": false,
+            "elapsedMs": 0,
+            "code": "Error",
+            "message": "no channel accepts an answer yet"
+          },
+          "result": {
+            "seq": 19,
+            "type": "tool/result",
+            "callId": "qprobe_call_3_mvoychnn",
+            "isError": true,
+            "errorCode": "ASK_CANCELLED",
+            "result": {
+              "unparsed": true
+            }
+          }
+        },
+        "elapsedMs": 1454
+      },
+      "D-session-switch": {
+        "ok": true,
+        "running": false,
+        "value": {
+          "pendingSession": "session-443caaf9-d1c1-4a01-88bb-b67e99ba9bca",
+          "otherSession": "session-76c894f1-f531-4f34-a4ee-ccbb80cd4242"
+        },
+        "elapsedMs": 1772
+      },
+      "E-native-coexist": {
+        "ok": true,
+        "running": false,
+        "value": {
+          "sessionId": "session-15e25e09-e7f1-471f-ab1e-9d1a8d5ee5bf"
+        },
+        "elapsedMs": 1455
+      },
+      "F-reconnect": {
+        "ok": true,
+        "running": false,
+        "value": {
+          "sessionId": "session-6139c94c-10d8-40b9-a22b-676c9b9553af"
+        },
+        "elapsedMs": 7207
+      }
+    },
+    "hostState": {
+      "updatedAt": "2026-10-26T07:45:24.057Z",
+      "probe": {
+        "startedAt": "2026-10-26T07:45:19.065Z",
+        "adapterRegistered": true,
+        "timedPresetRegistered": true,
+        "timedPresetError": null,
+        "commands": 0
+      },
+      "scenario": {
+        "mode": "text"
+      },
+      "agents": [],
+      "sessions": [],
+      "adapterCalls": [],
+      "errors": []
+    },
+    "presetState": {
+      "registryAvailable": true,
+      "timedPresetRegistered": true,
+      "timedPresetError": null,
+      "presetAttempted": true,
+      "list": [
+        {
+          "id": "standard",
+          "broken": null
+        },
+        {
+          "id": "ptc",
+          "broken": null
+        },
+        {
+          "id": "minimal",
+          "broken": null
+        },
+        {
+          "id": "cordis",
+          "broken": null
+        },
+        {
+          "id": "qprobe-timed",
+          "broken": null
+        }
+      ]
+    },
+    "screenshots": [
+      "/Users/orange/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-presence-questions/docs/verification/v1.5/raw/m4/native-rc3/q2-timed-game-panel-countdown.png",
+      "/Users/orange/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-presence-questions/docs/verification/v1.5/raw/m4/native-rc3/q2-native-question-coexist.png"
+    ]
+  }
+}

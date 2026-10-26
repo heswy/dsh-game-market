@@ -1,0 +1,71 @@
+{
+  "id": "S-Q",
+  "title": "V1.5 M0 question probes (S-Q1/S-Q2/S-Q2b)",
+  "commands": [
+    "node scripts/verification/v1.5/questions/run-all.mjs"
+  ],
+  "startedAt": "2026-10-26T07:44:48.289Z",
+  "finishedAt": "2026-10-26T07:46:03.056Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "S-Q1 probe exit code 0",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exitCode": 0,
+        "script": "q1-open-in-game-panel.mjs"
+      }
+    },
+    {
+      "name": "S-Q2 probe exit code 0",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exitCode": 0,
+        "script": "q2-lifecycle.mjs"
+      }
+    },
+    {
+      "name": "S-Q2b probe exit code 0",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "exitCode": 0,
+        "script": "q2b-attach-wait.mjs"
+      }
+    },
+    {
+      "name": "probe runs",
+      "ok": true,
+      "required": false,
+      "detail": [
+        {
+          "id": "S-Q1",
+          "script": "scripts/verification/v1.5/questions/q1-open-in-game-panel.mjs",
+          "command": "node scripts/verification/v1.5/questions/q1-open-in-game-panel.mjs",
+          "exitCode": 0,
+          "startedAt": "2026-10-26T07:44:48.291Z",
+          "finishedAt": "2026-10-26T07:45:16.423Z"
+        },
+        {
+          "id": "S-Q2",
+          "script": "scripts/verification/v1.5/questions/q2-lifecycle.mjs",
+          "command": "node scripts/verification/v1.5/questions/q2-lifecycle.mjs",
+          "exitCode": 0,
+          "startedAt": "2026-10-26T07:45:16.423Z",
+          "finishedAt": "2026-10-26T07:45:53.173Z"
+        },
+        {
+          "id": "S-Q2b",
+          "script": "scripts/verification/v1.5/questions/q2b-attach-wait.mjs",
+          "command": "node scripts/verification/v1.5/questions/q2b-attach-wait.mjs",
+          "exitCode": 0,
+          "startedAt": "2026-10-26T07:45:53.173Z",
+          "finishedAt": "2026-10-26T07:46:03.055Z"
+        }
+      ]
+    }
+  ]
+}

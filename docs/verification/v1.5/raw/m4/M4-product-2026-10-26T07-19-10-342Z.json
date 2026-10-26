@@ -1,0 +1,126 @@
+{
+  "id": "M4-product",
+  "title": "Real Game Market UI, native questions and HTML wrapper",
+  "commands": [
+    "DSH_V15_WORK=/tmp/dsh-v15/m3 node scripts/verification/v1.5/m4/run.mjs"
+  ],
+  "startedAt": "2026-10-26T07:19:10.343Z",
+  "finishedAt": "2026-10-26T07:19:40.159Z",
+  "passed": false,
+  "failed": [
+    "product question ready after save",
+    "run completed"
+  ],
+  "checks": [
+    {
+      "name": "runtime",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-26T02:36:18.385Z"
+      }
+    },
+    {
+      "name": "native probe control loaded",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "session bound",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "game tab registered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real Game Market mounted",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "snake product play button",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "actual snake runtime playing",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "html game runs through resource wrapper",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "outer wrapper is trusted (no sandbox)",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "officialLogo",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "viewBox": "0 0 23.16 17.04",
+        "pathLength": 3448
+      }
+    },
+    {
+      "name": "native pending delivered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "product question ready after save",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "failureDom",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "page": "runtime",
+        "text": "需要你回答一个问题\n\n去处理\nAgent 需要你处理。按下按钮回到会话。"
+      }
+    },
+    {
+      "name": "run completed",
+      "ok": false,
+      "required": true,
+      "detail": "Error: product question ready after save\n    at check (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-presence-questions/scripts/verification/v1.5/m4/run.mjs:13:130)\n    at async file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-presence-questions/scripts/verification/v1.5/m4/run.mjs:43:2"
+    },
+    {
+      "name": "isolated Host stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}

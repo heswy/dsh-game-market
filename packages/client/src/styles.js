@@ -1665,7 +1665,7 @@ export const CSS = `
 
 /* Question forms sit only in the trusted platform layer. */
 .dgm-question-overlay { position:absolute; inset:112px 0 0; z-index:70; display:flex; align-items:flex-end; justify-content:flex-end; padding:24px; background:rgba(0,0,0,.16); }
-.dgm-question-panel { width:min(440px, 100%); max-height:100%; overflow:auto; display:flex; flex-direction:column; color:var(--dgm-fg); background:var(--dgm-overlay); border:1px solid var(--dgm-border); border-radius:16px; box-shadow:var(--dgm-shadow); }
+.dgm-question-panel { width:min(440px, 100%); max-height:100%; overflow:auto; display:flex; flex-direction:column; color:var(--dgm-fg); background:var(--dgm-surface); border:1px solid var(--dgm-border); border-radius:16px; box-shadow:var(--dgm-shadow); }
 .dgm-question-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:20px 20px 8px; }
 .dgm-question-header h2 { margin:6px 0 0; font-size:19px; font-weight:600; letter-spacing:-.025em; }
 .dgm-question-eyebrow { color:var(--dgm-fg-secondary); margin:0; font-size:11px; line-height:1.5; }
@@ -1673,7 +1673,7 @@ export const CSS = `
 .dgm-question-scroll { padding:0 20px; }
 .dgm-question-field { border:0; padding:0 0 20px; margin:0; min-width:0; }
 .dgm-question-field legend { width:100%; padding:0 0 12px; font-size:15px; line-height:1.6; overflow-wrap:anywhere; }
-.dgm-question-number { display:inline-block; margin-right:8px; color:var(--dgm-brand); font-size:11px; font-variant-numeric:tabular-nums; }
+.dgm-question-number { display:inline-block; margin-right:8px; color:var(--dgm-fg-secondary); font-size:11px; font-variant-numeric:tabular-nums; }
 .dgm-question-hint { margin:0 0 10px; font-size:11px; color:var(--dgm-fg-secondary); }
 .dgm-question-option { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:12px; border:1px solid var(--dgm-border); border-radius:10px; margin-bottom:8px; cursor:pointer; font-size:13px; overflow-wrap:anywhere; }
 .dgm-question-option:has(input:checked) { border-color:var(--dgm-brand); background:color-mix(in srgb,var(--dgm-brand) 7%,transparent); }
@@ -1714,7 +1714,7 @@ export const CSS = `
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--dgm-overlay) 76%, transparent);
+  background: var(--dgm-bg);
   border: 1px solid var(--dgm-border);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
   cursor: pointer;
@@ -1745,7 +1745,7 @@ export const CSS = `
   padding: 10px 12px;
   border-radius: 14px;
   border: 1px solid var(--dgm-border);
-  background: color-mix(in srgb, var(--dgm-overlay) 90%, transparent);
+  background: var(--dgm-surface);
   box-shadow: var(--dgm-shadow);
   backdrop-filter: blur(12px);
   animation: dgm-menu-in 220ms ease-out;
@@ -1764,6 +1764,7 @@ export const CSS = `
   font-weight: 600;
   cursor: pointer;
 }
+.dgm-bubble-action { color: var(--dgm-fg); text-decoration: underline; text-underline-offset: 3px; }
 .dgm-bubble-action:hover { background: var(--dgm-hover); }
 .dgm-bubble-action:focus-visible { outline: var(--dgm-focus-width) solid var(--dgm-focus); outline-offset: 1px; }
 .dgm-bubble-action:disabled { opacity: 0.55; cursor: default; }

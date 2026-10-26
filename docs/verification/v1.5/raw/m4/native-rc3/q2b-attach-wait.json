@@ -1,0 +1,252 @@
+{
+  "id": "S-Q2b",
+  "title": "askTimed/attachWait ownership and deadline semantics (Host service, no browser)",
+  "commands": [
+    "node scripts/verification/v1.5/questions/q2b-attach-wait.mjs"
+  ],
+  "startedAt": "2026-10-26T07:45:53.282Z",
+  "finishedAt": "2026-10-26T07:46:01.546Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "runtimeIdentity",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-26T02:36:18.385Z"
+      }
+    },
+    {
+      "name": "probe Host adapter registered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "startedAt": "2026-10-26T07:45:56.179Z",
+        "adapterRegistered": true,
+        "timedPresetRegistered": false,
+        "timedPresetError": null,
+        "commands": 0
+      }
+    },
+    {
+      "name": "live root Agent created through the native agents service",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "cmd": "create-agent",
+        "startedAt": "2026-10-26T07:45:57.011Z",
+        "finishedAt": "2026-10-26T07:45:57.025Z",
+        "result": {
+          "agentId": "qprobe-q2b-mvoycufi",
+          "sessionId": "qprobe-q2b-mvoycufi",
+          "provider": "qprobe",
+          "model": "qprobe-script"
+        }
+      }
+    },
+    {
+      "name": "unclaimed askTimed settles as pending at the Host deadline",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "elapsedMs": 911,
+        "result": {
+          "callId": "qprobe_noclaim_mvoycunw",
+          "agentId": "qprobe-q2b-mvoycufi",
+          "timeoutMs": 800,
+          "elapsedMs": 804,
+          "pending": true,
+          "answers": null
+        }
+      }
+    },
+    {
+      "name": "askTimed is still open after its Host deadline while a claim is held",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "heldPastDeadline": 1703,
+        "placeholder": {
+          "ok": true,
+          "cmd": "ask-timed-direct",
+          "started": true,
+          "startedAt": "2026-10-26T07:45:58.372Z"
+        }
+      }
+    },
+    {
+      "name": "attachWait attached to the live foreground wait",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "attached": true,
+        "frames": [
+          {
+            "atMs": 0,
+            "remainingMs": 1197
+          }
+        ],
+        "attachedMs": 2501,
+        "endedAtMs": 2501,
+        "ended": true
+      }
+    },
+    {
+      "name": "attachWait yields the Host-computed remaining duration",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "atMs": 0,
+          "remainingMs": 1197
+        }
+      ]
+    },
+    {
+      "name": "releasing the claim re-arms the Host timer and the call settles as pending right after",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "releasedToSettle": 1,
+        "result": {
+          "callId": "qprobe_claim_mvoycvd9",
+          "agentId": "qprobe-q2b-mvoycufi",
+          "timeoutMs": 1500,
+          "elapsedMs": 2806,
+          "pending": true,
+          "answers": null
+        }
+      }
+    },
+    {
+      "name": "the call lived past its nominal deadline because the claim owned the wait",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "elapsedMs": 2806,
+        "timeoutMs": 1500
+      }
+    },
+    {
+      "name": "attachWait for a call without a live wait yields no frame",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "attached": false,
+        "frames": [],
+        "attachedMs": 0
+      }
+    }
+  ],
+  "evidence": {
+    "runtime": {
+      "dshPackage": {
+        "name": "@deepseek-ai/dsh-desktop-runtime",
+        "version": "0.2.1-rc.3"
+      },
+      "pluginManager": {
+        "name": "@deepseek-ai/dsh-plugin-manager",
+        "version": "0.2.1-rc.3"
+      },
+      "electronApp": {
+        "name": "@deepseek-ai/dsh-desktop",
+        "version": "0.2.1-rc.3"
+      },
+      "asarExtractedAt": "2026-10-26T02:36:18.385Z"
+    },
+    "method": "native ctx.userQuestions.askTimed + attachWait through the probe Host bundle; no browser/UI connected",
+    "hostUrl": "http://127.0.0.1:58176/?token=<redacted>",
+    "steps": {
+      "createdAgent": {
+        "ok": true,
+        "cmd": "create-agent",
+        "startedAt": "2026-10-26T07:45:57.011Z",
+        "finishedAt": "2026-10-26T07:45:57.025Z",
+        "result": {
+          "agentId": "qprobe-q2b-mvoycufi",
+          "sessionId": "qprobe-q2b-mvoycufi",
+          "provider": "qprobe",
+          "model": "qprobe-script"
+        }
+      },
+      "baseline": {
+        "result": {
+          "ok": true,
+          "cmd": "ask-timed-direct",
+          "startedAt": "2026-10-26T07:45:57.316Z",
+          "finishedAt": "2026-10-26T07:45:58.120Z",
+          "result": {
+            "callId": "qprobe_noclaim_mvoycunw",
+            "agentId": "qprobe-q2b-mvoycufi",
+            "timeoutMs": 800,
+            "elapsedMs": 804,
+            "pending": true,
+            "answers": null
+          }
+        },
+        "elapsedMs": 911
+      },
+      "claim": {
+        "heldPastDeadline": 1703,
+        "resultWhileHeld": {
+          "ok": true,
+          "cmd": "ask-timed-direct",
+          "started": true,
+          "startedAt": "2026-10-26T07:45:58.372Z"
+        }
+      },
+      "claimResult": {
+        "claim": {
+          "attached": true,
+          "frames": [
+            {
+              "atMs": 0,
+              "remainingMs": 1197
+            }
+          ],
+          "attachedMs": 2501,
+          "endedAtMs": 2501,
+          "ended": true
+        },
+        "claimReleasedAt": 1793000761243
+      },
+      "claimAsk": {
+        "result": {
+          "ok": true,
+          "cmd": "ask-timed-direct",
+          "startedAt": "2026-10-26T07:45:58.373Z",
+          "finishedAt": "2026-10-26T07:46:01.179Z",
+          "result": {
+            "callId": "qprobe_claim_mvoycvd9",
+            "agentId": "qprobe-q2b-mvoycufi",
+            "timeoutMs": 1500,
+            "elapsedMs": 2806,
+            "pending": true,
+            "answers": null
+          }
+        },
+        "releasedToSettle": 1,
+        "totalElapsedMs": 3022
+      },
+      "noWait": {
+        "attached": false,
+        "frames": [],
+        "attachedMs": 0
+      }
+    }
+  }
+}

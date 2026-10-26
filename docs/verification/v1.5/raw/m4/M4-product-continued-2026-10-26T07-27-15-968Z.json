@@ -1,0 +1,444 @@
+{
+  "id": "M4-product",
+  "title": "Real Game Market UI, native questions and HTML wrapper",
+  "commands": [
+    "DSH_V15_WORK=/tmp/dsh-v15/m3 node scripts/verification/v1.5/m4/run.mjs"
+  ],
+  "startedAt": "2026-10-26T07:27:15.969Z",
+  "finishedAt": "2026-10-26T07:27:48.657Z",
+  "passed": false,
+  "failed": [
+    "native settlement confirmed in product",
+    "run completed"
+  ],
+  "checks": [
+    {
+      "name": "runtime",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-26T02:36:18.385Z"
+      }
+    },
+    {
+      "name": "native probe control loaded",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "session bound",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "game tab registered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real Game Market mounted",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "snake product play button",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "actual snake runtime playing",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "html game runs through resource wrapper",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "outer wrapper is trusted (no sandbox)",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "officialLogo",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "viewBox": "0 0 23.16 17.04",
+        "pathLength": 3448
+      }
+    },
+    {
+      "name": "native pending delivered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "native continued RPC face delivered",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "whale reflects pending question",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "product question ready after save",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "official FishLogo exact outline",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "viewBox": "0 0 23.16 17.04",
+        "sha256": "5bee701f39229e6dbb3950e8ed7fe69aedc6de462df916ace5e84563715abc47"
+      }
+    },
+    {
+      "name": "narrow sheet stays within viewport and clear of top controls",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "reduced motion stops whale",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "IME Enter does not submit",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapse removes only product dialog",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapse keeps native question answerable",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "collapse emits no ASK_CANCELLED",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "reopened panel ready",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "draft selection survives collapse",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "native settlement confirmed in product",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "failureEvents",
+      "ok": true,
+      "required": false,
+      "detail": [
+        {
+          "seq": 0,
+          "type": "permission/preset"
+        },
+        {
+          "seq": 1,
+          "type": "sandbox/mode"
+        },
+        {
+          "seq": 2,
+          "type": "approval/policy"
+        },
+        {
+          "seq": 3,
+          "type": "agent/inbox/spliced"
+        },
+        {
+          "seq": 4,
+          "type": "turn/start",
+          "turn": 1
+        },
+        {
+          "seq": 5,
+          "type": "agent/inbox/spliced"
+        },
+        {
+          "seq": 6,
+          "type": "step/start",
+          "step": 1,
+          "turn": 1
+        },
+        {
+          "seq": 7,
+          "type": "system/message"
+        },
+        {
+          "seq": 8,
+          "type": "user/message",
+          "source": {
+            "kind": "user",
+            "rpcId": "qprobe-mvoxozf1-e8z76w22ogg"
+          },
+          "reply": {
+            "unparsed": true
+          }
+        },
+        {
+          "seq": 9,
+          "type": "user/message",
+          "source": {
+            "kind": "runtime-context",
+            "form": "snapshot",
+            "sections": [
+              {
+                "name": "working-directory:current",
+                "text": "Current working directory: \"/tmp/dgm-m4-continued-2026-10-26T07-27-15-968Z\"."
+              },
+              {
+                "name": "sandbox:policy",
+                "text": "Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/tmp/dgm-m4-continued-2026-10-26T07-27-15-968Z\". Some platform temporary areas may also be writable."
+              },
+              {
+                "name": "approval:policy",
+                "text": "Approval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+              },
+              {
+                "name": "harness:source",
+                "text": "Current DeepSeek Harness implementation checkout: \"/private/tmp/dsh-v15/m3/asar/dsh/\"."
+              },
+              {
+                "name": "app:web-surface",
+                "text": "Current DeepSeek Harness Web GUI URL: \"http://127.0.0.1:58361\"."
+              }
+            ]
+          },
+          "reply": {
+            "unparsed": true
+          }
+        },
+        {
+          "seq": 10,
+          "type": "request/header",
+          "config": {
+            "provider": "qprobe",
+            "model": "qprobe-script"
+          }
+        },
+        {
+          "seq": 11,
+          "type": "request/context"
+        },
+        {
+          "seq": 12,
+          "type": "session/title"
+        },
+        {
+          "seq": 13,
+          "type": "session/title-llm-request"
+        },
+        {
+          "seq": 14,
+          "type": "assistant/message"
+        },
+        {
+          "seq": 15,
+          "type": "tool/call",
+          "callId": "qprobe_call_1_mvoxozg7",
+          "name": "ask_user_question",
+          "arguments": {
+            "timeout": 2,
+            "questions": [
+              {
+                "id": "probe-q1",
+                "multiSelect": false,
+                "optionLabels": [
+                  "QPROBE_OPT_A",
+                  "QPROBE_OPT_B"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "seq": 16,
+          "type": "session/title"
+        },
+        {
+          "seq": 17,
+          "type": "tool/result",
+          "callId": "qprobe_call_1_mvoxozg7",
+          "isError": false,
+          "errorCode": null,
+          "result": {
+            "pending": true,
+            "callId": "qprobe_call_1_mvoxozg7",
+            "answers": null
+          }
+        },
+        {
+          "seq": 18,
+          "type": "step/end",
+          "step": 1,
+          "turn": 1
+        },
+        {
+          "seq": 19,
+          "type": "step/start",
+          "step": 2,
+          "turn": 1
+        },
+        {
+          "seq": 20,
+          "type": "assistant/message"
+        },
+        {
+          "seq": 21,
+          "type": "step/end",
+          "step": 2,
+          "turn": 1
+        },
+        {
+          "seq": 22,
+          "type": "turn/end",
+          "turn": 1
+        },
+        {
+          "seq": 23,
+          "type": "agent/inbox/spliced"
+        },
+        {
+          "seq": 24,
+          "type": "turn/start",
+          "turn": 2
+        },
+        {
+          "seq": 25,
+          "type": "agent/inbox/spliced"
+        },
+        {
+          "seq": 26,
+          "type": "step/start",
+          "step": 1,
+          "turn": 2
+        },
+        {
+          "seq": 27,
+          "type": "user/message",
+          "source": {
+            "kind": "user-question-reply",
+            "callId": "qprobe_call_1_mvoxozg7",
+            "outcome": "answered"
+          },
+          "reply": {
+            "kind": "answer_to_pending_question",
+            "tool": "ask_user_question",
+            "callId": "qprobe_call_1_mvoxozg7",
+            "answers": [
+              {
+                "id": "probe-q1",
+                "selected": [
+                  "QPROBE_OPT_A"
+                ],
+                "custom": null
+              }
+            ]
+          }
+        },
+        {
+          "seq": 28,
+          "type": "assistant/message"
+        },
+        {
+          "seq": 29,
+          "type": "step/end",
+          "step": 1,
+          "turn": 2
+        },
+        {
+          "seq": 30,
+          "type": "turn/end",
+          "turn": 2
+        }
+      ]
+    },
+    {
+      "name": "failureNativePending",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "session-318d0832-6a11-44d5-a858-45b0ce5c5b1c": {
+          "running": false,
+          "completionUnread": false,
+          "pending": null,
+          "hasPendingObject": false
+        }
+      }
+    },
+    {
+      "name": "failureDom",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "page": "runtime",
+        "phase": "handled",
+        "text": "已保存\n任务完成\n\n游戏已暂停 · 当前会话\n\nAgent 正在等你\n收起\n\n这个问题已在其他窗口处理或已结束。\n\n继续游戏\n回到会话处理\nAgent 已完成任务。"
+      }
+    },
+    {
+      "name": "run completed",
+      "ok": false,
+      "required": true,
+      "detail": "Error: native settlement confirmed in product\n    at check (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-presence-questions/scripts/verification/v1.5/m4/run.mjs:16:130)\n    at async file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-presence-questions/scripts/verification/v1.5/m4/run.mjs:77:2"
+    },
+    {
+      "name": "isolated Host stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}
