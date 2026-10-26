@@ -761,6 +761,14 @@ dns.promises.lookup = async function patchedPromiseLookup(hostname, options) {
         npm_config_proxy: proxy,
         NODE_OPTIONS: `--require ${dnsPinPath}`,
         ...buildHostNetworkEnv({ mode, marker }),
+        // pnpm's own HTTP client stalled on large Git archives through the
+        // index fixture tunnel. Package traffic needs no interception: keep
+        // Host fetch on the fixture, route pnpm directly to the same upstream.
+        ...(mode === 'real-github' && upstreamProxy ? {
+          npm_config_proxy: upstreamProxy,
+          npm_config_http_proxy: upstreamProxy,
+          npm_config_https_proxy: upstreamProxy,
+        } : {}),
         M3_NETWORK_MODE_LABEL: networkModeLabel(mode),
       };
     },

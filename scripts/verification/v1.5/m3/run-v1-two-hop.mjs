@@ -149,7 +149,39 @@ async function performHop({ cdp, context, hopKey, toVersion, expectedClientCommi
   if (before.banner === null) {
     throw new Error(`no update banner for ${toVersion} (real-UI begin required; retained-terminal/offer-next product bug?)`);
   }
-  const begin = await beginUpdateThroughUi(cdp, { expectVersion: toVersion, previousOperationId });
+  // Drop the second begin response after acceptance; Client recovery must
+  // observe the real operation instead of creating a duplicate install.
+  const lostResponse = { enabled: hopKey === 'FINAL', dropped: 0, status: null, networkId: null, failureSeen: false };
+  const originalMessage = cdp.ws.onmessage;
+  if (lostResponse.enabled) {
+    cdp.ws.onmessage = event => {
+      originalMessage(event);
+      const message = JSON.parse(event.data);
+      if (message.method === 'Network.loadingFailed' && message.params.requestId === lostResponse.networkId) {
+        lostResponse.failureSeen = String(message.params.errorText).includes('CONNECTION_CLOSED');
+      }
+      if (message.method !== 'Fetch.requestPaused') return;
+      const p = message.params;
+      if (p.responseStatusCode && p.request.url.includes('/platform-update/begin') && lostResponse.dropped === 0) {
+        lostResponse.dropped += 1;
+        lostResponse.status = p.responseStatusCode;
+        lostResponse.networkId = p.networkId ?? null;
+        void cdp.send('Fetch.failRequest', { requestId: p.requestId, errorReason: 'ConnectionClosed' });
+      } else void cdp.send('Fetch.continueRequest', { requestId: p.requestId });
+    };
+    await cdp.send('Network.enable');
+    await cdp.send('Fetch.enable', { patterns: [{ urlPattern: '*/api/game-market/platform-update/begin', requestStage: 'Response' }] });
+  }
+  let begin;
+  try {
+    begin = await beginUpdateThroughUi(cdp, { expectVersion: toVersion, previousOperationId });
+  } finally {
+    if (lostResponse.enabled) {
+      await cdp.send('Fetch.disable').catch(() => {});
+      cdp.ws.onmessage = originalMessage;
+    }
+  }
+  if (lostResponse.enabled) run.report.add(`${label}-accepted-begin-response-dropped`, lostResponse.dropped === 1 && lostResponse.status === 200 && lostResponse.failureSeen, lostResponse);
   run.report.add(`${label}-ui-begin-created-operation`, /^upd_[a-f0-9]{16}$/.test(String(begin.operationId)), begin.operationId);
   run.report.add(`${label}-dialog-names-target-version`, begin.dialogMatchesTargetVersion === true, begin.dialog);
   const dialogJson = JSON.stringify(begin.dialog?.meta ?? []);

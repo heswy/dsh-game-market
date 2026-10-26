@@ -31,6 +31,7 @@
  *     --a <R_A> --b <R_B> --final <R_final>
  */
 import fs from 'node:fs';
+import { updateTargetIdFor } from '../../../../packages/shared/src/platform-update.js';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
@@ -112,7 +113,7 @@ function buildBody(versions) {
 }
 
 function targetIdFor(version, commit) {
-  return `tgt_${sha(`${version}/${commit}`).slice(0, 16)}`;
+  return updateTargetIdFor(version, commit);
 }
 
 function seedOldCache(home, { version, commit, ageMs = 7 * 60 * 60 * 1000 }) {
@@ -198,9 +199,10 @@ async function beginViaApi(page, targetId) {
 
 async function startOrRetryUpdate(page, { expectVersion }) {
   const cdp = page.cdp;
+  const previousId = (await inspectFromPage(cdp)).data?.operation?.operationId ?? null;
   const ui = await readUpdateUi(cdp);
   if (ui.banner !== null) {
-    return beginUpdateThroughUi(cdp, { expectVersion });
+    return beginUpdateThroughUi(cdp, { expectVersion, previousOperationId: previousId });
   }
   const retryAction = ui.actionButtons.find((button) => button.action === 'retry-update');
   if (retryAction !== undefined) {
@@ -211,7 +213,7 @@ async function startOrRetryUpdate(page, { expectVersion }) {
     const started = Date.now();
     while (Date.now() - started < 30000) {
       const inspect = (await inspectFromPage(cdp)).data;
-      if (inspect?.operation?.operationId !== undefined) {
+      if (inspect?.operation?.operationId && inspect.operation.operationId !== previousId) {
         operationId = inspect.operation.operationId;
         break;
       }
@@ -219,13 +221,7 @@ async function startOrRetryUpdate(page, { expectVersion }) {
     }
     return { mode: 'ui-retry-action', retry: click, confirm, operationId, banner: ui.banner, dialog: null };
   }
-  // Last resort: labelled direct begin test control (the UI blocked its entry).
-  const inspect = (await inspectFromPage(cdp)).data;
-  const targetId = inspect?.target?.id ?? null;
-  if (targetId === null) return { mode: 'no-entry', operationId: null, banner: null, dialog: null };
-  const api = await beginViaApi(page, targetId);
-  const after = await pollInspect(page, (data) => data?.operation !== null, { timeoutMs: 15000 });
-  return { mode: 'api-test-control', api, operationId: after.data?.operation?.operationId ?? null, banner: null, dialog: null };
+  throw new Error('no real UI entry for retry; API fallback is not an acceptance path');
 }
 
 async function completeUpdateToTarget(page, { expectVersion, expectedClientCommit, label }) {
@@ -395,12 +391,21 @@ async function body() {
       run.report.add(`malicious-${testCase.id}-state`, data.discovery?.state === (testCase.expectState ?? 'ready'), { state: data.discovery?.state ?? null, expected: testCase.expectState ?? null });
       if (testCase.expectReason) run.report.add(`malicious-${testCase.id}-reason`, data.discovery?.lastError?.reason === testCase.expectReason, { reason: data.discovery?.lastError?.reason ?? null, expected: testCase.expectReason });
       if (testCase.expectAnomaly) run.report.add(`malicious-${testCase.id}-anomaly`, data.discovery?.anomaly?.kind === 'same-version-different-commit', data.discovery?.anomaly ?? null);
-      run.report.add(`malicious-${testCase.id}-cannot-begin`, data.capability?.canBeginUpdate === false, data.capability ?? null);
+      // Contract §17 retains the last validated target on invalid/offline
+      // responses. Only the cached, already-installed B may remain here.
+      const trustedCached = data.target?.version === targets.versionB && data.target?.commit === targets.b
+        && data.target?.spec === `${REPO_URL}#${targets.b}`;
+      run.report.add(`malicious-${testCase.id}-retained-target-or-blocked-anomaly`, trustedCached || data.target === null || (testCase.expectAnomaly && data.discovery?.anomaly?.kind === 'same-version-different-commit' && data.capability?.canBeginUpdate === false), data.target ?? null);
+      if (testCase.expectAnomaly) run.report.add(`malicious-${testCase.id}-cannot-begin`, data.capability?.canBeginUpdate === false, data.capability ?? null);
       const beginAttempt = await beginViaApi(run.page, data.target?.id ?? `tgt_${'1'.repeat(16)}`);
       result.begin = beginAttempt;
-      run.report.add(`malicious-${testCase.id}-begin-rejected`, beginAttempt.status >= 400 || beginAttempt.envelope?.ok === false, beginAttempt);
+      const afterAttempt = (await inspectFromPage(run.page.cdp)).data;
+      const rejected = beginAttempt.status >= 400 && beginAttempt.envelope?.ok === false;
+      const cachedNoop = !testCase.expectAnomaly && trustedCached && beginAttempt.envelope?.ok === true
+        && afterAttempt?.operation?.state === 'already-at-target';
+      run.report.add(`malicious-${testCase.id}-rejected-or-trusted-cached-noop`, rejected || cachedNoop, { begin: beginAttempt, operation: afterAttempt?.operation });
       const probeAfter = await probeObserve(bootstrap.context, `malicious-${testCase.id}`);
-      run.report.add(`malicious-${testCase.id}-no-package-change`, String(probeAfter.snapshot?.profile?.diskPackage?.version) === targets.versionB, probeAfter.snapshot?.profile?.diskPackage ?? null);
+      run.report.add(`malicious-${testCase.id}-no-package-change`, String(probeAfter.snapshot?.profile?.diskPackage?.version) === targets.versionB && String(probeAfter.snapshot?.profile?.dependency).endsWith(targets.b), probeAfter.snapshot?.profile?.diskPackage ?? null);
       const games = await pageGetJson(run.page.cdp, '/api/game-market/games');
       run.report.add(`malicious-${testCase.id}-games-unaffected`, games.status === 200, { status: games.status });
     }
@@ -423,12 +428,17 @@ async function body() {
     const terminal = await waitForOperation(run.page.cdp, ['cancelled', 'too-late', 'updated', 'stale-runtime', 'failed'], { timeoutMs: 180000 });
     recovery.terminal = terminal.state ?? null;
     run.report.add('recovery-update-cancelled-or-too-late', ['cancelled', 'too-late', 'stale-runtime', 'updated'].includes(terminal.state), { state: terminal.state });
+    if (['too-late', 'stale-runtime', 'updated'].includes(terminal.state)) {
+      recovery.completion = await completeUpdateToTarget(run.page, { expectVersion: targets.versionFinal, expectedClientCommit: releaseFinal?.clientBuildCommit, label: 'recovery-too-late' });
+      run.report.add('recovery-too-late-finishes-before-next-case', recovery.completion.terminal?.state === 'updated', recovery.completion.terminal?.state);
+    }
     evidence.sections.recovery = recovery;
   }
 
   // -------------------------------------------------------------- dev-row
   {
-    const section = {};
+    const baseline = (await probeObserve(bootstrap.context, 'devrow-baseline')).snapshot?.profile;
+    const section = { baseline };
     injectDevGameMarketRow(bootstrap.home, {});
     seedOldCache(bootstrap.home, { version: targets.versionFinal, commit: targets.final });
     if (run.page) await closeRealPage(run.page);
@@ -450,7 +460,7 @@ async function body() {
     run.report.add('dev-row-begin-rejected-no-silent-migration', beginAttempt.status >= 400 && beginAttempt.envelope?.ok === false, beginAttempt);
     const probeAfter = await probeObserve(bootstrap.context, 'devrow-after');
     section.probe = probeAfter.snapshot?.profile ?? null;
-    run.report.add('dev-row-no-install-started', String(section.probe?.diskPackage?.version) === targets.versionB, section.probe?.diskPackage ?? null);
+    run.report.add('dev-row-no-install-started', section.probe?.diskPackage?.version === baseline?.diskPackage?.version && section.probe?.dependency === baseline?.dependency, { before: baseline?.diskPackage?.version, after: section.probe?.diskPackage?.version, sameDependency: section.probe?.dependency === baseline?.dependency });
     evidence.sections.devRow = section;
   }
 
@@ -459,7 +469,7 @@ async function body() {
     required: false,
     notRun: true,
     reason: 'no production seam to force the HMR sampling timeout/missing service without product test hooks; the decision branch is covered by the committed unit matrix (tests/v1.5-platform-update.test.js / host adapter tests). Capability-unknown real-path remains not-run.',
-  });
+  }, { required: false });
 
   const dataAfter = readUserData(bootstrap.home, dataFixture);
   const preservation = userDataPreserved(dataBefore, dataAfter);

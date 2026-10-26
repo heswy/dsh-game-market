@@ -41,7 +41,7 @@ export function networkModeLabel(mode) {
   if (mode === 'mirror') {
     return 'isolated local git mirror via GIT_CONFIG_GLOBAL url.insteadOf (/tmp/m3-mirror.git) + pre-warmed pnpm offline store (network-independent); commits identical to origin; production transport unchanged; real-GitHub exact-commit fetch separately evidenced in V0/network runs';
   }
-  return 'real GitHub transport (pinned reachable IPs via git config; network-dependent, explicitly opted in)';
+  return 'real GitHub package transport (pnpm via configured upstream proxy; Host discovery uses isolated index fixture; network-dependent, explicitly opted in)';
 }
 
 /**

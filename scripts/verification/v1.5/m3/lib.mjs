@@ -84,7 +84,7 @@ export const FIXED_INDEX_HOST = 'raw.githubusercontent.com';
 export const FIXED_INDEX_PATH = '/heswy/dsh-game-market/main/platform-updates/plugins.json';
 
 /** The DSH build this round is verified against (`/Applications/DeepSeek Harness.app`). */
-export const EXPECTED_DSH_VERSION = '0.2.1-rc.2';
+export const EXPECTED_DSH_VERSION = '0.2.1-rc.3';
 export const PROBE_ROW_ID = 'v15-m3-probe';
 export const GAME_MARKET_ID = 'dsh-game-market';
 

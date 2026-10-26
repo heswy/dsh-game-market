@@ -28,9 +28,9 @@ const RAW_ROOT = path.join(REPO_ROOT, 'docs/verification/v1.5/raw/m3');
 const WORK = '/tmp/dsh-v15/m3';
 const LOCK = path.join(WORK, 'm3-serial.lock');
 
-const A2_DEFAULT = '344ce99c57f03645cbb246a75a45845fc1e9d789';
-const B_DEFAULT = '055c53e7f3fd912b84ff00975be016b572b13740';
-const FINAL_DEFAULT = 'b0a35ca22199728d104ae1e632fb31053c544de2';
+const A2_DEFAULT = '75c0041c3e73ddea83940d1d23a54f0d6d1431cf';
+const B_DEFAULT = 'e4cb4694ad856b1132179f4db2385057dca7f66d';
+const FINAL_DEFAULT = 'f8244cf24a418aaf796a2b64ad17e7417b65ecac';
 
 function parseArgs(argv) {
   const args = {
