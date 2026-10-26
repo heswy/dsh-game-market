@@ -1,11 +1,9 @@
 {
   "id": "M3-index-public-parser-compatibility",
-  "at": "2026-10-26T02:55:36.480Z",
+  "at": "2026-10-26T03:18:49.991Z",
   "evidenceLevel": "installed rc.3 public parser + local dry-run; no publication",
-  "release": "a321bc72c95ae3f246c3b7081731ea4e6e541f19",
+  "release": "f8244cf24a418aaf796a2b64ad17e7417b65ecac",
   "hostVersion": "0.2.1-rc.3",
-  "promoteMode": "dry-run",
-  "written": false,
   "checks": [
     {
       "name": "generated-index-accepted-by-official-rc3-parser",
@@ -17,14 +15,21 @@
       "name": "generated-index-accepted-by-restricted-parser",
       "ok": true,
       "required": true,
-      "detail": true
+      "detail": null
     },
     {
       "name": "official-install-target-pins-release",
       "ok": true,
       "required": true,
+      "detail": null
+    },
+    {
+      "name": "promotion-is-dry-run-and-writes-nothing",
+      "ok": true,
+      "required": true,
       "detail": {
-        "spec": "git+https://github.com/heswy/dsh-game-market.git#a321bc72c95ae3f246c3b7081731ea4e6e541f19"
+        "mode": "dry-run",
+        "written": false
       }
     },
     {

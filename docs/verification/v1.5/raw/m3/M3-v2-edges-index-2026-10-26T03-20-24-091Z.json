@@ -1,0 +1,3443 @@
+{
+  "id": "M3-V2-edges-index",
+  "title": "V2 edges: cancel/too-late, already-at-target, ambiguous-install, malicious index, dev-row, recovery",
+  "commands": [
+    "node scripts/verification/v1.5/m3/run-v2-edges-index.mjs --a 75c0041c3e73ddea83940d1d23a54f0d6d1431cf --b e4cb4694ad856b1132179f4db2385057dca7f66d --final f8244cf24a418aaf796a2b64ad17e7417b65ecac"
+  ],
+  "startedAt": "2026-10-26T03:20:24.091Z",
+  "finishedAt": "2026-10-26T03:22:55.281Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "runtime-extraction-matches-installed-app",
+      "ok": true,
+      "required": true,
+      "detail": []
+    },
+    {
+      "name": "host-network-env-selfcheck",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "gitVersion": "git version 2.39.5 (Apple Git-154)",
+        "envKeys": [
+          "ALL_PROXY",
+          "GIT_CONFIG_NOSYSTEM",
+          "HTTPS_PROXY",
+          "HTTP_PROXY",
+          "M3_FIXTURE_RUN_TAG",
+          "M3_NETWORK_MODE",
+          "M3_NETWORK_MODE_LABEL",
+          "NODE_EXTRA_CA_CERTS",
+          "NODE_OPTIONS",
+          "NODE_USE_ENV_PROXY",
+          "NO_PROXY",
+          "npm_config_fetch_retries",
+          "npm_config_fetch_retry_maxtimeout",
+          "npm_config_fetch_timeout",
+          "npm_config_http_proxy",
+          "npm_config_https_proxy",
+          "npm_config_network_concurrency",
+          "npm_config_noproxy",
+          "npm_config_proxy"
+        ],
+        "full": {
+          "ok": true,
+          "attempts": [
+            {
+              "attempt": 1,
+              "ok": true,
+              "status": 0,
+              "stderr": "",
+              "stdout": "40d701678e96d99e777520debb43e25b28ae2d0c\tHEAD"
+            }
+          ]
+        },
+        "scrubbed": {
+          "ok": true,
+          "attempts": [
+            {
+              "attempt": 1,
+              "ok": true,
+              "status": 0,
+              "stderr": "",
+              "stdout": "40d701678e96d99e777520debb43e25b28ae2d0c\tHEAD"
+            }
+          ]
+        },
+        "networkMode": "real-github",
+        "networkModeLabel": "real GitHub transport (pinned reachable IPs via git config; network-dependent, explicitly opted in)",
+        "pinned": {
+          "github.com": "140.82.112.3",
+          "codeload.github.com": "140.82.112.3",
+          "raw.githubusercontent.com": "185.199.108.133"
+        }
+      }
+    },
+    {
+      "name": "R_A-installed-applied",
+      "ok": true,
+      "required": true,
+      "detail": "applied"
+    },
+    {
+      "name": "real-page-market-panel-opened",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "opened": true,
+        "steps": [
+          {
+            "sidebar": {
+              "label": "sidebar-market",
+              "clicked": true,
+              "target": {
+                "tag": "BUTTON",
+                "text": "游戏市场",
+                "className": "kB3qhq_panelRow",
+                "rect": {
+                  "x": 140,
+                  "y": 214,
+                  "width": 252,
+                  "height": 36
+                },
+                "hitInsideTarget": true
+              },
+              "point": {
+                "x": 140,
+                "y": 214,
+                "trusted": "Input.dispatchMouseEvent"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "cancel-begin-operation",
+      "ok": true,
+      "required": true,
+      "detail": "upd_55787763b606885a"
+    },
+    {
+      "name": "cancel-operaton-observed-in-progress",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "installing"
+      }
+    },
+    {
+      "name": "cancel-ui-clicked",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "clicked": true,
+        "label": "cancel-update",
+        "target": {
+          "x": 376,
+          "y": 697.25,
+          "text": "取消更新",
+          "tag": "BUTTON",
+          "hitInsideTarget": true,
+          "atPoint": {
+            "tag": "BUTTON",
+            "className": "dgm-btn dgm-btn-quiet",
+            "text": "取消更新"
+          }
+        },
+        "trusted": "Input.dispatchMouseEvent",
+        "waitedMs": 0
+      }
+    },
+    {
+      "name": "cancel-terminal-is-cancelled-or-too-late",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "cancel",
+        "startedAt": "2026-10-26T03:20:41.171Z",
+        "begin": {
+          "operationId": "upd_55787763b606885a",
+          "dialog": {
+            "title": "更新 Game Market 到 1.2.2？",
+            "body": "这会更新当前 profile 中的插件安装，影响当前 profile 的所有会话；更新完成后可能需要重启 DSH。更新前会暂停并保存正在运行的游戏。",
+            "meta": [
+              {
+                "label": "当前运行版本",
+                "value": "1.2.1"
+              },
+              {
+                "label": "目标版本",
+                "value": "1.2.2"
+              },
+              {
+                "label": "目标 commit",
+                "value": "e4cb4694ad856b1132179f4db2385057dca7f66d"
+              },
+              {
+                "label": "通道",
+                "value": "稳定"
+              }
+            ],
+            "warnings": [],
+            "primary": "开始更新"
+          }
+        },
+        "cancelClick": {
+          "clicked": true,
+          "label": "cancel-update",
+          "target": {
+            "x": 376,
+            "y": 697.25,
+            "text": "取消更新",
+            "tag": "BUTTON",
+            "hitInsideTarget": true,
+            "atPoint": {
+              "tag": "BUTTON",
+              "className": "dgm-btn dgm-btn-quiet",
+              "text": "取消更新"
+            }
+          },
+          "trusted": "Input.dispatchMouseEvent",
+          "waitedMs": 0
+        },
+        "terminal": "cancelled",
+        "transitions": [
+          "installing",
+          "cancelled"
+        ],
+        "probe": {
+          "dir": "/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb/profiles/web",
+          "packageJson": {
+            "name": "dsh-profile-web",
+            "dependencies": {
+              "dsh-game-market": "github:heswy/dsh-game-market#75c0041c3e73ddea83940d1d23a54f0d6d1431cf"
+            },
+            "profileBundles": [
+              "@deepseek-ai/dsh-base",
+              "@deepseek-ai/dsh-web-app",
+              "dsh-game-market"
+            ]
+          },
+          "dependency": "github:heswy/dsh-game-market#75c0041c3e73ddea83940d1d23a54f0d6d1431cf",
+          "diskPackage": {
+            "name": "dsh-game-market",
+            "version": "1.2.1"
+          },
+          "devRow": null,
+          "diskPackageRealPath": "/private/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb/profiles/web/node_modules/dsh-game-market"
+        },
+        "reBegin": {
+          "banner": {
+            "text": "Game Market 1.2.2 可更新 · 当前 1.2.1查看更新",
+            "actions": [
+              {
+                "action": "open-update",
+                "text": "查看更新"
+              }
+            ]
+          },
+          "open": {
+            "clicked": true,
+            "label": "open-update-banner",
+            "target": {
+              "x": 1390,
+              "y": 70.5,
+              "text": "查看更新",
+              "tag": "BUTTON",
+              "hitInsideTarget": true,
+              "atPoint": {
+                "tag": "BUTTON",
+                "className": "dgm-banner-action",
+                "text": "查看更新"
+              }
+            },
+            "trusted": "Input.dispatchMouseEvent",
+            "waitedMs": 0
+          },
+          "dialog": {
+            "title": "更新 Game Market 到 1.2.2？",
+            "body": "这会更新当前 profile 中的插件安装，影响当前 profile 的所有会话；更新完成后可能需要重启 DSH。更新前会暂停并保存正在运行的游戏。",
+            "meta": [
+              {
+                "label": "当前运行版本",
+                "value": "1.2.1"
+              },
+              {
+                "label": "目标版本",
+                "value": "1.2.2"
+              },
+              {
+                "label": "目标 commit",
+                "value": "e4cb4694ad856b1132179f4db2385057dca7f66d"
+              },
+              {
+                "label": "通道",
+                "value": "稳定"
+              }
+            ],
+            "warnings": [],
+            "primary": "开始更新"
+          },
+          "dialogMatchesTargetVersion": true,
+          "confirm": {
+            "clicked": true,
+            "target": {
+              "x": 1017.6000061035156,
+              "y": 553.0624694824219,
+              "text": "开始更新"
+            },
+            "trusted": "Input.dispatchMouseEvent"
+          },
+          "operationId": "upd_1be8ade470940d56",
+          "operationState": "installing"
+        },
+        "completion": {
+          "label": "after-cancel",
+          "transitions": [
+            "installing",
+            "updated"
+          ],
+          "terminal": {
+            "ok": true,
+            "waitedMs": 5366,
+            "state": "updated",
+            "observation": {
+              "operationId": "upd_1be8ade470940d56",
+              "state": "updated",
+              "version": "1.2.2",
+              "host": "1.2.2+e4cb4694ad856b1132179f4db2385057dca7f66d",
+              "client": "1.2.2+ededfaa30cf908624b2f6224246d837d64cd9dfa"
+            },
+            "transitions": [
+              {
+                "at": "2026-10-26T03:20:44.338Z",
+                "state": "installing",
+                "observation": {
+                  "operationId": "upd_1be8ade470940d56",
+                  "state": "installing",
+                  "stage": "install",
+                  "progress": null
+                }
+              },
+              {
+                "at": "2026-10-26T03:20:49.606Z",
+                "state": "updated",
+                "observation": {
+                  "operationId": "upd_1be8ade470940d56",
+                  "state": "updated",
+                  "version": "1.2.2",
+                  "host": "1.2.2+e4cb4694ad856b1132179f4db2385057dca7f66d",
+                  "client": "1.2.2+ededfaa30cf908624b2f6224246d837d64cd9dfa"
+                }
+              }
+            ],
+            "inspect": {
+              "schemaVersion": 1,
+              "host": {
+                "version": "1.2.2",
+                "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+                "hostEpoch": "he_3ace4f6c94263d68",
+                "loadedAt": "2026-10-26T03:20:48.987Z"
+              },
+              "installed": {
+                "bundleId": "dsh-game-market",
+                "spec": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d",
+                "specShape": "git-url",
+                "version": "1.2.2",
+                "enabled": true,
+                "loadedVersion": "1.2.2",
+                "loadedCommit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+                "devRowShadow": false
+              },
+              "target": {
+                "id": "tgt_ea9f44f1e17fb658",
+                "version": "1.2.2",
+                "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+                "channel": "stable",
+                "publishedAt": "2025-10-20T22:40:00.000Z",
+                "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+              },
+              "discovery": {
+                "channel": "stable",
+                "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+                "state": "ready",
+                "fetchedAt": "2026-10-26T03:20:34.828Z",
+                "checkedAt": "2026-10-26T03:20:34.850Z",
+                "nextCheckAt": "2026-10-26T03:21:34.850Z",
+                "lastError": null,
+                "canRefresh": false,
+                "anomaly": null
+              },
+              "capability": {
+                "hmr": "present",
+                "updatePath": "in-place-hmr",
+                "canBeginUpdate": true,
+                "reasonKey": null
+              },
+              "operation": {
+                "operationId": "upd_1be8ade470940d56",
+                "state": "updated",
+                "version": "1.2.2",
+                "host": "1.2.2+e4cb4694ad856b1132179f4db2385057dca7f66d",
+                "client": "1.2.2+ededfaa30cf908624b2f6224246d837d64cd9dfa"
+              }
+            }
+          },
+          "inspect": {
+            "schemaVersion": 1,
+            "host": {
+              "version": "1.2.2",
+              "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+              "hostEpoch": "he_3ace4f6c94263d68",
+              "loadedAt": "2026-10-26T03:20:48.987Z"
+            },
+            "installed": {
+              "bundleId": "dsh-game-market",
+              "spec": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d",
+              "specShape": "git-url",
+              "version": "1.2.2",
+              "enabled": true,
+              "loadedVersion": "1.2.2",
+              "loadedCommit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+              "devRowShadow": false
+            },
+            "target": {
+              "id": "tgt_ea9f44f1e17fb658",
+              "version": "1.2.2",
+              "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+              "channel": "stable",
+              "publishedAt": "2025-10-20T22:40:00.000Z",
+              "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+            },
+            "discovery": {
+              "channel": "stable",
+              "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+              "state": "ready",
+              "fetchedAt": "2026-10-26T03:20:34.828Z",
+              "checkedAt": "2026-10-26T03:20:34.850Z",
+              "nextCheckAt": "2026-10-26T03:21:34.850Z",
+              "lastError": null,
+              "canRefresh": false,
+              "anomaly": null
+            },
+            "capability": {
+              "hmr": "present",
+              "updatePath": "in-place-hmr",
+              "canBeginUpdate": true,
+              "reasonKey": null
+            },
+            "operation": {
+              "operationId": "upd_1be8ade470940d56",
+              "state": "updated",
+              "version": "1.2.2",
+              "host": "1.2.2+e4cb4694ad856b1132179f4db2385057dca7f66d",
+              "client": "1.2.2+ededfaa30cf908624b2f6224246d837d64cd9dfa"
+            }
+          },
+          "ui": {
+            "sectionPresent": false,
+            "sectionHidden": null,
+            "discovery": null,
+            "identities": [],
+            "blocked": null,
+            "coordination": null,
+            "operation": null,
+            "banner": null,
+            "dialog": null,
+            "actionButtons": [],
+            "bodyText": "新会话\n⌥\n⌘\nN\n插件\n自动化任务\n游戏市场\n更多\n工作区\n默认工作区\n新会话\n更多\n探索未至之境\n预览版\n默认工作区\n标准模式\n描述你想要构建的内容, / 调用指令, @ 文件或对话\n工作区内修改\n请选择模型"
+          }
+        }
+      }
+    },
+    {
+      "name": "cancel-does-not-continue-install",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "diskPackage": {
+          "name": "dsh-game-market",
+          "version": "1.2.1"
+        }
+      }
+    },
+    {
+      "name": "cancel-rebegin-accepted",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "banner": {
+          "text": "Game Market 1.2.2 可更新 · 当前 1.2.1查看更新",
+          "actions": [
+            {
+              "action": "open-update",
+              "text": "查看更新"
+            }
+          ]
+        },
+        "open": {
+          "clicked": true,
+          "label": "open-update-banner",
+          "target": {
+            "x": 1390,
+            "y": 70.5,
+            "text": "查看更新",
+            "tag": "BUTTON",
+            "hitInsideTarget": true,
+            "atPoint": {
+              "tag": "BUTTON",
+              "className": "dgm-banner-action",
+              "text": "查看更新"
+            }
+          },
+          "trusted": "Input.dispatchMouseEvent",
+          "waitedMs": 0
+        },
+        "dialog": {
+          "title": "更新 Game Market 到 1.2.2？",
+          "body": "这会更新当前 profile 中的插件安装，影响当前 profile 的所有会话；更新完成后可能需要重启 DSH。更新前会暂停并保存正在运行的游戏。",
+          "meta": [
+            {
+              "label": "当前运行版本",
+              "value": "1.2.1"
+            },
+            {
+              "label": "目标版本",
+              "value": "1.2.2"
+            },
+            {
+              "label": "目标 commit",
+              "value": "e4cb4694ad856b1132179f4db2385057dca7f66d"
+            },
+            {
+              "label": "通道",
+              "value": "稳定"
+            }
+          ],
+          "warnings": [],
+          "primary": "开始更新"
+        },
+        "dialogMatchesTargetVersion": true,
+        "confirm": {
+          "clicked": true,
+          "target": {
+            "x": 1017.6000061035156,
+            "y": 553.0624694824219,
+            "text": "开始更新"
+          },
+          "trusted": "Input.dispatchMouseEvent"
+        },
+        "operationId": "upd_1be8ade470940d56",
+        "operationState": "installing"
+      }
+    },
+    {
+      "name": "cancel-then-complete-updated",
+      "ok": true,
+      "required": true,
+      "detail": "updated"
+    },
+    {
+      "name": "at-target-installed-and-target-are-R_B",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "installed": {
+          "bundleId": "dsh-game-market",
+          "spec": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "specShape": "git-url",
+          "version": "1.2.2",
+          "enabled": true,
+          "loadedVersion": "1.2.2",
+          "loadedCommit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "devRowShadow": false
+        },
+        "target": {
+          "id": "tgt_ea9f44f1e17fb658",
+          "version": "1.2.2",
+          "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "channel": "stable",
+          "publishedAt": "2025-10-20T22:40:00.000Z",
+          "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+        }
+      }
+    },
+    {
+      "name": "already-at-target-begin-not-success",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "data": {
+            "operationId": "upd_c23974eb19bd8019"
+          },
+          "requestId": "req_01f80c0786dcb726",
+          "serverTime": "2026-10-26T03:20:49.813Z"
+        },
+        "errorCode": null,
+        "data": {
+          "operationId": "upd_c23974eb19bd8019"
+        }
+      }
+    },
+    {
+      "name": "already-at-target-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "already-at-target",
+        "reason": "same-commit"
+      }
+    },
+    {
+      "name": "already-at-target-not-reported-updated",
+      "ok": true,
+      "required": true,
+      "detail": "already-at-target"
+    },
+    {
+      "name": "already-at-target-ui-not-success",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "ambiguous-install-reproduced",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "application": "failed",
+        "code": "ambiguous-install",
+        "packageExit": 0
+      }
+    },
+    {
+      "name": "recorded-spec-replay-already-installed",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "application": "failed",
+        "code": "already-installed"
+      }
+    },
+    {
+      "name": "ambiguous-does-not-change-version",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "diskPackage": {
+          "name": "dsh-game-market",
+          "version": "1.2.2"
+        },
+        "dependency": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "name": "ambiguous-mapped-after-actual-version-check",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "data": {
+            "operationId": "upd_7da494d99b1988f8"
+          },
+          "requestId": "req_831c347c71ac3e94",
+          "serverTime": "2026-10-26T03:20:55.435Z"
+        },
+        "errorCode": null,
+        "data": {
+          "operationId": "upd_7da494d99b1988f8"
+        }
+      }
+    },
+    {
+      "name": "forged-target-id-rejected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 409,
+        "envelope": {
+          "ok": false,
+          "error": {
+            "code": "GM-4090",
+            "message": "Update target is not the current validated discovery record",
+            "retryable": false
+          },
+          "requestId": "req_2b3cb0f0fbbafda9",
+          "serverTime": "2026-10-26T03:20:55.553Z"
+        },
+        "errorCode": "GM-4090",
+        "data": null
+      }
+    },
+    {
+      "name": "forged-target-code-is-target-invalid",
+      "ok": true,
+      "required": true,
+      "detail": "GM-4090"
+    },
+    {
+      "name": "arbitrary-spec-rejected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 400,
+        "envelope": {
+          "ok": false,
+          "error": {
+            "code": "GM-4002",
+            "message": "Invalid targetId",
+            "retryable": false
+          },
+          "requestId": "req_15b3b15cac99ebc5",
+          "serverTime": "2026-10-26T03:20:55.554Z"
+        },
+        "errorCode": "GM-4002",
+        "data": null
+      }
+    },
+    {
+      "name": "forged-begin-did-not-start-install",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "name": "dsh-game-market",
+        "version": "1.2.2"
+      }
+    },
+    {
+      "name": "malicious-wrong-repo-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "invalid",
+        "expected": "invalid"
+      }
+    },
+    {
+      "name": "malicious-wrong-repo-reason",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "binding",
+        "expected": "binding"
+      }
+    },
+    {
+      "name": "malicious-wrong-repo-retained-target-or-blocked-anomaly",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "name": "malicious-wrong-repo-rejected-or-trusted-cached-noop",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_ed5ec76fd9a96040"
+            },
+            "requestId": "req_97f03e9571507d65",
+            "serverTime": "2026-10-26T03:21:05.846Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_ed5ec76fd9a96040"
+          }
+        },
+        "operation": {
+          "operationId": "upd_ed5ec76fd9a96040",
+          "state": "already-at-target",
+          "reason": "same-commit"
+        }
+      }
+    },
+    {
+      "name": "malicious-wrong-repo-no-package-change",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "name": "dsh-game-market",
+        "version": "1.2.2"
+      }
+    },
+    {
+      "name": "malicious-wrong-repo-games-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "malicious-file-source-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "invalid",
+        "expected": "invalid"
+      }
+    },
+    {
+      "name": "malicious-file-source-reason",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "format",
+        "expected": "format"
+      }
+    },
+    {
+      "name": "malicious-file-source-retained-target-or-blocked-anomaly",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "name": "malicious-file-source-rejected-or-trusted-cached-noop",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_d028241846ae5eb6"
+            },
+            "requestId": "req_16a652d5b0539545",
+            "serverTime": "2026-10-26T03:21:16.018Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_d028241846ae5eb6"
+          }
+        },
+        "operation": {
+          "operationId": "upd_d028241846ae5eb6",
+          "state": "already-at-target",
+          "reason": "same-commit"
+        }
+      }
+    },
+    {
+      "name": "malicious-file-source-no-package-change",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "name": "dsh-game-market",
+        "version": "1.2.2"
+      }
+    },
+    {
+      "name": "malicious-file-source-games-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "malicious-short-sha-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "invalid",
+        "expected": "invalid"
+      }
+    },
+    {
+      "name": "malicious-short-sha-reason",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "format",
+        "expected": "format"
+      }
+    },
+    {
+      "name": "malicious-short-sha-retained-target-or-blocked-anomaly",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "name": "malicious-short-sha-rejected-or-trusted-cached-noop",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_ce1a14b3b10ee2ba"
+            },
+            "requestId": "req_5f3e79031efab338",
+            "serverTime": "2026-10-26T03:21:26.309Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_ce1a14b3b10ee2ba"
+          }
+        },
+        "operation": {
+          "operationId": "upd_ce1a14b3b10ee2ba",
+          "state": "already-at-target",
+          "reason": "same-commit"
+        }
+      }
+    },
+    {
+      "name": "malicious-short-sha-no-package-change",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "name": "dsh-game-market",
+        "version": "1.2.2"
+      }
+    },
+    {
+      "name": "malicious-short-sha-games-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "malicious-malformed-json-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "invalid",
+        "expected": "invalid"
+      }
+    },
+    {
+      "name": "malicious-malformed-json-reason",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "json",
+        "expected": "json"
+      }
+    },
+    {
+      "name": "malicious-malformed-json-retained-target-or-blocked-anomaly",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "name": "malicious-malformed-json-rejected-or-trusted-cached-noop",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_39b2076f5c976dca"
+            },
+            "requestId": "req_75043fa5083b3c19",
+            "serverTime": "2026-10-26T03:21:36.738Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_39b2076f5c976dca"
+          }
+        },
+        "operation": {
+          "operationId": "upd_39b2076f5c976dca",
+          "state": "already-at-target",
+          "reason": "same-commit"
+        }
+      }
+    },
+    {
+      "name": "malicious-malformed-json-no-package-change",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "name": "dsh-game-market",
+        "version": "1.2.2"
+      }
+    },
+    {
+      "name": "malicious-malformed-json-games-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "malicious-oversize-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "invalid",
+        "expected": "invalid"
+      }
+    },
+    {
+      "name": "malicious-oversize-reason",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "too-large",
+        "expected": "too-large"
+      }
+    },
+    {
+      "name": "malicious-oversize-retained-target-or-blocked-anomaly",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "name": "malicious-oversize-rejected-or-trusted-cached-noop",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_28d1ce0ec8c47e3e"
+            },
+            "requestId": "req_539c2f2e9dffb037",
+            "serverTime": "2026-10-26T03:21:48.899Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_28d1ce0ec8c47e3e"
+          }
+        },
+        "operation": {
+          "operationId": "upd_28d1ce0ec8c47e3e",
+          "state": "already-at-target",
+          "reason": "same-commit"
+        }
+      }
+    },
+    {
+      "name": "malicious-oversize-no-package-change",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "name": "dsh-game-market",
+        "version": "1.2.2"
+      }
+    },
+    {
+      "name": "malicious-oversize-games-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "malicious-timeout-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "offline",
+        "expected": "offline"
+      }
+    },
+    {
+      "name": "malicious-timeout-reason",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "timeout",
+        "expected": "timeout"
+      }
+    },
+    {
+      "name": "malicious-timeout-retained-target-or-blocked-anomaly",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "name": "malicious-timeout-rejected-or-trusted-cached-noop",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_0fcca40bb4791647"
+            },
+            "requestId": "req_3148e18b1c4e2955",
+            "serverTime": "2026-10-26T03:22:00.923Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_0fcca40bb4791647"
+          }
+        },
+        "operation": {
+          "operationId": "upd_0fcca40bb4791647",
+          "state": "already-at-target",
+          "reason": "same-commit"
+        }
+      }
+    },
+    {
+      "name": "malicious-timeout-no-package-change",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "name": "dsh-game-market",
+        "version": "1.2.2"
+      }
+    },
+    {
+      "name": "malicious-timeout-games-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "malicious-redirect-http-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "invalid",
+        "expected": "invalid"
+      }
+    },
+    {
+      "name": "malicious-redirect-http-reason",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "redirect",
+        "expected": "redirect"
+      }
+    },
+    {
+      "name": "malicious-redirect-http-retained-target-or-blocked-anomaly",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "name": "malicious-redirect-http-rejected-or-trusted-cached-noop",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_815e61523404ad03"
+            },
+            "requestId": "req_dfef7a13ef8ebc80",
+            "serverTime": "2026-10-26T03:22:13.617Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_815e61523404ad03"
+          }
+        },
+        "operation": {
+          "operationId": "upd_815e61523404ad03",
+          "state": "already-at-target",
+          "reason": "same-commit"
+        }
+      }
+    },
+    {
+      "name": "malicious-redirect-http-no-package-change",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "name": "dsh-game-market",
+        "version": "1.2.2"
+      }
+    },
+    {
+      "name": "malicious-redirect-http-games-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "malicious-same-version-different-commit-state",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "ready",
+        "expected": null
+      }
+    },
+    {
+      "name": "malicious-same-version-different-commit-anomaly",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "kind": "same-version-different-commit",
+        "version": "1.2.2",
+        "expectedCommit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "foundCommit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "source": "previous-target"
+      }
+    },
+    {
+      "name": "malicious-same-version-different-commit-retained-target-or-blocked-anomaly",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_775ae6a92bba3259",
+        "version": "1.2.2",
+        "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      }
+    },
+    {
+      "name": "malicious-same-version-different-commit-cannot-begin",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "hmr": "present",
+        "updatePath": "in-place-hmr",
+        "canBeginUpdate": false,
+        "reasonKey": "update.reason.versionCommitAnomaly"
+      }
+    },
+    {
+      "name": "malicious-same-version-different-commit-rejected-or-trusted-cached-noop",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "begin": {
+          "status": 409,
+          "envelope": {
+            "ok": false,
+            "error": {
+              "code": "GM-4090",
+              "message": "Published version is pinned to a different commit; update blocked",
+              "retryable": false,
+              "details": {
+                "reason": "version-commit-anomaly"
+              }
+            },
+            "requestId": "req_132eb490d2cf525d",
+            "serverTime": "2026-10-26T03:22:24.969Z"
+          },
+          "errorCode": "GM-4090",
+          "data": null
+        },
+        "operation": {
+          "operationId": "upd_815e61523404ad03",
+          "state": "already-at-target",
+          "reason": "same-commit"
+        }
+      }
+    },
+    {
+      "name": "malicious-same-version-different-commit-no-package-change",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "name": "dsh-game-market",
+        "version": "1.2.2"
+      }
+    },
+    {
+      "name": "malicious-same-version-different-commit-games-unaffected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "recovery-capability-can-begin-update",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "hmr": "present",
+        "updatePath": "in-place-hmr",
+        "canBeginUpdate": true,
+        "reasonKey": null
+      }
+    },
+    {
+      "name": "recovery-target-is-R_final",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "tgt_6a7e2af60824928b",
+        "version": "1.3.0",
+        "commit": "f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#f8244cf24a418aaf796a2b64ad17e7417b65ecac"
+      }
+    },
+    {
+      "name": "recovery-ui-banner-present",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "text": "Game Market 1.3.0 可更新 · 当前 1.2.2查看更新",
+        "actions": [
+          {
+            "action": "open-update",
+            "text": "查看更新"
+          }
+        ]
+      }
+    },
+    {
+      "name": "recovery-begin-through-ui-succeeds",
+      "ok": true,
+      "required": true,
+      "detail": "upd_815e61523404ad03"
+    },
+    {
+      "name": "recovery-update-cancelled-or-too-late",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "state": "cancelled"
+      }
+    },
+    {
+      "name": "dev-row-detected",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "bundleId": "dsh-game-market",
+        "spec": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "specShape": "git-url",
+        "version": "1.2.2",
+        "enabled": true,
+        "loadedVersion": "1.3.0",
+        "loadedCommit": null,
+        "devRowShadow": true
+      }
+    },
+    {
+      "name": "dev-row-blocks-update",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "hmr": "present",
+        "updatePath": "in-place-hmr",
+        "canBeginUpdate": false,
+        "reasonKey": "update.reason.devSource"
+      }
+    },
+    {
+      "name": "dev-row-ui-guidance-native-manager",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "reason": "dev-row",
+        "title": "开发模式（dev row）覆盖，前往插件管理切换安装来源",
+        "body": "存在同 id 的开发条目，安装不会接管当前运行的版本。"
+      }
+    },
+    {
+      "name": "dev-row-begin-rejected-no-silent-migration",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 409,
+        "envelope": {
+          "ok": false,
+          "error": {
+            "code": "GM-4090",
+            "message": "Development installs must switch the install source in the plugin manager",
+            "retryable": false,
+            "details": {
+              "reason": "dev-source"
+            }
+          },
+          "requestId": "req_5e0c4017adaa2865",
+          "serverTime": "2026-10-26T03:22:53.234Z"
+        },
+        "errorCode": "GM-4090",
+        "data": null
+      }
+    },
+    {
+      "name": "dev-row-no-install-started",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": "1.2.2",
+        "after": "1.2.2",
+        "sameDependency": true
+      }
+    },
+    {
+      "name": "capability-unknown-forced-real-environment",
+      "ok": false,
+      "required": false,
+      "detail": {
+        "required": false,
+        "notRun": true,
+        "reason": "no production seam to force the HMR sampling timeout/missing service without product test hooks; the decision branch is covered by the committed unit matrix (tests/v1.5-platform-update.test.js / host adapter tests). Capability-unknown real-path remains not-run."
+      }
+    },
+    {
+      "name": "user-data-preserved",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "preserved": true,
+        "changed": [],
+        "before": {
+          "marker": {
+            "present": true,
+            "sha256": "7549ac8b86cc29b953683dd640d5ab48a1758bba1dca8573737d6c8a4029323f"
+          },
+          "save": {
+            "present": true,
+            "sha256": "810a8eb5853767dd7b3960050f4039e5a07691cace5e394f206a18ba0ef14b9d"
+          },
+          "preferences": {
+            "present": true,
+            "sha256": "6dd40a3a25d8e830aaba96e75d03731b80f8a08801c6b0c9f8bad0279f49134a"
+          }
+        },
+        "after": {
+          "marker": {
+            "present": true,
+            "sha256": "7549ac8b86cc29b953683dd640d5ab48a1758bba1dca8573737d6c8a4029323f"
+          },
+          "save": {
+            "present": true,
+            "sha256": "810a8eb5853767dd7b3960050f4039e5a07691cace5e394f206a18ba0ef14b9d"
+          },
+          "preferences": {
+            "present": true,
+            "sha256": "6dd40a3a25d8e830aaba96e75d03731b80f8a08801c6b0c9f8bad0279f49134a"
+          }
+        }
+      }
+    },
+    {
+      "name": "cleanup-proven",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "run-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-26T03:22:55.219Z",
+        "ports": [
+          {
+            "port": 62676,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 62707,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 62886,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 63007,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 63108,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 63214,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 63316,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 63426,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 63558,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 63656,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 63766,
+            "accepting": false,
+            "listenerPids": []
+          },
+          {
+            "port": 63958,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [
+          {
+            "pid": 55291,
+            "alive": false
+          },
+          {
+            "pid": 55490,
+            "alive": false
+          },
+          {
+            "pid": 56136,
+            "alive": false
+          },
+          {
+            "pid": 56380,
+            "alive": false
+          },
+          {
+            "pid": 56588,
+            "alive": false
+          },
+          {
+            "pid": 56794,
+            "alive": false
+          },
+          {
+            "pid": 57022,
+            "alive": false
+          },
+          {
+            "pid": 57211,
+            "alive": false
+          },
+          {
+            "pid": 57391,
+            "alive": false
+          },
+          {
+            "pid": 57571,
+            "alive": false
+          },
+          {
+            "pid": 57786,
+            "alive": false
+          },
+          {
+            "pid": 58015,
+            "alive": false
+          }
+        ],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-62707",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-62886",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-63007",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-63108",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-63214",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-63316",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-63426",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-63558",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-63656",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-63766",
+            "exists": false
+          },
+          {
+            "dir": "/tmp/dsh-v15/m3/chrome-63958",
+            "exists": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "transport-and-tls-cleaned",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "label": "v2-edges-transport-cleanup",
+        "ok": true,
+        "checkedAt": "2026-10-26T03:22:55.281Z",
+        "ports": [
+          {
+            "port": 62662,
+            "accepting": false,
+            "listenerPids": []
+          }
+        ],
+        "pids": [],
+        "dirs": [
+          {
+            "dir": "/tmp/dsh-v15/m3/scenario-v2-edges-index-mvoovcij-b408cb/tls",
+            "exists": false
+          }
+        ]
+      }
+    }
+  ],
+  "runTag": "v2-edges-index-mvoovcij-b408cb",
+  "targets": {
+    "a": "75c0041c3e73ddea83940d1d23a54f0d6d1431cf",
+    "b": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+    "final": "f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+    "versionA": "1.2.1",
+    "versionB": "1.2.2",
+    "versionFinal": "1.3.0",
+    "homeSuffix": null
+  },
+  "evidenceLevel": "isolated-browser (real installed bundle + real page; UI actions for updates/cancel/begin where applicable; API negative controls labelled) + real Host restarts + isolated transport fixture",
+  "targetIdentities": {
+    "releaseA": {
+      "schemaVersion": 1,
+      "version": "1.2.1",
+      "clientBuildCommit": "80435467c87fbb58b2715e37ae54b86275039df8",
+      "repo": "https://github.com/heswy/dsh-game-market",
+      "artifacts": {
+        "algorithm": "sha256-tree-v1",
+        "roots": [
+          "client.js",
+          "games",
+          "registry"
+        ],
+        "sha256": "904f56692eb07e56ae78b79e3db1c5ec95c1b3ef9f089dd6500f55b690b5ecd3",
+        "files": 93,
+        "bytes": 3412733
+      }
+    },
+    "releaseB": {
+      "schemaVersion": 1,
+      "version": "1.2.2",
+      "clientBuildCommit": "ededfaa30cf908624b2f6224246d837d64cd9dfa",
+      "repo": "https://github.com/heswy/dsh-game-market",
+      "artifacts": {
+        "algorithm": "sha256-tree-v1",
+        "roots": [
+          "client.js",
+          "games",
+          "registry"
+        ],
+        "sha256": "7c1a1f5b35d5d20137434f2d73207305c0bae595278f7ef44a5912176d7c1d9a",
+        "files": 93,
+        "bytes": 3412733
+      }
+    },
+    "releaseFinal": {
+      "schemaVersion": 1,
+      "version": "1.3.0",
+      "clientBuildCommit": "e2fa60a0bcf89aac9482ff0b08b9170450184a7e",
+      "repo": "https://github.com/heswy/dsh-game-market",
+      "artifacts": {
+        "algorithm": "sha256-tree-v1",
+        "roots": [
+          "client.js",
+          "games",
+          "registry"
+        ],
+        "sha256": "f6dfae353e69208f237e542ff2b92fe05742259763a30fd5926d7c33d1c175fb",
+        "files": 93,
+        "bytes": 3412733
+      }
+    }
+  },
+  "sections": {
+    "cancel": {
+      "label": "cancel",
+      "startedAt": "2026-10-26T03:20:41.171Z",
+      "begin": {
+        "operationId": "upd_55787763b606885a",
+        "dialog": {
+          "title": "更新 Game Market 到 1.2.2？",
+          "body": "这会更新当前 profile 中的插件安装，影响当前 profile 的所有会话；更新完成后可能需要重启 DSH。更新前会暂停并保存正在运行的游戏。",
+          "meta": [
+            {
+              "label": "当前运行版本",
+              "value": "1.2.1"
+            },
+            {
+              "label": "目标版本",
+              "value": "1.2.2"
+            },
+            {
+              "label": "目标 commit",
+              "value": "e4cb4694ad856b1132179f4db2385057dca7f66d"
+            },
+            {
+              "label": "通道",
+              "value": "稳定"
+            }
+          ],
+          "warnings": [],
+          "primary": "开始更新"
+        }
+      },
+      "cancelClick": {
+        "clicked": true,
+        "label": "cancel-update",
+        "target": {
+          "x": 376,
+          "y": 697.25,
+          "text": "取消更新",
+          "tag": "BUTTON",
+          "hitInsideTarget": true,
+          "atPoint": {
+            "tag": "BUTTON",
+            "className": "dgm-btn dgm-btn-quiet",
+            "text": "取消更新"
+          }
+        },
+        "trusted": "Input.dispatchMouseEvent",
+        "waitedMs": 0
+      },
+      "terminal": "cancelled",
+      "transitions": [
+        "installing",
+        "cancelled"
+      ],
+      "probe": {
+        "dir": "/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb/profiles/web",
+        "packageJson": {
+          "name": "dsh-profile-web",
+          "dependencies": {
+            "dsh-game-market": "github:heswy/dsh-game-market#75c0041c3e73ddea83940d1d23a54f0d6d1431cf"
+          },
+          "profileBundles": [
+            "@deepseek-ai/dsh-base",
+            "@deepseek-ai/dsh-web-app",
+            "dsh-game-market"
+          ]
+        },
+        "dependency": "github:heswy/dsh-game-market#75c0041c3e73ddea83940d1d23a54f0d6d1431cf",
+        "diskPackage": {
+          "name": "dsh-game-market",
+          "version": "1.2.1"
+        },
+        "devRow": null,
+        "diskPackageRealPath": "/private/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb/profiles/web/node_modules/dsh-game-market"
+      },
+      "reBegin": {
+        "banner": {
+          "text": "Game Market 1.2.2 可更新 · 当前 1.2.1查看更新",
+          "actions": [
+            {
+              "action": "open-update",
+              "text": "查看更新"
+            }
+          ]
+        },
+        "open": {
+          "clicked": true,
+          "label": "open-update-banner",
+          "target": {
+            "x": 1390,
+            "y": 70.5,
+            "text": "查看更新",
+            "tag": "BUTTON",
+            "hitInsideTarget": true,
+            "atPoint": {
+              "tag": "BUTTON",
+              "className": "dgm-banner-action",
+              "text": "查看更新"
+            }
+          },
+          "trusted": "Input.dispatchMouseEvent",
+          "waitedMs": 0
+        },
+        "dialog": {
+          "title": "更新 Game Market 到 1.2.2？",
+          "body": "这会更新当前 profile 中的插件安装，影响当前 profile 的所有会话；更新完成后可能需要重启 DSH。更新前会暂停并保存正在运行的游戏。",
+          "meta": [
+            {
+              "label": "当前运行版本",
+              "value": "1.2.1"
+            },
+            {
+              "label": "目标版本",
+              "value": "1.2.2"
+            },
+            {
+              "label": "目标 commit",
+              "value": "e4cb4694ad856b1132179f4db2385057dca7f66d"
+            },
+            {
+              "label": "通道",
+              "value": "稳定"
+            }
+          ],
+          "warnings": [],
+          "primary": "开始更新"
+        },
+        "dialogMatchesTargetVersion": true,
+        "confirm": {
+          "clicked": true,
+          "target": {
+            "x": 1017.6000061035156,
+            "y": 553.0624694824219,
+            "text": "开始更新"
+          },
+          "trusted": "Input.dispatchMouseEvent"
+        },
+        "operationId": "upd_1be8ade470940d56",
+        "operationState": "installing"
+      },
+      "completion": {
+        "label": "after-cancel",
+        "transitions": [
+          "installing",
+          "updated"
+        ],
+        "terminal": {
+          "ok": true,
+          "waitedMs": 5366,
+          "state": "updated",
+          "observation": {
+            "operationId": "upd_1be8ade470940d56",
+            "state": "updated",
+            "version": "1.2.2",
+            "host": "1.2.2+e4cb4694ad856b1132179f4db2385057dca7f66d",
+            "client": "1.2.2+ededfaa30cf908624b2f6224246d837d64cd9dfa"
+          },
+          "transitions": [
+            {
+              "at": "2026-10-26T03:20:44.338Z",
+              "state": "installing",
+              "observation": {
+                "operationId": "upd_1be8ade470940d56",
+                "state": "installing",
+                "stage": "install",
+                "progress": null
+              }
+            },
+            {
+              "at": "2026-10-26T03:20:49.606Z",
+              "state": "updated",
+              "observation": {
+                "operationId": "upd_1be8ade470940d56",
+                "state": "updated",
+                "version": "1.2.2",
+                "host": "1.2.2+e4cb4694ad856b1132179f4db2385057dca7f66d",
+                "client": "1.2.2+ededfaa30cf908624b2f6224246d837d64cd9dfa"
+              }
+            }
+          ],
+          "inspect": {
+            "schemaVersion": 1,
+            "host": {
+              "version": "1.2.2",
+              "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+              "hostEpoch": "he_3ace4f6c94263d68",
+              "loadedAt": "2026-10-26T03:20:48.987Z"
+            },
+            "installed": {
+              "bundleId": "dsh-game-market",
+              "spec": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d",
+              "specShape": "git-url",
+              "version": "1.2.2",
+              "enabled": true,
+              "loadedVersion": "1.2.2",
+              "loadedCommit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+              "devRowShadow": false
+            },
+            "target": {
+              "id": "tgt_ea9f44f1e17fb658",
+              "version": "1.2.2",
+              "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+              "channel": "stable",
+              "publishedAt": "2025-10-20T22:40:00.000Z",
+              "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+            },
+            "discovery": {
+              "channel": "stable",
+              "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+              "state": "ready",
+              "fetchedAt": "2026-10-26T03:20:34.828Z",
+              "checkedAt": "2026-10-26T03:20:34.850Z",
+              "nextCheckAt": "2026-10-26T03:21:34.850Z",
+              "lastError": null,
+              "canRefresh": false,
+              "anomaly": null
+            },
+            "capability": {
+              "hmr": "present",
+              "updatePath": "in-place-hmr",
+              "canBeginUpdate": true,
+              "reasonKey": null
+            },
+            "operation": {
+              "operationId": "upd_1be8ade470940d56",
+              "state": "updated",
+              "version": "1.2.2",
+              "host": "1.2.2+e4cb4694ad856b1132179f4db2385057dca7f66d",
+              "client": "1.2.2+ededfaa30cf908624b2f6224246d837d64cd9dfa"
+            }
+          }
+        },
+        "inspect": {
+          "schemaVersion": 1,
+          "host": {
+            "version": "1.2.2",
+            "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+            "hostEpoch": "he_3ace4f6c94263d68",
+            "loadedAt": "2026-10-26T03:20:48.987Z"
+          },
+          "installed": {
+            "bundleId": "dsh-game-market",
+            "spec": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d",
+            "specShape": "git-url",
+            "version": "1.2.2",
+            "enabled": true,
+            "loadedVersion": "1.2.2",
+            "loadedCommit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+            "devRowShadow": false
+          },
+          "target": {
+            "id": "tgt_ea9f44f1e17fb658",
+            "version": "1.2.2",
+            "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+            "channel": "stable",
+            "publishedAt": "2025-10-20T22:40:00.000Z",
+            "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+          },
+          "discovery": {
+            "channel": "stable",
+            "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+            "state": "ready",
+            "fetchedAt": "2026-10-26T03:20:34.828Z",
+            "checkedAt": "2026-10-26T03:20:34.850Z",
+            "nextCheckAt": "2026-10-26T03:21:34.850Z",
+            "lastError": null,
+            "canRefresh": false,
+            "anomaly": null
+          },
+          "capability": {
+            "hmr": "present",
+            "updatePath": "in-place-hmr",
+            "canBeginUpdate": true,
+            "reasonKey": null
+          },
+          "operation": {
+            "operationId": "upd_1be8ade470940d56",
+            "state": "updated",
+            "version": "1.2.2",
+            "host": "1.2.2+e4cb4694ad856b1132179f4db2385057dca7f66d",
+            "client": "1.2.2+ededfaa30cf908624b2f6224246d837d64cd9dfa"
+          }
+        },
+        "ui": {
+          "sectionPresent": false,
+          "sectionHidden": null,
+          "discovery": null,
+          "identities": [],
+          "blocked": null,
+          "coordination": null,
+          "operation": null,
+          "banner": null,
+          "dialog": null,
+          "actionButtons": [],
+          "bodyText": "新会话\n⌥\n⌘\nN\n插件\n自动化任务\n游戏市场\n更多\n工作区\n默认工作区\n新会话\n更多\n探索未至之境\n预览版\n默认工作区\n标准模式\n描述你想要构建的内容, / 调用指令, @ 文件或对话\n工作区内修改\n请选择模型"
+        }
+      }
+    },
+    "atTarget": {
+      "inspect": {
+        "schemaVersion": 1,
+        "host": {
+          "version": "1.2.2",
+          "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "hostEpoch": "he_3ace4f6c94263d68",
+          "loadedAt": "2026-10-26T03:20:48.987Z"
+        },
+        "installed": {
+          "bundleId": "dsh-game-market",
+          "spec": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "specShape": "git-url",
+          "version": "1.2.2",
+          "enabled": true,
+          "loadedVersion": "1.2.2",
+          "loadedCommit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "devRowShadow": false
+        },
+        "target": {
+          "id": "tgt_ea9f44f1e17fb658",
+          "version": "1.2.2",
+          "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "channel": "stable",
+          "publishedAt": "2025-10-20T22:40:00.000Z",
+          "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+        },
+        "discovery": {
+          "channel": "stable",
+          "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+          "state": "ready",
+          "fetchedAt": "2026-10-26T03:20:34.828Z",
+          "checkedAt": "2026-10-26T03:20:34.850Z",
+          "nextCheckAt": "2026-10-26T03:21:34.850Z",
+          "lastError": null,
+          "canRefresh": false,
+          "anomaly": null
+        },
+        "capability": {
+          "hmr": "present",
+          "updatePath": "in-place-hmr",
+          "canBeginUpdate": true,
+          "reasonKey": null
+        },
+        "operation": {
+          "operationId": "upd_1be8ade470940d56",
+          "state": "updated",
+          "version": "1.2.2",
+          "host": "1.2.2+e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "client": "1.2.2+ededfaa30cf908624b2f6224246d837d64cd9dfa"
+        }
+      },
+      "alreadyAtTarget": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "data": {
+            "operationId": "upd_c23974eb19bd8019"
+          },
+          "requestId": "req_01f80c0786dcb726",
+          "serverTime": "2026-10-26T03:20:49.813Z"
+        },
+        "errorCode": null,
+        "data": {
+          "operationId": "upd_c23974eb19bd8019"
+        }
+      },
+      "operation": {
+        "operationId": "upd_c23974eb19bd8019",
+        "state": "already-at-target",
+        "reason": "same-commit"
+      },
+      "ambiguous": {
+        "stage": "install",
+        "target": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "enabled": true,
+        "changed": false,
+        "application": "failed",
+        "registries": [
+          null
+        ],
+        "packageResult": {
+          "exitCode": 0,
+          "output": "Progress: resolved 0, reused 1, downloaded 0, added 0\nProgress: resolved 1, reused 1, downloaded 0, added 0\n\nAlready up to date\nProgress: resolved 3, reused 1, downloaded 0, added 0, done\nDone in 2.9s using pnpm v10.28.2\n",
+          "truncated": false,
+          "logPath": "/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb/profiles/web/.plugin-manager/logs/operation-iEaPlO/pnpm.log"
+        },
+        "error": {
+          "code": "ambiguous-install"
+        }
+      },
+      "recorded": {
+        "stage": "install",
+        "target": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "enabled": true,
+        "changed": false,
+        "application": "failed",
+        "error": {
+          "code": "already-installed"
+        }
+      },
+      "probe": {
+        "dir": "/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb/profiles/web",
+        "packageJson": {
+          "name": "dsh-profile-web",
+          "dependencies": {
+            "dsh-game-market": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d"
+          },
+          "profileBundles": [
+            "@deepseek-ai/dsh-base",
+            "@deepseek-ai/dsh-web-app",
+            "dsh-game-market"
+          ]
+        },
+        "dependency": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "diskPackage": {
+          "name": "dsh-game-market",
+          "version": "1.2.2"
+        },
+        "devRow": null,
+        "diskPackageRealPath": "/private/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb/profiles/web/node_modules/dsh-game-market"
+      },
+      "beginAfterAmbiguous": {
+        "status": 200,
+        "envelope": {
+          "ok": true,
+          "data": {
+            "operationId": "upd_7da494d99b1988f8"
+          },
+          "requestId": "req_831c347c71ac3e94",
+          "serverTime": "2026-10-26T03:20:55.435Z"
+        },
+        "errorCode": null,
+        "data": {
+          "operationId": "upd_7da494d99b1988f8"
+        }
+      }
+    },
+    "forged": {
+      "forgedTargetId": {
+        "status": 409,
+        "envelope": {
+          "ok": false,
+          "error": {
+            "code": "GM-4090",
+            "message": "Update target is not the current validated discovery record",
+            "retryable": false
+          },
+          "requestId": "req_2b3cb0f0fbbafda9",
+          "serverTime": "2026-10-26T03:20:55.553Z"
+        },
+        "errorCode": "GM-4090",
+        "data": null
+      },
+      "arbitrarySpec": {
+        "status": 400,
+        "envelope": {
+          "ok": false,
+          "error": {
+            "code": "GM-4002",
+            "message": "Invalid targetId",
+            "retryable": false
+          },
+          "requestId": "req_15b3b15cac99ebc5",
+          "serverTime": "2026-10-26T03:20:55.554Z"
+        },
+        "errorCode": "GM-4002",
+        "data": null
+      },
+      "probe": {
+        "dir": "/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb/profiles/web",
+        "packageJson": {
+          "name": "dsh-profile-web",
+          "dependencies": {
+            "dsh-game-market": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d"
+          },
+          "profileBundles": [
+            "@deepseek-ai/dsh-base",
+            "@deepseek-ai/dsh-web-app",
+            "dsh-game-market"
+          ]
+        },
+        "dependency": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "diskPackage": {
+          "name": "dsh-game-market",
+          "version": "1.2.2"
+        },
+        "devRow": null,
+        "diskPackageRealPath": "/private/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb/profiles/web/node_modules/dsh-game-market"
+      }
+    },
+    "maliciousIndex": [
+      {
+        "id": "wrong-repo",
+        "discovery": {
+          "channel": "stable",
+          "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+          "state": "invalid",
+          "fetchedAt": "2026-10-25T20:20:56.320Z",
+          "checkedAt": "2026-10-25T20:20:56.320Z",
+          "nextCheckAt": "2026-10-26T03:21:58.310Z",
+          "lastError": {
+            "code": "GM-5039",
+            "message": "Update index is not bound to the official repository",
+            "retryable": false,
+            "at": "2026-10-26T03:20:58.310Z",
+            "reason": "binding"
+          },
+          "canRefresh": false,
+          "anomaly": null
+        },
+        "target": {
+          "id": "tgt_ea9f44f1e17fb658",
+          "version": "1.2.2",
+          "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "channel": "stable",
+          "publishedAt": "2025-10-20T22:40:00.000Z",
+          "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+        },
+        "capability": {
+          "hmr": "present",
+          "updatePath": "in-place-hmr",
+          "canBeginUpdate": true,
+          "reasonKey": null
+        },
+        "anomaly": null,
+        "state": "invalid",
+        "reason": "binding",
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_ed5ec76fd9a96040"
+            },
+            "requestId": "req_97f03e9571507d65",
+            "serverTime": "2026-10-26T03:21:05.846Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_ed5ec76fd9a96040"
+          }
+        }
+      },
+      {
+        "id": "file-source",
+        "discovery": {
+          "channel": "stable",
+          "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+          "state": "invalid",
+          "fetchedAt": "2026-10-25T20:21:06.517Z",
+          "checkedAt": "2026-10-25T20:21:06.517Z",
+          "nextCheckAt": "2026-10-26T03:22:08.464Z",
+          "lastError": {
+            "code": "GM-5039",
+            "message": "Update index does not match format 1",
+            "retryable": false,
+            "at": "2026-10-26T03:21:08.464Z",
+            "reason": "format"
+          },
+          "canRefresh": false,
+          "anomaly": null
+        },
+        "target": {
+          "id": "tgt_ea9f44f1e17fb658",
+          "version": "1.2.2",
+          "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "channel": "stable",
+          "publishedAt": "2025-10-20T22:40:00.000Z",
+          "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+        },
+        "capability": {
+          "hmr": "present",
+          "updatePath": "in-place-hmr",
+          "canBeginUpdate": true,
+          "reasonKey": null
+        },
+        "anomaly": null,
+        "state": "invalid",
+        "reason": "format",
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_d028241846ae5eb6"
+            },
+            "requestId": "req_16a652d5b0539545",
+            "serverTime": "2026-10-26T03:21:16.018Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_d028241846ae5eb6"
+          }
+        }
+      },
+      {
+        "id": "short-sha",
+        "discovery": {
+          "channel": "stable",
+          "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+          "state": "invalid",
+          "fetchedAt": "2026-10-25T20:21:16.822Z",
+          "checkedAt": "2026-10-25T20:21:16.822Z",
+          "nextCheckAt": "2026-10-26T03:22:18.801Z",
+          "lastError": {
+            "code": "GM-5039",
+            "message": "Update index does not match format 1",
+            "retryable": false,
+            "at": "2026-10-26T03:21:18.801Z",
+            "reason": "format"
+          },
+          "canRefresh": false,
+          "anomaly": null
+        },
+        "target": {
+          "id": "tgt_ea9f44f1e17fb658",
+          "version": "1.2.2",
+          "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "channel": "stable",
+          "publishedAt": "2025-10-20T22:40:00.000Z",
+          "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+        },
+        "capability": {
+          "hmr": "present",
+          "updatePath": "in-place-hmr",
+          "canBeginUpdate": true,
+          "reasonKey": null
+        },
+        "anomaly": null,
+        "state": "invalid",
+        "reason": "format",
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_ce1a14b3b10ee2ba"
+            },
+            "requestId": "req_5f3e79031efab338",
+            "serverTime": "2026-10-26T03:21:26.309Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_ce1a14b3b10ee2ba"
+          }
+        }
+      },
+      {
+        "id": "malformed-json",
+        "discovery": {
+          "channel": "stable",
+          "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+          "state": "invalid",
+          "fetchedAt": "2026-10-25T20:21:27.033Z",
+          "checkedAt": "2026-10-25T20:21:27.033Z",
+          "nextCheckAt": "2026-10-26T03:22:28.990Z",
+          "lastError": {
+            "code": "GM-5039",
+            "message": "Update index is not valid JSON",
+            "retryable": false,
+            "at": "2026-10-26T03:21:28.990Z",
+            "reason": "json"
+          },
+          "canRefresh": false,
+          "anomaly": null
+        },
+        "target": {
+          "id": "tgt_ea9f44f1e17fb658",
+          "version": "1.2.2",
+          "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "channel": "stable",
+          "publishedAt": "2025-10-20T22:40:00.000Z",
+          "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+        },
+        "capability": {
+          "hmr": "present",
+          "updatePath": "in-place-hmr",
+          "canBeginUpdate": true,
+          "reasonKey": null
+        },
+        "anomaly": null,
+        "state": "invalid",
+        "reason": "json",
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_39b2076f5c976dca"
+            },
+            "requestId": "req_75043fa5083b3c19",
+            "serverTime": "2026-10-26T03:21:36.738Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_39b2076f5c976dca"
+          }
+        }
+      },
+      {
+        "id": "oversize",
+        "discovery": {
+          "channel": "stable",
+          "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+          "state": "invalid",
+          "fetchedAt": "2026-10-25T20:21:37.825Z",
+          "checkedAt": "2026-10-25T20:21:37.825Z",
+          "nextCheckAt": "2026-10-26T03:22:40.436Z",
+          "lastError": {
+            "code": "GM-5039",
+            "message": "Update index is larger than the allowed size",
+            "retryable": false,
+            "at": "2026-10-26T03:21:40.437Z",
+            "reason": "too-large"
+          },
+          "canRefresh": false,
+          "anomaly": null
+        },
+        "target": {
+          "id": "tgt_ea9f44f1e17fb658",
+          "version": "1.2.2",
+          "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "channel": "stable",
+          "publishedAt": "2025-10-20T22:40:00.000Z",
+          "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+        },
+        "capability": {
+          "hmr": "present",
+          "updatePath": "in-place-hmr",
+          "canBeginUpdate": true,
+          "reasonKey": null
+        },
+        "anomaly": null,
+        "state": "invalid",
+        "reason": "too-large",
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_28d1ce0ec8c47e3e"
+            },
+            "requestId": "req_539c2f2e9dffb037",
+            "serverTime": "2026-10-26T03:21:48.899Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_28d1ce0ec8c47e3e"
+          }
+        }
+      },
+      {
+        "id": "timeout",
+        "discovery": {
+          "channel": "stable",
+          "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+          "state": "offline",
+          "fetchedAt": "2026-10-25T20:21:49.976Z",
+          "checkedAt": "2026-10-25T20:21:49.976Z",
+          "nextCheckAt": "2026-10-26T03:22:58.067Z",
+          "lastError": {
+            "code": "GM-5039",
+            "message": "Update index check timed out",
+            "retryable": true,
+            "at": "2026-10-26T03:21:58.067Z",
+            "reason": "timeout"
+          },
+          "canRefresh": false,
+          "anomaly": null
+        },
+        "target": {
+          "id": "tgt_ea9f44f1e17fb658",
+          "version": "1.2.2",
+          "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "channel": "stable",
+          "publishedAt": "2025-10-20T22:40:00.000Z",
+          "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+        },
+        "capability": {
+          "hmr": "present",
+          "updatePath": "in-place-hmr",
+          "canBeginUpdate": true,
+          "reasonKey": null
+        },
+        "anomaly": null,
+        "state": "offline",
+        "reason": "timeout",
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_0fcca40bb4791647"
+            },
+            "requestId": "req_3148e18b1c4e2955",
+            "serverTime": "2026-10-26T03:22:00.923Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_0fcca40bb4791647"
+          }
+        }
+      },
+      {
+        "id": "redirect-http",
+        "discovery": {
+          "channel": "stable",
+          "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+          "state": "invalid",
+          "fetchedAt": "2026-10-25T20:22:01.692Z",
+          "checkedAt": "2026-10-25T20:22:01.692Z",
+          "nextCheckAt": "2026-10-26T03:23:05.915Z",
+          "lastError": {
+            "code": "GM-5039",
+            "message": "Update index redirect was rejected",
+            "retryable": false,
+            "at": "2026-10-26T03:22:05.915Z",
+            "reason": "redirect"
+          },
+          "canRefresh": false,
+          "anomaly": null
+        },
+        "target": {
+          "id": "tgt_ea9f44f1e17fb658",
+          "version": "1.2.2",
+          "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "channel": "stable",
+          "publishedAt": "2025-10-20T22:40:00.000Z",
+          "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+        },
+        "capability": {
+          "hmr": "present",
+          "updatePath": "in-place-hmr",
+          "canBeginUpdate": true,
+          "reasonKey": null
+        },
+        "anomaly": null,
+        "state": "invalid",
+        "reason": "redirect",
+        "begin": {
+          "status": 200,
+          "envelope": {
+            "ok": true,
+            "data": {
+              "operationId": "upd_815e61523404ad03"
+            },
+            "requestId": "req_dfef7a13ef8ebc80",
+            "serverTime": "2026-10-26T03:22:13.617Z"
+          },
+          "errorCode": null,
+          "data": {
+            "operationId": "upd_815e61523404ad03"
+          }
+        }
+      },
+      {
+        "id": "same-version-different-commit",
+        "discovery": {
+          "channel": "stable",
+          "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+          "state": "ready",
+          "fetchedAt": "2026-10-26T03:22:16.796Z",
+          "checkedAt": "2026-10-26T03:22:16.821Z",
+          "nextCheckAt": "2026-10-26T03:23:16.821Z",
+          "lastError": null,
+          "canRefresh": false,
+          "anomaly": {
+            "kind": "same-version-different-commit",
+            "version": "1.2.2",
+            "expectedCommit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+            "foundCommit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+            "source": "previous-target"
+          }
+        },
+        "target": {
+          "id": "tgt_775ae6a92bba3259",
+          "version": "1.2.2",
+          "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+          "channel": "stable",
+          "publishedAt": "2025-10-20T22:40:00.000Z",
+          "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+        },
+        "capability": {
+          "hmr": "present",
+          "updatePath": "in-place-hmr",
+          "canBeginUpdate": false,
+          "reasonKey": "update.reason.versionCommitAnomaly"
+        },
+        "anomaly": {
+          "kind": "same-version-different-commit",
+          "version": "1.2.2",
+          "expectedCommit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "foundCommit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+          "source": "previous-target"
+        },
+        "state": "ready",
+        "reason": null,
+        "begin": {
+          "status": 409,
+          "envelope": {
+            "ok": false,
+            "error": {
+              "code": "GM-4090",
+              "message": "Published version is pinned to a different commit; update blocked",
+              "retryable": false,
+              "details": {
+                "reason": "version-commit-anomaly"
+              }
+            },
+            "requestId": "req_132eb490d2cf525d",
+            "serverTime": "2026-10-26T03:22:24.969Z"
+          },
+          "errorCode": "GM-4090",
+          "data": null
+        }
+      }
+    ],
+    "recovery": {
+      "discovery": {
+        "channel": "stable",
+        "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "state": "ready",
+        "fetchedAt": "2026-10-26T03:22:28.690Z",
+        "checkedAt": "2026-10-26T03:22:28.717Z",
+        "nextCheckAt": "2026-10-26T03:23:28.717Z",
+        "lastError": null,
+        "canRefresh": false,
+        "anomaly": null
+      },
+      "target": {
+        "id": "tgt_6a7e2af60824928b",
+        "version": "1.3.0",
+        "commit": "f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#f8244cf24a418aaf796a2b64ad17e7417b65ecac"
+      },
+      "capability": {
+        "hmr": "present",
+        "updatePath": "in-place-hmr",
+        "canBeginUpdate": true,
+        "reasonKey": null
+      },
+      "begin": {
+        "operationId": "upd_815e61523404ad03",
+        "dialog": {
+          "title": "更新 Game Market 到 1.3.0？",
+          "body": "这会更新当前 profile 中的插件安装，影响当前 profile 的所有会话；更新完成后可能需要重启 DSH。更新前会暂停并保存正在运行的游戏。",
+          "meta": [
+            {
+              "label": "当前运行版本",
+              "value": "1.2.2"
+            },
+            {
+              "label": "目标版本",
+              "value": "1.3.0"
+            },
+            {
+              "label": "目标 commit",
+              "value": "f8244cf24a418aaf796a2b64ad17e7417b65ecac"
+            },
+            {
+              "label": "通道",
+              "value": "稳定"
+            }
+          ],
+          "warnings": [],
+          "primary": "开始更新"
+        }
+      },
+      "cancelObserved": "installing",
+      "cancelClick": {
+        "clicked": true,
+        "label": "recovery-cancel",
+        "target": {
+          "x": 376,
+          "y": 697.25,
+          "text": "取消更新",
+          "tag": "BUTTON",
+          "hitInsideTarget": true,
+          "atPoint": {
+            "tag": "BUTTON",
+            "className": "dgm-btn dgm-btn-quiet",
+            "text": "取消更新"
+          }
+        },
+        "trusted": "Input.dispatchMouseEvent",
+        "waitedMs": 0
+      },
+      "terminal": "cancelled"
+    },
+    "devRow": {
+      "baseline": {
+        "dir": "/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb/profiles/web",
+        "packageJson": {
+          "name": "dsh-profile-web",
+          "dependencies": {
+            "dsh-game-market": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d"
+          },
+          "profileBundles": [
+            "@deepseek-ai/dsh-base",
+            "@deepseek-ai/dsh-web-app",
+            "dsh-game-market"
+          ]
+        },
+        "dependency": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "diskPackage": {
+          "name": "dsh-game-market",
+          "version": "1.2.2"
+        },
+        "devRow": null,
+        "diskPackageRealPath": "/private/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb/profiles/web/node_modules/dsh-game-market"
+      },
+      "inspect": {
+        "schemaVersion": 1,
+        "host": {
+          "version": "1.3.0",
+          "commit": null,
+          "hostEpoch": "he_6678b747bd711b06",
+          "loadedAt": "2026-10-26T03:22:44.975Z"
+        },
+        "installed": {
+          "bundleId": "dsh-game-market",
+          "spec": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "specShape": "git-url",
+          "version": "1.2.2",
+          "enabled": true,
+          "loadedVersion": "1.3.0",
+          "loadedCommit": null,
+          "devRowShadow": true
+        },
+        "target": {
+          "id": "tgt_6a7e2af60824928b",
+          "version": "1.3.0",
+          "commit": "f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+          "channel": "stable",
+          "publishedAt": "2025-10-20T22:40:00.000Z",
+          "spec": "https://github.com/heswy/dsh-game-market.git#f8244cf24a418aaf796a2b64ad17e7417b65ecac"
+        },
+        "discovery": {
+          "channel": "stable",
+          "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+          "state": "ready",
+          "fetchedAt": "2026-10-26T03:22:45.480Z",
+          "checkedAt": "2026-10-26T03:22:45.571Z",
+          "nextCheckAt": "2026-10-26T03:23:45.571Z",
+          "lastError": null,
+          "canRefresh": false,
+          "anomaly": null
+        },
+        "capability": {
+          "hmr": "present",
+          "updatePath": "in-place-hmr",
+          "canBeginUpdate": false,
+          "reasonKey": "update.reason.devSource"
+        },
+        "operation": {
+          "operationId": "upd_1ddf2b5a034c3400",
+          "state": "cancelled",
+          "cancelledBy": "user"
+        }
+      },
+      "ui": {
+        "blocked": {
+          "reason": "dev-row",
+          "title": "开发模式（dev row）覆盖，前往插件管理切换安装来源",
+          "body": "存在同 id 的开发条目，安装不会接管当前运行的版本。"
+        },
+        "operation": {
+          "state": "cancelled",
+          "success": "false",
+          "title": "已取消更新",
+          "body": "安装未应用，当前版本未改变。",
+          "code": "",
+          "recovery": "",
+          "progressIndex": -1
+        }
+      },
+      "begin": {
+        "status": 409,
+        "envelope": {
+          "ok": false,
+          "error": {
+            "code": "GM-4090",
+            "message": "Development installs must switch the install source in the plugin manager",
+            "retryable": false,
+            "details": {
+              "reason": "dev-source"
+            }
+          },
+          "requestId": "req_5e0c4017adaa2865",
+          "serverTime": "2026-10-26T03:22:53.234Z"
+        },
+        "errorCode": "GM-4090",
+        "data": null
+      },
+      "probe": {
+        "dir": "/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb/profiles/web",
+        "packageJson": {
+          "name": "dsh-profile-web",
+          "dependencies": {
+            "dsh-game-market": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d"
+          },
+          "profileBundles": [
+            "@deepseek-ai/dsh-base",
+            "@deepseek-ai/dsh-web-app",
+            "dsh-game-market"
+          ]
+        },
+        "dependency": "github:heswy/dsh-game-market#e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "diskPackage": {
+          "name": "dsh-game-market",
+          "version": "1.2.2"
+        },
+        "devRow": null,
+        "diskPackageRealPath": "/private/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb/profiles/web/node_modules/dsh-game-market"
+      }
+    }
+  },
+  "restarts": [
+    {
+      "label": "wrong-repo",
+      "routeReady": true,
+      "settled": true,
+      "discovery": {
+        "channel": "stable",
+        "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "state": "invalid",
+        "fetchedAt": "2026-10-25T20:20:56.320Z",
+        "checkedAt": "2026-10-25T20:20:56.320Z",
+        "nextCheckAt": "2026-10-26T03:21:58.310Z",
+        "lastError": {
+          "code": "GM-5039",
+          "message": "Update index is not bound to the official repository",
+          "retryable": false,
+          "at": "2026-10-26T03:20:58.310Z",
+          "reason": "binding"
+        },
+        "canRefresh": false,
+        "anomaly": null
+      },
+      "target": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "label": "file-source",
+      "routeReady": true,
+      "settled": true,
+      "discovery": {
+        "channel": "stable",
+        "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "state": "invalid",
+        "fetchedAt": "2026-10-25T20:21:06.517Z",
+        "checkedAt": "2026-10-25T20:21:06.517Z",
+        "nextCheckAt": "2026-10-26T03:22:08.464Z",
+        "lastError": {
+          "code": "GM-5039",
+          "message": "Update index does not match format 1",
+          "retryable": false,
+          "at": "2026-10-26T03:21:08.464Z",
+          "reason": "format"
+        },
+        "canRefresh": false,
+        "anomaly": null
+      },
+      "target": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "label": "short-sha",
+      "routeReady": true,
+      "settled": true,
+      "discovery": {
+        "channel": "stable",
+        "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "state": "invalid",
+        "fetchedAt": "2026-10-25T20:21:16.822Z",
+        "checkedAt": "2026-10-25T20:21:16.822Z",
+        "nextCheckAt": "2026-10-26T03:22:18.801Z",
+        "lastError": {
+          "code": "GM-5039",
+          "message": "Update index does not match format 1",
+          "retryable": false,
+          "at": "2026-10-26T03:21:18.801Z",
+          "reason": "format"
+        },
+        "canRefresh": false,
+        "anomaly": null
+      },
+      "target": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "label": "malformed-json",
+      "routeReady": true,
+      "settled": true,
+      "discovery": {
+        "channel": "stable",
+        "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "state": "invalid",
+        "fetchedAt": "2026-10-25T20:21:27.033Z",
+        "checkedAt": "2026-10-25T20:21:27.033Z",
+        "nextCheckAt": "2026-10-26T03:22:28.990Z",
+        "lastError": {
+          "code": "GM-5039",
+          "message": "Update index is not valid JSON",
+          "retryable": false,
+          "at": "2026-10-26T03:21:28.990Z",
+          "reason": "json"
+        },
+        "canRefresh": false,
+        "anomaly": null
+      },
+      "target": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "label": "oversize",
+      "routeReady": true,
+      "settled": true,
+      "discovery": {
+        "channel": "stable",
+        "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "state": "invalid",
+        "fetchedAt": "2026-10-25T20:21:37.825Z",
+        "checkedAt": "2026-10-25T20:21:37.825Z",
+        "nextCheckAt": "2026-10-26T03:22:40.436Z",
+        "lastError": {
+          "code": "GM-5039",
+          "message": "Update index is larger than the allowed size",
+          "retryable": false,
+          "at": "2026-10-26T03:21:40.437Z",
+          "reason": "too-large"
+        },
+        "canRefresh": false,
+        "anomaly": null
+      },
+      "target": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "label": "timeout",
+      "routeReady": true,
+      "settled": true,
+      "discovery": {
+        "channel": "stable",
+        "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "state": "offline",
+        "fetchedAt": "2026-10-25T20:21:49.976Z",
+        "checkedAt": "2026-10-25T20:21:49.976Z",
+        "nextCheckAt": "2026-10-26T03:22:58.067Z",
+        "lastError": {
+          "code": "GM-5039",
+          "message": "Update index check timed out",
+          "retryable": true,
+          "at": "2026-10-26T03:21:58.067Z",
+          "reason": "timeout"
+        },
+        "canRefresh": false,
+        "anomaly": null
+      },
+      "target": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "label": "redirect-http",
+      "routeReady": true,
+      "settled": true,
+      "discovery": {
+        "channel": "stable",
+        "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "state": "invalid",
+        "fetchedAt": "2026-10-25T20:22:01.692Z",
+        "checkedAt": "2026-10-25T20:22:01.692Z",
+        "nextCheckAt": "2026-10-26T03:23:05.915Z",
+        "lastError": {
+          "code": "GM-5039",
+          "message": "Update index redirect was rejected",
+          "retryable": false,
+          "at": "2026-10-26T03:22:05.915Z",
+          "reason": "redirect"
+        },
+        "canRefresh": false,
+        "anomaly": null
+      },
+      "target": {
+        "id": "tgt_ea9f44f1e17fb658",
+        "version": "1.2.2",
+        "commit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#e4cb4694ad856b1132179f4db2385057dca7f66d"
+      }
+    },
+    {
+      "label": "same-version-different-commit",
+      "routeReady": true,
+      "settled": true,
+      "discovery": {
+        "channel": "stable",
+        "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "state": "ready",
+        "fetchedAt": "2026-10-26T03:22:16.796Z",
+        "checkedAt": "2026-10-26T03:22:16.821Z",
+        "nextCheckAt": "2026-10-26T03:23:16.821Z",
+        "lastError": null,
+        "canRefresh": false,
+        "anomaly": {
+          "kind": "same-version-different-commit",
+          "version": "1.2.2",
+          "expectedCommit": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+          "foundCommit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+          "source": "previous-target"
+        }
+      },
+      "target": {
+        "id": "tgt_775ae6a92bba3259",
+        "version": "1.2.2",
+        "commit": "f422e8d04b3b3de3f920a794317c0d28ee1246a2",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#f422e8d04b3b3de3f920a794317c0d28ee1246a2"
+      }
+    },
+    {
+      "label": "recovery",
+      "routeReady": true,
+      "settled": true,
+      "discovery": {
+        "channel": "stable",
+        "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+        "state": "ready",
+        "fetchedAt": "2026-10-26T03:22:28.690Z",
+        "checkedAt": "2026-10-26T03:22:28.717Z",
+        "nextCheckAt": "2026-10-26T03:23:28.717Z",
+        "lastError": null,
+        "canRefresh": false,
+        "anomaly": null
+      },
+      "target": {
+        "id": "tgt_6a7e2af60824928b",
+        "version": "1.3.0",
+        "commit": "f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+        "channel": "stable",
+        "publishedAt": "2025-10-20T22:40:00.000Z",
+        "spec": "https://github.com/heswy/dsh-game-market.git#f8244cf24a418aaf796a2b64ad17e7417b65ecac"
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "section": "cancel",
+      "at": "2026-10-26T03:20:42.239Z",
+      "state": "installing",
+      "observation": {
+        "operationId": "upd_55787763b606885a",
+        "state": "installing",
+        "stage": "install",
+        "progress": null
+      }
+    },
+    {
+      "section": "cancel",
+      "at": "2026-10-26T03:20:43.096Z",
+      "state": "cancelled",
+      "observation": {
+        "operationId": "upd_55787763b606885a",
+        "state": "cancelled",
+        "cancelledBy": "user"
+      }
+    }
+  ],
+  "dataPreservation": {
+    "before": {
+      "files": {
+        "marker": {
+          "present": true,
+          "sha256": "7549ac8b86cc29b953683dd640d5ab48a1758bba1dca8573737d6c8a4029323f"
+        },
+        "save": {
+          "present": true,
+          "sha256": "810a8eb5853767dd7b3960050f4039e5a07691cace5e394f206a18ba0ef14b9d"
+        },
+        "preferences": {
+          "present": true,
+          "sha256": "6dd40a3a25d8e830aaba96e75d03731b80f8a08801c6b0c9f8bad0279f49134a"
+        }
+      }
+    },
+    "after": {
+      "files": {
+        "marker": {
+          "present": true,
+          "sha256": "7549ac8b86cc29b953683dd640d5ab48a1758bba1dca8573737d6c8a4029323f"
+        },
+        "save": {
+          "present": true,
+          "sha256": "810a8eb5853767dd7b3960050f4039e5a07691cace5e394f206a18ba0ef14b9d"
+        },
+        "preferences": {
+          "present": true,
+          "sha256": "6dd40a3a25d8e830aaba96e75d03731b80f8a08801c6b0c9f8bad0279f49134a"
+        }
+      }
+    }
+  },
+  "screenshots": [],
+  "cleanup": {
+    "hosts": [
+      {
+        "pid": 57966,
+        "closed": {
+          "pid": 57966,
+          "port": 63940,
+          "closed": true,
+          "alreadyClosed": false
+        }
+      }
+    ],
+    "pages": [
+      {
+        "chromePid": 55490,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-62707"
+      },
+      {
+        "chromePid": 56136,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-62886"
+      },
+      {
+        "chromePid": 56380,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-63007"
+      },
+      {
+        "chromePid": 56588,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-63108"
+      },
+      {
+        "chromePid": 56794,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-63214"
+      },
+      {
+        "chromePid": 57022,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-63316"
+      },
+      {
+        "chromePid": 57211,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-63426"
+      },
+      {
+        "chromePid": 57391,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-63558"
+      },
+      {
+        "chromePid": 57571,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-63656"
+      },
+      {
+        "chromePid": 57786,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-63766"
+      },
+      {
+        "chromePid": 58015,
+        "chromeDir": "/tmp/dsh-v15/m3/chrome-63958"
+      }
+    ],
+    "homes": [
+      {
+        "home": "/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb",
+        "removed": true
+      }
+    ],
+    "proof": {
+      "label": "run-cleanup",
+      "ok": true,
+      "checkedAt": "2026-10-26T03:22:55.219Z",
+      "ports": [
+        {
+          "port": 62676,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 62707,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 62886,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 63007,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 63108,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 63214,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 63316,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 63426,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 63558,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 63656,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 63766,
+          "accepting": false,
+          "listenerPids": []
+        },
+        {
+          "port": 63958,
+          "accepting": false,
+          "listenerPids": []
+        }
+      ],
+      "pids": [
+        {
+          "pid": 55291,
+          "alive": false
+        },
+        {
+          "pid": 55490,
+          "alive": false
+        },
+        {
+          "pid": 56136,
+          "alive": false
+        },
+        {
+          "pid": 56380,
+          "alive": false
+        },
+        {
+          "pid": 56588,
+          "alive": false
+        },
+        {
+          "pid": 56794,
+          "alive": false
+        },
+        {
+          "pid": 57022,
+          "alive": false
+        },
+        {
+          "pid": 57211,
+          "alive": false
+        },
+        {
+          "pid": 57391,
+          "alive": false
+        },
+        {
+          "pid": 57571,
+          "alive": false
+        },
+        {
+          "pid": 57786,
+          "alive": false
+        },
+        {
+          "pid": 58015,
+          "alive": false
+        }
+      ],
+      "dirs": [
+        {
+          "dir": "/tmp/dsh-v15/m3/home-v2-edges-v2-edges-index-mvoovcij-b408cb",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-62707",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-62886",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-63007",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-63108",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-63214",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-63316",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-63426",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-63558",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-63656",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-63766",
+          "exists": false
+        },
+        {
+          "dir": "/tmp/dsh-v15/m3/chrome-63958",
+          "exists": false
+        }
+      ]
+    }
+  },
+  "thrown": null,
+  "environment": {
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "repoRoot": "/Users/<user>/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update"
+  },
+  "failedRequired": []
+}

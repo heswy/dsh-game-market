@@ -229,3 +229,12 @@ v1.2.0 **没有更新 UI**，无法事后给它加按钮：
 - Q3 `release.json` 作为包内扩展身份是否可接受（不新增索引外网络依赖）；
 - Q4 测试通道 opt-in 的表示方式；
 - Q5 手动刷新节流语义（Host 侧，与发布工具无关）。
+
+
+## 2026-10-26 重启后的发行边界
+
+当前 M3 验证继续采用仓库绑定的完整 Git commit target，由 DSH rc.3 的原生 installBundle 执行；不移除自身、不调用尚未发布到该版本的 master updateBundle API。npm 分发是后续发行渠道评估，不是本轮已选定方案。
+
+release:prepare 生成的 1.2.1/1.2.2/1.3.0 是隔离验证候选；推送开发分支只是使精确安装可取，不代表已发布正式版本。目标 V1.5 的正式版本/tag/stable 索引推广仍需另外授权。发布工具 dry-run 和 rc.3 公开索引 parser/target 兼容核对结果见 docs/verification/v1.5/m3-restart-acceptance.md。
+
+更新保留已禁用状态；开发态 file row 不得借用正式依赖的版本身份。终态 already-at-target 不阻止后续更高版本的更新入口。真实 Electron/生产索引不以隔离浏览器通过替代。

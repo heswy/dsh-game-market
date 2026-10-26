@@ -1,16 +1,16 @@
 # M3 重启验收（2026-10-26）
 
-当前状态：验收进行中，不作为通过声明。主会话已获用户直接实施 M3 授权；未获合并 main、打 tag、正式发版或生产索引推广授权。
+当前状态：M3 核心实现及隔离运行环境验收完成，待 PR 复核合入。主会话已获用户直接实施 M3 授权；未获合并 main、打 tag、正式发版或生产索引推广授权。
 
 ## 固定候选与范围
 
 | 候选 | 版本 | 安装 commit R | Client build commit P |
 |---|---|---|---|
-| A | 1.2.1 | `ce0247cbd3f3bee59aae9d276616dfb080ae0e08` | `76d0414617ea0558a8763fc449159ec9ba4e0d45` |
-| B | 1.2.2 | `1a110b651b200ab6ac597306e544267b59352c0d` | `a51dc6f82eac5239661f88a79f265b7786a81bb4` |
-| C | 1.3.0 | `a321bc72c95ae3f246c3b7081731ea4e6e541f19` | `9a4cd66d93faf1780c17d11acf1f5e6fa4dbcb66` |
+| A | 1.2.1 | `75c0041c3e73ddea83940d1d23a54f0d6d1431cf` | `80435467c87fbb58b2715e37ae54b86275039df8` |
+| B | 1.2.2 | `e4cb4694ad856b1132179f4db2385057dca7f66d` | `ededfaa30cf908624b2f6224246d837d64cd9dfa` |
+| C | 1.3.0 | `f8244cf24a418aaf796a2b64ad17e7417b65ecac` | `e2fa60a0bcf89aac9482ff0b08b9170450184a7e` |
 
-三个候选均包含 `33d50aa` 的 Runtime update hold 与 `2c3d971` 的存储重试恢复/盘点失败阻断。只推送开发候选分支以便真实 GitHub 精确安装；未创建 tag/Release、未写生产索引。最后候选已通过 `release:verify`；准备工具对每版执行隔离确定性构建并验证 P/R 对应关系。最终门禁和端到端结果另列，不把生成成功当作安装验收。
+三个候选均包含 `33d50aa`（Runtime hold）、`2c3d971`（存储恢复/盘点失败阻断）、`6ff6e0b`（禁用状态）、`a60e74d`（后续更新入口/开发态身份）修复。只推送开发候选分支以便真实 GitHub 精确安装；未创建 tag/Release、未写生产索引。最后候选已通过 `release:verify`；准备工具对每版执行隔离确定性构建并验证 P/R 对应关系。最终门禁和端到端结果另列，不把生成成功当作安装验收。
 
 环境：macOS，Node 24.14.0，当前安装 App 的只读 DSH `0.2.1-rc.3` 副本 + 隔离 `dsh web` + headless Chrome。生产固定索引 URL 的返回体由隔离 TLS 夹具提供；插件包通过真实 GitHub/本机上游代理传输。此证据是 **isolated-browser + real GitHub package transport + isolated index fixture**，不等于真实 Electron 或生产索引发布。
 
@@ -24,15 +24,20 @@
 
 ## 验收结果
 
-新候选的同 profile 两跳、非 HMR、多窗口、保存失败/重试、取消/响应丢失/恢复正在串行采集，完成后逐项记录下表与原始 JSON。
+最终固定候选的以下场景全部通过，均记录真实目标身份与清理证明。
 
-| 项目 | 当前结论 |
-|---|---|
-| 新候选核心端到端 | 进行中 |
-| 最终完整门禁/构建 | 待最终 head 复跑 |
-| 真实 Electron/干净桌面安装升级 | 本轮未跑，M5 门槛 |
-| stable/生产索引推广 | 未执行，需要正式发布授权 |
-| 多 Host 进程共享同 profile 的活跃游戏协调 | 未支持；本轮只验证同一 Host 的多页面/多实例，profile 更新锁只保证更新互斥 |
+| 场景 | 必需检查 | 原始证据 |
+|---|---|---|
+| 异常索引/取消/恢复/开发态 | 86/86 PASS | [JSON](./raw/m3/M3-v2-edges-index-2026-10-26T03-20-24-091Z.json) |
+| 同 profile A→B→C + 响应丢失 | 55/55 PASS | [JSON](./raw/m3/M3-v1-two-hop-2026-10-26T04-43-16-402Z.json) |
+| 两游戏保存失败→修复→重试 | 34/34 PASS | [JSON](./raw/m3/M3-v2-save-coordination-2026-10-26T04-45-37-872Z.json) |
+| 非 HMR 安装→重启→身份确认 | 57/57 PASS | [JSON](./raw/m3/M3-v1-nonhmr-restart-2026-10-26T04-48-10-566Z.json) |
+| 同 Host 多窗口幂等 | 41/41 PASS | [JSON](./raw/m3/M3-v2-windows-idempotency-2026-10-26T04-51-17-506Z.json) |
+| 隔离安装预检 | 28/28 PASS | [JSON](./raw/m3/M3-v1-preflight-2026-10-26T04-52-24-879Z.json) |
+
+串行执行六个场景全部 exit 0、无超时、遗留进程 0：[串行汇总](./raw/m3/M3-serial-summary-2026-10-26T04-53-47-008Z.json)。边界场景独立串行通过；runner selfcheck 448 项通过。完整 `npm run verify`：1543/1543，0 失败、0 跳过，CHECK OK (44)，构建通过：[门禁记录](./raw/m3/M3-full-gate-2026-10-26.json)、[日志](./raw/m3/M3-full-gate-2026-10-26.log)。最终提交仍须以干净 checkout 独立复跑后交付。
+
+真实 Electron/干净桌面安装升级仍为 M5 门槛；stable/生产索引推广未执行。多 Host 进程共享 profile 的活跃游戏协调未支持；这里只验证同一 Host 的多页面/多实例，跨进程更新锁只保证更新互斥。强制未知 HMR 的真实环境用例保持 informational not-run，自动化覆盖其分支，不把它计为通过。
 
 ## 历史结果与失败记录
 
@@ -40,4 +45,16 @@
 
 初次预检因旧 ASAR 副本与当前 App 不一致失败；重新只读提取后通过。旧保存测试因未安装 2048、只检查 Runtime 壳、无效菜单局、错误页面观察而失败；这些记录不计为产品通过。故障注入和恢复必须以实际游戏写入及新 operation 为准。
 
-公开 parser 兼容核对：对推广工具 dry-run 生成的索引，用实际 rc.3 的公开 parseMarketIndex/marketInstallTarget 和本项目严格子集校验器检查，7 项通过（包含浮动/短 SHA 拒绝）；没有引入私有模块或新运行依赖。证据：[public parser](./raw/m3/M3-index-parser-compatibility-2026-10-26.json)。
+公开 parser 兼容核对：对推广工具 dry-run 生成的索引，用实际 rc.3 的公开 parseMarketIndex/marketInstallTarget 和本项目严格子集校验器检查，8 项通过（包含浮动/短 SHA 拒绝及 dry-run 无写入）；没有引入私有模块或新运行依赖。证据：[public parser](./raw/m3/M3-index-parser-compatibility-2026-10-26.json)。
+
+
+## 本轮补充边界裁决
+
+- `already-at-target` 只表示上一次操作已满足，不得永久隐藏后续更高版本。相同运行身份仍由独立比较抑制重复安装。
+- 开发态 file row 的识别须覆盖单 profile 和显式 profileDir；本地运行代码不得借用 profile 依赖里的正式 commit。
+- 发现契约保留上次验证过的 target（包括最新请求 invalid/offline）。恶意索引验收应证明：新非法元数据被拒绝、只保留原可信 target、任意 target/spec 拒绝、包身份未变。对已经安装的可信缓存 target，begin 返回 already-at-target 是合法无包变更结果，不能误判成接纳了恶意源。异常同版本不同 commit 仍必须阻断。
+- 取消结果若为 too-late，必须观察到最终生效或真实失败之后才能进入下一测试；开发态拒绝迁移验证对比进入该场景前后的真实依赖/包身份，不假定取消一定发生在安装前。
+- 第二跳已由浏览器在 Host 已接受请求后丢弃 begin 的 HTTP 响应，验证 Client 通过 inspect/observe 恢复。Native waitForInstall null 等服务分支仍标为 automated，不把 HTTP 故障等同全部原生 RPC 故障。
+
+
+网络复现：直接 curl GitHub 的最新候选归档为 200、50,352,077 B、约 6 秒；经索引夹具的 curl 同样约 7 秒成功，但 pnpm 经夹具停滞。相同 pnpm 命令仅将 npm_config 代理改为上游后 8.5 秒成功。因此验证环境中 Host 索引 fetch 继续隔离，pnpm 包传输直接使用上游代理；正式产品代码未改。原失败保留：[fixture transfer](./raw/m3/M3-package-transfer-2026-10-26.json)，成功与预热说明：[direct package transfer](./raw/m3/M3-direct-package-transfer-2026-10-26.json)。后续安装可复用 pnpm 缓存，不宣称每跳重新下载；实际包身份仍逐跳核验。

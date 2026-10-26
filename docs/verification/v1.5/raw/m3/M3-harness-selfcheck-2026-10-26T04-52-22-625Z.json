@@ -1,0 +1,3508 @@
+{
+  "id": "M3-harness-selfcheck",
+  "title": "Static harness self-check (syntax, imports, identifiers, bounded loops, run-scoped cleanup)",
+  "checkedAt": "2026-10-26T04:52:22.623Z",
+  "runnerFiles": [
+    "run-h1-tests-evidence.mjs",
+    "run-m3-serial.mjs",
+    "run-v0-discovery-matrix.mjs",
+    "run-v0-fixture.mjs",
+    "run-v0-harness.mjs",
+    "run-v1-hmr-chain.mjs",
+    "run-v1-nonhmr-restart.mjs",
+    "run-v1-preflight.mjs",
+    "run-v1-single-hop.mjs",
+    "run-v1-two-hop.mjs",
+    "run-v2-edges-index.mjs",
+    "run-v2-save-coordination.mjs",
+    "run-v2-windows-idempotency.mjs"
+  ],
+  "supportModules": [
+    "v1-common.mjs",
+    "lib.mjs",
+    "fixture.mjs",
+    "network-env.mjs"
+  ],
+  "checks": [
+    {
+      "name": "syntax-run-h1-tests-evidence.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "import-run-h1-tests-evidence.mjs-RAW_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-h1-tests-evidence.mjs-REPO_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-h1-tests-evidence.mjs-createReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-h1-tests-evidence.mjs-ensureDir",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-h1-tests-evidence.mjs-finalizeRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-h1-tests-evidence.mjs-log",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-h1-tests-evidence.mjs-uniqueRunTag",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "identifiers-run-h1-tests-evidence.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-unbounded-while-run-h1-tests-evidence.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-broad-cleanup-run-h1-tests-evidence.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "syntax-run-m3-serial.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "identifiers-run-m3-serial.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-unbounded-while-run-m3-serial.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-broad-cleanup-run-m3-serial.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "syntax-run-v0-discovery-matrix.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-FIXED_INDEX_PATH",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-FIXED_INDEX_URL",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-RAW_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-REPO_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-RUNS_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-bootProbeHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-cleanupProof",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-createReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-ensureDir",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-finalizeRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-freePort",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-log",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-makeIsolatedHome",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-portAccepting",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-removeHome",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-sleep",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-uniqueRunTag",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-verifyRuntime",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-createFixtureTls",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-createIndexTransport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-discovery-matrix.mjs-removeFixtureTls",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "identifiers-run-v0-discovery-matrix.mjs",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "note": "legacy V0 runner: syntax/import checks only"
+      }
+    },
+    {
+      "name": "no-unbounded-while-run-v0-discovery-matrix.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-broad-cleanup-run-v0-discovery-matrix.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "syntax-run-v0-fixture.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-PROBE_ROW_ID",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-PROBE_NETWORK_ENV",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-RAW_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-REPO_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-RUNS_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-bootProbeHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-cleanupProof",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-createReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-ensureDir",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-finalizeRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-freePort",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-log",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-makeIsolatedHome",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-removeHome",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-runWithCleanup",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-uniqueRunTag",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-verifyRuntime",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-portAccepting",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-FIXED_INDEX_URL",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-createFixtureTls",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-createIndexTransport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-fetchViaChild",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-fixture.mjs-removeFixtureTls",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "identifiers-run-v0-fixture.mjs",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "note": "legacy V0 runner: syntax/import checks only"
+      }
+    },
+    {
+      "name": "no-unbounded-while-run-v0-fixture.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-broad-cleanup-run-v0-fixture.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "syntax-run-v0-harness.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "import-run-v0-harness.mjs-Cdp",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-PROBE_NETWORK_ENV",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-PROBE_ROW_ID",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-RAW_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-REPO_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-RUNS_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-SHOT_DIR",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-bootProbeHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-cleanupProof",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-createReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-ensureDir",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-finalizeRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-freePort",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-hostEnvEvidence",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-log",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-makeIsolatedHome",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-removeHome",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-runWithCleanup",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-uniqueRunTag",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-verifyRuntime",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-waitForDshPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-pageFetchJson",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v0-harness.mjs-listenerPids",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "identifiers-run-v0-harness.mjs",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "note": "legacy V0 runner: syntax/import checks only"
+      }
+    },
+    {
+      "name": "no-unbounded-while-run-v0-harness.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-broad-cleanup-run-v0-harness.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "syntax-run-v1-hmr-chain.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-attachReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-beginUpdateThroughUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-buildIndexBody",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-clickAction",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-cleanupRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-createRunContext",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-discoveryCanRefresh",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-ensureDiscoveryTarget",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-ensureMarketPanelOpen",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-ensureUpdateSectionRendered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-healthFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-inspectFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-makeScenarioEnvironment",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-openRealPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-pagePostJson",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-parseTargets",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-prepareTargetRepo",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-probeInspect",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-readReleaseIdentity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-readServedClientIdentity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-readUpdateUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-readUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-refreshDiscoveryThroughUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-reloadRealPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-seedUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-startTransport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-targetRefs",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-trackHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-trackPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-userDataPreserved",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-waitForDiscoveredTarget",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-waitForHostVersion",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-waitForAction",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-waitForOperation",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-waitForRoute",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-RAW_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-REPO_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-RUNS_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-SHOT_DIR",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-bootProbeHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-cleanupProof",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-createReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-ensureDir",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-finalizeRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-freePort",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-log",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-makeIsolatedHome",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-sleep",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-verifyRuntime",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-hmr-chain.mjs-removeFixtureTls",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "identifiers-run-v1-hmr-chain.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-unbounded-while-run-v1-hmr-chain.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-broad-cleanup-run-v1-hmr-chain.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "syntax-run-v1-nonhmr-restart.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-attachReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-beginUpdateThroughUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-buildIndexBody",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-cleanupRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-createRunContext",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-ensureUpdateSectionRendered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-healthFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-inspectFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-makeScenarioEnvironment",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-openRealPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-parseTargets",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-prepareTargetRepo",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-probeInspect",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-readReleaseIdentity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-readUpdateUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-readUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-reloadRealPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-restartContextHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-seedUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-startTransport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-targetRefs",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-trackHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-trackPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-userDataPreserved",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-waitForDiscoveredTarget",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-waitForHostVersion",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-waitForOperation",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-waitForRoute",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-writeNoHmrPatch",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-RAW_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-REPO_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-RUNS_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-SHOT_DIR",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-bootProbeHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-sleep",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-cleanupProof",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-createReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-ensureDir",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-finalizeRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-freePort",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-log",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-makeIsolatedHome",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-verifyRuntime",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-nonhmr-restart.mjs-removeFixtureTls",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "identifiers-run-v1-nonhmr-restart.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-unbounded-while-run-v1-nonhmr-restart.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-broad-cleanup-run-v1-nonhmr-restart.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "syntax-run-v1-preflight.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-attachReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-bootstrapInstalledProfile",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-cleanupRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-clickAction",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-createRunContext",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-discoveryCanRefresh",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-healthFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-inspectFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-openRealPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-parseTargets",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-prepareTargetRepo",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-probeInspect",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-readReleaseIdentity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-readServedClientIdentity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-readUpdateUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-trackHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-trackPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-waitForHostVersion",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-waitForUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-RAW_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-REPO_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-SHOT_DIR",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-cleanupProof",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-createReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-ensureDir",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-finalizeRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-log",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-sleep",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-verifyRuntime",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-preflight.mjs-removeFixtureTls",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "identifiers-run-v1-preflight.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-unbounded-while-run-v1-preflight.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-broad-cleanup-run-v1-preflight.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "syntax-run-v1-single-hop.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-attachReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-beginUpdateThroughUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-buildIndexBody",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-cleanupRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-clickAction",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-createRunContext",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-discoveryCanRefresh",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-ensureMarketPanelOpen",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-ensureUpdateSectionRendered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-healthFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-inspectFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-installExactWithRetry",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-makeScenarioEnvironment",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-openRealPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-parseTargets",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-prepareTargetRepo",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-probeInspect",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-readReleaseIdentity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-readServedClientIdentity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-readUpdateUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-readUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-reloadRealPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-seedUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-startTransport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-trackHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-trackPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-userDataPreserved",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-waitForHostVersion",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-waitForOperation",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-waitForRoute",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-RAW_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-REPO_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-RUNS_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-SHOT_DIR",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-bootProbeHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-cleanupProof",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-createReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-ensureDir",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-finalizeRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-freePort",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-log",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-makeIsolatedHome",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-sleep",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-verifyRuntime",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-single-hop.mjs-removeFixtureTls",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "identifiers-run-v1-single-hop.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-unbounded-while-run-v1-single-hop.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-broad-cleanup-run-v1-single-hop.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "syntax-run-v1-two-hop.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-attachReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-beginUpdateThroughUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-buildIndexBody",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-cleanupRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-clickAction",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-createRunContext",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-discoveryCanRefresh",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-ensureMarketPanelOpen",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-ensureUpdateSectionRendered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-healthFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-inspectFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-installExactWithRetry",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-makeScenarioEnvironment",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-openRealPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-parseTargets",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-prepareTargetRepo",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-probeInspect",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-readReleaseIdentity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-readServedClientIdentity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-readUpdateUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-readUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-reloadRealPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-seedUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-startTransport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-trackHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-trackPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-userDataPreserved",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-waitForAction",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-waitForHostVersion",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-waitForOperation",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-waitForRoute",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-RAW_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-REPO_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-RUNS_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-SHOT_DIR",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-bootProbeHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-cleanupProof",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-createReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-ensureDir",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-finalizeRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-freePort",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-log",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-makeIsolatedHome",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-sleep",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-verifyRuntime",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v1-two-hop.mjs-removeFixtureTls",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "identifiers-run-v1-two-hop.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-unbounded-while-run-v1-two-hop.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-broad-cleanup-run-v1-two-hop.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "syntax-run-v2-edges-index.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-attachReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-beginUpdateThroughUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-bootstrapInstalledProfile",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-cleanupRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-clickAction",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-confirmDialog",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-createRunContext",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-healthFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-inspectFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-openRealPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-pageGetJson",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-pagePostJson",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-parseTargets",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-prepareTargetRepo",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-readReleaseIdentity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-readUpdateUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-restartContextHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-seedUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-readUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-trackHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-trackPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-userDataPreserved",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-waitForOperation",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-waitForRoute",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-waitForUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-closeRealPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-RAW_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-REPO_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-SHOT_DIR",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-cleanupProof",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-createReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-ensureDir",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-finalizeRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-log",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-verifyRuntime",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-injectDevGameMarketRow",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-edges-index.mjs-removeFixtureTls",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "identifiers-run-v2-edges-index.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-unbounded-while-run-v2-edges-index.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-broad-cleanup-run-v2-edges-index.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "syntax-run-v2-save-coordination.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-attachReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-beginUpdateThroughUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-bootstrapInstalledProfile",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-cleanupRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-createRunContext",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-ensureMarketPanelOpen",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-ensureUpdateSectionRendered",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-healthFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-inspectFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-openRealPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-pageGetJson",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-pagePostJson",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-parseTargets",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-prepareTargetRepo",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-readReleaseIdentity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-readUpdateUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-readUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-seedUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-trackHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-trackPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-userDataPreserved",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-waitForOperation",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-waitForUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-RAW_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-REPO_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-SHOT_DIR",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-cleanupProof",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-createReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-ensureDir",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-log",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-sleep",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-verifyRuntime",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-finalizeRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-save-coordination.mjs-removeFixtureTls",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "identifiers-run-v2-save-coordination.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-unbounded-while-run-v2-save-coordination.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-broad-cleanup-run-v2-save-coordination.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "syntax-run-v2-windows-idempotency.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-attachReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-beginUpdateThroughUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-bootstrapInstalledProfile",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-cleanupRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-clickAction",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-createRunContext",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-healthFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-inspectFromPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-openRealPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-parseTargets",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-prepareTargetRepo",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-readReleaseIdentity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-readUpdateUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-seedUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-readUserData",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-trackHost",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-trackPage",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-userDataPreserved",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-waitForDiscoveredTarget",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-waitForOperation",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-waitForUi",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "v1-common.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-RAW_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-REPO_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-RUNS_ROOT",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-SHOT_DIR",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-cleanupProof",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-createReport",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-ensureDir",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-finalizeRun",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-log",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-verifyRuntime",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "lib.mjs"
+      }
+    },
+    {
+      "name": "import-run-v2-windows-idempotency.mjs-removeFixtureTls",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "from": "fixture.mjs"
+      }
+    },
+    {
+      "name": "identifiers-run-v2-windows-idempotency.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-unbounded-while-run-v2-windows-idempotency.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "no-broad-cleanup-run-v2-windows-idempotency.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "support-syntax-v1-common.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "support-syntax-lib.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "support-syntax-fixture.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "support-syntax-network-env.mjs",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ],
+  "failed": [],
+  "passed": true
+}

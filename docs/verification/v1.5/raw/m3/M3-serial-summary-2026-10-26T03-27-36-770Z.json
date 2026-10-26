@@ -1,0 +1,54 @@
+{
+  "id": "M3-serial-summary",
+  "startedAt": "2026-10-26T03:20:23.970Z",
+  "runTag": "serial-mvoovcf5",
+  "mode": "real-github",
+  "modeLabel": "real GitHub transport (network-dependent; explicitly opted in)",
+  "candidates": {
+    "a": "75c0041c3e73ddea83940d1d23a54f0d6d1431cf",
+    "b": "e4cb4694ad856b1132179f4db2385057dca7f66d",
+    "final": "f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+    "versionA": "1.2.1",
+    "versionB": "1.2.2",
+    "versionFinal": "1.3.0"
+  },
+  "scenarios": [
+    {
+      "name": "v2-edges",
+      "label": "edges: at-target/ambiguous/cancel/malicious/dev-row/recovery",
+      "command": "/opt/homebrew/Cellar/node@24/24.14.0_1/bin/node /Users/orange/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v2-edges-index.mjs --a 75c0041c3e73ddea83940d1d23a54f0d6d1431cf --b e4cb4694ad856b1132179f4db2385057dca7f66d --final f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+      "logFile": "/tmp/dsh-v15/m3/logs/m3-serial-mvoovcf5/v2-edges.log",
+      "timeoutMs": 1200000,
+      "timedOut": false,
+      "exitCode": 0,
+      "signal": null,
+      "spawnError": null,
+      "durationMs": 173993,
+      "evidencePath": "/Users/orange/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/docs/verification/v1.5/raw/m3/M3-v2-edges-index-2026-10-26T03-20-24-091Z.json",
+      "evidencePassed": true,
+      "cleanupProven": true,
+      "orphanPids": [],
+      "passed": true
+    },
+    {
+      "name": "two-hop",
+      "label": "same-profile continuous two-hop A->B->FINAL (real UI only)",
+      "command": "/opt/homebrew/Cellar/node@24/24.14.0_1/bin/node /Users/orange/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/scripts/verification/v1.5/m3/run-v1-two-hop.mjs --a 75c0041c3e73ddea83940d1d23a54f0d6d1431cf --b e4cb4694ad856b1132179f4db2385057dca7f66d --final f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+      "logFile": "/tmp/dsh-v15/m3/logs/m3-serial-mvoovcf5/two-hop.log",
+      "timeoutMs": 1200000,
+      "timedOut": false,
+      "exitCode": 1,
+      "signal": null,
+      "spawnError": null,
+      "durationMs": 258732,
+      "evidencePath": "/Users/orange/Orange Field/Matterhorn/dsh-game-market-worktrees/v1.5-platform-update/docs/verification/v1.5/raw/m3/M3-v1-two-hop-2026-10-26T03-23-18-137Z.json",
+      "evidencePassed": false,
+      "cleanupProven": true,
+      "orphanPids": [],
+      "passed": false
+    }
+  ],
+  "failedAt": "two-hop",
+  "passed": false,
+  "logDir": "/tmp/dsh-v15/m3/logs/m3-serial-mvoovcf5"
+}

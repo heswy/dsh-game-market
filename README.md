@@ -7,6 +7,13 @@
 V1.2 发布验证与范围见[发布说明](./docs/releases/v1.2.0.md)；真实 DSH App 安装/持久化、完整 120 秒流程、跨机 save、真实外部作者生产流程仍待验收。
 V1.1 验收：`npm run verify` **787/787**、`CHECK OK (23)`；真机与隔离宿主证据见 [`docs/V1-VERIFICATION.md`](./docs/V1-VERIFICATION.md)、[`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./docs/verification/v1/AUTOMATED-EVIDENCE.md)、[`docs/verification/fullbleed-runtime/`](./docs/verification/fullbleed-runtime/)。
 
+
+### V1.5 开发进度（2026-10-26）
+
+M0 宿主与契约、M1 多文件游戏包、M2 Orbit Courier 与开发工具已经 PR #6/#7/#8 合入 main。M3 插件持续更新已完成实现与最终固定候选的隔离运行环境验收，待 PR 复核合入，当前实现包括：宿主管理安装、同 profile 持续更新、更新前保存协调与运行冻结、权限恢复重试、禁用状态保留、双端运行身份确认和发布准备工具。V1.5 尚未正式发布。
+
+最新实际结果、固定候选与未验证边界见 [M3 重启验收](./docs/verification/v1.5/m3-restart-acceptance.md)；项目安排见 [项目记忆](./PROJECT_MEMORY.md)。M4 鲸鱼与游戏内问答、M5 真实桌面/正式对外验收仍待完成。本文“当前发布 v1.2.0”与开发候选版本应分别看待。
+
 ### V1.1 主要变化
 
 - Market header/首页/详情/卡片视觉与交互优化；会话 Game tab 显示状态 pill（等你/完成/出错/已暂停），侧边栏不再带状态；

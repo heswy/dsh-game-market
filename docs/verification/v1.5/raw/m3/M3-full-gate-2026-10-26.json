@@ -1,0 +1,17 @@
+{
+  "id": "M3-full-gate",
+  "at": "2026-10-26T04:48:11.023Z",
+  "command": "npm run verify",
+  "node": "v24.14.0",
+  "productCandidate": "f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+  "sourceHead": "f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+  "runnerAndDocsChangesPendingCommit": true,
+  "exitCode": 0,
+  "tests": 1543,
+  "pass": 1543,
+  "fail": 0,
+  "skipped": 0,
+  "checks": 44,
+  "log": "M3-full-gate-2026-10-26.log",
+  "passed": true
+}

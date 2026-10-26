@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**规划 V1.5 正式对外首版**。已发布基线 `v1.2.0@f422e8d`（package 1.2.0）；PR #4 / #5 与项目记忆维护已合入。用户指定三条主线：多资源包与新增非单文件内置游戏；结合 DSH 的平台一键持续更新；DeepSeek Logo 鲸鱼/气泡和游戏内普通 AskQuestion 回答。开发指南见 `docs/plans/2026-10-19-v1.5-public-launch.md`，宿主能力核对见配套记录；目前只完成方案，未开始实现、未发布 v1.5。
+- 当前目标：**收口 V1.5 M3 插件持续更新**。V1.2 历史发布基线 `f422e8d`；2026-10-25 核对远端 main 为 `40d701678e96d99e777520debb43e25b28ae2d0c`，M0/M1/M2 已经 PR #6/#7/#8 合入。M3 核心实现与固定候选隔离验收已完成，待 PR 复核合入；M4/M5 未完成，V1.5 未正式发布。重启顺序与更新机制裁决见本文件 §6 和开发指南；不重做 M0–M2。
 - 历史：V1 验收/修复过程（M3 自动化、真机代执行、codex 两轮 review CR-01..09）见 `docs/V1-VERIFICATION.md`、`docs/verification/v1/AUTOMATED-EVIDENCE.md`、`docs/reviews/2026-10-19-codex-acceptance-review.md` 与 `git log`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2 + V1.1 呈现修订 + 社区投稿 §8.14 / D-038**；第 8–12 章为开发权威来源；全出血/安全区见 §9.6.1、D-037）
 - 开始记录：2026-10-18
@@ -403,6 +403,26 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - **真实环境待验收**：真实 DSH App 安装与持久化、Host GM-4006 独立安装拒绝路径、完整真实 120 秒流程、跨机 save 传输、真实 Host 更新分发。C-22 save 恢复仍为模拟器证据。
 - **后续迭代**：V1.5 多资源包与既有滚动项（真实审批、桌面性能终值、字号/减少动效、DEV-03/07、2048 PB、Tab 键盘链路）保留。
 - **日常桌面端**：需要 dev 行时用户执行 `npm run dev:enable -- --yes` 后重启 DSH；Client 改动刷新页面即可；Host 改动需重启/重载插件行。
+
+### 6.1 当前状态与后续安排（2026-10-26）
+
+本节取代上方历史进度快照。用户明确授权本会话直接完成 M3；实现与隔离运行环境验收完成，待 PR 复核合入。main 仍为 `40d7016`，M0/M1/M2 已经 PR #6/#7/#8 合入；V1.5 尚未正式发布。
+
+| 阶段 | 已做 | 剩余 |
+|---|---|---|
+| M0–M2 | 宿主契约、ZIP/双目录/资源服务、Orbit Courier 与开发投稿工具 | M5 真实桌面与外部作者回归 |
+| M3 | 发现/UI、精确安装、保存冻结、恢复、双端身份、发布工具及审计补修；完整门禁 1543/1543、CHECK OK (44)；固定候选两跳/保存故障重试/非 HMR 重启/多窗口/异常索引均通过 | 最终提交独立 checkout 门禁、PR 复核与授权合入 |
+| M4 | 前期 Logo/问答探针 | 先旧 HTML wrapper 迁移，再正式鲸鱼/气泡与游戏内普通问答 |
+| M5 | 尚未完成 | 真实 Electron、干净桌面安装升级、长局/重开/存档迁移、外部作者闭环、发行恢复说明及生产发布 |
+
+**代码与证据**：仓库外 `../dsh-game-market-worktrees/v1.5-platform-update`，分支 `feat/v1.5-platform-update`。主目录仍在旧指南分支，不可据此重新开发。原审计已归档且原工作树用户改动保留。唯一当前验收结论见 [M3 重启验收](./docs/verification/v1.5/m3-restart-acceptance.md)，交接见 [M3-HANDOFF](./docs/verification/v1.5/M3-HANDOFF.md)。最终产品候选 C 为 `f8244cf24a418aaf796a2b64ad17e7417b65ecac`；候选版本不等于正式发行。
+
+**更新机制**：保持“固定索引发现→用户确认→游戏保存与运行冻结→DSH 管理器精确 Git commit 安装→Host/Client 实际身份确认”。已在已安装 rc.3 的隔离副本验证；不自行覆盖插件文件、不先卸载自己。master 的 `updateBundle` 不作为 rc.3 已发布接口；DeepSeek-Bot 的移除重装不照搬。npm 分发未选定。权限修复后重新探测、保存失败真实重试、禁用状态保留、后续版本入口与开发态身份保护均已补齐。
+
+**证据边界**：本轮为隔离 dsh web/headless Chrome、真实 GitHub 精确包安装、隔离固定索引夹具，非真实 Electron或生产索引验收。未知 HMR 强制真实用例仍为 informational not-run，自动化覆盖其分支。同 Host 多窗口已验证；同 profile 多独立 Host 的活跃游戏协同冻结未支持，跨进程锁只串行化更新。未合并 main、打 tag、发 Release 或写生产索引。
+
+下一步先交付并复核 M3 PR，合入后开展 M4，最后执行 M5；保留指南 §8 正式发布门槛。上游核对依据见能力记录的 2026-10-25 补充。
+
 
 ---
 
