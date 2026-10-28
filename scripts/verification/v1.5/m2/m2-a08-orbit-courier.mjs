@@ -929,6 +929,12 @@ async function main() {
           deliveries: after.state.deliveries,
         },
       });
+      if (!after) {
+        const ui = await readUiState(cdp);
+        scenario.lostGameDocument = { runtime: ui.runtime, page: ui.page, panelOpen: ui.panelOpen, runtimeText: await cdp.eval(`document.querySelector('.dgm-runtime')?.innerText?.slice(0,1200) || null`), attachedFrames: capture.state.attached.length };
+        stage('lost game document: ' + JSON.stringify(scenario.lostGameDocument));
+      }
+      stage('extra run ' + extraRuns + ': active ' + extended.activeMs + 'ms; total ' + wall.activePlayMs + 'ms');
       await sleep(400);
       if (extended.activeMs <= 0) break;
     }

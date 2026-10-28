@@ -1,0 +1,264 @@
+{
+  "prepareDryRun": {
+    "ok": true,
+    "tool": "release:prepare",
+    "mode": "dry-run",
+    "branch": "codex/m5-rebuild-proof",
+    "repo": "https://github.com/heswy/dsh-game-market",
+    "version": "1.5.0-rc.1",
+    "clientBuildCommit": "0ca0aacc4501f313776f4ea1e0683255cb14e62b",
+    "deterministic": true,
+    "builds": 4,
+    "clientIdentity": {
+      "version": "1.5.0-rc.1",
+      "buildCommit": "0ca0aacc4501f313776f4ea1e0683255cb14e62b"
+    },
+    "artifacts": {
+      "algorithm": "sha256-tree-v1",
+      "roots": [
+        "client.js",
+        "games",
+        "registry"
+      ],
+      "sha256": "d0d7fc7a64930e75373eef9c892fb687423ae0b948f7c7e4cfc21bed0476f932",
+      "files": 93,
+      "bytes": 3449879
+    },
+    "identity": {
+      "schemaVersion": 1,
+      "version": "1.5.0-rc.1",
+      "clientBuildCommit": "0ca0aacc4501f313776f4ea1e0683255cb14e62b",
+      "repo": "https://github.com/heswy/dsh-game-market",
+      "artifacts": {
+        "algorithm": "sha256-tree-v1",
+        "roots": [
+          "client.js",
+          "games",
+          "registry"
+        ],
+        "sha256": "d0d7fc7a64930e75373eef9c892fb687423ae0b948f7c7e4cfc21bed0476f932",
+        "files": 93,
+        "bytes": 3449879
+      }
+    },
+    "plannedPaths": [
+      "platform-updates/release.json",
+      "client.js",
+      "games",
+      "registry"
+    ],
+    "commitMessage": "chore(release): v1.5.0-rc.1 build 0ca0aacc4501f313776f4ea1e0683255cb14e62b",
+    "commit": null
+  },
+  "releaseVerify": {
+    "ok": true,
+    "tool": "release:verify",
+    "release": "07f2ef1de6aea2b3857bc7e2983f7f083db7eb99",
+    "version": "1.5.0-rc.1",
+    "buildCommit": "0ca0aacc4501f313776f4ea1e0683255cb14e62b",
+    "publishTimestamp": 1793028994,
+    "engineDsh": ">=0.2.0 <0.3.0",
+    "deterministicIdentity": {
+      "digest": "d0d7fc7a64930e75373eef9c892fb687423ae0b948f7c7e4cfc21bed0476f932",
+      "files": 93,
+      "bytes": 3449879
+    },
+    "correspondence": {
+      "buildCommit": "0ca0aacc4501f313776f4ea1e0683255cb14e62b",
+      "version": "1.5.0-rc.1",
+      "releaseMessage": "chore(release): v1.5.0-rc.1 build 0ca0aacc4501f313776f4ea1e0683255cb14e62b",
+      "releaseMessageMatches": true,
+      "parents": [
+        "0ca0aacc4501f313776f4ea1e0683255cb14e62b"
+      ],
+      "firstParentIsBuildCommit": true,
+      "buildCommitAncestor": true,
+      "versionAtBuildCommit": "1.5.0-rc.1",
+      "versionInReleaseJson": "1.5.0-rc.1",
+      "versionInPackageJson": "1.5.0-rc.1",
+      "clientBannerVersion": "1.5.0-rc.1",
+      "clientBannerBuildCommit": "0ca0aacc4501f313776f4ea1e0683255cb14e62b",
+      "clientBannerMatches": true,
+      "artifactDigest": "d0d7fc7a64930e75373eef9c892fb687423ae0b948f7c7e4cfc21bed0476f932",
+      "artifactDigestMatches": true,
+      "artifactFiles": 93,
+      "artifactBytes": 3449879
+    },
+    "clientIdentity": {
+      "version": "1.5.0-rc.1",
+      "buildCommit": "0ca0aacc4501f313776f4ea1e0683255cb14e62b"
+    },
+    "selfReference": {
+      "indexInsideRelease": {
+        "present": false
+      },
+      "verdict": "separate-commit-required"
+    },
+    "index": null
+  },
+  "promoteTestDryRun": {
+    "ok": true,
+    "tool": "release:promote",
+    "mode": "dry-run",
+    "release": "07f2ef1de6aea2b3857bc7e2983f7f083db7eb99",
+    "version": "1.5.0-rc.1",
+    "channel": "test",
+    "publishTimestamp": 1793028994,
+    "buildCommit": "0ca0aacc4501f313776f4ea1e0683255cb14e62b",
+    "engineDsh": ">=0.2.0 <0.3.0",
+    "target": {
+      "id": "dsh-game-market@1.5.0-rc.1+07f2ef1de6aea2b3857bc7e2983f7f083db7eb99",
+      "plugin": "dsh-game-market",
+      "version": "1.5.0-rc.1",
+      "commit": "07f2ef1de6aea2b3857bc7e2983f7f083db7eb99",
+      "installSpec": "git+https://github.com/heswy/dsh-game-market.git#07f2ef1de6aea2b3857bc7e2983f7f083db7eb99"
+    },
+    "index": {
+      "format": 1,
+      "title": "DSH Game Market",
+      "description": "Game market and runtime plugin for DeepSeek Harness.",
+      "plugins": [
+        {
+          "name": "dsh-game-market",
+          "title": "DSH Game Market",
+          "description": "Game market and runtime plugin for DeepSeek Harness.",
+          "author": "heswy",
+          "homepage": "https://github.com/heswy/dsh-game-market",
+          "repository": {
+            "url": "https://github.com/heswy/dsh-game-market"
+          },
+          "versions": [
+            {
+              "version": "1.5.0-rc.1",
+              "publishTimestamp": 1793028994,
+              "source": {
+                "type": "git",
+                "url": "https://github.com/heswy/dsh-game-market",
+                "commit": "07f2ef1de6aea2b3857bc7e2983f7f083db7eb99"
+              },
+              "engines": {
+                "dsh": ">=0.2.0 <0.3.0"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "indexText": "{\n  \"format\": 1,\n  \"title\": \"DSH Game Market\",\n  \"description\": \"Game market and runtime plugin for DeepSeek Harness.\",\n  \"plugins\": [\n    {\n      \"name\": \"dsh-game-market\",\n      \"title\": \"DSH Game Market\",\n      \"description\": \"Game market and runtime plugin for DeepSeek Harness.\",\n      \"author\": \"heswy\",\n      \"homepage\": \"https://github.com/heswy/dsh-game-market\",\n      \"repository\": {\n        \"url\": \"https://github.com/heswy/dsh-game-market\"\n      },\n      \"versions\": [\n        {\n          \"version\": \"1.5.0-rc.1\",\n          \"publishTimestamp\": 1793028994,\n          \"source\": {\n            \"type\": \"git\",\n            \"url\": \"https://github.com/heswy/dsh-game-market\",\n            \"commit\": \"07f2ef1de6aea2b3857bc7e2983f7f083db7eb99\"\n          },\n          \"engines\": {\n            \"dsh\": \">=0.2.0 <0.3.0\"\n          }\n        }\n      ]\n    }\n  ]\n}\n",
+    "installSpec": "git+https://github.com/heswy/dsh-game-market.git#07f2ef1de6aea2b3857bc7e2983f7f083db7eb99",
+    "correspondence": {
+      "buildCommit": "0ca0aacc4501f313776f4ea1e0683255cb14e62b",
+      "version": "1.5.0-rc.1",
+      "releaseMessage": "chore(release): v1.5.0-rc.1 build 0ca0aacc4501f313776f4ea1e0683255cb14e62b",
+      "releaseMessageMatches": true,
+      "parents": [
+        "0ca0aacc4501f313776f4ea1e0683255cb14e62b"
+      ],
+      "firstParentIsBuildCommit": true,
+      "buildCommitAncestor": true,
+      "versionAtBuildCommit": "1.5.0-rc.1",
+      "versionInReleaseJson": "1.5.0-rc.1",
+      "versionInPackageJson": "1.5.0-rc.1",
+      "clientBannerVersion": "1.5.0-rc.1",
+      "clientBannerBuildCommit": "0ca0aacc4501f313776f4ea1e0683255cb14e62b",
+      "clientBannerMatches": true,
+      "artifactDigest": "d0d7fc7a64930e75373eef9c892fb687423ae0b948f7c7e4cfc21bed0476f932",
+      "artifactDigestMatches": true,
+      "artifactFiles": 93,
+      "artifactBytes": 3449879
+    },
+    "selfReference": {
+      "indexInsideRelease": {
+        "present": false
+      },
+      "indexOutputPath": null,
+      "verdict": "separate-commit-required"
+    },
+    "out": null,
+    "written": false,
+    "alreadyUpToDate": false
+  },
+  "secondCandidateVerify": {
+    "ok": true,
+    "tool": "release:verify",
+    "release": "fe181461c12b850ee0a3dc23abfaf4154f25f454",
+    "version": "1.5.0-rc.2",
+    "buildCommit": "9b4a9c59c8e6bf78e35a1d2fd562154488ede0e5",
+    "publishTimestamp": 1793156208,
+    "engineDsh": ">=0.2.0 <0.3.0",
+    "deterministicIdentity": {
+      "digest": "81b339de097589371f4931d5ea5306d4a5244190cc13128a98d364df3377c928",
+      "files": 93,
+      "bytes": 3449879
+    },
+    "correspondence": {
+      "buildCommit": "9b4a9c59c8e6bf78e35a1d2fd562154488ede0e5",
+      "version": "1.5.0-rc.2",
+      "releaseMessage": "chore(release): v1.5.0-rc.2 build 9b4a9c59c8e6bf78e35a1d2fd562154488ede0e5",
+      "releaseMessageMatches": true,
+      "parents": [
+        "9b4a9c59c8e6bf78e35a1d2fd562154488ede0e5"
+      ],
+      "firstParentIsBuildCommit": true,
+      "buildCommitAncestor": true,
+      "versionAtBuildCommit": "1.5.0-rc.2",
+      "versionInReleaseJson": "1.5.0-rc.2",
+      "versionInPackageJson": "1.5.0-rc.2",
+      "clientBannerVersion": "1.5.0-rc.2",
+      "clientBannerBuildCommit": "9b4a9c59c8e6bf78e35a1d2fd562154488ede0e5",
+      "clientBannerMatches": true,
+      "artifactDigest": "81b339de097589371f4931d5ea5306d4a5244190cc13128a98d364df3377c928",
+      "artifactDigestMatches": true,
+      "artifactFiles": 93,
+      "artifactBytes": 3449879
+    },
+    "clientIdentity": {
+      "version": "1.5.0-rc.2",
+      "buildCommit": "9b4a9c59c8e6bf78e35a1d2fd562154488ede0e5"
+    },
+    "selfReference": {
+      "indexInsideRelease": {
+        "present": false
+      },
+      "verdict": "separate-commit-required"
+    },
+    "index": null
+  },
+  "automated": {
+    "command": "PATH=/opt/homebrew/opt/node@24/bin:$PATH npm run verify",
+    "testedInstallCommit": "07f2ef1de6aea2b3857bc7e2983f7f083db7eb99",
+    "exitCode": 0,
+    "tests": 1570,
+    "pass": 1570,
+    "fail": 0,
+    "skipped": 0,
+    "check": "CHECK OK (44 checks)",
+    "logSha256": "d5dd2a703aab3819b209a4b016588242ffd95f6ca3043d4efff0f97fd81e8e37",
+    "scope": "Product source and generated artifacts at rc.1; subsequently added diagnostic-only test scripts do not alter candidate product files."
+  },
+  "contentCI": {
+    "head": "b1bae24bbd81d90c6cde6fde241d5b00fb22124f",
+    "pr": "https://github.com/heswy/dsh-game-registry/pull/6",
+    "result": "success",
+    "job": "https://github.com/heswy/dsh-game-registry/actions/runs/40624607364/job/122606429396",
+    "workflowCommit": "bc8a010b4a60a9faa2d4cef78822b8ae4fd28523",
+    "scope": "Locked ZIP validator dependencies installed with scripts disabled; empty v1/v2 catalogs validated. No real external-author ZIP asset or production main publication."
+  },
+  "recordedAt": "2026-10-28T03:02:40.848995+00:00",
+  "publicCatalogReads": [
+    {
+      "ref": "b1bae24bbd81d90c6cde6fde241d5b00fb22124f",
+      "path": "registry/games.json",
+      "registryVersion": 1,
+      "games": 0,
+      "blobSha": "065f48a3bb2803f824ec707ff0514c8f12aa6098"
+    },
+    {
+      "ref": "b1bae24bbd81d90c6cde6fde241d5b00fb22124f",
+      "path": "registry/v2/games.json",
+      "registryVersion": 2,
+      "games": 0,
+      "blobSha": "1d4b4e5f3369dec0ca142598fcb9230550284001"
+    }
+  ]
+}
