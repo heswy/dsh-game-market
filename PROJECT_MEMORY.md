@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**完成 V1.5 M5 工程与验收准备**。M0–M4 已合入；M4 PR #10 合并提交 `e700eea445e3982adfb80dacf4efc9f6c60c702e`。M5 新增受控存档迁移并通过真实 App 独立环境导入/重开验证；正式候选安装与持续升级、最终发行包/内容 pin 仍在验收。用户只有自己的账号，独立外部作者 P01 未通过；V1.5 尚未正式发布。当前事实以 `docs/verification/v1.5/m5-acceptance.md` 为准，以下较早阶段记录保留为历史。
+- 当前目标：**V1.5 M5 本机工程验收交付，等待复核；正式发布未放行**。M0–M4 已合入（M4 PR #10：`e700eea`）。M5 PR #11、内容 PR #6：1570/1570 + CHECK44、真实407031ms游戏、直接公开 Git 安装10/10、同资料真实两跳33/33、游戏进度导入/重开、确定性包和内容CI均已取证。用户只有自己的账号；独立外部作者与两台实体机迁移仍未验证。无 V1.5 生产 tag、Release、stable 推广；当前权威矩阵见 `docs/verification/v1.5/m5-acceptance.md`。以下较早阶段记录保留为历史。
 - 历史：V1 验收/修复过程（M3 自动化、真机代执行、codex 两轮 review CR-01..09）见 `docs/V1-VERIFICATION.md`、`docs/verification/v1/AUTOMATED-EVIDENCE.md`、`docs/reviews/2026-10-19-codex-acceptance-review.md` 与 `git log`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2 + V1.1 呈现修订 + 社区投稿 §8.14 / D-038**；第 8–12 章为开发权威来源；全出血/安全区见 §9.6.1、D-037）
 - 开始记录：2026-10-18
@@ -412,8 +412,8 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 |---|---|---|
 | M0–M2 | 宿主契约、ZIP/双目录/资源服务、Orbit Courier 与开发投稿工具；PR #6/#7/#8 已合入 | M5 正式用户/外部作者回归 |
 | M3 | 更新发现、保存/运行冻结、DSH 精确安装、恢复、双端身份和发布工具；1543/1543；固定候选两跳/保存重试/非 HMR/多窗口均通过；PR #9 已合入 | 正式发行与生产推广在 M5 |
-| M4 | HTML wrapper 迁移、真实桌面来源修复、官方 FishLogo/气泡、open/continued 原地问答、保存失败恢复、草稿/焦点/窄窗/动效边界 | 完整门禁 1564/1564、CHECK OK (44)；待 PR 复核与授权合入 |
-| M5 | 尚未完成 | 干净用户正式安装与持续升级、长局/重开/存档迁移、外部作者闭环、跨机数据、发行恢复说明与生产发布 |
+| M4 | HTML wrapper 迁移、真实桌面来源修复、官方 FishLogo/气泡、open/continued 原地问答、保存失败恢复、草稿/焦点/窄窗/动效边界 | 已通过 PR #10 合入 main，`e700eea` |
+| M5 | 本机工程验收补齐：进度导出/导入/备份；真实直接安装与同资料两跳、407秒实玩、App重开；1570/1570、确定性包、内容CI；PR #11 / 内容PR #6 | 独立外部作者、两台实体机迁移实测、PR复核合入与后续正式发布 |
 
 当前 M4 权威结论见 [M4 验收](./docs/verification/v1.5/m4-acceptance.md)；M3 的固定候选与历史证据见 [M3 验收](./docs/verification/v1.5/m3-restart-acceptance.md)。M4 功能提交 `96718e1`，最终受测源码/样式为 `cef4cb9`；后续证据提交单列；最终 PR 提交不能与 M3 的发行候选身份混淆。
 
@@ -423,7 +423,9 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 
 **证据边界**：M4 已在安装的 rc.3 Electron App 的独立资料/窗口中验证实际游戏内普通问答，其余为隔离真实 Host/Client 链路。模型为本地脚本驱动原生工具，并非真实 DeepSeek 模型调用；强制 queued/损坏 face 等分支由自动化覆盖。M4 是开发行加载，不是新发行包安装；M5 必须重新生成正式版本/Host-Client 身份和确定性包，不能把 M3 release 元数据当作 M4 源码身份。当前无 tag、Release 或生产索引推广。
 
-下一步完成 M4 PR 复核合入后执行 M5；正式发布仍按原指南 §8 全部门槛和用户授权进行。
+下一步复核 M5 PR #11 与内容 PR #6，补独立外部作者和实体跨机证据，再按原指南 §8 全部门槛与用户授权发布。不重开已完成的 M3/M4。
+
+**M5 固定候选（2026-10-28）**：rc.1 安装 R=`07f2ef1de6aea2b3857bc7e2983f7f083db7eb99`，Client 构建 P=`0ca0aacc4501f313776f4ea1e0683255cb14e62b`；Host 实际运行报告 R。第二跳仅测试 rc.2（R=`fe181461c12b850ee0a3dc23abfaf4154f25f454`，P=`9b4a9c59c8e6bf78e35a1d2fd562154488ede0e5`），不合入本产品 PR。内容锁指 rc.1，`b1bae24` 的更新工作流 CI 已通过。确定性4次独立构建93文件/3449879字节，SHA树 `d0d7fc7a64930e75373eef9c892fb687423ae0b948f7c7e4cfc21bed0476f932`。完整原始失败与通过记录均保留，模型/索引均明确标注隔离脚本/夹具，不冒充真实模型或生产推广。
 
 
 ---

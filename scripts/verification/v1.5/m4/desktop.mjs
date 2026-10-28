@@ -20,7 +20,7 @@ export async function openDesktop(home,{port=9491,env={}}={}) {
     while(Date.now()<deadline){
       if(child.exitCode!==null || child.signalCode!==null)throw Error('isolated Electron exited before ready; log '+logFile);
       try{
-        if(!page)page=await Cdp.attach(port);
+        if(!page)page=await Cdp.attach(port,{preferredUrlPrefix:'dsh-app://app/'});
         if(await page.eval('Boolean(window.__QPROBE__)'))return {page,host:{child,stop},logFile};
         const welcome=await page.eval(`Boolean(document.querySelector('#api-key'))`);
         if(welcome){

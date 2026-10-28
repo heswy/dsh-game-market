@@ -260,5 +260,21 @@
       "games": 0,
       "blobSha": "1d4b4e5f3369dec0ca142598fcb9230550284001"
     }
-  ]
+  ],
+  "freshCheckout": {
+    "head": "d2ca69436e755ff8af39e0f16f0bd613f12de505",
+    "commands": [
+      "npm ci --ignore-scripts",
+      "npm run verify"
+    ],
+    "exitCode": 0,
+    "pass": 1570,
+    "fail": 0,
+    "skipped": 0,
+    "check": "CHECK OK (44 checks)",
+    "workingTreeAfterBuild": "clean",
+    "logSha256": "a36392322f11060ef0793b2b9b24aa80732586fd60a7ddaedb075524b72129ce",
+    "scope": "Later commits contain acceptance scripts, documentation and evidence only; candidate product files remain byte-identical to R.",
+    "storedLogNormalization": "redact user path; strip trailing whitespace only; logSha256 records the original complete output"
+  }
 }

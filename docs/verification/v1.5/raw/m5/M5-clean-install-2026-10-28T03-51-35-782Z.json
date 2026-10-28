@@ -1,0 +1,563 @@
+{
+  "id": "M5-native-clean-install",
+  "title": "Fresh actual Desktop direct immutable candidate install and packaged ZIP play",
+  "commands": [
+    "node scripts/verification/v1.5/m5/clean-install.mjs --commit 07f2ef1de6aea2b3857bc7e2983f7f083db7eb99"
+  ],
+  "startedAt": "2026-10-28T03:51:35.784Z",
+  "finishedAt": "2026-10-28T03:52:32.002Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "public network gate",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "attempts": [
+          {
+            "attempt": 1,
+            "at": "2026-10-28T03:51:37.539Z",
+            "ok": true,
+            "scrubbed": [
+              {
+                "attempt": 1,
+                "ok": true,
+                "status": 0,
+                "stderr": "",
+                "stdout": "e700eea445e3982adfb80dacf4efc9f6c60c702e\tHEAD"
+              }
+            ],
+            "elapsedMs": 1659
+          }
+        ],
+        "elapsedMs": 1659,
+        "mode": "real-github"
+      }
+    },
+    {
+      "name": "nativeBoot",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "probeVersion": 1,
+        "bootTag": "m5-native-clean-2026-10-28T03-51-35-782Z",
+        "pid": 84030,
+        "nodeVersion": "v24.21.0",
+        "execArgv": [
+          "--expose-internals"
+        ],
+        "startedAt": "2026-10-28T03:51:42.600Z",
+        "capabilitySamples": [
+          {
+            "at": "2026-10-28T03:51:40.898Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": {
+                "__jsExpr": "!ctx.get('profileContext')"
+              },
+              "hasFiber": true,
+              "fiberState": 1,
+              "fiberUid": 115
+            }
+          },
+          {
+            "at": "2026-10-28T03:51:41.398Z",
+            "managerContextHmr": true,
+            "probeScopeHmr": true,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": {
+                "__jsExpr": "!ctx.get('profileContext')"
+              },
+              "hasFiber": true,
+              "fiberState": 2,
+              "fiberUid": 115
+            }
+          }
+        ],
+        "capability": {
+          "at": "2026-10-28T03:51:42.601Z",
+          "probeScopeHmr": true,
+          "managerContextHmr": true,
+          "managerContextHmrCtor": "Hmr",
+          "managerContextHmrHasRunExclusive": true,
+          "hmrLoaderRow": {
+            "id": "hmr",
+            "name": "@deepseek-ai/dsh-hmr",
+            "disabled": {
+              "__jsExpr": "!ctx.get('profileContext')"
+            },
+            "hasFiber": true,
+            "fiberState": 2,
+            "fiberUid": 115
+          },
+          "samplesSinceBoot": 2
+        },
+        "managerInternal": {
+          "ownerEntryId": "include:plugin-manager",
+          "ownerContextIsProbeContext": false,
+          "ctor": "PluginManager",
+          "methods": [
+            "@deepseek-ai/dsh-typert-protocol/remote-methods",
+            "bundleRows",
+            "cancelInstall",
+            "change",
+            "configure",
+            "declaredRows",
+            "diskState",
+            "inspect",
+            "installBundle",
+            "listBundles",
+            "listPlugins",
+            "listVersionExemptions",
+            "protectsManager",
+            "publishAndReload",
+            "readRestoredFiles",
+            "refreshPackages",
+            "registries",
+            "reload",
+            "removeBundle",
+            "restoreFiles",
+            "runPnpm",
+            "selectBundle",
+            "setBundleEnabled",
+            "setPluginEnabled",
+            "setVersionExemption",
+            "waitForInstall"
+          ]
+        },
+        "profile": {
+          "dir": "/tmp/dsh-v15/m3/home-m5-native-clean-2026-10-28T03-51-35-782Z/profiles/desktop",
+          "packageJson": {
+            "name": "dsh-profile-web",
+            "dependencies": {},
+            "profileBundles": [
+              "@deepseek-ai/dsh-base",
+              "@deepseek-ai/dsh-web-app"
+            ]
+          },
+          "dependency": null,
+          "diskPackage": null,
+          "devRow": null
+        },
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:65141",
+          "httpProxy": "http://127.0.0.1:65141",
+          "noProxy": "localhost,127.0.0.1,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "m5-native-clean-2026-10-28T03-51-35-782Z"
+        },
+        "probeScopeServices": {
+          "pluginManager": true,
+          "connection": true
+        }
+      }
+    },
+    {
+      "name": "fresh profile starts without product dependency",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "native manager directly installs public candidate",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "result": {
+          "stage": "enable",
+          "target": "dsh-game-market",
+          "enabled": true,
+          "changed": true,
+          "application": "applied",
+          "registries": [
+            null
+          ],
+          "packageResult": {
+            "exitCode": 0,
+            "output": "Packages are cloned from the content-addressable store to the virtual store.\n  Content-addressable store is at: /Users/<user>/Library/pnpm/store/v11\n  Virtual store is at:             node_modules/.pnpm\nProgress: resolved 0, reused 0, downloaded 1, added 0\nPackages: +3\n+++\nProgress: resolved 3, reused 2, downloaded 1, added 3, done\n\ndependencies:\n+ dsh-game-market 1.5.0-rc.1\n\nDone in 8.4s using pnpm v11.28.5\n",
+            "truncated": false,
+            "logPath": "/tmp/dsh-v15/m3/home-m5-native-clean-2026-10-28T03-51-35-782Z/profiles/desktop/.plugin-manager/logs/operation-qaU5pV/pnpm.log"
+          },
+          "bundle": "dsh-game-market",
+          "version": "1.5.0-rc.1",
+          "warnings": []
+        },
+        "attempts": [
+          {
+            "attempt": 1,
+            "requestId": "m5-native-clean-2026-10-28T03-51-35-782Z-try1",
+            "result": {
+              "stage": "enable",
+              "target": "dsh-game-market",
+              "enabled": true,
+              "changed": true,
+              "application": "applied",
+              "registries": [
+                null
+              ],
+              "packageResult": {
+                "exitCode": 0,
+                "output": "Packages are cloned from the content-addressable store to the virtual store.\n  Content-addressable store is at: /Users/<user>/Library/pnpm/store/v11\n  Virtual store is at:             node_modules/.pnpm\nProgress: resolved 0, reused 0, downloaded 1, added 0\nPackages: +3\n+++\nProgress: resolved 3, reused 2, downloaded 1, added 3, done\n\ndependencies:\n+ dsh-game-market 1.5.0-rc.1\n\nDone in 8.4s using pnpm v11.28.5\n",
+                "truncated": false,
+                "logPath": "/tmp/dsh-v15/m3/home-m5-native-clean-2026-10-28T03-51-35-782Z/profiles/desktop/.plugin-manager/logs/operation-qaU5pV/pnpm.log"
+              },
+              "bundle": "dsh-game-market",
+              "version": "1.5.0-rc.1",
+              "warnings": []
+            },
+            "elapsedMs": 10544,
+            "transient": false
+          }
+        ],
+        "retried": false
+      }
+    },
+    {
+      "name": "candidate Host loaded from actual package",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "waitedMs": 606,
+        "inspect": {
+          "schemaVersion": 1,
+          "host": {
+            "version": "1.5.0-rc.1",
+            "commit": "07f2ef1de6aea2b3857bc7e2983f7f083db7eb99",
+            "hostEpoch": "he_492e4e0639477d00",
+            "loadedAt": "2026-10-28T03:51:52.964Z"
+          },
+          "installed": {
+            "bundleId": "dsh-game-market",
+            "spec": "github:heswy/dsh-game-market#07f2ef1de6aea2b3857bc7e2983f7f083db7eb99",
+            "specShape": "git-url",
+            "version": "1.5.0-rc.1",
+            "enabled": true,
+            "loadedVersion": "1.5.0-rc.1",
+            "loadedCommit": "07f2ef1de6aea2b3857bc7e2983f7f083db7eb99",
+            "devRowShadow": false
+          },
+          "target": null,
+          "discovery": {
+            "channel": "stable",
+            "indexUrl": "https://raw.githubusercontent.com/heswy/dsh-game-market/main/platform-updates/plugins.json",
+            "state": "invalid",
+            "fetchedAt": null,
+            "checkedAt": "2026-10-28T03:51:52.996Z",
+            "nextCheckAt": "2026-10-28T03:52:52.996Z",
+            "lastError": {
+              "code": "GM-5039",
+              "message": "Update index does not match format 1",
+              "retryable": false,
+              "at": "2026-10-28T03:51:52.996Z",
+              "reason": "format"
+            },
+            "canRefresh": false,
+            "anomaly": null
+          },
+          "capability": {
+            "hmr": "present",
+            "updatePath": "in-place-hmr",
+            "canBeginUpdate": false,
+            "reasonKey": "update.reason.noTarget"
+          },
+          "operation": null
+        },
+        "health": {
+          "ok": true,
+          "version": "1.5.0-rc.1",
+          "buildCommit": "07f2ef1de6aea2b3857bc7e2983f7f083db7eb99",
+          "loadedVersion": "1.5.0-rc.1",
+          "hostEpoch": "he_492e4e0639477d00",
+          "devMode": false,
+          "storage": {
+            "ok": true,
+            "root": "/tmp/dsh-v15/m3/home-m5-native-clean-2026-10-28T03-51-35-782Z/storages/dsh-game-market",
+            "readOnly": false
+          },
+          "uptimeMs": 325,
+          "registry": {
+            "state": "seed",
+            "sourceUrl": "/private/tmp/dsh-v15/m3/home-m5-native-clean-2026-10-28T03-51-35-782Z/profiles/desktop/node_modules/dsh-game-market/registry/games.json",
+            "fetchedAt": "2026-10-28T03:51:52.988Z",
+            "truncated": false,
+            "count": 3,
+            "lastError": null,
+            "generation": null,
+            "registryVersion": 1,
+            "activeSource": "seed",
+            "fallback": true,
+            "official": {
+              "state": "missing",
+              "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+              "fetchedAt": null,
+              "truncated": false,
+              "count": 0,
+              "lastError": null,
+              "generation": "v2",
+              "registryVersion": 2
+            },
+            "officialV2": {
+              "state": "missing",
+              "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+              "fetchedAt": null,
+              "truncated": false,
+              "count": 0,
+              "lastError": null,
+              "generation": "v2",
+              "registryVersion": 2
+            },
+            "officialV1": {
+              "state": "missing",
+              "sourceUrl": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/games.json",
+              "fetchedAt": null,
+              "truncated": false,
+              "count": 0,
+              "lastError": null,
+              "generation": "v1",
+              "registryVersion": 1
+            },
+            "seed": {
+              "state": "fresh",
+              "count": 3,
+              "sourceUrl": "/private/tmp/dsh-v15/m3/home-m5-native-clean-2026-10-28T03-51-35-782Z/profiles/desktop/node_modules/dsh-game-market/registry/games.json"
+            }
+          },
+          "installations": {
+            "count": 0,
+            "updateAvailable": 0
+          },
+          "sessions": {
+            "running": 0,
+            "staleRunningPreserved": true
+          },
+          "games": {
+            "builtinCount": 2,
+            "issues": []
+          }
+        }
+      }
+    },
+    {
+      "name": "actual Host identifies immutable install target",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "version": "1.5.0-rc.1",
+        "commit": "07f2ef1de6aea2b3857bc7e2983f7f083db7eb99",
+        "hostEpoch": "he_492e4e0639477d00",
+        "loadedAt": "2026-10-28T03:51:52.964Z"
+      }
+    },
+    {
+      "name": "native UI binds Host R and Client P",
+      "ok": true,
+      "required": true,
+      "detail": [
+        {
+          "commitAttr": "07f2ef1de6aea2b3857bc7e2983f7f083db7eb99",
+          "label": "运行中的 Host",
+          "version": "1.5.0-rc.1",
+          "commitText": "07f2ef1de6ae",
+          "commitTitle": "07f2ef1de6aea2b3857bc7e2983f7f083db7eb99"
+        },
+        {
+          "commitAttr": "0ca0aacc4501f313776f4ea1e0683255cb14e62b",
+          "label": "Client 构建",
+          "version": "1.5.0-rc.1",
+          "commitText": "0ca0aacc4501",
+          "commitTitle": "0ca0aacc4501f313776f4ea1e0683255cb14e62b"
+        }
+      ]
+    },
+    {
+      "name": "profile records exact public Git dependency",
+      "ok": true,
+      "required": true,
+      "detail": "github:heswy/dsh-game-market#07f2ef1de6aea2b3857bc7e2983f7f083db7eb99"
+    },
+    {
+      "name": "directly installed candidate ZIP initializes",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "directly installed ZIP advances with real keyboard input",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "source": "orbit-probe-hook",
+        "probeVersion": 1,
+        "phase": "playing",
+        "endReason": null,
+        "elapsedMs": 1136,
+        "timeLeftMs": 118864,
+        "durationMs": 120000,
+        "score": 0,
+        "deliveries": 0,
+        "shield": 3,
+        "maxShield": 3,
+        "invulnerableMs": 0,
+        "stationAngle": -1.5707963267948966,
+        "best": 0,
+        "hud": {
+          "score": "0",
+          "best": "0",
+          "time": "1:59",
+          "act": "近地轨道"
+        },
+        "ship": {
+          "ring": 1,
+          "angle": 1.5707963267948966,
+          "carry": false,
+          "ringCooldownMs": 0
+        },
+        "parcels": [],
+        "asteroids": [
+          {
+            "ring": 2,
+            "angle": 3.641838175763152,
+            "dir": 1
+          }
+        ],
+        "audio": {
+          "unlocked": true,
+          "muted": false,
+          "supported": true
+        },
+        "fps": null
+      }
+    },
+    {
+      "name": "owned App stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "isolatedIndexTransport",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "scenarioSequence": [
+          "valid",
+          "valid",
+          "valid"
+        ],
+        "connects": [
+          {
+            "at": "2026-10-28T03:51:52.987Z",
+            "target": "raw.githubusercontent.com:443",
+            "intercepted": true
+          },
+          {
+            "at": "2026-10-28T03:51:52.994Z",
+            "target": "raw.githubusercontent.com:443",
+            "intercepted": true
+          },
+          {
+            "at": "2026-10-28T03:51:52.994Z",
+            "target": "raw.githubusercontent.com:443",
+            "intercepted": true
+          }
+        ],
+        "tunnels": [
+          {
+            "at": "2026-10-28T03:51:39.605Z",
+            "target": "harness.deepseek.com:443"
+          },
+          {
+            "at": "2026-10-28T03:51:39.607Z",
+            "target": "harness.deepseek.com:443",
+            "mode": "proxy"
+          },
+          {
+            "at": "2026-10-28T03:51:44.625Z",
+            "target": "github.com:443"
+          },
+          {
+            "at": "2026-10-28T03:51:44.625Z",
+            "target": "github.com:443",
+            "mode": "proxy"
+          },
+          {
+            "at": "2026-10-28T03:51:45.498Z",
+            "target": "codeload.github.com:443"
+          },
+          {
+            "at": "2026-10-28T03:51:45.498Z",
+            "target": "codeload.github.com:443",
+            "mode": "proxy"
+          }
+        ],
+        "tlsErrors": [
+          {
+            "at": "2026-10-28T03:52:24.059Z",
+            "host": "raw.githubusercontent.com",
+            "stage": "tls",
+            "error": "write EPIPE"
+          },
+          {
+            "at": "2026-10-28T03:52:24.115Z",
+            "host": "raw.githubusercontent.com",
+            "stage": "tls",
+            "error": "write EPIPE"
+          }
+        ],
+        "rejected": [],
+        "requests": [
+          {
+            "at": "2026-10-28T03:51:52.993Z",
+            "mode": "fixture",
+            "host": "raw.githubusercontent.com",
+            "method": "GET",
+            "path": "/heswy/dsh-game-market/main/platform-updates/plugins.json",
+            "scenario": "valid",
+            "status": 200,
+            "bytes": 228,
+            "sha256": "d5fe9fd94bad33a1735ce08c7c09bc3521c0ef5837102d7cf1cd5c76d56bd26a",
+            "contentType": "application/json"
+          },
+          {
+            "at": "2026-10-28T03:51:52.997Z",
+            "mode": "passthrough",
+            "host": "raw.githubusercontent.com",
+            "method": "GET",
+            "path": "/heswy/dsh-game-registry/main/registry/v2/games.json",
+            "scenario": "valid",
+            "status": 404,
+            "bytes": 846,
+            "sha256": "b7c0db6161f5025dc0b2eef8b49d52c6b6c992582cda63380f8fd76e4187f463"
+          },
+          {
+            "at": "2026-10-28T03:51:52.998Z",
+            "mode": "passthrough",
+            "host": "raw.githubusercontent.com",
+            "method": "GET",
+            "path": "/heswy/dsh-game-registry/main/registry/games.json",
+            "scenario": "valid",
+            "status": 200,
+            "bytes": 1008,
+            "sha256": "13a23621a3f11eff4a85c8877b0f044002b88eb33e73a2d56894a514da25f301"
+          }
+        ],
+        "counts": {
+          "fixtureRequests": 1,
+          "passthroughRequests": 2,
+          "tunnelConnects": 6,
+          "rejectedPlainHttp": 0,
+          "tlsHandshakeErrors": 2
+        }
+      }
+    }
+  ]
+}

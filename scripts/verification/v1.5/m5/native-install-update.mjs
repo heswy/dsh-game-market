@@ -70,7 +70,9 @@ try{
  }
  const restoredCapture=createCdpCapture(p);await restoredCapture.start();await launchFromRow(p,restoredCapture,'snake');
  const restored=await waitFor(async()=>{for(const frame of restoredCapture.state.attached){try{const state=await restoredCapture.evaluate(frame.sessionId,'window.__dshSnakeDebug?.() || null');if(state?.restoredSave)return state;}catch{}}return null;},20000);
- check('actual legacy game loaded pre-update save after both hops',restored?.restoredSave===true,restored);await leaveRuntime(p);
+ check('actual legacy game loaded pre-update save after both hops',restored?.restoredSave===true,restored);
+ const confirmedExit=await p.eval(`(()=>{const button=[...document.querySelectorAll('.dgm-runtime button')].find(b=>b.textContent.trim()==='退出到市场');if(!button)return false;button.click();return true;})()`);
+ const leftRestored=confirmedExit?await p.until(`!document.querySelector('.dgm-runtime')`,20000,200):(await leaveRuntime(p)).left;check('exit restored game through its visible confirmation',leftRestored,{confirmationButton:confirmedExit});
  const gameCapture=restoredCapture;await launchFromRow(p,gameCapture,'orbit-courier');const state=await waitFor(async()=>{const current=await readState(gameCapture);return current?.state?.phase==='ready'?current:null;},30000);check('candidate ZIP real document is initialized',state);await pressKey(p,state.sessionId,'Enter');const playing=await waitFor(async()=>{const current=await readState(gameCapture);return current?.state?.phase==='playing'&&current.state.elapsedMs>1000?current:null;},10000);check('candidate ZIP actually plays in native origin',playing,playing?.state);
  await p.shot(path.join(raw,'M5-native-update-'+stamp+'.png'));
 }catch(e){report.add('completed',false,String(e.stack||e).split('\n').slice(0,6).join('\n'));}

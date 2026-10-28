@@ -1,0 +1,33 @@
+{
+  "label": "M5 final native cleanup",
+  "ok": true,
+  "checkedAt": "2026-10-28T03:53:44.221Z",
+  "ports": [
+    {
+      "port": 9495,
+      "accepting": false,
+      "listenerPids": []
+    },
+    {
+      "port": 9496,
+      "accepting": false,
+      "listenerPids": []
+    },
+    {
+      "port": 9497,
+      "accepting": false,
+      "listenerPids": []
+    }
+  ],
+  "pids": [
+    {
+      "pid": 82305,
+      "alive": false
+    },
+    {
+      "pid": 84030,
+      "alive": false
+    }
+  ],
+  "dirs": []
+}
