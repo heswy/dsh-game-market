@@ -65,7 +65,7 @@ rc.1 安装 R 为 `07f2ef1de6aea2b3857bc7e2983f7f083db7eb99`，构建 P 为 `0ca
 ## 还要做哪些
 
 - 平台 PR #11 已合并为 `be8f610`，内容 PR #6 已合并为 `1d2abc3`；rc.3 真实桌面安装、更新、迁移、长局与外部发布包桌面安装/实玩均已通过（见上表）。
-- **唯一未通过门槛**：两台实体机器间搬运未实测；已交付并重跑同机双资料的受控 JSON 迁移兼容流程。
+- **唯一未通过门槛**：两台实体机器间搬运未实测；同机双资料的受控 JSON 迁移已重跑。跨机执行方式已就绪：A 机运行默认 `migration.mjs`，证据记录 `host` 与 `portableFile.sha256`；把导出的 JSON 复制到 B 机后运行 `node scripts/verification/v1.5/m5/migration.mjs --portable <file>`，B 机证据记录自己的 `host`、同一文件 sha256、逐值一致与重启 Continue。两份证据主机名不同且 sha256 相同即构成跨机通过。目标模式已在本机用真实导出文件做过机制演练（不计入跨机证据）；`makeHome` 现会自动解包 `app.asar`，全新机器无需手工准备运行时。
 - **P01 已补桌面证据**：外部账号 `Orangeheswy`（350164273，非内容仓库 collaborator）的公网投稿 Issue #7 → 上架 PR #8 → 更新 Issue #9 / PR #10 → 撤下 PR #11 已取证；其 1.0.1 发布资产已在真实 Desktop 隔离资料中安装并实玩。公开目录撤下后为空，因此桌面安装走真实市场 UI 的本地 ZIP 路径，不是线上目录下载；该账号由用户本人创建并授权复用，不等于无关第三方真人作者。证据见 [外部作者验收手册](./m5-external-author.md)、[原始记录](./raw/community-p01/2026-10-30-identity-and-links.json) 与 [桌面安装记录](./raw/m5/M5-external-package-2026-10-30T09-57-55-018Z.json)。
 - 正式 tag、GitHub Release、stable 索引推广必须等两台实体机门槛关闭或用户明确豁免，并经用户发布授权。当前不发布。
 

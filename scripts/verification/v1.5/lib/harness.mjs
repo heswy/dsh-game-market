@@ -108,6 +108,7 @@ export function homeDir(name) {
  * then leaves the home ready for probe-specific patches.
  */
 export async function makeHome(name, { port = 58100 } = {}) {
+  ensureRuntime();
   const home = homeDir(name);
   fs.rmSync(home, { recursive: true, force: true });
   ensure(path.join(home, 'profiles'));
