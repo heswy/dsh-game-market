@@ -29,7 +29,7 @@ M4 已经用户授权通过 PR #10 合并，main 合并提交为 `e700eea445e398
 
 验证：`node --test tests/v1.5-save-transfer.test.js` **10/10**；`npm run verify` **1570/1574、0 fail、4 skip、CHECK OK (44)**，重建后工作区干净。新增回归在修复前快照为 6 pass/4 fail，修复后 10/10。
 
-rc.1 的 R `07f2ef1de6aea2b3857bc7e2983f7f083db7eb99` 与 P `0ca0aacc4501f313776f4ea1e0683255cb14e62b` 仍保留为历史证据，但其产物与当前源码不一致。重建候选：版本提交 P `23f753c5bb293065caf704c46e9f171f34c2307c`（`1.5.0-rc.3`），发布提交 R `cf39f571adf6027f712b27a04505dea3a6620e9c`，93 文件 / 3.29 MiB，`sha256-tree-v1 8d9cb0a3e88cc63684aa7c26f7020c0096ff43a72022402849985938a1d0567a`，4 次隔离构建字节一致，`release:verify` OK。**rc.3 的真实桌面干净安装、连续更新、进度迁移与长局尚未重跑**，不能沿用 rc.1 结果作为 rc.3 通过。
+rc.1 的 R `07f2ef1de6aea2b3857bc7e2983f7f083db7eb99` 与 P `0ca0aacc4501f313776f4ea1e0683255cb14e62b` 仍保留为历史证据，但其产物与当前源码不一致。重建候选：版本提交 P `23f753c5bb293065caf704c46e9f171f34c2307c`（`1.5.0-rc.3`），发布提交 R `cf39f571adf6027f712b27a04505dea3a6620e9c`，93 文件 / 3.29 MiB，`sha256-tree-v1 8d9cb0a3e88cc63684aa7c26f7020c0096ff43a72022402849985938a1d0567a`，4 次隔离构建字节一致，`release:verify` OK；`release:promote --channel test` dry-run 生成指向 R 的索引且零写入。**rc.3 的真实桌面干净安装、连续更新、进度迁移与长局尚未重跑**，不能沿用 rc.1 结果作为 rc.3 通过。
 
 ## 2026-10-28 补充验证
 
