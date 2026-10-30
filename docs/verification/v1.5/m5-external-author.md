@@ -1,6 +1,6 @@
 # M5 外部作者验收手册
 
-当前用户只有 `heswy` 自己的账号，P01 独立身份项未运行。本文件是未来参与者可直接执行的材料，没有发送给外部人员。
+2026-10-30：已用用户新建的独立账号 `Orangeheswy` 执行受控 P01，公网投稿/上架/更新/撤下与权限分离通过；真实 DSH Desktop 外部包安装与实玩尚未运行。下方手册保留为完整外部作者的执行标准。
 
 ## 作者准备
 
@@ -16,6 +16,15 @@
 4. 作者独立发布 1.0.1，重新投稿与审核；真实 DSH 更新后 Continue 恢复 1.0.0 的进度。
 5. 维护者撤下，核验两个公网目录均不再提供新安装，既有归属、审核与发布历史保留；已有安装行为按契约验证。
 6. 保存准确命令、exit code、宿主版本、平台 P/R SHA、作者资产 SHA、所有 PR/Release 链接、截图和未覆盖项。原始记录先脱敏再入库。
+
+## 2026-10-30 受控独立账号执行记录
+
+- 独立账号：`Orangeheswy`（350164273，2026-10-30 注册），不是 `heswy/dsh-game-registry` collaborator（当前 collaborators 仅 `heswy`）。
+- 新投稿 Issue #7 → 上架 PR #8（1.0.0）→ 更新 Issue #9 / PR #10（1.0.1）→ 撤下 PR #11；全部由维护者 `heswy` 复核并合并。
+- 包：`asset-zip-v2` 24 文件；1.0.0 SHA-256 `05328d64…`，1.0.1 SHA-256 `05194feb…`。
+- Host 隔离验收：公开资产安装 1.0.0 → 刷新发现 `latestVersion=1.0.1`、`updateAvailable=true` → 更新安装 1.0.1；见 [install-update](./raw/community-p01/2026-10-30-install-update.json)。
+- 撤下后公网 v1/v2 目录均为空，`owners/external-orbit.json` 与两份 review 保留。
+- 未覆盖：真实 DSH Desktop 干净资料安装该外部包、实际游玩/Continue。该账号由用户本人创建并授权复用，属于受控独立账号，不等同于无关第三方真人作者。
 
 ## 完成判据
 

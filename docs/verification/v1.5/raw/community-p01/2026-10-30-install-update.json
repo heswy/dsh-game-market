@@ -1,0 +1,29 @@
+{
+  "catalogSource": "https://raw.githubusercontent.com/heswy/dsh-game-registry/main/registry/v2/games.json",
+  "catalogBefore": [
+    {
+      "id": "external-orbit",
+      "version": "1.0.0",
+      "updateAvailable": false
+    }
+  ],
+  "install100": {
+    "version": "1.0.0",
+    "source": "registry",
+    "sha256": "05328d64f8ff7d600bff88d1114625231a142dd71b390b195ba5d87b3b381363"
+  },
+  "catalogAfter": [
+    {
+      "id": "external-orbit",
+      "installedVersion": "1.0.0",
+      "latestVersion": "1.0.1",
+      "updateAvailable": true
+    }
+  ],
+  "install101": {
+    "version": "1.0.1",
+    "source": "registry",
+    "sha256": "05194feb688552b84df254720c853e03556efb11c4b38b43804c8efa70aacc02"
+  },
+  "level": "isolated Host harness with the real public release assets; the v2 catalog bytes were the real public catalog snapshots at the 1.0.0 and 1.0.1 commits"
+}
