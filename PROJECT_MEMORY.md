@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**V1.5 M5 本机工程验收交付，等待复核；正式发布未放行**。M0–M4 已合入（M4 PR #10：`e700eea`）。M5 PR #11、内容 PR #6：1570/1570 + CHECK44、真实407031ms游戏、直接公开 Git 安装10/10、同资料真实两跳33/33、游戏进度导入/重开、确定性包和内容CI均已取证。用户只有自己的账号；独立外部作者与两台实体机迁移仍未验证。无 V1.5 生产 tag、Release、stable 推广；当前权威矩阵见 `docs/verification/v1.5/m5-acceptance.md`。以下较早阶段记录保留为历史。
+- 当前目标：**修复 M5 存档迁移复核阻塞，重新验收；正式发布未放行**。M0–M4 已合入（M4 PR #10：`e700eea`）。M5 平台 PR #11 与内容 PR #6 均为草稿，尚未合入。已有固定候选的自动化与真实桌面证据，但复核已复现三个存档问题，不能据此放行。独立外部作者与两台实体机迁移仍未验证。当前权威矩阵及阻塞见 `docs/verification/v1.5/m5-acceptance.md`；以下较早阶段记录保留为历史。
 - 历史：V1 验收/修复过程（M3 自动化、真机代执行、codex 两轮 review CR-01..09）见 `docs/V1-VERIFICATION.md`、`docs/verification/v1/AUTOMATED-EVIDENCE.md`、`docs/reviews/2026-10-19-codex-acceptance-review.md` 与 `git log`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2 + V1.1 呈现修订 + 社区投稿 §8.14 / D-038**；第 8–12 章为开发权威来源；全出血/安全区见 §9.6.1、D-037）
 - 开始记录：2026-10-18
@@ -41,7 +41,7 @@
 
 ### 1.2 协作规则
 
-1. 主会话负责架构、方案、任务指南、开发标准、仓库协调、review 和验收；用户选择其他开发 Agent 实施、验证、修复并开 PR。主会话不自动派发开发 Agent，也不默认接管实现；直接实现须有用户明确指派。
+1. 主会话负责架构、方案、任务指南、开发标准、仓库协调、实现、验证、review 和验收；按当前会话的协作指令与用户授权执行。用户已明确指派主会话修复本次 M5 存档问题。
 2. 可复用开发规则集中在本文件；任务指南引用本文件，只增加任务范围和验收要求，不复制另一套协作规则。
 3. 开工先读本文件、任务指南、PRD 对应章节与共享契约；保留用户修改。开发 Agent 在独立 worktree/分支工作，按授权修改共享契约与工具，不自行扩大范围或修改用户 DSH profile。
 4. 交付报告必须包含固定 SHA、分支、改动、实际验证结果和未完成项；主会话在隔离 checkout 复核。不得把 mock、模拟器或 headless 证据写成真实公网/桌面 Host 验收。
