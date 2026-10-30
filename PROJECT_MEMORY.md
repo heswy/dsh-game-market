@@ -9,6 +9,7 @@
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
 - 当前目标：**修复 M5 存档迁移复核阻塞，重新验收；正式发布未放行**。M0–M4 已合入（M4 PR #10：`e700eea`）。M5 平台 PR #11 与内容 PR #6 均为草稿，尚未合入。已有固定候选的自动化与真实桌面证据，但复核已复现三个存档问题，不能据此放行。独立外部作者与两台实体机迁移仍未验证。当前权威矩阵及阻塞见 `docs/verification/v1.5/m5-acceptance.md`；以下较早阶段记录保留为历史。
+- 2026-10-30 分支整理：平台本地 `main` 已快进到 `origin/main`；已删除已合入或等效合入的旧分支及四个干净旧阶段工作树。平台 M5 工作树、内容 M5 工作树、rc.2 测试候选分支保留；旧主目录 `codex/v1.5-development-guide` 的未提交修改保留。历史文本中的旧工作树路径不再保证存在，已合入证据以当前主分支及本工作树为准。未合入的旧投稿方案与内容工具链草稿保留供后续判断。
 - 历史：V1 验收/修复过程（M3 自动化、真机代执行、codex 两轮 review CR-01..09）见 `docs/V1-VERIFICATION.md`、`docs/verification/v1/AUTOMATED-EVIDENCE.md`、`docs/reviews/2026-10-19-codex-acceptance-review.md` 与 `git log`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2 + V1.1 呈现修订 + 社区投稿 §8.14 / D-038**；第 8–12 章为开发权威来源；全出血/安全区见 §9.6.1、D-037）
 - 开始记录：2026-10-18
