@@ -7,6 +7,7 @@
 
 import { ROUTES } from '../../shared/src/contracts.js';
 import { GM } from '../../shared/src/errors.js';
+import { SAVE_TRANSFER_LIMITS } from '../../shared/src/save-transfer-contract.js';
 import { hostError } from './errors.js';
 import { JSON_HEADERS, jsonResponse, queryInteger, queryValue } from './http.js';
 
@@ -93,6 +94,17 @@ export function createRouteTable({ services, devMode = false }) {
         const include = queryValue(url, 'include', { required: false, maxLength: 16 });
         return saves.get(gameId, { includeData: include === 'data' });
       },
+    },
+    {
+      path: ROUTES.SAVE_EXPORT,
+      methods: ['GET'],
+      handler: async ({url})=>saves.exportTransfer(queryValue(url,'gameId',{maxLength:48}),{backup:url.searchParams.get('backup')==='true'}),
+    },
+    {
+      path: ROUTES.SAVE_IMPORT,
+      methods: ['POST'],
+      bodyLimitBytes: SAVE_TRANSFER_LIMITS.requestBytes,
+      handler: async ({body})=>saves.importTransfer(requireObjectBody(body)),
     },
     {
       path: ROUTES.SAVE_REMOVE,

@@ -131,6 +131,8 @@ export function register() {
       ROUTES.REGISTRY_REFRESH,
       ROUTES.SAVE,
       ROUTES.SAVE_REMOVE,
+      ROUTES.SAVE_EXPORT,
+      ROUTES.SAVE_IMPORT,
       ROUTES.SESSION,
       ROUTES.SCORES,
       ROUTES.SCORE,

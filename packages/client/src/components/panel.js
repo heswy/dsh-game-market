@@ -1,5 +1,6 @@
 /** Game Market main panel: header, Market / My Games / Detail, and the Runtime switch. */
 import React from 'react';
+import { SaveTransferPanel } from './save-transfer.js';
 import { store, pageChanged, sessionBound, surfaceChanged, queryDraftChanged, queryApplied, categoryChanged, filtersCleared, searchOpenChanged, scrollSaved, lightboxChanged, dialogOpened, dialogDeleteDataChanged, dialogConfirmAgain, dialogBusyChanged, dialogClosed, toastDismissed, focusConsumed } from '../store.js';
 import { PAGES, MAIN_PANEL_KEY, MAX_SCREENSHOTS } from '../constants.js';
 import { agentMatchesSession, isAgentFresh } from '../chip-state.js';
@@ -53,6 +54,7 @@ function openPanel() {
 
 export function GameMarketPanel(props) {
   const state = useStoreState();
+  const [transfer,setTransfer] = React.useState(null);
   const now = useClock(1000);
   const diagnosticRef = React.useRef(false);
   const activePanelId = useActivePanel(props, diagnosticRef);
@@ -827,6 +829,7 @@ export function GameMarketPanel(props) {
                 onUpdate: function update(game) {
                   installGame(game, true);
                 },
+                onTransfer:(game,action)=>setTransfer({game,action}),
                 onUninstall: function uninstall(game) {
                   openUninstallDialog(game.id, { kind: 'menu', gameId: game.id });
                 },
@@ -912,6 +915,7 @@ export function GameMarketPanel(props) {
           onConfirm: confirmDialogAction,
         })
       : null,
+    transfer ? h(SaveTransferPanel,{request:transfer,t:t,api:api,onClose:()=>setTransfer(null),onDone:()=>{void loadCatalog({store:store,api:api});}}) : null,
     h(ToastViewport, {
       toasts: state.toasts,
       t: t,

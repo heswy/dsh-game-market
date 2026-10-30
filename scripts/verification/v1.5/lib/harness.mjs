@@ -265,9 +265,10 @@ export class Cdp {
     return cdp;
   }
 
-  static async attach(port = 9460) {
+  static async attach(port = 9460, { preferredUrlPrefix = null } = {}) {
     const list = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
-    const page = list.find((t) => t.type === 'page' && t.webSocketDebuggerUrl);
+    const pages = list.filter((t) => t.type === 'page' && t.webSocketDebuggerUrl);
+    const page = (preferredUrlPrefix && pages.find((t) => t.url?.startsWith(preferredUrlPrefix))) || pages[0];
     if (!page) throw new Error(`no debuggable page on port ${port}`);
     const cdp = new Cdp();
     cdp.ws = new WebSocket(page.webSocketDebuggerUrl);

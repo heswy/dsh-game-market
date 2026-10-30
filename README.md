@@ -4,15 +4,15 @@
 
 **当前发布：`v1.2.0`**。在 V1.1 的 Market 视觉交互、全出血 Runtime 与开发包呈现规范基础上，新增社区投稿契约、AI 开发者 Skill、GitHub 内容仓库模板与维护者上架工具；默认官方 HTTPS 目录与随包 seed 兜底已接通。PR #4 / #5 已复核合并，受控 M4 公网上架→更新→撤下及独立 Host 安装/启动已有证据。
 
-V1.2 发布验证与范围见[发布说明](./docs/releases/v1.2.0.md)；真实 DSH App 安装/持久化、完整 120 秒流程、跨机 save、真实外部作者生产流程仍待验收。
+V1.2 发布验证与范围见[发布说明](./docs/releases/v1.2.0.md)。V1.5 新增的真实桌面安装/升级、完整长局与受控迁移结果见下方当前进度；独立外部作者和实体跨机验证仍待补齐。
 V1.1 验收：`npm run verify` **787/787**、`CHECK OK (23)`；真机与隔离宿主证据见 [`docs/V1-VERIFICATION.md`](./docs/V1-VERIFICATION.md)、[`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./docs/verification/v1/AUTOMATED-EVIDENCE.md)、[`docs/verification/fullbleed-runtime/`](./docs/verification/fullbleed-runtime/)。
 
 
-### V1.5 开发进度（2026-10-26）
+### V1.5 开发进度（2026-10-28）
 
-M0–M2 已通过 PR #6/#7/#8 合入；M3 插件持续更新已通过 PR #9 合入 main。M4 已实现旧 HTML wrapper 迁移、正式鲸鱼/气泡和游戏内普通问答，并通过实际 DSH rc.3 桌面窗口的隔离验证，待 PR 复核合入。V1.5 尚未正式发布。
+M0–M2 已通过 PR #6/#7/#8 合入；M3 插件持续更新已通过 PR #9 合入 main。M4 已实现旧 HTML wrapper 迁移、正式鲸鱼/气泡和游戏内普通问答，并通过实际 DSH rc.3 桌面窗口的隔离验证，已通过 PR #10 合入 main。M5 本机工程验收已补齐：受控存档导出/导入与重开、公开固定候选直接安装、同资料连续两次更新、407秒真实实玩，以及1570项完整测试均通过。平台 PR #11 与内容 PR #6 待复核；独立外部作者及两台实体机迁移尚缺，V1.5 尚未正式发布。
 
-具体结果与范围见 [M4 验收](./docs/verification/v1.5/m4-acceptance.md)、[M3 更新验收](./docs/verification/v1.5/m3-restart-acceptance.md) 和 [项目记忆](./PROJECT_MEMORY.md)。下一阶段 M5 验证干净用户正式安装升级、长局/数据和外部作者流程，再准备正式发行。开发候选版本与本文“当前发布 v1.2.0”分别看待。
+具体结果与范围见 [M4 验收](./docs/verification/v1.5/m4-acceptance.md)、[M3 更新验收](./docs/verification/v1.5/m3-restart-acceptance.md) 和 [项目记忆](./PROJECT_MEMORY.md)。M5 当前证据与未完成项见 [M5 验收](./docs/verification/v1.5/m5-acceptance.md)，迁移与恢复操作见 [恢复指南](./docs/releases/v1.5.0-recovery.md)。开发候选版本与本文“当前发布 v1.2.0”分别看待。
 
 ### V1.1 主要变化
 

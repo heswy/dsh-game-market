@@ -41,6 +41,10 @@ function RowMenu(props) {
       },
     });
   }
+  for(const action of ['export','import','backup'])items.push({
+    id:'save-'+action,label:t(({export:'transfer.action.export',import:'transfer.action.import',backup:'transfer.action.backup'})[action]),
+    onSelect:()=>{if(props.onTransfer)props.onTransfer(game,action);},
+  });
   items.push({
     id: 'uninstall',
     label: t('mygames.menu.uninstall'),
@@ -379,6 +383,7 @@ function MyGameRow(props) {
             onUpdate: props.onUpdate,
             onUninstall: props.onUninstall,
             onDeleteData: props.onDeleteData,
+            onTransfer: props.onTransfer,
             onClose: closeMenu,
           })
         : null
@@ -479,6 +484,7 @@ export function MyGamesPage(props) {
           onUpdate: props.onUpdate,
           onUninstall: props.onUninstall,
           onDeleteData: props.onDeleteData,
+          onTransfer: props.onTransfer,
         });
       })
     ),

@@ -1,6 +1,6 @@
 {
   "name": "dsh-game-market",
-  "version": "1.3.0",
+  "version": "1.5.0-rc.3",
   "description": "Game market and runtime for DeepSeek Harness — play small games while the Agent works.",
   "type": "module",
   "main": "index.js",
@@ -31,7 +31,8 @@
     "scripts/release/**",
     "skills/**",
     "docs/community*.md",
-    "THIRD-PARTY-NOTICES.md"
+    "THIRD-PARTY-NOTICES.md",
+    "docs/releases/v1.5.0-recovery.md"
   ],
   "bin": {
     "dsh-game": "./scripts/cli/dsh-game.mjs",

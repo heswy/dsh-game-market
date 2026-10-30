@@ -53,7 +53,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const M1_DIR = path.resolve(HERE, '..');
 export const V15_DIR = path.resolve(HERE, '../..');
 export const REPO_ROOT = path.resolve(HERE, '../../../../..');
-export const OUT_DIR = path.join(REPO_ROOT, 'docs/verification/v1.5/raw/m2');
+export const OUT_DIR = process.env.DSH_V15_EVIDENCE_DIR || path.join(REPO_ROOT, 'docs/verification/v1.5/raw/m2');
 export const SHOT_DIR = path.join(OUT_DIR, 'screenshots');
 export const FIXTURE_ASSET_DIR = path.join(REPO_ROOT, 'scripts/verification/v1.5/assets/fixture-package/assets');
 

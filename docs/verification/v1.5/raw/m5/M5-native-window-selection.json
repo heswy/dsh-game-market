@@ -1,0 +1,9 @@
+{
+  "command": "Cdp.attach(9497,{preferredUrlPrefix: native main})",
+  "exitCode": 0,
+  "actual": {
+    "href": "dsh-app://app/",
+    "qprobe": true
+  },
+  "scope": "read-only native main selection while a separate welcome page also exists"
+}

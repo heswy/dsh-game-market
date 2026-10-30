@@ -66,7 +66,9 @@ export function createRouter({ routes, logger = null, now = () => new Date() }) 
         if (route.optionalBody === true && isEmptyBody(request)) {
           body = null;
         } else {
-          body = await readJsonBody(request);
+          body = await readJsonBody(request, {
+            ...(Number.isFinite(route.bodyLimitBytes) ? { limitBytes: route.bodyLimitBytes } : {}),
+          });
         }
       }
       const result = await route.handler({

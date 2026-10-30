@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-30",
+  "author": {
+    "login": "Orangeheswy",
+    "githubUserId": 350164273,
+    "createdAt": "2026-10-30T07:08:52Z"
+  },
+  "maintainer": {
+    "login": "heswy",
+    "githubUserId": 174761563
+  },
+  "contentRepositoryCollaborators": ["heswy"],
+  "authorIsCollaborator": false,
+  "sourceRepository": "https://github.com/Orangeheswy/dsh-game-external-orbit",
+  "sourceCommits": {
+    "1.0.0": "3d6a3e3268192835aebd73e903d9dba82421b87b",
+    "1.0.1": "771991199901860ac69c92bdb241d2f389548044"
+  },
+  "issues": {
+    "new": "https://github.com/heswy/dsh-game-registry/issues/7",
+    "update": "https://github.com/heswy/dsh-game-registry/issues/9"
+  },
+  "pullRequests": {
+    "publish1_0_0": "https://github.com/heswy/dsh-game-registry/pull/8",
+    "update1_0_1": "https://github.com/heswy/dsh-game-registry/pull/10",
+    "withdraw": "https://github.com/heswy/dsh-game-registry/pull/11"
+  },
+  "releases": {
+    "1.0.0": "https://github.com/heswy/dsh-game-registry/releases/tag/external-orbit-v1.0.0",
+    "1.0.1": "https://github.com/heswy/dsh-game-registry/releases/tag/external-orbit-v1.0.1"
+  },
+  "packages": {
+    "1.0.0": {
+      "sha256": "05328d64f8ff7d600bff88d1114625231a142dd71b390b195ba5d87b3b381363",
+      "size": 418059,
+      "filesDigest": "fc560b977ed72638430635b0fa01b4cf90ae86cf0c98f462a69e0031acca0fbe",
+      "fileCount": 24,
+      "format": "asset-zip-v2"
+    },
+    "1.0.1": {
+      "sha256": "05194feb688552b84df254720c853e03556efb11c4b38b43804c8efa70aacc02",
+      "size": 418059,
+      "filesDigest": "42d590b48b88ce78291cd7b79e0371266fc3d5ca6b53aa12c97b29ac456115ac",
+      "fileCount": 24,
+      "format": "asset-zip-v2"
+    }
+  },
+  "afterWithdrawal": {
+    "catalogV1": [],
+    "catalogV2": [],
+    "ownersRetained": ["owners/external-orbit.json"],
+    "reviewsRetained": ["reviews/external-orbit/1.0.0.json", "reviews/external-orbit/1.0.1.json"]
+  },
+  "coverage": {
+    "independentAccountIdentity": "passed (separate GitHub account; not a content-repo collaborator)",
+    "publicSubmitReviewPublishUpdateWithdraw": "passed (real GitHub issues, releases and merged PRs)",
+    "isolatedHostInstallUpdate": "passed with real public release assets and real catalog snapshots",
+    "realDesktopCleanInstallAndPlay": "not run for this external package"
+  }
+}

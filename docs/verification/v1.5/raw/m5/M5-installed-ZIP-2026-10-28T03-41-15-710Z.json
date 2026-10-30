@@ -1,0 +1,161 @@
+{
+  "id": "M5-installed-ZIP",
+  "title": "Reopen exact installed candidate and run packaged Orbit Courier",
+  "commands": [
+    "node scripts/verification/v1.5/m5/installed-game.mjs --home /tmp/dsh-v15/m3/home-m5-native-2026-10-28T03-13-02-165Z"
+  ],
+  "startedAt": "2026-10-28T03:41:15.710Z",
+  "finishedAt": "2026-10-28T03:41:20.960Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "exactProfileDependency",
+      "ok": true,
+      "required": false,
+      "detail": "github:heswy/dsh-game-market#fe181461c12b850ee0a3dc23abfaf4154f25f454"
+    },
+    {
+      "name": "nativeUI",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "panelOpen": true,
+        "page": "runtime",
+        "rows": [],
+        "dialog": null,
+        "runtime": {
+          "state": "playing",
+          "stage": true,
+          "savePill": null,
+          "controls": [
+            {
+              "label": "返回市场",
+              "disabled": false
+            },
+            {
+              "label": "暂停菜单",
+              "disabled": false
+            }
+          ]
+        },
+        "toast": null,
+        "fileInputAccept": null,
+        "bodySnippet": "新会话\n⌘\nN\n插件\n自动化任务\n游戏市场\n更多\n工作区\n默认工作区\n新会话\n更多"
+      }
+    },
+    {
+      "name": "runtimeText",
+      "ok": false,
+      "required": false,
+      "detail": null
+    },
+    {
+      "name": "frameDiagnostics",
+      "ok": true,
+      "required": false,
+      "detail": [
+        {
+          "title": "Game",
+          "body": "",
+          "orbit": false,
+          "probe": false
+        },
+        {
+          "title": "轨道信使 · Orbit Courier",
+          "body": "分数\n0\n最高分\n0\n剩余\n2:00\n航段\n近地轨道\n连击\n×1\n船体\n◆ ◆ ◆\nII\n🔊\n\nORBIT COURIER · 夜航第一班\n\n轨道信使\n\n在三层轨道间穿梭，收取货舱，穿过站门交付，别撞上碎岩。\n\n一局约 120 秒 · 3 段航程 · 连击最高 ×5\n\n方向键 / WASD 转向与换轨 · 空格暂停 · M 静音\n拖动旋转 · 轻点轨道换轨\n音效在第一次点击/按键后才会播放，可随时静音。\n开始这一班\n方向键 / WASD 转向与换轨\n空格暂停\nM 静音",
+          "orbit": true,
+          "probe": true
+        }
+      ]
+    },
+    {
+      "name": "packaged ZIP reaches real ready state",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "packaged ZIP actually advances after real keyboard input",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "source": "orbit-probe-hook",
+        "probeVersion": 1,
+        "phase": "playing",
+        "endReason": null,
+        "elapsedMs": 1152,
+        "timeLeftMs": 118848,
+        "durationMs": 120000,
+        "score": 0,
+        "deliveries": 0,
+        "shield": 3,
+        "maxShield": 3,
+        "invulnerableMs": 0,
+        "stationAngle": -1.5707963267948966,
+        "best": 0,
+        "hud": {
+          "score": "0",
+          "best": "0",
+          "time": "1:59",
+          "act": "近地轨道"
+        },
+        "ship": {
+          "ring": 1,
+          "angle": 1.5707963267948966,
+          "carry": false,
+          "ringCooldownMs": 0
+        },
+        "parcels": [],
+        "asteroids": [
+          {
+            "ring": 0,
+            "angle": 1.9462466211458556,
+            "dir": -1
+          }
+        ],
+        "audio": {
+          "unlocked": true,
+          "muted": false,
+          "supported": true
+        },
+        "fps": null
+      }
+    },
+    {
+      "name": "browserLogs",
+      "ok": true,
+      "required": false,
+      "detail": [
+        {
+          "sessionId": null,
+          "at": 1793158879250,
+          "level": "error",
+          "source": "network",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "dsh-app://app/api/game-market/save?gameId=orbit-courier&include=data"
+        },
+        {
+          "sessionId": null,
+          "at": 1793158879255,
+          "level": "error",
+          "source": "network",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "dsh-app://app/api/game-market/save?gameId=orbit-courier&include=data"
+        }
+      ]
+    },
+    {
+      "name": "browserConsole",
+      "ok": true,
+      "required": false,
+      "detail": []
+    },
+    {
+      "name": "owned App stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}
