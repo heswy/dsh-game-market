@@ -1,0 +1,110 @@
+{
+  "id": "M5-native-clean-install",
+  "title": "Fresh actual Desktop direct immutable candidate install and packaged ZIP play",
+  "commands": [
+    "node scripts/verification/v1.5/m5/clean-install.mjs --commit cf39f571adf6027f712b27a04505dea3a6620e9c"
+  ],
+  "startedAt": "2026-10-30T09:02:02.202Z",
+  "finishedAt": "2026-10-30T09:02:42.828Z",
+  "passed": false,
+  "failed": [
+    "public network gate",
+    "completed"
+  ],
+  "checks": [
+    {
+      "name": "public network gate",
+      "ok": false,
+      "required": true,
+      "detail": {
+        "ok": false,
+        "attempts": [
+          {
+            "attempt": 1,
+            "at": "2026-10-30T09:02:02.557Z",
+            "ok": false,
+            "scrubbed": null,
+            "elapsedMs": 1
+          },
+          {
+            "attempt": 2,
+            "at": "2026-10-30T09:02:07.700Z",
+            "ok": false,
+            "scrubbed": null,
+            "elapsedMs": 5149
+          },
+          {
+            "attempt": 3,
+            "at": "2026-10-30T09:02:12.710Z",
+            "ok": false,
+            "scrubbed": null,
+            "elapsedMs": 10154
+          },
+          {
+            "attempt": 4,
+            "at": "2026-10-30T09:02:17.726Z",
+            "ok": false,
+            "scrubbed": null,
+            "elapsedMs": 15170
+          },
+          {
+            "attempt": 5,
+            "at": "2026-10-30T09:02:22.728Z",
+            "ok": false,
+            "scrubbed": null,
+            "elapsedMs": 20172
+          },
+          {
+            "attempt": 6,
+            "at": "2026-10-30T09:02:27.730Z",
+            "ok": false,
+            "scrubbed": null,
+            "elapsedMs": 25174
+          },
+          {
+            "attempt": 7,
+            "at": "2026-10-30T09:02:32.732Z",
+            "ok": false,
+            "scrubbed": null,
+            "elapsedMs": 30176
+          },
+          {
+            "attempt": 8,
+            "at": "2026-10-30T09:02:37.803Z",
+            "ok": false,
+            "scrubbed": null,
+            "elapsedMs": 35247
+          }
+        ],
+        "elapsedMs": 40267,
+        "mode": null
+      }
+    },
+    {
+      "name": "completed",
+      "ok": false,
+      "required": true,
+      "detail": "Error: public network gate\n    at check (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-public-acceptance/scripts/verification/v1.5/m5/clean-install.mjs:12:120)\n    at file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-public-acceptance/scripts/verification/v1.5/m5/clean-install.mjs:14:87"
+    },
+    {
+      "name": "isolatedIndexTransport",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "scenarioSequence": [],
+        "connects": [],
+        "tunnels": [],
+        "tlsErrors": [],
+        "rejected": [],
+        "requests": [],
+        "counts": {
+          "fixtureRequests": 0,
+          "passthroughRequests": 0,
+          "tunnelConnects": 0,
+          "rejectedPlainHttp": 0,
+          "tlsHandshakeErrors": 0
+        }
+      }
+    }
+  ]
+}

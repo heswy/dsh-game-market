@@ -1,0 +1,99 @@
+{
+  "id": "M5-Desktop-migration",
+  "title": "Native UI save portability and App restart",
+  "commands": [
+    "DSH_V15_WORK=/tmp/dsh-v15/m3 node scripts/verification/v1.5/m5/migration.mjs"
+  ],
+  "startedAt": "2026-10-30T09:39:48.535Z",
+  "finishedAt": "2026-10-30T09:40:36.474Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "runtime",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-30T09:38:34.051Z"
+      }
+    },
+    {
+      "name": "source actual game has live elapsed progress",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "elapsedMs": 3616,
+        "score": 0
+      }
+    },
+    {
+      "name": "native export reports download start",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "browser produced portable file",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "export contains game progress only",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "destination previews imported save",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "native import succeeds into clean profile",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "all portable values preserved byte-for-byte semantically",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real App restart offers game Continue from imported progress",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "Continue restores imported elapsed progress after actual App restart",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "before": 3616,
+        "after": 4464
+      }
+    },
+    {
+      "name": "owned Desktop instances stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}
