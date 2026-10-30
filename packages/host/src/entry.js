@@ -353,11 +353,27 @@ export function createEntryService({
   }
 
   const importingGames=new Set();
+  const deletingGames=new Set();
   function assertNotImporting(gameId){
     if(importingGames.has(gameId))throw hostError(GM.INSTALL_IN_PROGRESS,'Saved progress is being imported',{retryable:true});
   }
+  /**
+   * Import and "uninstall + delete data" are mutually exclusive in both
+   * directions. Both sides check and claim the game synchronously, so on one
+   * thread they cannot interleave: without this, an import that started first
+   * kept writing `current.json` after the uninstall had removed the saves
+   * directory, recreating progress for an uninstalled game.
+   */
+  function beginDataDeletion(gameId){
+    assertNotImporting(gameId);
+    if(deletingGames.has(gameId))throw hostError(GM.UNINSTALL_BUSY,'Game data is already being deleted',{retryable:true});
+    deletingGames.add(gameId);
+    let released=false;
+    return ()=>{if(!released){released=true;deletingGames.delete(gameId);}};
+  }
   async function withInactiveGame(gameId,run){
     assertNotImporting(gameId);
+    if(deletingGames.has(gameId))throw hostError(GM.INSTALL_IN_PROGRESS,'Game data is being deleted',{retryable:true});
     importingGames.add(gameId);
     try{
       if(hasActiveInstance(gameId))throw hostError(GM.UPDATE_GAME_RUNNING,'Close this game in every window before importing');
@@ -858,6 +874,7 @@ export function createEntryService({
   return {
     launch,
     withInactiveGame,
+    beginDataDeletion,
     serveEntry,
     servePreview,
     hasActiveInstance,

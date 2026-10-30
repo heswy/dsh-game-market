@@ -7,6 +7,7 @@
 
 import { ROUTES } from '../../shared/src/contracts.js';
 import { GM } from '../../shared/src/errors.js';
+import { SAVE_TRANSFER_LIMITS } from '../../shared/src/save-transfer-contract.js';
 import { hostError } from './errors.js';
 import { JSON_HEADERS, jsonResponse, queryInteger, queryValue } from './http.js';
 
@@ -102,6 +103,7 @@ export function createRouteTable({ services, devMode = false }) {
     {
       path: ROUTES.SAVE_IMPORT,
       methods: ['POST'],
+      bodyLimitBytes: SAVE_TRANSFER_LIMITS.requestBytes,
       handler: async ({body})=>saves.importTransfer(requireObjectBody(body)),
     },
     {

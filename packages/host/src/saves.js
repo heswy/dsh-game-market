@@ -9,7 +9,7 @@
 import { portableSave, validatePortableSave } from './save-transfer.js';
 import { LIMITS } from '../../shared/src/constants.js';
 import { GM } from '../../shared/src/errors.js';
-import { GM_STORE_READONLY, hostError } from './errors.js';
+import { hostError } from './errors.js';
 import { createKeyedSerialiser } from './serial.js';
 import {
   isPlainObject,
@@ -266,12 +266,16 @@ export function createSavesService({ storage, catalog, logger = null, now, withI
 
     const files = paths(gameId);
     await storage.writeJson(files.current, envelope);
+    let metaWritten = true;
     try {
       await storage.writeJson(files.meta, metaValue);
     } catch (error) {
-      // current.json is already durable; meta.json is a derived summary.
-      if (error && error.code === GM.SCHEMA_READ_TOO_NEW) throw error;
-      if (error && error.code === GM_STORE_READONLY) throw error;
+      // current.json is already durable and authoritative; meta.json is only a
+      // derived summary (PRD §8.6.5). Reporting a failure here while the new
+      // save is committed made importers see "failed" yet find the imported
+      // progress on disk. Keep the success result and report the partial
+      // failure explicitly (read-only stores included).
+      metaWritten = false;
       logger?.warn?.('[game-market/host] save-meta-write-failed', `code=${error?.code || 'E_UNKNOWN'}`);
     }
 
@@ -281,6 +285,7 @@ export function createSavesService({ storage, catalog, logger = null, now, withI
       bytes: valuesBytes,
       revision: revisionValue,
       updatedAt: savedAt,
+      ...(metaWritten ? {} : { warnings: ['save-meta-write-failed'] }),
     };
   }
 

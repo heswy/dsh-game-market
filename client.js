@@ -180,10 +180,12 @@ window.__ModuleLoader__.load({
       "transfer.overwrite": "我确认替换本机现有进度；导入前进度将保留为备份。",
       "transfer.error.empty": "没有可导出的进度或备份。",
       "transfer.error.running": "请关闭所有窗口中的这款游戏后重试。",
+      "transfer.error.busy": "这款游戏的安装或数据删除正在进行，请稍后重试。",
       "transfer.error.conflict": "本机进度已变化，请重新选择文件并确认。",
       "transfer.error.schema": "存档格式不同，请先安装兼容的游戏版本。",
       "transfer.error.invalid": "无法处理该文件或操作。请检查游戏、文件完整性和可用空间后重试。",
       "transfer.import.done": "进度已导入。启动游戏后可读取导入的进度；需要恢复时可导出导入前备份。",
+      "transfer.import.partial": "进度已导入，但本机进度摘要未能更新；启动游戏仍会读取导入的进度。",
       "transfer.export.done": "下载已开始。请检查下载目录中的进度文件。",
       "transfer.busy": "正在处理进度…",
       "transfer.confirm": "确认导入",
@@ -823,10 +825,12 @@ window.__ModuleLoader__.load({
       "transfer.overwrite": "Replace existing local progress and keep a pre-import backup.",
       "transfer.error.empty": "No saved progress or import backup is available.",
       "transfer.error.running": "Close this game in every window and retry.",
+      "transfer.error.busy": "This game’s install or data deletion is in progress. Retry shortly.",
       "transfer.error.conflict": "Local progress changed. Select the file and confirm again.",
       "transfer.error.schema": "Save schemas differ. Install a compatible game version first.",
       "transfer.error.invalid": "The file or operation could not be processed. Check the game, file integrity and free storage, then retry.",
       "transfer.import.done": "Progress imported. Launch the game to load it. Export the pre-import backup if you need to restore earlier progress.",
+      "transfer.import.partial": "Progress imported, but this computer’s progress summary could not be updated. The imported progress is still loaded when the game starts.",
       "transfer.export.done": "Download started. Check your downloads for the progress file.",
       "transfer.busy": "Transferring progress…",
       "transfer.confirm": "Import progress",
@@ -4037,6 +4041,40 @@ window.__ModuleLoader__.load({
     return { GameMarketApiError, randomOperationId, createApiClient };
     })();
 
+    // module: packages/shared/src/save-transfer-contract.js
+    __mods["packages/shared/src/save-transfer-contract.js"] = (function () {
+    const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
+    /**
+     * Portable progress transfer contract (V1.5 M5 save migration).
+     *
+     * A legal save is capped by `LIMITS.saveTotalBytes` (envelope included, PRD
+     * §8.6.5). Its portable form swaps the envelope bookkeeping fields for
+     * `format`/`gameVersion`/`sha256`, so it may exceed the save quota by a small
+     * fixed amount. Export, the client file picker and `POST /save-import` all use
+     * the budgets below; the generic `LIMITS.jsonBodyBytes` request cap stays 1 MiB
+     * for every other route.
+     *
+     * The exported file is the same compact JSON that is sent to the Host. A
+     * pretty-printed file can grow far beyond the payload (indentation repeats per
+     * nesting level), so formatting would make a file size budget that the import
+     * route could never accept.
+     */
+
+    const SAVE_TRANSFER_LIMITS = Object.freeze({
+      /** Compact JSON bytes of the portable payload; also the exported file size. */
+      payloadBytes: LIMITS.saveTotalBytes + 4 * 1024,
+      /** JSON request body for `POST /save-import`: payload + gameId/expectedRevision. */
+      requestBytes: LIMITS.saveTotalBytes + 8 * 1024,
+    });
+
+    /** Serialise a portable save exactly as it is written to disk and sent back. */
+    function portableSaveFileText(portable) {
+      return JSON.stringify(portable);
+    }
+
+    return { SAVE_TRANSFER_LIMITS, portableSaveFileText };
+    })();
+
     // module: packages/client/src/local-install.js
     __mods["packages/client/src/local-install.js"] = (function () {
     const GAME_ID_PATTERN = __mods["packages/shared/src/constants.js"].GAME_ID_PATTERN;
@@ -4159,6 +4197,7 @@ window.__ModuleLoader__.load({
     const GameMarketApiError = __mods["packages/shared/src/api-client.js"].GameMarketApiError;
     const randomOperationId = __mods["packages/shared/src/api-client.js"].randomOperationId;
     const GM = __mods["packages/shared/src/errors.js"].GM;
+    const SAVE_TRANSFER_LIMITS = __mods["packages/shared/src/save-transfer-contract.js"].SAVE_TRANSFER_LIMITS;
     const detectLocalInstallFormat = __mods["packages/client/src/local-install.js"].detectLocalInstallFormat;
     /**
      * V1 Host API client for the Market surfaces (PRD 8.5, V1-CONTRACTS 7).
@@ -4335,7 +4374,8 @@ window.__ModuleLoader__.load({
         const url = base + '/' + name + buildQuery(cfg.query);
         const jsonBody = cfg.body !== undefined && (cfg.contentType === undefined || cfg.contentType === 'application/json');
         const body = cfg.body === undefined ? undefined : jsonBody ? JSON.stringify(cfg.body) : cfg.body;
-        if (jsonBody && body !== undefined && new TextEncoder().encode(body).length > LIMITS.jsonBodyBytes) {
+        const maxBodyBytes = typeof cfg.maxBodyBytes === 'number' ? cfg.maxBodyBytes : LIMITS.jsonBodyBytes;
+        if (jsonBody && body !== undefined && new TextEncoder().encode(body).length > maxBodyBytes) {
           throw asApiError(GM.INVALID_PARAM, 'Request body is too large');
         }
         const headers = {};
@@ -4426,7 +4466,7 @@ window.__ModuleLoader__.load({
           return request('game', { query: { id: gameId }, timeoutMs: timeouts.game });
         },
         downloadSaveTransfer: function(gameId,backup) { return request('save-export',{query:{gameId,backup:backup===true?'true':undefined}}); },
-        importSaveTransfer: function(body) { return request('save-import',{method:'POST',body}); },
+        importSaveTransfer: function(body) { return request('save-import',{method:'POST',body,maxBodyBytes:SAVE_TRANSFER_LIMITS.requestBytes}); },
         saveTransferState: function(gameId) { return request('save',{query:{gameId}}); },
         listInstalled: function listInstalled() {
           return request('installed', { timeoutMs: timeouts.installed });
@@ -10647,8 +10687,9 @@ window.__ModuleLoader__.load({
     __mods["packages/client/src/components/save-transfer.js"] = (function () {
     const __external_0 = require("react");
     const React = __external_0;
-    const LIMITS = __mods["packages/shared/src/constants.js"].LIMITS;
     const GM = __mods["packages/shared/src/errors.js"].GM;
+    const SAVE_TRANSFER_LIMITS = __mods["packages/shared/src/save-transfer-contract.js"].SAVE_TRANSFER_LIMITS;
+    const portableSaveFileText = __mods["packages/shared/src/save-transfer-contract.js"].portableSaveFileText;
     /** Trusted progress transfer UI; never copies sessions or profile settings. */
     const h=React.createElement;
     function SaveTransferPanel({request,t,api,onClose,onDone}) {
@@ -10658,6 +10699,7 @@ window.__ModuleLoader__.load({
       const [overwrite,setOverwrite]=React.useState(false);
       const [phase,setPhase]=React.useState('idle');
       const [error,setError]=React.useState(null);
+      const [partial,setPartial]=React.useState(false);
       const root=React.useRef(null);
       const alive=React.useRef(true);
       React.useEffect(()=>{alive.current=true;root.current?.focus();return()=>{alive.current=false;};},[]);
@@ -10665,11 +10707,11 @@ window.__ModuleLoader__.load({
         if(!alive.current)return;
         setPhase('idle');
         const code=e&&e.code;
-        setError(code===GM.SAVE_NOT_FOUND?'transfer.error.empty':code===GM.UPDATE_GAME_RUNNING?'transfer.error.running':code===GM.STORAGE_CONFLICT?'transfer.error.conflict':code===GM.SAVE_SCHEMA_TOO_NEW?'transfer.error.schema':'transfer.error.invalid');
+        setError(code===GM.SAVE_NOT_FOUND?'transfer.error.empty':code===GM.UPDATE_GAME_RUNNING?'transfer.error.running':code===GM.INSTALL_IN_PROGRESS||code===GM.UNINSTALL_BUSY?'transfer.error.busy':code===GM.STORAGE_CONFLICT?'transfer.error.conflict':code===GM.SAVE_SCHEMA_TOO_NEW?'transfer.error.schema':'transfer.error.invalid');
       }
       async function selectFile(event){
         const file=event.target.files?.[0];setPortable(null);setOverwrite(false);setError(null);if(!file)return;
-        if(file.size>LIMITS.jsonBodyBytes-1024){setError('transfer.error.invalid');return;}
+        if(file.size>SAVE_TRANSFER_LIMITS.payloadBytes){setError('transfer.error.invalid');return;}
         setPhase('reading');
         try{
           const value=JSON.parse(await file.text());
@@ -10685,7 +10727,7 @@ window.__ModuleLoader__.load({
         try{
           const value=await api.downloadSaveTransfer(game.id,action==='backup');
           if(!alive.current)return;
-          const blob=new Blob([JSON.stringify(value,null,2)+'\n'],{type:'application/json'});
+          const blob=new Blob([portableSaveFileText(value)],{type:'application/json'});
           const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;
           link.download=game.id+'-'+value.gameVersion+(action==='backup'?'-backup':'-save')+'.json';
           root.current.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -10695,7 +10737,7 @@ window.__ModuleLoader__.load({
       async function importFile(){
         if(!portable||phase!=='ready'||(revision>0&&!overwrite))return;
         setPhase('busy');setError(null);
-        try{await api.importSaveTransfer({gameId:game.id,expectedRevision:revision,portable});if(!alive.current)return;setPhase('done');onDone();}
+        try{const result=await api.importSaveTransfer({gameId:game.id,expectedRevision:revision,portable});if(!alive.current)return;setPartial(Array.isArray(result?.warnings)&&result.warnings.length>0);setPhase('done');onDone();}
         catch(e){setPortable(null);fail(e);}
       }
       function close(){if(phase==='busy'||phase==='reading')return;onClose();setTimeout(()=>document.querySelector('.dgm-row[data-row-id="'+game.id+'"] .dgm-row-menu-btn')?.focus(),0);}
@@ -10715,6 +10757,7 @@ window.__ModuleLoader__.load({
         portable&&revision>0&&phase!=='done'?h('label',{className:'dgm-modal-body'},h('input',{type:'checkbox',checked:overwrite,onChange:e=>setOverwrite(e.target.checked),disabled:busy}),t('transfer.overwrite')):null,
         error?h('p',{role:'alert',className:'dgm-question-error'},t(error)):null,
         phase==='done'?h('p',{role:'status',className:'dgm-modal-body'},t(action==='import'?'transfer.import.done':'transfer.export.done')):null,
+        phase==='done'&&partial?h('p',{role:'status',className:'dgm-modal-body'},t('transfer.import.partial')):null,
         busy?h('p',{role:'status'},t('transfer.busy')):null,
         h('div',{className:'dgm-modal-actions'},h('button',{type:'button',className:'dgm-btn',onClick:close,disabled:busy},t('common.close')),
           phase!=='done'?h('button',{type:'button',className:'dgm-btn dgm-btn-primary',onClick:action==='import'?importFile:exportFile,disabled:busy||(action==='import'&&(!portable||(revision>0&&!overwrite)))},t(action==='import'?'transfer.confirm':'transfer.download')):null)));

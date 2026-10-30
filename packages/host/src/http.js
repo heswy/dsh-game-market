@@ -40,7 +40,7 @@ export function queryInteger(url, name, { required = false, min = 0, max = Numbe
 }
 
 /** Parse a buffered JSON request body (PRD §8.5). */
-export async function readJsonBody(request) {
+export async function readJsonBody(request, { limitBytes = LIMITS.jsonBodyBytes } = {}) {
   const contentType = request.headers.get('content-type') || '';
   const mediaType = contentType.split(';', 1)[0].trim().toLowerCase();
   if (mediaType !== 'application/json') {
@@ -49,9 +49,9 @@ export async function readJsonBody(request) {
   const declaredLength = request.headers.get('content-length');
   if (declaredLength !== null && declaredLength !== '') {
     const declared = Number(declaredLength);
-    if (Number.isFinite(declared) && declared > LIMITS.jsonBodyBytes) {
-      throw hostError(GM.SAVE_TOO_LARGE, 'Request body exceeds the 1 MiB limit', {
-        details: { limitBytes: LIMITS.jsonBodyBytes },
+    if (Number.isFinite(declared) && declared > limitBytes) {
+      throw hostError(GM.SAVE_TOO_LARGE, 'Request body exceeds the size limit', {
+        details: { limitBytes },
       });
     }
   }
@@ -61,9 +61,9 @@ export async function readJsonBody(request) {
   } catch (_error) {
     throw hostError(GM.INVALID_JSON, 'Request body could not be read');
   }
-  if (Buffer.byteLength(raw, 'utf8') > LIMITS.jsonBodyBytes) {
-    throw hostError(GM.SAVE_TOO_LARGE, 'Request body exceeds the 1 MiB limit', {
-      details: { limitBytes: LIMITS.jsonBodyBytes },
+  if (Buffer.byteLength(raw, 'utf8') > limitBytes) {
+    throw hostError(GM.SAVE_TOO_LARGE, 'Request body exceeds the size limit', {
+      details: { limitBytes },
     });
   }
   if (raw.trim().length === 0) {

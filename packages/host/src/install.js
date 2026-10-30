@@ -1714,6 +1714,22 @@ export function createInstallService({
     if (!record) {
       return { gameId, removed: false, dataDeleted: false, ignored: true };
     }
+    // A progress import must never write saves while this game's data is being
+    // deleted (and an import that started first must block the deletion):
+    // otherwise the import recreates `saves/<gameId>` after the directory was
+    // removed. The claim is synchronous with the import guard in entry.js.
+    const releaseDataDeletion =
+      deleteData && entry && typeof entry.beginDataDeletion === 'function'
+        ? entry.beginDataDeletion(gameId)
+        : null;
+    try {
+      return await uninstallRecordLocked({ gameId, deleteData });
+    } finally {
+      if (releaseDataDeletion) releaseDataDeletion();
+    }
+  }
+
+  async function uninstallRecordLocked({ gameId, deleteData }) {
     if (await isRunning(gameId)) {
       throw hostError(GM.UPDATE_GAME_RUNNING, 'Exit the game before uninstalling', { retryable: true });
     }

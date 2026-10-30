@@ -9,6 +9,7 @@
 import { API_BASE, LIMITS } from '../../shared/src/constants.js';
 import { GameMarketApiError, randomOperationId } from '../../shared/src/api-client.js';
 import { GM } from '../../shared/src/errors.js';
+import { SAVE_TRANSFER_LIMITS } from '../../shared/src/save-transfer-contract.js';
 import { detectLocalInstallFormat } from './local-install.js';
 
 export const V1_TIMEOUTS = Object.freeze({
@@ -177,7 +178,8 @@ export function createMarketApi(options) {
     const url = base + '/' + name + buildQuery(cfg.query);
     const jsonBody = cfg.body !== undefined && (cfg.contentType === undefined || cfg.contentType === 'application/json');
     const body = cfg.body === undefined ? undefined : jsonBody ? JSON.stringify(cfg.body) : cfg.body;
-    if (jsonBody && body !== undefined && new TextEncoder().encode(body).length > LIMITS.jsonBodyBytes) {
+    const maxBodyBytes = typeof cfg.maxBodyBytes === 'number' ? cfg.maxBodyBytes : LIMITS.jsonBodyBytes;
+    if (jsonBody && body !== undefined && new TextEncoder().encode(body).length > maxBodyBytes) {
       throw asApiError(GM.INVALID_PARAM, 'Request body is too large');
     }
     const headers = {};
@@ -268,7 +270,7 @@ export function createMarketApi(options) {
       return request('game', { query: { id: gameId }, timeoutMs: timeouts.game });
     },
     downloadSaveTransfer: function(gameId,backup) { return request('save-export',{query:{gameId,backup:backup===true?'true':undefined}}); },
-    importSaveTransfer: function(body) { return request('save-import',{method:'POST',body}); },
+    importSaveTransfer: function(body) { return request('save-import',{method:'POST',body,maxBodyBytes:SAVE_TRANSFER_LIMITS.requestBytes}); },
     saveTransferState: function(gameId) { return request('save',{query:{gameId}}); },
     listInstalled: function listInstalled() {
       return request('installed', { timeoutMs: timeouts.installed });

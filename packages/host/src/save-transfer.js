@@ -1,6 +1,7 @@
 /** Portable game progress only: never copies a DSH profile or credentials. */
 import {createHash} from 'node:crypto';
 import {LIMITS} from '../../shared/src/constants.js';
+import {SAVE_TRANSFER_LIMITS} from '../../shared/src/save-transfer-contract.js';
 import {GM} from '../../shared/src/errors.js';
 import {hostError} from './errors.js';
 import {isPlainObject,isValidStorageKey,jsonByteLength,validateStoredValue,validateGameId} from './validation.js';
@@ -24,7 +25,7 @@ export function portableSave({gameId,gameVersion,saveSchemaVersion,values}) {
   }
   const payload={format:FORMAT,gameId,gameVersion,saveSchemaVersion,values:checked};
   const result={...payload,sha256:digest(payload)};
-  if(jsonByteLength(result)>LIMITS.jsonBodyBytes-1024)throw hostError(GM.SAVE_TOO_LARGE,'Portable save exceeds transfer limit');
+  if(jsonByteLength(result)>SAVE_TRANSFER_LIMITS.payloadBytes)throw hostError(GM.SAVE_TOO_LARGE,'Portable save exceeds transfer limit');
   return result;
 }
 export function validatePortableSave(value) {
