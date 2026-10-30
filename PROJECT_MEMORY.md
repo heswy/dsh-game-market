@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**修复 M5 存档迁移复核阻塞，重新验收；正式发布未放行**。M0–M4 已合入（M4 PR #10：`e700eea`）。M5 平台 PR #11 与内容 PR #6 均为草稿，尚未合入。已有固定候选的自动化与真实桌面证据，但复核已复现三个存档问题，不能据此放行。独立外部作者与两台实体机迁移仍未验证。当前权威矩阵及阻塞见 `docs/verification/v1.5/m5-acceptance.md`；以下较早阶段记录保留为历史。
+- 当前目标：**M5 存档迁移复核阻塞已修复（`8c1eeae`），已重建 `1.5.0-rc.3` 候选并重新固定内容工具链；M5 正式对外验收仍未通过，正式发布未放行**。M0–M4 已合入（M4 PR #10：`e700eea`）。M5 平台 PR #11 与内容 PR #6 仍为草稿，待按 rc.3 复核。rc.3：P `23f753c5bb293065caf704c46e9f171f34c2307c`、R `cf39f571adf6027f712b27a04505dea3a6620e9c`，4 次隔离构建一致，`release:verify`、`npm run verify` 1570/1574 + `CHECK OK (44)` 通过。独立外部作者与两台实体机迁移仍未验证；rc.3 真实桌面重装/更新/迁移尚未重跑。当前权威矩阵见 `docs/verification/v1.5/m5-acceptance.md`；以下较早阶段记录保留为历史。
 - 2026-10-30 分支整理：平台本地 `main` 已快进到 `origin/main`；已删除已合入或等效合入的旧分支及四个干净旧阶段工作树。平台 M5 工作树、内容 M5 工作树、rc.2 测试候选分支保留；旧主目录 `codex/v1.5-development-guide` 的未提交修改保留。历史文本中的旧工作树路径不再保证存在，已合入证据以当前主分支及本工作树为准。未合入的旧投稿方案与内容工具链草稿保留供后续判断。
 - 历史：V1 验收/修复过程（M3 自动化、真机代执行、codex 两轮 review CR-01..09）见 `docs/V1-VERIFICATION.md`、`docs/verification/v1/AUTOMATED-EVIDENCE.md`、`docs/reviews/2026-10-19-codex-acceptance-review.md` 与 `git log`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2 + V1.1 呈现修订 + 社区投稿 §8.14 / D-038**；第 8–12 章为开发权威来源；全出血/安全区见 §9.6.1、D-037）
@@ -388,6 +388,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-19 · **PR #5 复核合入与 V1.2.0 发版**：固定 head `f862650` 验证 840/840、CHECK OK (38)、registry 31/31，两个 P2 全关闭；PR #5 合入 `e247b93`。用户随后授权合码/打 tag；本次合入项目记忆维护提交，升 package 1.2.0，更新发布说明并以 main 发布提交打 tag v1.2.0。真实 App 等剩余边界未改写为通过。
 - 2026-10-19 · **V1.5 正式对外首版开发指南**：只读核对当前 DSH 0.2.1-rc.2 的 pluginManager/pluginMarket/userQuestions/uiSession/FishLogo 实现并对照官方文档；交付 V1.5 指南与宿主能力记录，明确 ZIP/双目录、原生更新/重启确认、原地问答与权限隔离、M0 探针及正式验收门槛。尚未实施或发布 v1.5，下一步由用户指定开发 Agent 执行 M0。
 - 2026-10-19 · **V1.5 M0 执行完成**：按指南 §7.1 从 `origin/main` `f422e8d` 建 `feat/v1.5-m0` worktree 并 `--no-ff` 合入本地指南分支（`689b5b9`）；交付 7 个宿主探针（S-U1/U2/U3、S-Q1/Q2、S-A1、S-B1）全部通过 + `docs/V1.5-CONTRACTS.md` 冻结 + ZIP 依赖裁决 + 支持矩阵 + PRD D-039～D-050/S-26～S-32；`npm run verify` 840/840、CHECK OK (38)。**未**推进 M1～M5、未合并 main、未打 tag、未发布。等 Codex 复核。
+- 2026-10-30 · **M5 存档迁移阻塞修复与 rc.3 候选重建**：复核在 `docs/verification/v1.5/m5-acceptance.md` 记录三个阻塞；用户指派主会话直接修复，`8c1eeae` 关闭导入/删除互斥、meta 写失败语义与传输预算，并新增回归测试。`npm run verify` 1570/1574、0 fail、4 skip、`CHECK OK (44)`。修复改变构建产物，rc.1 不能继续作为安装候选；版本升至 `1.5.0-rc.3`，P=`23f753c5bb293065caf704c46e9f171f34c2307c`，`release:prepare --write` 生成 R=`cf39f571adf6027f712b27a04505dea3a6620e9c`（93 文件 / 3.29 MiB / `8d9cb0a3…`，4 次隔离构建一致），`release:verify` 通过。内容仓库工具链同步 pin 到 R。rc.3 真实桌面重装/更新/迁移、外部作者与实体跨机仍未验收；PR #11/#6 待复核，不发布、不打 tag。
 
 **当前状态（2026-10-20，V1.2.0 已发布 / V1.5 M0、M1 已合入 / V1.5 M2 待复核）**：
 
@@ -414,7 +415,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 | M0–M2 | 宿主契约、ZIP/双目录/资源服务、Orbit Courier 与开发投稿工具；PR #6/#7/#8 已合入 | M5 正式用户/外部作者回归 |
 | M3 | 更新发现、保存/运行冻结、DSH 精确安装、恢复、双端身份和发布工具；1543/1543；固定候选两跳/保存重试/非 HMR/多窗口均通过；PR #9 已合入 | 正式发行与生产推广在 M5 |
 | M4 | HTML wrapper 迁移、真实桌面来源修复、官方 FishLogo/气泡、open/continued 原地问答、保存失败恢复、草稿/焦点/窄窗/动效边界 | 已通过 PR #10 合入 main，`e700eea` |
-| M5 | 本机工程验收补齐：进度导出/导入/备份；真实直接安装与同资料两跳、407秒实玩、App重开；1570/1570、确定性包、内容CI；PR #11 / 内容PR #6 | 独立外部作者、两台实体机迁移实测、PR复核合入与后续正式发布 |
+| M5 | 存档迁移三项复核阻塞已修复（`8c1eeae`）；rc.3 候选 R=`cf39f57…`/P=`23f753c…`，自动化与确定性包通过；PR #11 / 内容 PR #6 已按 rc.3 重新固定 | 独立外部作者、两台实体机迁移、rc.3 真实桌面重装/更新/迁移重跑与正式发布 |
 
 当前 M4 权威结论见 [M4 验收](./docs/verification/v1.5/m4-acceptance.md)；M3 的固定候选与历史证据见 [M3 验收](./docs/verification/v1.5/m3-restart-acceptance.md)。M4 功能提交 `96718e1`，最终受测源码/样式为 `cef4cb9`；后续证据提交单列；最终 PR 提交不能与 M3 的发行候选身份混淆。
 
@@ -426,7 +427,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 
 下一步复核 M5 PR #11 与内容 PR #6，补独立外部作者和实体跨机证据，再按原指南 §8 全部门槛与用户授权发布。不重开已完成的 M3/M4。
 
-**M5 固定候选（2026-10-28）**：rc.1 安装 R=`07f2ef1de6aea2b3857bc7e2983f7f083db7eb99`，Client 构建 P=`0ca0aacc4501f313776f4ea1e0683255cb14e62b`；Host 实际运行报告 R。第二跳仅测试 rc.2（R=`fe181461c12b850ee0a3dc23abfaf4154f25f454`，P=`9b4a9c59c8e6bf78e35a1d2fd562154488ede0e5`），不合入本产品 PR。内容锁指 rc.1，`b1bae24` 的更新工作流 CI 已通过。确定性4次独立构建93文件/3449879字节，SHA树 `d0d7fc7a64930e75373eef9c892fb687423ae0b948f7c7e4cfc21bed0476f932`。完整原始失败与通过记录均保留，模型/索引均明确标注隔离脚本/夹具，不冒充真实模型或生产推广。
+**M5 固定候选（2026-10-30 rc.3）**：当前 rc.3 安装 R=`cf39f571adf6027f712b27a04505dea3a6620e9c`，Client 构建 P=`23f753c5bb293065caf704c46e9f171f34c2307c`；Host 实际运行报告 R。4 次隔离构建 93 文件 / 3.29 MiB，SHA 树 `8d9cb0a3e88cc63684aa7c26f7020c0096ff43a72022402849985938a1d0567a`；`release:verify` 与 `npm run verify`（1570/1574、0 fail、4 skip、`CHECK OK (44)`）通过；内容锁已改指 R。rc.3 真实桌面重装/更新/迁移尚未重跑。历史 rc.1 R=`07f2ef1de6aea2b3857bc7e2983f7f083db7eb99`/P=`0ca0aacc4501f313776f4ea1e0683255cb14e62b` 与测试 rc.2（R=`fe181461c12b850ee0a3dc23abfaf4154f25f454`，P=`9b4a9c59c8e6bf78e35a1d2fd562154488ede0e5`）仅保留为历史证据，不再作为安装候选。完整原始失败与通过记录均保留，模型/索引均明确标注隔离脚本/夹具，不冒充真实模型或生产推广。
 
 
 ---
