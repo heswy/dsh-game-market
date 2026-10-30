@@ -1,0 +1,183 @@
+{
+  "id": "M5-Desktop-external-package",
+  "title": "External-author release artifact installed through the real Market UI and played in actual Desktop",
+  "commands": [
+    "node scripts/verification/v1.5/m5/external-package-desktop.mjs --zip /tmp/p01-desktop/external-orbit-1.0.1.dshgame.zip --game external-orbit --version 1.0.1 --sha256 05194feb688552b84df254720c853e03556efb11c4b38b43804c8efa70aacc02 --source https://github.com/heswy/dsh-game-registry/releases/tag/external-orbit-v1.0.1"
+  ],
+  "startedAt": "2026-10-30T09:57:55.021Z",
+  "finishedAt": "2026-10-30T09:58:09.216Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "runtime",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-30T09:06:01.893Z"
+      }
+    },
+    {
+      "name": "artifact",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "file": "external-orbit-1.0.1.dshgame.zip",
+        "bytes": 418059,
+        "sha256": "05194feb688552b84df254720c853e03556efb11c4b38b43804c8efa70aacc02",
+        "expectedSha": "05194feb688552b84df254720c853e03556efb11c4b38b43804c8efa70aacc02",
+        "version": "1.0.1",
+        "source": "https://github.com/heswy/dsh-game-registry/releases/tag/external-orbit-v1.0.1"
+      }
+    },
+    {
+      "name": "artifact sha256 matches the published release record",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sha256": "05194feb688552b84df254720c853e03556efb11c4b38b43804c8efa70aacc02",
+        "expectedSha": "05194feb688552b84df254720c853e03556efb11c4b38b43804c8efa70aacc02"
+      }
+    },
+    {
+      "name": "fresh isolated Desktop starts without the external package",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real upload button opens the native file chooser",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "confirmation dialog names the external ZIP and warns on local installs",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "title": "从本地安装《external-orbit-1.0.1.dshgame.zip》？",
+        "meta": [
+          {
+            "label": "文件大小",
+            "value": "408 KB"
+          },
+          {
+            "label": "包格式",
+            "value": "资源包（.dshgame.zip）"
+          }
+        ],
+        "warning": [
+          "本地安装不会校验文件来源。"
+        ],
+        "fileName": true
+      }
+    },
+    {
+      "name": "the UI itself sends install-local and the Host accepts it",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "status": 200,
+        "url": "dsh-app://app/api/game-market/install-local?operationId=op_c59eb541-4a3a-4814-bae9-fb31ccb268a1"
+      }
+    },
+    {
+      "name": "installResponse",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "ok": true
+      }
+    },
+    {
+      "name": "Host persisted the external package with release identity",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "id": "external-orbit",
+        "version": "1.0.1",
+        "format": "asset-zip-v2",
+        "sha256": "05194feb688552b84df254720c853e03556efb11c4b38b43804c8efa70aacc02",
+        "source": "local"
+      }
+    },
+    {
+      "name": "external package reaches a real ready state in Desktop",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "sessionId": "D27CD7836AC21ACCB34B019F90378321",
+        "phase": "ready",
+        "probeVersion": 1
+      }
+    },
+    {
+      "name": "external package advances after a real Enter key press",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "elapsedMs": 1152,
+        "score": 0,
+        "lane": 1
+      }
+    },
+    {
+      "name": "finalSnapshot",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "phase": "playing",
+        "elapsedMs": 1776,
+        "score": 0
+      }
+    },
+    {
+      "name": "browserConsole",
+      "ok": true,
+      "required": false,
+      "detail": []
+    },
+    {
+      "name": "browserLogs",
+      "ok": true,
+      "required": false,
+      "detail": [
+        {
+          "sessionId": null,
+          "at": 1793354285990,
+          "level": "error",
+          "source": "network",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "dsh-app://app/api/game-market/save?gameId=external-orbit&include=data"
+        },
+        {
+          "sessionId": null,
+          "at": 1793354286000,
+          "level": "error",
+          "source": "network",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "dsh-app://app/api/game-market/save?gameId=external-orbit&include=data"
+        }
+      ]
+    },
+    {
+      "name": "owned App stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}

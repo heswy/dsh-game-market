@@ -1,0 +1,68 @@
+{
+  "id": "M5-native-clean-install",
+  "title": "Fresh actual Desktop direct immutable candidate install and packaged ZIP play",
+  "commands": [
+    "node scripts/verification/v1.5/m5/clean-install.mjs --commit cf39f571adf6027f712b27a04505dea3a6620e9c"
+  ],
+  "startedAt": "2026-10-30T09:04:30.698Z",
+  "finishedAt": "2026-10-30T09:05:04.778Z",
+  "passed": false,
+  "failed": [
+    "completed"
+  ],
+  "checks": [
+    {
+      "name": "public network gate",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "attempts": [
+          {
+            "attempt": 1,
+            "at": "2026-10-30T09:04:33.195Z",
+            "ok": true,
+            "scrubbed": [
+              {
+                "attempt": 1,
+                "ok": true,
+                "status": 0,
+                "stderr": "",
+                "stdout": "be8f6105cc46e84eb0ea564cb51e7917ed09dcfc\tHEAD"
+              }
+            ],
+            "elapsedMs": 2128
+          }
+        ],
+        "elapsedMs": 2128,
+        "mode": "real-github"
+      }
+    },
+    {
+      "name": "completed",
+      "ok": false,
+      "required": true,
+      "detail": "Error: DSH did not materialize a web profile under /tmp/dsh-v15/home-m5-native-clean-2026-10-30T09-04-30-695Z\n    at makeHome (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-public-acceptance/scripts/verification/v1.5/lib/harness.mjs:125:38)\n    at async prepareHome (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-public-acceptance/scripts/verification/v1.5/questions/lib/probe.mjs:60:16)\n    at async file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-public-acceptance/scripts/verification/v1.5/m5/clean-install.mjs:15:13"
+    },
+    {
+      "name": "isolatedIndexTransport",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "scenarioSequence": [],
+        "connects": [],
+        "tunnels": [],
+        "tlsErrors": [],
+        "rejected": [],
+        "requests": [],
+        "counts": {
+          "fixtureRequests": 0,
+          "passthroughRequests": 0,
+          "tunnelConnects": 0,
+          "rejectedPlainHttp": 0,
+          "tlsHandshakeErrors": 0
+        }
+      }
+    }
+  ]
+}

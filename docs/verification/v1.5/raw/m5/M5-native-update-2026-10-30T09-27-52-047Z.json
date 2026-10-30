@@ -1,0 +1,420 @@
+{
+  "id": "M5-native-install-update",
+  "title": "Actual Desktop exact public Git install, UI update, game save, App restart",
+  "commands": [
+    "node scripts/verification/v1.5/m5/native-install-update.mjs --base f8244cf24a418aaf796a2b64ad17e7417b65ecac --target cf39f571adf6027f712b27a04505dea3a6620e9c --version 1.5.0-rc.3"
+  ],
+  "startedAt": "2026-10-30T09:27:52.049Z",
+  "finishedAt": "2026-10-30T09:29:20.019Z",
+  "passed": false,
+  "failed": [
+    "native manager applied public exact Git base",
+    "completed"
+  ],
+  "checks": [
+    {
+      "name": "network gate",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "attempts": [
+          {
+            "attempt": 1,
+            "at": "2026-10-30T09:27:54.481Z",
+            "ok": true,
+            "scrubbed": [
+              {
+                "attempt": 1,
+                "ok": true,
+                "status": 0,
+                "stderr": "",
+                "stdout": "be8f6105cc46e84eb0ea564cb51e7917ed09dcfc\tHEAD"
+              }
+            ],
+            "elapsedMs": 2053
+          }
+        ],
+        "elapsedMs": 2053,
+        "mode": "real-github"
+      }
+    },
+    {
+      "name": "nativeBoot",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "probeVersion": 1,
+        "bootTag": "m5-native-2026-10-30T09-27-52-047Z",
+        "pid": 89289,
+        "nodeVersion": "v24.21.0",
+        "execArgv": [
+          "--expose-internals"
+        ],
+        "startedAt": "2026-10-30T09:28:12.906Z",
+        "capabilitySamples": [
+          {
+            "at": "2026-10-30T09:28:10.568Z",
+            "managerContextHmr": false,
+            "probeScopeHmr": false,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": {
+                "__jsExpr": "!ctx.get('profileContext')"
+              },
+              "hasFiber": true,
+              "fiberState": 1,
+              "fiberUid": 115
+            }
+          },
+          {
+            "at": "2026-10-30T09:28:11.076Z",
+            "managerContextHmr": true,
+            "probeScopeHmr": true,
+            "hmrLoaderRow": {
+              "id": "hmr",
+              "name": "@deepseek-ai/dsh-hmr",
+              "disabled": {
+                "__jsExpr": "!ctx.get('profileContext')"
+              },
+              "hasFiber": true,
+              "fiberState": 2,
+              "fiberUid": 115
+            }
+          }
+        ],
+        "capability": {
+          "at": "2026-10-30T09:28:13.034Z",
+          "probeScopeHmr": true,
+          "managerContextHmr": true,
+          "managerContextHmrCtor": "Hmr",
+          "managerContextHmrHasRunExclusive": true,
+          "hmrLoaderRow": {
+            "id": "hmr",
+            "name": "@deepseek-ai/dsh-hmr",
+            "disabled": {
+              "__jsExpr": "!ctx.get('profileContext')"
+            },
+            "hasFiber": true,
+            "fiberState": 2,
+            "fiberUid": 115
+          },
+          "samplesSinceBoot": 2
+        },
+        "managerInternal": {
+          "ownerEntryId": "include:plugin-manager",
+          "ownerContextIsProbeContext": false,
+          "ctor": "PluginManager",
+          "methods": [
+            "@deepseek-ai/dsh-typert-protocol/remote-methods",
+            "bundleRows",
+            "cancelInstall",
+            "change",
+            "configure",
+            "declaredRows",
+            "diskState",
+            "inspect",
+            "installBundle",
+            "listBundles",
+            "listPlugins",
+            "listVersionExemptions",
+            "protectsManager",
+            "publishAndReload",
+            "readRestoredFiles",
+            "refreshPackages",
+            "registries",
+            "reload",
+            "removeBundle",
+            "restoreFiles",
+            "runPnpm",
+            "selectBundle",
+            "setBundleEnabled",
+            "setPluginEnabled",
+            "setVersionExemption",
+            "waitForInstall"
+          ]
+        },
+        "profile": {
+          "dir": "/tmp/dsh-v15/home-m5-native-2026-10-30T09-27-52-047Z/profiles/desktop",
+          "packageJson": {
+            "name": "dsh-profile-web",
+            "dependencies": {},
+            "profileBundles": [
+              "@deepseek-ai/dsh-base",
+              "@deepseek-ai/dsh-web-app"
+            ]
+          },
+          "dependency": null,
+          "diskPackage": null,
+          "devRow": null
+        },
+        "env": {
+          "hasUseEnvProxy": "1",
+          "httpsProxy": "http://127.0.0.1:57969",
+          "httpProxy": "http://127.0.0.1:57969",
+          "noProxy": "localhost,127.0.0.1,::1,[::1]",
+          "extraCaCerts": "fixture-ca.pem",
+          "fixtureRunTag": "m5-native-2026-10-30T09-27-52-047Z"
+        },
+        "probeScopeServices": {
+          "pluginManager": true,
+          "connection": true
+        }
+      }
+    },
+    {
+      "name": "fresh native profile has no product dependency",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "publicGitInstall",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "result": null,
+        "attempts": [
+          {
+            "attempt": 1,
+            "requestId": "m5-native-2026-10-30T09-27-52-047Z-try1",
+            "result": {
+              "stage": "install",
+              "target": "https://github.com/heswy/dsh-game-market.git#f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+              "enabled": true,
+              "changed": false,
+              "application": "failed",
+              "registries": [
+                null
+              ],
+              "packageResult": {
+                "exitCode": 1,
+                "output": "[ERR_PNPM_FETCH_404] GET https://codeload.github.com/heswy/dsh-game-market/tar.gz/f8244cf24a418aaf796a2b64ad17e7417b65ecac: Not Found - 404\n\nThis error happened while installing a direct dependency of /private/tmp/dsh-v15/home-m5-native-2026-10-30T09-27-52-047Z/profiles/desktop\n\nNo authorization header was set for the request.\n",
+                "truncated": false,
+                "logPath": "/tmp/dsh-v15/home-m5-native-2026-10-30T09-27-52-047Z/profiles/desktop/.plugin-manager/logs/operation-MLli7e/pnpm.log",
+                "kind": "not-found"
+              },
+              "failedAt": "spec-host",
+              "pendingBuilds": [],
+              "error": {
+                "code": "operation-error",
+                "diagnostic": "[ERR_PNPM_FETCH_404] GET https://codeload.github.com/heswy/dsh-game-market/tar.gz/f8244cf24a418aaf796a2b64ad17e7417b65ecac: Not Found - 404\n\nThis error happened while installing a direct dependency of /private/tmp/dsh-v15/home-m5-native-2026-10-30T09-27-52-047Z/profiles/desktop\n\nNo authorization header was set for the request.\n"
+              }
+            },
+            "elapsedMs": 9579,
+            "transient": true
+          },
+          {
+            "attempt": 2,
+            "requestId": "m5-native-2026-10-30T09-27-52-047Z-try2",
+            "result": {
+              "stage": "install",
+              "target": "https://github.com/heswy/dsh-game-market.git#f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+              "enabled": true,
+              "changed": false,
+              "application": "failed",
+              "registries": [
+                null
+              ],
+              "packageResult": {
+                "exitCode": 1,
+                "output": "[ERR_PNPM_FETCH_404] GET https://codeload.github.com/heswy/dsh-game-market/tar.gz/f8244cf24a418aaf796a2b64ad17e7417b65ecac: Not Found - 404\n\nThis error happened while installing a direct dependency of /private/tmp/dsh-v15/home-m5-native-2026-10-30T09-27-52-047Z/profiles/desktop\n\nNo authorization header was set for the request.\n",
+                "truncated": false,
+                "logPath": "/tmp/dsh-v15/home-m5-native-2026-10-30T09-27-52-047Z/profiles/desktop/.plugin-manager/logs/operation-XZtrPX/pnpm.log",
+                "kind": "not-found"
+              },
+              "failedAt": "spec-host",
+              "pendingBuilds": [],
+              "error": {
+                "code": "operation-error",
+                "diagnostic": "[ERR_PNPM_FETCH_404] GET https://codeload.github.com/heswy/dsh-game-market/tar.gz/f8244cf24a418aaf796a2b64ad17e7417b65ecac: Not Found - 404\n\nThis error happened while installing a direct dependency of /private/tmp/dsh-v15/home-m5-native-2026-10-30T09-27-52-047Z/profiles/desktop\n\nNo authorization header was set for the request.\n"
+              }
+            },
+            "elapsedMs": 8180,
+            "transient": true
+          },
+          {
+            "attempt": 3,
+            "requestId": "m5-native-2026-10-30T09-27-52-047Z-try3",
+            "result": {
+              "stage": "install",
+              "target": "https://github.com/heswy/dsh-game-market.git#f8244cf24a418aaf796a2b64ad17e7417b65ecac",
+              "enabled": true,
+              "changed": false,
+              "application": "failed",
+              "registries": [
+                null
+              ],
+              "packageResult": {
+                "exitCode": 1,
+                "output": "[ERR_PNPM_FETCH_404] GET https://codeload.github.com/heswy/dsh-game-market/tar.gz/f8244cf24a418aaf796a2b64ad17e7417b65ecac: Not Found - 404\n\nThis error happened while installing a direct dependency of /private/tmp/dsh-v15/home-m5-native-2026-10-30T09-27-52-047Z/profiles/desktop\n\nNo authorization header was set for the request.\n",
+                "truncated": false,
+                "logPath": "/tmp/dsh-v15/home-m5-native-2026-10-30T09-27-52-047Z/profiles/desktop/.plugin-manager/logs/operation-TrQcvb/pnpm.log",
+                "kind": "not-found"
+              },
+              "failedAt": "spec-host",
+              "pendingBuilds": [],
+              "error": {
+                "code": "operation-error",
+                "diagnostic": "[ERR_PNPM_FETCH_404] GET https://codeload.github.com/heswy/dsh-game-market/tar.gz/f8244cf24a418aaf796a2b64ad17e7417b65ecac: Not Found - 404\n\nThis error happened while installing a direct dependency of /private/tmp/dsh-v15/home-m5-native-2026-10-30T09-27-52-047Z/profiles/desktop\n\nNo authorization header was set for the request.\n"
+              }
+            },
+            "elapsedMs": 9364,
+            "transient": true
+          }
+        ],
+        "retried": true,
+        "exhausted": true
+      }
+    },
+    {
+      "name": "native manager applied public exact Git base",
+      "ok": false,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "completed",
+      "ok": false,
+      "required": true,
+      "detail": "Error: native manager applied public exact Git base\n    at check (file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-public-acceptance/scripts/verification/v1.5/m5/native-install-update.mjs:23:120)\n    at file:///Users/<user>/Orange%20Field/Matterhorn/dsh-game-market-worktrees/v1.5-public-acceptance/scripts/verification/v1.5/m5/native-install-update.mjs:37:46"
+    },
+    {
+      "name": "isolatedIndexTransport",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "scenarioSequence": [],
+        "connects": [],
+        "tunnels": [
+          {
+            "at": "2026-10-30T09:27:58.183Z",
+            "target": "harness.deepseek.com:443"
+          },
+          {
+            "at": "2026-10-30T09:27:58.446Z",
+            "target": "harness.deepseek.com:443",
+            "mode": "direct"
+          },
+          {
+            "at": "2026-10-30T09:28:22.432Z",
+            "target": "github.com:443"
+          },
+          {
+            "at": "2026-10-30T09:28:22.743Z",
+            "target": "github.com:443",
+            "mode": "pinned"
+          },
+          {
+            "at": "2026-10-30T09:28:23.787Z",
+            "target": "codeload.github.com:443"
+          },
+          {
+            "at": "2026-10-30T09:28:24.105Z",
+            "target": "codeload.github.com:443",
+            "mode": "pinned"
+          },
+          {
+            "at": "2026-10-30T09:28:24.744Z",
+            "target": "github.com:443"
+          },
+          {
+            "at": "2026-10-30T09:28:25.051Z",
+            "target": "github.com:443",
+            "mode": "pinned"
+          },
+          {
+            "at": "2026-10-30T09:28:35.786Z",
+            "target": "github.com:443"
+          },
+          {
+            "at": "2026-10-30T09:28:36.089Z",
+            "target": "github.com:443",
+            "mode": "pinned"
+          },
+          {
+            "at": "2026-10-30T09:28:36.835Z",
+            "target": "codeload.github.com:443"
+          },
+          {
+            "at": "2026-10-30T09:28:37.128Z",
+            "target": "codeload.github.com:443",
+            "mode": "pinned"
+          },
+          {
+            "at": "2026-10-30T09:28:37.843Z",
+            "target": "github.com:443"
+          },
+          {
+            "at": "2026-10-30T09:28:38.128Z",
+            "target": "github.com:443",
+            "mode": "pinned"
+          },
+          {
+            "at": "2026-10-30T09:28:53.919Z",
+            "target": "github.com:443"
+          },
+          {
+            "at": "2026-10-30T09:28:54.196Z",
+            "target": "github.com:443",
+            "mode": "pinned"
+          },
+          {
+            "at": "2026-10-30T09:28:54.979Z",
+            "target": "codeload.github.com:443"
+          },
+          {
+            "at": "2026-10-30T09:28:55.264Z",
+            "target": "codeload.github.com:443",
+            "mode": "pinned"
+          },
+          {
+            "at": "2026-10-30T09:28:55.969Z",
+            "target": "github.com:443"
+          },
+          {
+            "at": "2026-10-30T09:28:56.259Z",
+            "target": "github.com:443",
+            "mode": "pinned"
+          }
+        ],
+        "tlsErrors": [
+          {
+            "at": "2026-10-30T09:28:26.124Z",
+            "host": "github.com",
+            "stage": "client-socket",
+            "error": "write EPIPE"
+          },
+          {
+            "at": "2026-10-30T09:28:39.313Z",
+            "host": "github.com",
+            "stage": "client-socket",
+            "error": "write EPIPE"
+          },
+          {
+            "at": "2026-10-30T09:28:59.104Z",
+            "host": "github.com",
+            "stage": "client-socket",
+            "error": "write EPIPE"
+          }
+        ],
+        "rejected": [],
+        "requests": [],
+        "counts": {
+          "fixtureRequests": 0,
+          "passthroughRequests": 0,
+          "tunnelConnects": 20,
+          "rejectedPlainHttp": 0,
+          "tlsHandshakeErrors": 0
+        }
+      }
+    },
+    {
+      "name": "owned App instances stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}
