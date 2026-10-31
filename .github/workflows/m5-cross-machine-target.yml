@@ -1,0 +1,47 @@
+name: M5 cross-machine target
+
+# Manual-only acceptance probe for the P02 cross-machine save-export/import
+# gate. Runs on a separate GitHub-hosted macOS host (VM, not physical
+# hardware), installs the official Desktop 0.2.1-rc.3 build, and imports the
+# portable save exported on the source Mac.
+on:
+  workflow_dispatch:
+
+jobs:
+  target:
+    runs-on: macos-14
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Install DeepSeek Harness Desktop 0.2.1-rc.3
+        run: |
+          set -euo pipefail
+          curl -fL --retry 4 --retry-all-errors --retry-delay 10 --connect-timeout 30 --max-time 900 \
+            -o /tmp/dsh-desktop.zip \
+            "https://download.deepseek.com/dsh-desk/bin/mac-arm64/deepseek-harness-0.2.1-rc.3-mac-arm64.zip"
+          unzip -q /tmp/dsh-desktop.zip -d /tmp/dsh-desktop
+          APP="$(find /tmp/dsh-desktop -maxdepth 3 -name '*.app' -type d | head -1)"
+          test -n "$APP"
+          echo "app: $APP"
+          sudo rm -rf "/Applications/DeepSeek Harness.app"
+          sudo ditto "$APP" "/Applications/DeepSeek Harness.app"
+          ls -l "/Applications/DeepSeek Harness.app/Contents/MacOS/"
+      - name: Run target-machine import
+        run: node scripts/verification/v1.5/m5/migration.mjs --portable docs/verification/v1.5/raw/m5/cross-machine/portable-orbit-courier-2026-10-31.json
+      - name: Collect evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-machine-evidence
+          path: docs/verification/v1.5/raw/m5/M5-migration-target-*
+          if-no-files-found: warn
+      - name: Show launcher log on failure
+        if: failure()
+        run: |
+          find /tmp/dsh-v15 -name 'm4-electron.log' -maxdepth 4 -print -exec tail -80 {} \; 2>/dev/null || true
+          find /tmp/dsh-v15 -name 'boot.json' -maxdepth 6 -print -exec head -c 1000 {} \; 2>/dev/null || true
