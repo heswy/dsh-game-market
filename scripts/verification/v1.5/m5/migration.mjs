@@ -30,25 +30,26 @@ const report=createReport({
 let a,b,capture;
 async function check(name,ok,detail){report.add(name,Boolean(ok),detail);if(!ok)throw Error(name);}
 async function until(page,expr){return page.until(expr,20000,200);}
-async function menu(page,label){await openMyGamesTab(page);await waitFor(async()=>{const opened=await page.eval(`(()=>{const b=document.querySelector('.dgm-row[data-row-id="orbit-courier"] .dgm-row-menu-btn');if(!b)return false;b.click();return true;})()`);if(!opened)return null;await sleep(150);return (await page.eval(`Boolean(document.querySelector('.dgm-menu'))`))?true:null;},10000,300);await page.eval(`(()=>{const b=[...document.querySelectorAll('.dgm-menu button')].find(x=>x.textContent.trim()===${JSON.stringify(label)});if(!b)throw Error('missing menu');b.click();})()`);}
+async function menu(page,action){const label={export:/导出游戏进度|Export progress/,import:/导入游戏进度|Import progress/}[action];await openMyGamesTab(page);await waitFor(async()=>{const opened=await page.eval(`(()=>{const b=document.querySelector('.dgm-row[data-row-id="orbit-courier"] .dgm-row-menu-btn');if(!b)return false;b.click();return true;})()`);if(!opened)return null;await sleep(150);return (await page.eval(`Boolean(document.querySelector('.dgm-menu'))`))?true:null;},10000,300);await page.eval(`(()=>{const buttons=[...document.querySelectorAll('.dgm-menu button')];const b=buttons.find(x=>(${label}).test(x.textContent.trim()));if(!b)throw Error('missing menu: '+buttons.map(x=>x.textContent.trim()).join('|'));b.click();})()`);}
 async function closeDialog(page){await page.eval(`document.querySelector('[data-transfer-phase] .dgm-modal-actions .dgm-btn').click()`);}
 try{
  report.record('runtime',runtimeIdentity());report.record('host',hostIdentity);report.record('mode',targetMode?'target-machine':'same-machine');
  let portable=null,portableFile=null,expectedElapsed=0;
  if(targetMode){
-  portableFile=portableArg;
+  portableFile=path.join('/tmp','dgm-m5-portable-'+stamp+'.json');
+  fs.copyFileSync(portableArg,portableFile);
   portable=JSON.parse(fs.readFileSync(portableArg,'utf8'));
   await check('portable file carries orbit-courier progress',portable.gameId==='orbit-courier'&&Object.keys(portable).sort().join(',')==='format,gameId,gameVersion,saveSchemaVersion,sha256,values');
   expectedElapsed=Number(portable.values?.run?.elapsedMs)||0;
   await check('portable file carries live elapsed progress',expectedElapsed>0,{expectedElapsed});
-  report.record('portableFile',{file:portableArg,sha256:sha256File(portableArg),bytes:fs.statSync(portableArg).size});
+  report.record('portableFile',{file:portableArg,stagedFile:portableFile,sha256:sha256File(portableArg),bytes:fs.statSync(portableArg).size});
  }else{
   a=await startDesktopLab({name:'m5-transfer-a-'+stamp,port:9496});let p=a.page;
   capture=createCdpCapture(p);await capture.start();await openMarketPanel(p);await launchFromRow(p,capture,'orbit-courier');await waitForProbeHook(capture);
   const first=await readState(capture);await pressKey(p,first.sessionId,'Enter');await sleep(3500);
   const before=await readState(capture);await check('source actual game has live elapsed progress',before?.state?.elapsedMs>1500,before?.state&&{elapsedMs:before.state.elapsedMs,score:before.state.score});
   await leaveRuntime(p);await p.send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath:downloads});
-  await menu(p,'导出游戏进度');await p.eval(`document.querySelector('[data-transfer-phase] .dgm-btn-primary').click()`);
+  await menu(p,'export');await p.eval(`document.querySelector('[data-transfer-phase] .dgm-btn-primary').click()`);
   await check('native export reports download start',await until(p,`Boolean(document.querySelector('[data-transfer-phase="done"]'))`));
   const downloaded=await waitFor(async()=>{const f=fs.readdirSync(downloads).find(x=>x.endsWith('-save.json'));return f?path.join(downloads,f):null;},15000);
   await check('browser produced portable file',downloaded);portableFile=downloaded;portable=JSON.parse(fs.readFileSync(downloaded,'utf8'));
@@ -58,7 +59,8 @@ try{
   report.record('portableFile',{file:downloaded,sha256:sha256File(downloaded),bytes:fs.statSync(downloaded).size});
   await closeDialog(p);await a.stop();a=null;
  }
- b=await startDesktopLab({name:'m5-transfer-b-'+stamp,port:9496});let p=b.page;await openMarketPanel(p);await menu(p,'导入游戏进度');
+ b=await startDesktopLab({name:'m5-transfer-b-'+stamp,port:9496});let p=b.page;await openMarketPanel(p);await menu(p,'import');await until(p,`Boolean(document.querySelector('[data-transfer-phase] input[type=file]'))`);
+ report.record('transferDialog',await p.eval(`(()=>{const d=document.querySelector('[data-transfer-phase]');const input=d&&d.querySelector('input[type=file]');return d?{phase:d.getAttribute('data-transfer-phase'),text:(d.innerText||'').slice(0,300),fileInputs:input?1:0}:null;})()`));
  const dom=await p.send('DOM.getDocument');const node=await p.send('DOM.querySelector',{nodeId:dom.root.nodeId,selector:'[data-transfer-phase] input[type=file]'});await p.send('DOM.setFileInputFiles',{nodeId:node.nodeId,files:[portableFile]});
  await check('destination previews imported save',await until(p,`Boolean(document.querySelector('[data-transfer-phase="ready"]'))`));
  await p.eval(`document.querySelector('[data-transfer-phase] .dgm-btn-primary').click()`);await check('native import succeeds into clean profile',await until(p,`Boolean(document.querySelector('[data-transfer-phase="done"]'))`));
