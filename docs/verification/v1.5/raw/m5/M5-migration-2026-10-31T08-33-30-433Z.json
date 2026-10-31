@@ -1,0 +1,134 @@
+{
+  "id": "M5-Desktop-migration",
+  "title": "Native UI save portability and App restart",
+  "commands": [
+    "node scripts/verification/v1.5/m5/migration.mjs"
+  ],
+  "startedAt": "2026-10-31T08:33:30.435Z",
+  "finishedAt": "2026-10-31T08:33:57.001Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "runtime",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-10-31T08:32:33.964Z"
+      }
+    },
+    {
+      "name": "host",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "hostname": "chengweizedeMacBook-Air.local",
+        "platform": "darwin",
+        "arch": "arm64"
+      }
+    },
+    {
+      "name": "mode",
+      "ok": true,
+      "required": false,
+      "detail": "same-machine"
+    },
+    {
+      "name": "source actual game has live elapsed progress",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "elapsedMs": 3600,
+        "score": 0
+      }
+    },
+    {
+      "name": "native export reports download start",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "browser produced portable file",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "export contains game progress only",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "export carries live elapsed progress",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "expectedElapsed": 3632,
+        "sourceElapsed": 3600
+      }
+    },
+    {
+      "name": "portableFile",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "file": "/tmp/dgm-m5-downloads-2026-10-31T08-33-30-433Z/orbit-courier-1.0.0-save.json",
+        "sha256": "ef2926dfa631df7e1eab3b4c4297ac8933b518e16c0f811a4aa8133d8e145853",
+        "bytes": 567
+      }
+    },
+    {
+      "name": "destination previews imported save",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "native import succeeds into clean profile",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "all portable values preserved byte-for-byte semantically",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real App restart offers game Continue from imported progress",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "Continue restores imported elapsed progress after actual App restart",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "portableElapsed": 3632,
+        "after": 4432
+      }
+    },
+    {
+      "name": "owned Desktop instances stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    }
+  ]
+}
