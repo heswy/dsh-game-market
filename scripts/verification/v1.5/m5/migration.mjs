@@ -30,7 +30,7 @@ const report=createReport({
 let a,b,capture;
 async function check(name,ok,detail){report.add(name,Boolean(ok),detail);if(!ok)throw Error(name);}
 async function until(page,expr){return page.until(expr,20000,200);}
-async function menu(page,label){await openMyGamesTab(page);await until(page,`Boolean(document.querySelector('.dgm-row[data-row-id="orbit-courier"] .dgm-row-menu-btn'))`);await page.eval(`document.querySelector('.dgm-row[data-row-id="orbit-courier"] .dgm-row-menu-btn').click()`);await until(page,`Boolean(document.querySelector('.dgm-menu'))`);await page.eval(`(()=>{const b=[...document.querySelectorAll('.dgm-menu button')].find(x=>x.textContent.trim()===${JSON.stringify(label)});if(!b)throw Error('missing menu');b.click();})()`);}
+async function menu(page,label){await openMyGamesTab(page);await waitFor(async()=>{const opened=await page.eval(`(()=>{const b=document.querySelector('.dgm-row[data-row-id="orbit-courier"] .dgm-row-menu-btn');if(!b)return false;b.click();return true;})()`);if(!opened)return null;await sleep(150);return (await page.eval(`Boolean(document.querySelector('.dgm-menu'))`))?true:null;},10000,300);await page.eval(`(()=>{const b=[...document.querySelectorAll('.dgm-menu button')].find(x=>x.textContent.trim()===${JSON.stringify(label)});if(!b)throw Error('missing menu');b.click();})()`);}
 async function closeDialog(page){await page.eval(`document.querySelector('[data-transfer-phase] .dgm-modal-actions .dgm-btn').click()`);}
 try{
  report.record('runtime',runtimeIdentity());report.record('host',hostIdentity);report.record('mode',targetMode?'target-machine':'same-machine');
