@@ -54,6 +54,9 @@ function readTreeReleaseCommit() {
   const releasePath = path.join(root, 'platform-updates', 'release.json');
   if (!fs.existsSync(releasePath)) return null;
   const document = JSON.parse(fs.readFileSync(releasePath, 'utf8'));
+  // A release.json from a previous version is stale: build-client ignores its
+  // identity and embeds no buildCommit, so the expectation must do the same.
+  if (typeof document.version !== 'string' || document.version !== readPackageVersion()) return null;
   return typeof document.clientBuildCommit === 'string' ? document.clientBuildCommit : null;
 }
 
