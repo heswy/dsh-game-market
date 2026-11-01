@@ -753,6 +753,43 @@ test('promote refuses an index introduced inside a release-style commit (no self
   assert.match(result.stderrJson.guidance, /separate commit/u);
 });
 
+test('promote accepts a later release that only inherits the production index', (t) => {
+  const fixture = makeFixture();
+  t.after(() => fixture.cleanup());
+  // First release R1, then its index commit I, then a normal version commit P2
+  // and R2: R2 inherits the index unchanged (it never adds or edits it).
+  const first = writeRelease(fixture);
+  const firstIndex = buildPluginIndex({
+    version: STABLE_VERSION,
+    commit: first.commit,
+    publishTimestamp: commitEpoch(fixture.dir, first.commit),
+    engineDsh: '>=0.2.0 <0.3.0',
+  });
+  fs.mkdirSync(path.join(fixture.dir, path.dirname(INDEX_PATH)), { recursive: true });
+  fs.writeFileSync(path.join(fixture.dir, INDEX_PATH), serializePluginIndex(firstIndex));
+  git(fixture.dir, ['add', INDEX_PATH]);
+  git(fixture.dir, ['commit', '-q', '-m', `chore(release): publish plugin index for v${STABLE_VERSION}`]);
+  addVersionCommit(fixture, '1.3.1');
+  fixture.pkg.version = '1.3.1';
+  const second = writeRelease(fixture);
+  const before = head(fixture.dir);
+
+  const write = promote(fixture, [
+    '--release', second.commit,
+    '--channel', 'stable',
+    '--write',
+    '--out', INDEX_PATH,
+    '--production-index',
+  ]);
+  assert.equal(write.status, 0, write.stderr);
+  const written = JSON.parse(fs.readFileSync(path.join(fixture.dir, INDEX_PATH), 'utf8'));
+  const versions = written.plugins[0].versions;
+  assert.equal(versions.length, 1, 'the index pins exactly the new release');
+  assert.equal(versions[0].version, '1.3.1');
+  assert.equal(versions[0].source.commit, second.commit);
+  assert.equal(head(fixture.dir), before, 'writing the index never commits');
+});
+
 test('index self-reference detector identifies an index pinning the target commit', () => {
   const target = 'a'.repeat(40);
   const index = buildPluginIndex({ version: STABLE_VERSION, commit: target, publishTimestamp: 1_700_000_000, engineDsh: '>=0.2.0 <0.3.0' });

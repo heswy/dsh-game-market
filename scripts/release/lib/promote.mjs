@@ -7,8 +7,10 @@
  * url: <repo>, commit: R}`.
  *
  * Self-reference rules (decisions §5, plan §5.4.4):
- *   - R must not contain the index (the index is a separate commit I);
+ *   - R must not add or change the index (the index is a separate commit I);
  *   - R must not contain an index pinning R;
+ *   - a later R may inherit the index committed by an earlier index PR; that
+ *     inherited index is replaced by the new index commit I, never by R;
  *   - the generated index is only written to an explicit `--out` working-tree
  *     path with `--write`, and never staged/committed by this tool;
  *   - writing the production index path requires an explicit acknowledgement
@@ -170,14 +172,16 @@ export async function promoteRelease(options = {}) {
     }
     if (git.objectExists(release, posixRelative)) {
       if (posixRelative === INDEX_PATH) {
-        fail('E_RELEASE_INDEX_IN_RELEASE', `the production index path ${INDEX_PATH} already exists inside release commit ${release}`, {
-          guidance: 'the index must be committed in a separate commit I, never added to the release commit R',
+        // Later releases inherit the production index committed by an earlier
+        // index PR. `inspectReleaseCommit` above already rejected a self-
+        // referencing index and one that R adds or changes, so an inherited
+        // index may be replaced by this index commit I (never by R itself).
+      } else {
+        fail('E_RELEASE_OUT_INVALID', `--out ${JSON.stringify(options.out)} already exists inside release commit ${release}`, {
+          guidance: 'the generated index must be a new file committed in a separate index commit I; choose a new --out path',
+          details: { release, path: posixRelative },
         });
       }
-      fail('E_RELEASE_OUT_INVALID', `--out ${JSON.stringify(options.out)} already exists inside release commit ${release}`, {
-        guidance: 'the generated index must be a new file committed in a separate index commit I; choose a new --out path',
-        details: { release, path: posixRelative },
-      });
     }
     if (posixRelative === INDEX_PATH && options.productionIndex !== true) {
       fail('E_RELEASE_PRODUCTION_INDEX_GUARD', `refusing to write the production index ${INDEX_PATH} without an explicit acknowledgement`, {
