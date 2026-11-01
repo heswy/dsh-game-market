@@ -621,12 +621,16 @@ window.__ModuleLoader__.load({
       'runtime.pause.saveReturn': '保存并返回工作',
       'runtime.pause.exitMarket': '退出到市场',
       'runtime.pause.audioNote': '游戏内声音由游戏控制。',
-      'runtime.leave.blocked.title': '暂时无法保存',
+      'runtime.leave.blocked.title': '进度未保存',
       'runtime.leave.blocked.body': '当前进度没有保存成功。现在离开可能丢失最近 30 秒的进度。',
       'runtime.leave.blocked.unresponsive': '游戏没有响应。现在离开可能丢失本局进度。',
       'runtime.leave.retry': '重试保存',
       'runtime.leave.stay': '留在游戏',
-      'runtime.leave.force': '仍然离开',
+      'runtime.leave.force': '不保存，离开',
+      'leave.saved': '已保存',
+      'leave.noProgress': '本局暂无新进度',
+      'leave.continue': '继续游戏',
+      'leave.dismiss': '关闭提示',
       'runtime.resume.title': '已恢复上一局',
       'runtime.resume.body': '进度已经读回来了。准备好后再继续。',
       'runtime.resume.action': '继续游戏',
@@ -1274,12 +1278,16 @@ window.__ModuleLoader__.load({
       'runtime.pause.saveReturn': 'Save and return to work',
       'runtime.pause.exitMarket': 'Exit to market',
       'runtime.pause.audioNote': 'In-game audio is controlled by the game.',
-      'runtime.leave.blocked.title': 'Can’t save right now',
+      'runtime.leave.blocked.title': 'Progress not saved',
       'runtime.leave.blocked.body': 'Your progress was not saved. Leaving now may lose the last 30 seconds.',
       'runtime.leave.blocked.unresponsive': 'The game is not responding. Leaving now may lose this run.',
       'runtime.leave.retry': 'Retry save',
       'runtime.leave.stay': 'Stay in game',
-      'runtime.leave.force': 'Leave anyway',
+      'runtime.leave.force': 'Leave without saving',
+      'leave.saved': 'Saved',
+      'leave.noProgress': 'No new progress this run',
+      'leave.continue': 'Continue game',
+      'leave.dismiss': 'Dismiss',
       'runtime.resume.title': 'Resumed your last run',
       'runtime.resume.body': 'Your progress is back. Continue when you are ready.',
       'runtime.resume.action': 'Continue',
@@ -2172,6 +2180,7 @@ window.__ModuleLoader__.load({
         ui: initialUi(),
         scroll: { market: 0, 'my-games': 0 },
         toasts: [],
+        leaveNotice: null,
         dialog: null,
         installJobs: {},
         sessionGames: {},
@@ -2191,6 +2200,9 @@ window.__ModuleLoader__.load({
         ui: { ...base.ui, ...(overrides.ui || {}) },
         scroll: { ...base.scroll, ...(overrides.scroll || {}) },
         toasts: Array.isArray(overrides.toasts) ? overrides.toasts : base.toasts,
+        leaveNotice: overrides.leaveNotice && typeof overrides.leaveNotice === 'object'
+          ? { ...(base.leaveNotice || {}), ...overrides.leaveNotice }
+          : base.leaveNotice,
         installJobs: overrides.installJobs && typeof overrides.installJobs === 'object' ? overrides.installJobs : base.installJobs,
         sessionGames: overrides.sessionGames && typeof overrides.sessionGames === 'object' ? overrides.sessionGames : base.sessionGames,
         surface: { ...base.surface, ...(overrides.surface || {}) },
@@ -2935,6 +2947,25 @@ window.__ModuleLoader__.load({
           return { ...state, runtime: initialRuntime() };
         }
 
+        case 'leave-notice-set': {
+          const notice = action.notice;
+          if (!notice || typeof notice !== 'object') return state;
+          if (notice.kind !== 'saved' && notice.kind !== 'no-progress') return state;
+          return {
+            ...state,
+            leaveNotice: {
+              kind: notice.kind,
+              gameId: isGameId(notice.gameId) ? notice.gameId : null,
+              sessionId: isSessionId(notice.sessionId) ? notice.sessionId : null,
+              at: typeof notice.at === 'number' && Number.isFinite(notice.at) ? notice.at : 0,
+            },
+          };
+        }
+
+        case 'leave-notice-clear': {
+          return state.leaveNotice ? { ...state, leaveNotice: null } : state;
+        }
+
         case 'leave-complete': {
           return {
             ...state,
@@ -3207,6 +3238,15 @@ window.__ModuleLoader__.load({
       return { type: 'leave-complete' };
     }
 
+    /** Transient "saved / nothing new" notice shown after returning to the Session. */
+    function leaveNoticeSet(notice) {
+      return { type: 'leave-notice-set', notice: notice || null };
+    }
+
+    function leaveNoticeCleared() {
+      return { type: 'leave-notice-clear' };
+    }
+
     function surfaceChanged(name, value) {
       return { type: 'surface', name: name, value: value };
     }
@@ -3303,7 +3343,7 @@ window.__ModuleLoader__.load({
       return state && state.update ? state.update : null;
     }
 
-    return { createInitialState, selectGameEntry, reduce, pageChanged, sessionBound, agentSnapshotReceived, agentFresh, agentPollFailed, pausedGameRecorded, pausedGameCleared, turnIgnored, completedAcknowledged, marketLoading, marketReady, marketFailed, marketInvalidated, marketOffline, detailOpened, detailReady, detailFailed, detailScores, detailClosed, queryDraftChanged, queryApplied, categoryChanged, searchOpenChanged, filtersCleared, lightboxChanged, scrollSaved, dialogOpened, dialogDeleteDataChanged, dialogConfirmAgain, dialogBusyChanged, dialogClosed, toastPushed, toastDismissed, installStageChanged, installPercentChanged, installCleared, focusSet, focusConsumed, healthReady, updateInspectStarted, updateInspectReady, updateInspectFailed, updateUnsupported, updateRefreshStarted, updateRefreshFinished, updateStarting, updateActionFailed, updateActionCleared, updateObservation, updateObservationCleared, updateCoordinated, updateClientReported, updateReset, runtimeStarted, runtimeLaunchInfo, runtimeLaunchInfoRefreshed, runtimePatched, runtimeFailed, runtimeExited, runtimeRetried, runtimeReset, leaveCompleted, surfaceChanged, createStore, store, selectGame, selectResumableGames, selectInstalledGames, selectInstallJob, selectDialog, selectUpdateState };
+    return { createInitialState, selectGameEntry, reduce, pageChanged, sessionBound, agentSnapshotReceived, agentFresh, agentPollFailed, pausedGameRecorded, pausedGameCleared, turnIgnored, completedAcknowledged, marketLoading, marketReady, marketFailed, marketInvalidated, marketOffline, detailOpened, detailReady, detailFailed, detailScores, detailClosed, queryDraftChanged, queryApplied, categoryChanged, searchOpenChanged, filtersCleared, lightboxChanged, scrollSaved, dialogOpened, dialogDeleteDataChanged, dialogConfirmAgain, dialogBusyChanged, dialogClosed, toastPushed, toastDismissed, installStageChanged, installPercentChanged, installCleared, focusSet, focusConsumed, healthReady, updateInspectStarted, updateInspectReady, updateInspectFailed, updateUnsupported, updateRefreshStarted, updateRefreshFinished, updateStarting, updateActionFailed, updateActionCleared, updateObservation, updateObservationCleared, updateCoordinated, updateClientReported, updateReset, runtimeStarted, runtimeLaunchInfo, runtimeLaunchInfoRefreshed, runtimePatched, runtimeFailed, runtimeExited, runtimeRetried, runtimeReset, leaveCompleted, leaveNoticeSet, leaveNoticeCleared, surfaceChanged, createStore, store, selectGame, selectResumableGames, selectInstalledGames, selectInstallJob, selectDialog, selectUpdateState };
     })();
 
     // module: packages/client/src/diagnostics.js
@@ -9257,7 +9297,10 @@ window.__ModuleLoader__.load({
           else markSaveStale();
           if (machine.get() === 'saving') enterState('paused');
         }
-        return { ok: ok, saveStale: !ok };
+        // `skipped` means the game never issued a storage.save before the deadline
+        // (menu/fresh states, or a hung bridge). The Client uses it to avoid
+        // reporting "save failed" when there was no new progress to persist.
+        return { ok: ok, saveStale: !ok, skipped: Boolean(result && result.skipped === true) };
       }
 
       function failPauseSave(token) {
@@ -9266,7 +9309,7 @@ window.__ModuleLoader__.load({
           markSaveStale();
           if (machine.get() === 'saving') enterState('paused');
         }
-        return { ok: false, saveStale: true };
+        return { ok: false, saveStale: true, skipped: false };
       }
 
       /**
@@ -9278,7 +9321,7 @@ window.__ModuleLoader__.load({
       function retryStalePause(pauseReason) {
         if (!scheduler || !bridge || typeof bridge.isInitialized !== 'function' || !bridge.isInitialized()) {
           // No live game to save through: fail closed instead of claiming saved.
-          return Promise.resolve({ ok: false, saveStale: true });
+          return Promise.resolve({ ok: false, saveStale: true, skipped: false });
         }
         const token = generation;
         enterState('saving');
@@ -9298,19 +9341,19 @@ window.__ModuleLoader__.load({
         if (pausePromise) return pausePromise;
         if (destroyed) {
           // The Runtime was torn down: nothing can be verified as saved anymore.
-          return Promise.resolve({ ok: false, saveStale: true });
+          return Promise.resolve({ ok: false, saveStale: true, skipped: false });
         }
-        if (!launchInfo || !bridge) return Promise.resolve({ ok: true, saveStale: false });
+        if (!launchInfo || !bridge) return Promise.resolve({ ok: true, saveStale: false, skipped: false });
         const currentState = machine.get();
         if (currentState === 'error' || currentState === 'exited') {
           // The frame is gone; the in-memory progress can no longer be verified as
           // saved, so report an honest stale result instead of success.
-          return Promise.resolve({ ok: false, saveStale: true });
+          return Promise.resolve({ ok: false, saveStale: true, skipped: false });
         }
         const storageCapable = launchInfo.capabilities.includes('storage');
         if (currentState === 'paused') {
-          if (!storageCapable) return Promise.resolve({ ok: true, saveStale: false });
-          if (!saveIsStale()) return Promise.resolve({ ok: true, saveStale: false });
+          if (!storageCapable) return Promise.resolve({ ok: true, saveStale: false, skipped: false });
+          if (!saveIsStale()) return Promise.resolve({ ok: true, saveStale: false, skipped: false });
           // The previous pause save failed and no successful save happened since:
           // run a real forced save retry and report its true outcome.
           return retryStalePause(pauseReason);
@@ -9318,13 +9361,13 @@ window.__ModuleLoader__.load({
         if (currentState !== 'playing') {
           // ready/loading: nothing has been played yet, so there is no pending
           // in-memory progress to flush.
-          return Promise.resolve({ ok: true, saveStale: false });
+          return Promise.resolve({ ok: true, saveStale: false, skipped: false });
         }
         const token = generation;
         scheduler.stop();
         enterState('paused');
         bridge.sendEvent(EVENTS.PAUSE, { reason: pauseReason, at: now() });
-        if (!storageCapable) return Promise.resolve({ ok: true, saveStale: false });
+        if (!storageCapable) return Promise.resolve({ ok: true, saveStale: false, skipped: false });
         enterState('saving');
         pausePromise = scheduler.save(pauseSaveReason(pauseReason)).then(
           function onSaved(result) {
@@ -9813,6 +9856,7 @@ window.__ModuleLoader__.load({
         return {
           ok: false,
           saveStale: true,
+          skipped: false,
           unresponsive: true,
           error: makeGameError(GM.NO_RUNTIME, null, { retryable: false }),
         };
@@ -9824,15 +9868,18 @@ window.__ModuleLoader__.load({
           return {
             ok: false,
             saveStale: true,
+            // The game never asked to write (menu/fresh state) instead of failing.
+            skipped: Boolean(result && result.skipped === true),
             unresponsive: false,
             error: makeGameError(GM.SAVE_WRITE_FAILED, null, { retryable: true }),
           };
         }
-        return { ok: true, saveStale: result.saveStale !== false, unresponsive: false, error: null };
+        return { ok: true, saveStale: result.saveStale !== false, skipped: false, unresponsive: false, error: null };
       } catch (error) {
         return {
           ok: false,
           saveStale: true,
+          skipped: false,
           unresponsive: true,
           error: normalizeUiError(error, GM.IFRAME_UNRESPONSIVE),
         };
@@ -13237,7 +13284,8 @@ window.__ModuleLoader__.load({
 
     const CSS = `
     .dgm-root,
-    .dgm-entry-view {
+    .dgm-entry-view,
+    .dgm-leave-notice {
       --dgm-bg: var(--dsw-alias-bg-base, #ffffff);
       --dgm-fg: var(--dsw-alias-label-primary, #1f2328);
       --dgm-fg-secondary: var(--dsw-alias-label-secondary, #5c6470);
@@ -13284,6 +13332,82 @@ window.__ModuleLoader__.load({
 
     .dgm-entry-view p { margin: 0; }
 
+    /* Transient leave confirmation above the composer (Session scope). */
+    .dgm-leave-notice {
+      position: absolute;
+      top: -54px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      max-width: min(420px, calc(100vw - 48px));
+      padding: 7px 10px 7px 12px;
+      border: 1px solid var(--dgm-border);
+      border-radius: 999px;
+      background: var(--dgm-overlay);
+      color: var(--dgm-fg);
+      box-shadow: var(--dgm-shadow-soft);
+      font-family: var(--dgm-font);
+      font-size: 12px;
+      pointer-events: auto;
+      animation: dgm-leave-notice-in 160ms var(--dgm-ease-out);
+    }
+
+    .dgm-leave-notice-dot {
+      flex: none;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--dgm-success);
+    }
+
+    .dgm-leave-notice[data-kind='no-progress'] .dgm-leave-notice-dot { background: var(--dgm-fg-tertiary); }
+
+    .dgm-leave-notice-text {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .dgm-leave-notice-action {
+      flex: none;
+      padding: 2px 6px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--dgm-brand);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .dgm-leave-notice-action:hover { background: var(--dgm-hover); }
+
+    .dgm-leave-notice-dismiss {
+      flex: none;
+      padding: 0 4px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--dgm-fg-tertiary);
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .dgm-leave-notice-dismiss:hover { background: var(--dgm-hover); color: var(--dgm-fg); }
+
+    @keyframes dgm-leave-notice-in {
+      from { opacity: 0; transform: translate(-50%, 4px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .dgm-leave-notice { animation: none; }
+    }
+
     .dgm-root {
       position: relative;
       display: flex;
@@ -13305,10 +13429,14 @@ window.__ModuleLoader__.load({
     .dgm-root *::after,
     .dgm-entry-view *,
     .dgm-entry-view *::before,
-    .dgm-entry-view *::after { box-sizing: border-box; }
+    .dgm-entry-view *::after,
+    .dgm-leave-notice *,
+    .dgm-leave-notice *::before,
+    .dgm-leave-notice *::after { box-sizing: border-box; }
 
     .dgm-root :focus-visible,
-    .dgm-entry-view :focus-visible {
+    .dgm-entry-view :focus-visible,
+    .dgm-leave-notice :focus-visible {
       outline: var(--dgm-focus-width) solid var(--dgm-focus);
       outline-offset: 2px;
     }
@@ -16742,6 +16870,38 @@ window.__ModuleLoader__.load({
     return { QuestionPanel };
     })();
 
+    // module: packages/client/src/leave-outcome.js
+    __mods["packages/client/src/leave-outcome.js"] = (function () {
+    /**
+     * Classify the pause step of the leave protocol.
+     *
+     * `skipped` means the Runtime waited for `storage.save` and the game never
+     * issued one (menu/fresh states deliberately skip persisting). That is not a
+     * failure, so the Client must not show the "could not save" dialog for it.
+     */
+
+    const LEAVE_OUTCOME = Object.freeze({
+      SAVED: 'saved',
+      NO_PROGRESS: 'no-progress',
+      BLOCKED: 'blocked',
+    });
+
+    /**
+     * @param {{ok?: boolean, saveStale?: boolean, skipped?: boolean, unresponsive?: boolean}|null} result
+     * @returns {'saved'|'no-progress'|'blocked'}
+     */
+    function classifyLeave(result) {
+      if (!result || typeof result !== 'object') return LEAVE_OUTCOME.BLOCKED;
+      if (result.ok === true) {
+        return result.saveStale === true ? LEAVE_OUTCOME.BLOCKED : LEAVE_OUTCOME.SAVED;
+      }
+      if (result.skipped === true && result.unresponsive !== true) return LEAVE_OUTCOME.NO_PROGRESS;
+      return LEAVE_OUTCOME.BLOCKED;
+    }
+
+    return { LEAVE_OUTCOME, classifyLeave };
+    })();
+
     // module: packages/client/src/runtime-utils.js
     __mods["packages/client/src/runtime-utils.js"] = (function () {
     const INSTANCE_ID_PATTERN = __mods["packages/shared/src/constants.js"].INSTANCE_ID_PATTERN;
@@ -17216,6 +17376,8 @@ window.__ModuleLoader__.load({
     const runtimeLaunchInfoRefreshed = __mods["packages/client/src/store.js"].runtimeLaunchInfoRefreshed;
     const surfaceChanged = __mods["packages/client/src/store.js"].surfaceChanged;
     const leaveCompleted = __mods["packages/client/src/store.js"].leaveCompleted;
+    const leaveNoticeSet = __mods["packages/client/src/store.js"].leaveNoticeSet;
+    const classifyLeave = __mods["packages/client/src/leave-outcome.js"].classifyLeave;
     const applyRuntimeEvent = __mods["packages/client/src/actions.js"].applyRuntimeEvent;
     const acknowledgeCompleted = __mods["packages/client/src/actions.js"].acknowledgeCompleted;
     const finishLeave = __mods["packages/client/src/actions.js"].finishLeave;
@@ -17391,13 +17553,13 @@ window.__ModuleLoader__.load({
             h('button', { type: 'button', className: 'dgm-btn dgm-btn-quiet', onClick: props.onStay }, t('runtime.leave.stay')),
             h(
               'button',
-              { type: 'button', className: 'dgm-btn dgm-btn-danger', onClick: props.onForce },
-              t('runtime.leave.force')
+              { type: 'button', className: 'dgm-btn dgm-btn-primary', ref: retryRef, onClick: props.onRetry },
+              t('runtime.leave.retry')
             ),
             h(
               'button',
-              { type: 'button', className: 'dgm-btn dgm-btn-primary', ref: retryRef, onClick: props.onRetry },
-              t('runtime.leave.retry')
+              { type: 'button', className: 'dgm-btn dgm-btn-quiet', onClick: props.onForce },
+              t('runtime.leave.force')
             )
           )
         )
@@ -17785,13 +17947,25 @@ window.__ModuleLoader__.load({
         leavingRef.current = true;
         setBusy(true);
         const result = await pauseRuntimeBounded(controllerRef.current);
-        if (!result.ok) {
+        const outcome = classifyLeave(result);
+        if (outcome === 'blocked') {
           leavingRef.current = false;
           setBusy(false);
-          setSaveFailure({ target: target, reason: reason, unresponsive: result.unresponsive === true });
+          setSaveFailure({ target: target, reason: reason, unresponsive: result && result.unresponsive === true });
           return;
         }
-        completeLeave(target, reason, result.saveStale);
+        if (target === 'conversation') {
+          const view = store.getState();
+          store.dispatch(leaveNoticeSet({
+            kind: outcome === 'saved' ? 'saved' : 'no-progress',
+            gameId: view.runtime.gameId,
+            sessionId: view.runtime.bindingSessionId || view.bindingSessionId,
+            at: Date.now(),
+          }));
+        }
+        // "No progress" means there was nothing new to persist, so it is not a
+        // stale save either: the previous save (if any) is still the honest state.
+        completeLeave(target, reason, false);
       }
 
       function forceLeave() {
@@ -23003,6 +23177,98 @@ window.__ModuleLoader__.load({
     return { GameEntryView };
     })();
 
+    // module: packages/client/src/components/leave-notice.js
+    __mods["packages/client/src/components/leave-notice.js"] = (function () {
+    const __external_0 = require("react");
+    const React = __external_0;
+    const store = __mods["packages/client/src/store.js"].store;
+    const leaveNoticeCleared = __mods["packages/client/src/store.js"].leaveNoticeCleared;
+    const beginGame = __mods["packages/client/src/actions.js"].beginGame;
+    const openGameMarket = __mods["packages/client/src/navigation.js"].openGameMarket;
+    const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
+    const makeT = __mods["packages/client/src/locale.js"].makeT;
+    const useStoreState = __mods["packages/client/src/hooks.js"].useStoreState;
+    const StyleTag = __mods["packages/client/src/styles.js"].StyleTag;
+    /**
+     * Transient leave confirmation above the composer.
+     *
+     * After returning to the Session the Runtime dispatches `leaveNoticeSet`:
+     * "saved" when the pause save persisted, "no-progress" when the game chose not
+     * to write (menus). Both offer a one-click resume ("continue game").
+     */
+
+    const h = React.createElement;
+
+    const DISMISS_MS = 8000;
+
+    function GameLeaveNotice(props) {
+      const state = useStoreState();
+      const notice = state.leaveNotice;
+      const sessionId = props && typeof props.sessionId === 'string' ? props.sessionId : null;
+      const t = makeT(null, detectLocale());
+      const matchesSession =
+        notice !== null && (notice.sessionId === null || sessionId === null || notice.sessionId === sessionId);
+      const at = notice ? notice.at : 0;
+
+      React.useEffect(
+        function autoDismiss() {
+          if (!matchesSession) return undefined;
+          const timer = setTimeout(function dismiss() {
+            store.dispatch(leaveNoticeCleared());
+          }, DISMISS_MS);
+          return function cleanup() {
+            clearTimeout(timer);
+          };
+        },
+        [matchesSession, at]
+      );
+
+      if (!matchesSession) return null;
+
+      const gameId = typeof notice.gameId === 'string' && notice.gameId.length > 0 ? notice.gameId : null;
+
+      function continueGame() {
+        if (!gameId) return;
+        store.dispatch(leaveNoticeCleared());
+        beginGame(store, {
+          gameId: gameId,
+          mode: 'resume-paused',
+          sessionId: notice.sessionId || sessionId,
+          autoResume: true,
+        });
+        openGameMarket();
+      }
+
+      function dismiss() {
+        store.dispatch(leaveNoticeCleared());
+      }
+
+      return h(
+        'div',
+        { className: 'dgm-leave-notice', 'data-kind': notice.kind, role: 'status', 'aria-live': 'polite' },
+        h(StyleTag),
+        h('span', { className: 'dgm-leave-notice-dot', 'aria-hidden': 'true' }),
+        h('span', { className: 'dgm-leave-notice-text' }, t(notice.kind === 'saved' ? 'leave.saved' : 'leave.noProgress')),
+        gameId
+          ? h('button', { type: 'button', className: 'dgm-leave-notice-action', onClick: continueGame }, t('leave.continue'))
+          : null,
+        h(
+          'button',
+          {
+            type: 'button',
+            className: 'dgm-leave-notice-dismiss',
+            'aria-label': t('leave.dismiss'),
+            title: t('leave.dismiss'),
+            onClick: dismiss,
+          },
+          '×'
+        )
+      );
+    }
+
+    return { GameLeaveNotice };
+    })();
+
     // module: packages/client/src/main.js
     __mods["packages/client/src/main.js"] = (function () {
     const __external_0 = require("react");
@@ -23025,6 +23291,7 @@ window.__ModuleLoader__.load({
     const GameMarketPanel = __mods["packages/client/src/components/panel.js"].GameMarketPanel;
     const GameMarketSidebarIcon = __mods["packages/client/src/components/sidebar-icon.js"].GameMarketSidebarIcon;
     const GameEntryView = __mods["packages/client/src/components/game-entry-view.js"].GameEntryView;
+    const GameLeaveNotice = __mods["packages/client/src/components/leave-notice.js"].GameLeaveNotice;
     /**
      * DSH Client plugin entry.
      *
@@ -23176,6 +23443,25 @@ window.__ModuleLoader__.load({
         );
       });
       if (gameTabController === null) reportDiagnostic('game-tab-registration-failed');
+
+      // Session-scoped, transient: shows the saved / no-progress notice with a
+      // one-click resume after returning from a game, then auto-dismisses.
+      const leaveNoticeController = injectSlot('conversation.input.overlay', function registerLeaveNotice() {
+        return registerSlot(
+          {
+            name: 'conversation.input.overlay',
+            id: 'leave-notice',
+            order: 20,
+            locale: NS,
+            inject: function injectLeaveNotice(sessionId) {
+              return { sessionId: typeof sessionId === 'string' ? sessionId : '' };
+            },
+          },
+          GameLeaveNotice,
+          'conversation.input.overlay'
+        );
+      });
+      if (leaveNoticeController === null) reportDiagnostic('leave-notice-registration-failed');
 
       ctx.effect(function startQuestions() { return configureQuestions(ctx); }, 'dsh-game-market: questions');
 

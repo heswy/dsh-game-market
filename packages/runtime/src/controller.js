@@ -884,7 +884,10 @@ export function createGameController(options = {}) {
       else markSaveStale();
       if (machine.get() === 'saving') enterState('paused');
     }
-    return { ok: ok, saveStale: !ok };
+    // `skipped` means the game never issued a storage.save before the deadline
+    // (menu/fresh states, or a hung bridge). The Client uses it to avoid
+    // reporting "save failed" when there was no new progress to persist.
+    return { ok: ok, saveStale: !ok, skipped: Boolean(result && result.skipped === true) };
   }
 
   function failPauseSave(token) {
@@ -893,7 +896,7 @@ export function createGameController(options = {}) {
       markSaveStale();
       if (machine.get() === 'saving') enterState('paused');
     }
-    return { ok: false, saveStale: true };
+    return { ok: false, saveStale: true, skipped: false };
   }
 
   /**
@@ -905,7 +908,7 @@ export function createGameController(options = {}) {
   function retryStalePause(pauseReason) {
     if (!scheduler || !bridge || typeof bridge.isInitialized !== 'function' || !bridge.isInitialized()) {
       // No live game to save through: fail closed instead of claiming saved.
-      return Promise.resolve({ ok: false, saveStale: true });
+      return Promise.resolve({ ok: false, saveStale: true, skipped: false });
     }
     const token = generation;
     enterState('saving');
@@ -925,19 +928,19 @@ export function createGameController(options = {}) {
     if (pausePromise) return pausePromise;
     if (destroyed) {
       // The Runtime was torn down: nothing can be verified as saved anymore.
-      return Promise.resolve({ ok: false, saveStale: true });
+      return Promise.resolve({ ok: false, saveStale: true, skipped: false });
     }
-    if (!launchInfo || !bridge) return Promise.resolve({ ok: true, saveStale: false });
+    if (!launchInfo || !bridge) return Promise.resolve({ ok: true, saveStale: false, skipped: false });
     const currentState = machine.get();
     if (currentState === 'error' || currentState === 'exited') {
       // The frame is gone; the in-memory progress can no longer be verified as
       // saved, so report an honest stale result instead of success.
-      return Promise.resolve({ ok: false, saveStale: true });
+      return Promise.resolve({ ok: false, saveStale: true, skipped: false });
     }
     const storageCapable = launchInfo.capabilities.includes('storage');
     if (currentState === 'paused') {
-      if (!storageCapable) return Promise.resolve({ ok: true, saveStale: false });
-      if (!saveIsStale()) return Promise.resolve({ ok: true, saveStale: false });
+      if (!storageCapable) return Promise.resolve({ ok: true, saveStale: false, skipped: false });
+      if (!saveIsStale()) return Promise.resolve({ ok: true, saveStale: false, skipped: false });
       // The previous pause save failed and no successful save happened since:
       // run a real forced save retry and report its true outcome.
       return retryStalePause(pauseReason);
@@ -945,13 +948,13 @@ export function createGameController(options = {}) {
     if (currentState !== 'playing') {
       // ready/loading: nothing has been played yet, so there is no pending
       // in-memory progress to flush.
-      return Promise.resolve({ ok: true, saveStale: false });
+      return Promise.resolve({ ok: true, saveStale: false, skipped: false });
     }
     const token = generation;
     scheduler.stop();
     enterState('paused');
     bridge.sendEvent(EVENTS.PAUSE, { reason: pauseReason, at: now() });
-    if (!storageCapable) return Promise.resolve({ ok: true, saveStale: false });
+    if (!storageCapable) return Promise.resolve({ ok: true, saveStale: false, skipped: false });
     enterState('saving');
     pausePromise = scheduler.save(pauseSaveReason(pauseReason)).then(
       function onSaved(result) {

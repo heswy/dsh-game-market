@@ -58,6 +58,7 @@ export async function pauseRuntime(controller) {
     return {
       ok: false,
       saveStale: true,
+      skipped: false,
       unresponsive: true,
       error: makeGameError(GM.NO_RUNTIME, null, { retryable: false }),
     };
@@ -69,15 +70,18 @@ export async function pauseRuntime(controller) {
       return {
         ok: false,
         saveStale: true,
+        // The game never asked to write (menu/fresh state) instead of failing.
+        skipped: Boolean(result && result.skipped === true),
         unresponsive: false,
         error: makeGameError(GM.SAVE_WRITE_FAILED, null, { retryable: true }),
       };
     }
-    return { ok: true, saveStale: result.saveStale !== false, unresponsive: false, error: null };
+    return { ok: true, saveStale: result.saveStale !== false, skipped: false, unresponsive: false, error: null };
   } catch (error) {
     return {
       ok: false,
       saveStale: true,
+      skipped: false,
       unresponsive: true,
       error: normalizeUiError(error, GM.IFRAME_UNRESPONSIVE),
     };

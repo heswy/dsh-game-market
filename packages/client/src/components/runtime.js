@@ -8,7 +8,8 @@ import { createQuestionFlow } from '../question-flow.js';
 import { QuestionPanel } from './questions.js';
 import { TIMING } from '../../../shared/src/constants.js';
 import { GM } from '../../../shared/src/errors.js';
-import { store, agentSnapshotReceived, runtimePatched, runtimeFailed, runtimeRetried, runtimeLaunchInfo, runtimeLaunchInfoRefreshed, surfaceChanged, leaveCompleted } from '../store.js';
+import { store, agentSnapshotReceived, runtimePatched, runtimeFailed, runtimeRetried, runtimeLaunchInfo, runtimeLaunchInfoRefreshed, surfaceChanged, leaveCompleted, leaveNoticeSet } from '../store.js';
+import { classifyLeave } from '../leave-outcome.js';
 import { applyRuntimeEvent, acknowledgeCompleted, finishLeave, gameNameFromState, recordPausedGame } from '../actions.js';
 import { getApiClient } from '../api.js';
 import { MAIN_PANEL_KEY } from '../constants.js';
@@ -159,13 +160,13 @@ function SaveFailureDialog(props) {
         h('button', { type: 'button', className: 'dgm-btn dgm-btn-quiet', onClick: props.onStay }, t('runtime.leave.stay')),
         h(
           'button',
-          { type: 'button', className: 'dgm-btn dgm-btn-danger', onClick: props.onForce },
-          t('runtime.leave.force')
+          { type: 'button', className: 'dgm-btn dgm-btn-primary', ref: retryRef, onClick: props.onRetry },
+          t('runtime.leave.retry')
         ),
         h(
           'button',
-          { type: 'button', className: 'dgm-btn dgm-btn-primary', ref: retryRef, onClick: props.onRetry },
-          t('runtime.leave.retry')
+          { type: 'button', className: 'dgm-btn dgm-btn-quiet', onClick: props.onForce },
+          t('runtime.leave.force')
         )
       )
     )
@@ -553,13 +554,25 @@ export function RuntimeView(props) {
     leavingRef.current = true;
     setBusy(true);
     const result = await pauseRuntimeBounded(controllerRef.current);
-    if (!result.ok) {
+    const outcome = classifyLeave(result);
+    if (outcome === 'blocked') {
       leavingRef.current = false;
       setBusy(false);
-      setSaveFailure({ target: target, reason: reason, unresponsive: result.unresponsive === true });
+      setSaveFailure({ target: target, reason: reason, unresponsive: result && result.unresponsive === true });
       return;
     }
-    completeLeave(target, reason, result.saveStale);
+    if (target === 'conversation') {
+      const view = store.getState();
+      store.dispatch(leaveNoticeSet({
+        kind: outcome === 'saved' ? 'saved' : 'no-progress',
+        gameId: view.runtime.gameId,
+        sessionId: view.runtime.bindingSessionId || view.bindingSessionId,
+        at: Date.now(),
+      }));
+    }
+    // "No progress" means there was nothing new to persist, so it is not a
+    // stale save either: the previous save (if any) is still the honest state.
+    completeLeave(target, reason, false);
   }
 
   function forceLeave() {

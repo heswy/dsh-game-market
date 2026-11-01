@@ -258,7 +258,7 @@ test('pause() sends pause + before-save and resolves after storage.save', async 
   );
   await flushAsync();
   const result = await pending;
-  assert.deepEqual(result, { ok: true, saveStale: false });
+  assert.deepEqual(result, { ok: true, saveStale: false, skipped: false });
   assert.equal(context.controller.getState().state, 'paused');
   assert.equal(context.api.calls.filter((call) => call[0] === 'setSave').length, 1);
   assert.ok(context.events.some((event) => event.type === 'save-status' && event.status === 'saved'));
@@ -278,7 +278,7 @@ test('a failed save keeps the old data and reports saveStale', async () => {
   );
   await flushAsync();
   const result = await pending;
-  assert.deepEqual(result, { ok: false, saveStale: true });
+  assert.deepEqual(result, { ok: false, saveStale: true, skipped: false });
   assert.equal(context.controller.getState().state, 'paused');
   assert.ok(context.events.some((event) => event.type === 'save-status' && event.status === 'failed'));
 });
@@ -288,8 +288,22 @@ test('pause() skips before-save when the game did not declare storage', async ()
   await context.controller.launch(makeLaunchInfo({ capabilities: [] }));
   const iframe = await handshake(context);
   const result = await context.controller.pause('user');
-  assert.deepEqual(result, { ok: true, saveStale: false });
+  assert.deepEqual(result, { ok: true, saveStale: false, skipped: false });
   assert.equal(messagesOf(iframe, (message) => message.event === EVENTS.BEFORE_SAVE).length, 0);
+  assert.equal(context.controller.getState().state, 'paused');
+});
+
+test('pause() reports skipped when the game never answers before-save', async () => {
+  // Menu/fresh states deliberately do not persist; the Client must be able to
+  // tell that apart from a real write failure.
+  const context = makeContext();
+  await context.controller.launch(makeLaunchInfo());
+  await handshake(context);
+  const pending = context.controller.pause('leave');
+  context.clock.tick(2000);
+  await flushAsync();
+  const result = await pending;
+  assert.deepEqual(result, { ok: false, saveStale: true, skipped: true });
   assert.equal(context.controller.getState().state, 'paused');
 });
 
