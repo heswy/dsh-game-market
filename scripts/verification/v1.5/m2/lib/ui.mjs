@@ -133,16 +133,17 @@ export async function dismissOverlays(cdp, scenario) {
 export async function openMarketPanel(cdp, scenario) {
   let state = await readUiState(cdp);
   const steps = [];
-  if (!state.panelOpen) {
+  const mounted = () => cdp.eval(`Boolean(document.querySelector('.dgm-root'))`);
+  if (!state.panelOpen || !(await mounted())) {
     const sidebar = await clickElement(
       cdp,
-      `[...document.querySelectorAll('button')].find((button) => (button.textContent || '').trim() === '游戏市场')`,
+      `[...document.querySelectorAll('button')].find((button) => /^(游戏市场|Game Market)$/.test((button.textContent || '').trim()))`,
       'sidebar-market'
     );
     steps.push({ sidebar });
     await waitFor(async () => {
       const current = await readUiState(cdp);
-      return current.panelOpen ? current : null;
+      return current.panelOpen && (await mounted()) ? current : null;
     }, 20000);
     state = await readUiState(cdp);
   }
