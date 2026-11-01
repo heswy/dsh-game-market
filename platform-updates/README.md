@@ -9,5 +9,4 @@
 
 - `release.json` 声明 `clientBuildCommit = P`（构建产物所基于的版本提交），让安装后的 Client/Host 能互相核验身份；它**不包含**自身所在 release commit 的哈希（文件无法自引用）。
 - `plugins.json` 把插件 `dsh-game-market` 精确钉到一个完整 40 位 commit R；绝不能把索引写进 R 本身（工具会拒绝，`scripts/check.mjs` 也会校验）。
-- 本 M3 轮次**不提交** `plugins.json`：该文件不存在是预期状态（固定官方索引 URL 此时不可用/离线，不阻塞游戏与市场）。
-- 生成/校验/回滚流程见 `docs/plugin-update-release.md`。
+- `plugins.json` 已随正式发布 `v1.5.0` 提交（索引提交 `a0fd9db`，钉住 R `6960993`），生成/校验/回滚流程见 `docs/plugin-update-release.md`。
