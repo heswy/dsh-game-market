@@ -14,12 +14,12 @@
       },
       "versions": [
         {
-          "version": "1.5.0",
-          "publishTimestamp": 1793521042,
+          "version": "1.5.1",
+          "publishTimestamp": 1793524979,
           "source": {
             "type": "git",
             "url": "https://github.com/heswy/dsh-game-market",
-            "commit": "6960993f7331eba9c89b2075152992d958f69fba"
+            "commit": "372b41d0bcc91428375cc3c4a1f3defa9c9ab990"
           },
           "engines": {
             "dsh": ">=0.2.0 <0.3.0"
