@@ -8,6 +8,7 @@
  * marks it, `applied`/`installing`/`activating` never do).
  */
 import React from 'react';
+import { CheckIcon, RefreshIcon } from '../icons.js';
 import { formatAbsoluteTime, formatRelativeTime } from '../format.js';
 import { updateActionErrorKey } from '../errors-text.js';
 import { channelLabel, describeDiscovery, shortCommit } from '../update-copy.js';
@@ -53,23 +54,26 @@ const BLOCKED_KEYS = Object.freeze({
 function ProgressRow(props) {
   const t = props.t;
   const current = props.index;
-  const labels = ['inspecting', 'installing', 'applied', 'activating'];
-  const keys = [
-    'update.progress.inspecting',
-    'update.progress.installing',
-    'update.progress.applied',
-    'update.progress.activating',
+  const steps = [
+    { id: 'inspecting', key: 'update.progress.inspecting' },
+    { id: 'installing', key: 'update.progress.installing' },
+    { id: 'applied', key: 'update.progress.applied' },
+    { id: 'activating', key: 'update.progress.activating' },
   ];
   return h(
     'ol',
-    { className: 'dgm-update-stages', 'aria-label': t('update.progress.label'), 'data-stages': labels.join(',') },
-    labels.map(function stage(index) {
+    { className: 'dgm-update-steps', 'aria-label': t('update.progress.label'), 'data-stages': steps.map((step) => step.id).join(',') },
+    steps.map(function stage(step, index) {
       const status = current === null ? 'pending' : index < current ? 'done' : index === current ? 'current' : 'pending';
       return h(
         'li',
-        { key: stage, className: 'dgm-update-stage', 'data-status': status, 'aria-current': status === 'current' ? 'step' : undefined },
-        h('span', { className: 'dgm-update-stage-dot', 'aria-hidden': 'true' }),
-        h('span', null, t(keys[index]))
+        { key: step.id, className: 'dgm-update-step', 'data-status': status, 'aria-current': status === 'current' ? 'step' : undefined },
+        h(
+          'span',
+          { className: 'dgm-update-step-marker', 'aria-hidden': 'true' },
+          status === 'done' ? h(CheckIcon, { size: 10 }) : String(index + 1)
+        ),
+        h('span', { className: 'dgm-update-step-label' }, t(step.key))
       );
     })
   );
@@ -87,7 +91,7 @@ function OperationCard(props) {
       'button',
       {
         type: 'button',
-        className: 'dgm-btn dgm-btn-quiet',
+        className: 'dgm-btn dgm-btn-outline',
         'data-action': 'cancel-update',
         onClick: props.onCancel,
       },
@@ -127,7 +131,11 @@ function OperationCard(props) {
     h(
       'div',
       { className: 'dgm-update-operation-head' },
-      h('span', { className: 'dgm-update-operation-dot', 'data-state': operation.state, 'aria-hidden': 'true' }),
+      h(
+        'span',
+        { className: 'dgm-update-operation-badge', 'data-state': operation.state, 'aria-hidden': 'true' },
+        h('span', { className: 'dgm-update-operation-dot', 'data-state': operation.state })
+      ),
       h('h3', { className: 'dgm-update-operation-title' }, t(operation.titleKey, operation.detailParams))
     ),
     h('p', { className: 'dgm-update-operation-body' }, t(operation.detailKey, operation.detailParams)),
@@ -201,9 +209,22 @@ export function UpdateSection(props) {
       ? h(
           'p',
           { className: 'dgm-update-compact-summary' },
-          'Host ' + (identity.hostVersion || t('update.identity.unknown')),
-          h('span', { className: 'dgm-sep', 'aria-hidden': 'true' }, '·'),
-          'Client ' + (identity.clientEmbedded ? identity.clientVersion : t('update.identity.unknown'))
+          h(
+            'span',
+            { className: 'dgm-update-version-chip' },
+            h('span', { className: 'dgm-update-version-chip-label' }, 'Host'),
+            h('span', { className: 'dgm-update-version-chip-value' }, identity.hostVersion || t('update.identity.unknown'))
+          ),
+          h(
+            'span',
+            { className: 'dgm-update-version-chip' },
+            h('span', { className: 'dgm-update-version-chip-label' }, 'Client'),
+            h(
+              'span',
+              { className: 'dgm-update-version-chip-value' },
+              identity.clientEmbedded ? identity.clientVersion : t('update.identity.unknown')
+            )
+          )
         )
       : h(
           'div',
@@ -244,7 +265,7 @@ export function UpdateSection(props) {
         'button',
         {
           type: 'button',
-          className: 'dgm-btn dgm-btn-ghost dgm-update-refresh',
+          className: 'dgm-btn dgm-btn-outline dgm-update-refresh',
           disabled: refreshDisabled,
           title: refreshTitle,
           'aria-label': refreshTitle,
@@ -253,6 +274,7 @@ export function UpdateSection(props) {
             if (!refreshDisabled && props.onRefresh) props.onRefresh();
           },
         },
+        h(RefreshIcon, { size: 12 }),
         refreshBusy ? t('update.refresh.busy') : t('update.refresh')
       )
     ),
