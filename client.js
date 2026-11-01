@@ -13332,33 +13332,28 @@ window.__ModuleLoader__.load({
 
     .dgm-entry-view p { margin: 0; }
 
-    /* Transient leave confirmation above the composer (Session scope). */
+    /* Transient leave confirmation chip in the Session header utilities row. */
     .dgm-leave-notice {
-      position: absolute;
-      top: -54px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 2;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      max-width: min(420px, calc(100vw - 48px));
-      padding: 7px 10px 7px 12px;
+      gap: 6px;
+      max-width: 280px;
+      height: 26px;
+      padding: 0 2px 0 9px;
       border: 1px solid var(--dgm-border);
       border-radius: 999px;
-      background: var(--dgm-overlay);
+      background: var(--dgm-surface);
       color: var(--dgm-fg);
-      box-shadow: var(--dgm-shadow-soft);
       font-family: var(--dgm-font);
       font-size: 12px;
-      pointer-events: auto;
-      animation: dgm-leave-notice-in 160ms var(--dgm-ease-out);
+      white-space: nowrap;
+      animation: dgm-leave-notice-in 140ms var(--dgm-ease-out);
     }
 
     .dgm-leave-notice-dot {
       flex: none;
-      width: 7px;
-      height: 7px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: var(--dgm-success);
     }
@@ -13367,13 +13362,12 @@ window.__ModuleLoader__.load({
 
     .dgm-leave-notice-text {
       overflow: hidden;
-      white-space: nowrap;
       text-overflow: ellipsis;
     }
 
     .dgm-leave-notice-action {
       flex: none;
-      padding: 2px 6px;
+      padding: 0 2px;
       border: 0;
       border-radius: 6px;
       background: transparent;
@@ -13387,12 +13381,12 @@ window.__ModuleLoader__.load({
 
     .dgm-leave-notice-dismiss {
       flex: none;
-      padding: 0 4px;
+      padding: 0 4px 0 2px;
       border: 0;
       border-radius: 6px;
       background: transparent;
       color: var(--dgm-fg-tertiary);
-      font-size: 14px;
+      font-size: 13px;
       line-height: 1;
       cursor: pointer;
     }
@@ -13400,8 +13394,8 @@ window.__ModuleLoader__.load({
     .dgm-leave-notice-dismiss:hover { background: var(--dgm-hover); color: var(--dgm-fg); }
 
     @keyframes dgm-leave-notice-in {
-      from { opacity: 0; transform: translate(-50%, 4px); }
-      to { opacity: 1; transform: translate(-50%, 0); }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -23205,10 +23199,17 @@ window.__ModuleLoader__.load({
       const state = useStoreState();
       const notice = state.leaveNotice;
       const sessionId = props && typeof props.sessionId === 'string' ? props.sessionId : null;
-      const t = makeT(null, detectLocale());
+      // Prefer the host-bound translator so the chip follows the DSH locale
+      // instead of navigator.language; the built-in dictionaries stay the fallback.
+      const t = makeT(props && props.t, detectLocale());
       const matchesSession =
         notice !== null && (notice.sessionId === null || sessionId === null || notice.sessionId === sessionId);
       const at = notice ? notice.at : 0;
+      const labels = props && props.labels && typeof props.labels === 'object' ? props.labels : {};
+      function label(name, fallbackKey) {
+        const value = labels[name];
+        return typeof value === 'string' && value.length > 0 ? value : t(fallbackKey);
+      }
 
       React.useEffect(
         function autoDismiss() {
@@ -23248,17 +23249,21 @@ window.__ModuleLoader__.load({
         { className: 'dgm-leave-notice', 'data-kind': notice.kind, role: 'status', 'aria-live': 'polite' },
         h(StyleTag),
         h('span', { className: 'dgm-leave-notice-dot', 'aria-hidden': 'true' }),
-        h('span', { className: 'dgm-leave-notice-text' }, t(notice.kind === 'saved' ? 'leave.saved' : 'leave.noProgress')),
+        h(
+          'span',
+          { className: 'dgm-leave-notice-text' },
+          notice.kind === 'saved' ? label('saved', 'leave.saved') : label('noProgress', 'leave.noProgress')
+        ),
         gameId
-          ? h('button', { type: 'button', className: 'dgm-leave-notice-action', onClick: continueGame }, t('leave.continue'))
+          ? h('button', { type: 'button', className: 'dgm-leave-notice-action', onClick: continueGame }, label('continue', 'leave.continue'))
           : null,
         h(
           'button',
           {
             type: 'button',
             className: 'dgm-leave-notice-dismiss',
-            'aria-label': t('leave.dismiss'),
-            title: t('leave.dismiss'),
+            'aria-label': label('dismiss', 'leave.dismiss'),
+            title: label('dismiss', 'leave.dismiss'),
             onClick: dismiss,
           },
           '×'
@@ -23379,6 +23384,22 @@ window.__ModuleLoader__.load({
         return typeof value === 'string' && value.length > 0 ? value : translate('zh', 'entry.tab.game');
       }
 
+      /** Resolve one leave-notice string in the host locale (built-in zh as fallback). */
+      function leaveLabel(key) {
+        try {
+          if (ctx.locale && typeof ctx.locale.bind === 'function') {
+            const bound = ctx.locale.bind(NS);
+            if (typeof bound === 'function') {
+              const value = bound(key);
+              if (typeof value === 'string' && value.length > 0 && value !== key) return value;
+            }
+          }
+        } catch (error) {
+          reportDiagnostic('leave-label-failed:' + key, error);
+        }
+        return translate('zh', key);
+      }
+
       function injectSlot(slotName, callback) {
         try {
           if (!ctx.slots || typeof ctx.slots.inject !== 'function') {
@@ -23444,21 +23465,29 @@ window.__ModuleLoader__.load({
       });
       if (gameTabController === null) reportDiagnostic('game-tab-registration-failed');
 
-      // Session-scoped, transient: shows the saved / no-progress notice with a
-      // one-click resume after returning from a game, then auto-dismisses.
-      const leaveNoticeController = injectSlot('conversation.input.overlay', function registerLeaveNotice() {
+      // Session header chip: shows the saved / no-progress notice with a one-click
+      // resume after returning from a game, then auto-dismisses.
+      const leaveNoticeController = injectSlot('conversation.session.header.utilities', function registerLeaveNotice() {
         return registerSlot(
           {
-            name: 'conversation.input.overlay',
+            name: 'conversation.session.header.utilities',
             id: 'leave-notice',
             order: 20,
             locale: NS,
             inject: function injectLeaveNotice(sessionId) {
-              return { sessionId: typeof sessionId === 'string' ? sessionId : '' };
+              return {
+                sessionId: typeof sessionId === 'string' ? sessionId : '',
+                labels: {
+                  saved: leaveLabel('leave.saved'),
+                  noProgress: leaveLabel('leave.noProgress'),
+                  continue: leaveLabel('leave.continue'),
+                  dismiss: leaveLabel('leave.dismiss'),
+                },
+              };
             },
           },
           GameLeaveNotice,
-          'conversation.input.overlay'
+          'conversation.session.header.utilities'
         );
       });
       if (leaveNoticeController === null) reportDiagnostic('leave-notice-registration-failed');

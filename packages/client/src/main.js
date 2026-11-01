@@ -99,6 +99,22 @@ export function apply(ctx) {
     return typeof value === 'string' && value.length > 0 ? value : translate('zh', 'entry.tab.game');
   }
 
+  /** Resolve one leave-notice string in the host locale (built-in zh as fallback). */
+  function leaveLabel(key) {
+    try {
+      if (ctx.locale && typeof ctx.locale.bind === 'function') {
+        const bound = ctx.locale.bind(NS);
+        if (typeof bound === 'function') {
+          const value = bound(key);
+          if (typeof value === 'string' && value.length > 0 && value !== key) return value;
+        }
+      }
+    } catch (error) {
+      reportDiagnostic('leave-label-failed:' + key, error);
+    }
+    return translate('zh', key);
+  }
+
   function injectSlot(slotName, callback) {
     try {
       if (!ctx.slots || typeof ctx.slots.inject !== 'function') {
@@ -164,21 +180,29 @@ export function apply(ctx) {
   });
   if (gameTabController === null) reportDiagnostic('game-tab-registration-failed');
 
-  // Session-scoped, transient: shows the saved / no-progress notice with a
-  // one-click resume after returning from a game, then auto-dismisses.
-  const leaveNoticeController = injectSlot('conversation.input.overlay', function registerLeaveNotice() {
+  // Session header chip: shows the saved / no-progress notice with a one-click
+  // resume after returning from a game, then auto-dismisses.
+  const leaveNoticeController = injectSlot('conversation.session.header.utilities', function registerLeaveNotice() {
     return registerSlot(
       {
-        name: 'conversation.input.overlay',
+        name: 'conversation.session.header.utilities',
         id: 'leave-notice',
         order: 20,
         locale: NS,
         inject: function injectLeaveNotice(sessionId) {
-          return { sessionId: typeof sessionId === 'string' ? sessionId : '' };
+          return {
+            sessionId: typeof sessionId === 'string' ? sessionId : '',
+            labels: {
+              saved: leaveLabel('leave.saved'),
+              noProgress: leaveLabel('leave.noProgress'),
+              continue: leaveLabel('leave.continue'),
+              dismiss: leaveLabel('leave.dismiss'),
+            },
+          };
         },
       },
       GameLeaveNotice,
-      'conversation.input.overlay'
+      'conversation.session.header.utilities'
     );
   });
   if (leaveNoticeController === null) reportDiagnostic('leave-notice-registration-failed');

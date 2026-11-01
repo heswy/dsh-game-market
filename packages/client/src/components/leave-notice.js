@@ -21,10 +21,17 @@ export function GameLeaveNotice(props) {
   const state = useStoreState();
   const notice = state.leaveNotice;
   const sessionId = props && typeof props.sessionId === 'string' ? props.sessionId : null;
-  const t = makeT(null, detectLocale());
+  // Prefer the host-bound translator so the chip follows the DSH locale
+  // instead of navigator.language; the built-in dictionaries stay the fallback.
+  const t = makeT(props && props.t, detectLocale());
   const matchesSession =
     notice !== null && (notice.sessionId === null || sessionId === null || notice.sessionId === sessionId);
   const at = notice ? notice.at : 0;
+  const labels = props && props.labels && typeof props.labels === 'object' ? props.labels : {};
+  function label(name, fallbackKey) {
+    const value = labels[name];
+    return typeof value === 'string' && value.length > 0 ? value : t(fallbackKey);
+  }
 
   React.useEffect(
     function autoDismiss() {
@@ -64,17 +71,21 @@ export function GameLeaveNotice(props) {
     { className: 'dgm-leave-notice', 'data-kind': notice.kind, role: 'status', 'aria-live': 'polite' },
     h(StyleTag),
     h('span', { className: 'dgm-leave-notice-dot', 'aria-hidden': 'true' }),
-    h('span', { className: 'dgm-leave-notice-text' }, t(notice.kind === 'saved' ? 'leave.saved' : 'leave.noProgress')),
+    h(
+      'span',
+      { className: 'dgm-leave-notice-text' },
+      notice.kind === 'saved' ? label('saved', 'leave.saved') : label('noProgress', 'leave.noProgress')
+    ),
     gameId
-      ? h('button', { type: 'button', className: 'dgm-leave-notice-action', onClick: continueGame }, t('leave.continue'))
+      ? h('button', { type: 'button', className: 'dgm-leave-notice-action', onClick: continueGame }, label('continue', 'leave.continue'))
       : null,
     h(
       'button',
       {
         type: 'button',
         className: 'dgm-leave-notice-dismiss',
-        'aria-label': t('leave.dismiss'),
-        title: t('leave.dismiss'),
+        'aria-label': label('dismiss', 'leave.dismiss'),
+        title: label('dismiss', 'leave.dismiss'),
         onClick: dismiss,
       },
       '×'

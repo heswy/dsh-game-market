@@ -53,33 +53,28 @@ export const CSS = `
 
 .dgm-entry-view p { margin: 0; }
 
-/* Transient leave confirmation above the composer (Session scope). */
+/* Transient leave confirmation chip in the Session header utilities row. */
 .dgm-leave-notice {
-  position: absolute;
-  top: -54px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  max-width: min(420px, calc(100vw - 48px));
-  padding: 7px 10px 7px 12px;
+  gap: 6px;
+  max-width: 280px;
+  height: 26px;
+  padding: 0 2px 0 9px;
   border: 1px solid var(--dgm-border);
   border-radius: 999px;
-  background: var(--dgm-overlay);
+  background: var(--dgm-surface);
   color: var(--dgm-fg);
-  box-shadow: var(--dgm-shadow-soft);
   font-family: var(--dgm-font);
   font-size: 12px;
-  pointer-events: auto;
-  animation: dgm-leave-notice-in 160ms var(--dgm-ease-out);
+  white-space: nowrap;
+  animation: dgm-leave-notice-in 140ms var(--dgm-ease-out);
 }
 
 .dgm-leave-notice-dot {
   flex: none;
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--dgm-success);
 }
@@ -88,13 +83,12 @@ export const CSS = `
 
 .dgm-leave-notice-text {
   overflow: hidden;
-  white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .dgm-leave-notice-action {
   flex: none;
-  padding: 2px 6px;
+  padding: 0 2px;
   border: 0;
   border-radius: 6px;
   background: transparent;
@@ -108,12 +102,12 @@ export const CSS = `
 
 .dgm-leave-notice-dismiss {
   flex: none;
-  padding: 0 4px;
+  padding: 0 4px 0 2px;
   border: 0;
   border-radius: 6px;
   background: transparent;
   color: var(--dgm-fg-tertiary);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1;
   cursor: pointer;
 }
@@ -121,8 +115,8 @@ export const CSS = `
 .dgm-leave-notice-dismiss:hover { background: var(--dgm-hover); color: var(--dgm-fg); }
 
 @keyframes dgm-leave-notice-in {
-  from { opacity: 0; transform: translate(-50%, 4px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
