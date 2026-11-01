@@ -1,11 +1,15 @@
 /**
  * DSH Client plugin entry.
  *
- * Verified registration forms (DSH Desktop 0.2.1-rc.2):
+ * Verified registration forms (DSH Desktop 0.2.1-rc.3 / rc.5):
  *   - `main` keyed slot + `sidebar.panellist` row with the same id
  *   - `conversation.view` list slot for the persistent Game tab
  *   - `ctx.locale.register(ns, { zh, en })` inside `ctx.effect`
  *   - `ctx.layout.selectPanel(id | null)` for panel navigation
+ *
+ * rc.5 estimates every View tab label's glyph width (`for … of label`), so the
+ * Game tab label must be a plain string; a React element crashes the whole
+ * session header (title row + tab row disappear).
  */
 import React from 'react';
 import { configureQuestions } from './questions.js';
@@ -18,13 +22,10 @@ import { getApiClient } from './api.js';
 import { createAgentPoller } from './agent-polling.js';
 import { getUpdateManager } from './update-manager.js';
 import { GameMarketPanel } from './components/panel.js';
-import { GameEntryView } from './components/game-entry-view.js';
 import { GameMarketSidebarIcon } from './components/sidebar-icon.js';
-import { GameTabLabel } from './components/game-tab-label.js';
+import { GameEntryView } from './components/game-entry-view.js';
 
 export const inject = ['slots', 'layout', 'locale'];
-
-const h = React.createElement;
 
 function noopDisposer() {
   return function noop() {};
@@ -90,19 +91,11 @@ export function apply(ctx) {
     return typeof value === 'string' && value.length > 0 ? value : translate('zh', 'sidebar.label');
   }
 
-  // The host resolves a label thunk on the active locale and re-runs it when the
-  // locale changes; resolve the visible strings through the host dictionary so a
-  // zh host never shows the en fallback ("Game"/"Done").
+  // rc.5 measures View tab label glyphs, so this must stay a plain string. The
+  // host re-runs the thunk when the locale changes.
   function gameTabLabel() {
-    return h(GameTabLabel, {
-      labels: {
-        game: hostTranslate('entry.tab.game'),
-        waiting: hostTranslate('entry.tab.badge.waiting'),
-        completed: hostTranslate('entry.tab.badge.completed'),
-        error: hostTranslate('entry.tab.badge.error'),
-        resume: hostTranslate('entry.tab.badge.resume'),
-      },
-    });
+    const value = hostTranslate('entry.tab.game');
+    return typeof value === 'string' && value.length > 0 ? value : translate('zh', 'entry.tab.game');
   }
 
   function injectSlot(slotName, callback) {

@@ -6,6 +6,9 @@
  * Browsing the Market again stays available from the sidebar / the game's own
  * back-to-market action. The decision + side effects live in `entry-flow.js`
  * so they can be unit-tested without React.
+ *
+ * The host renders this view's `label` as a plain string and estimates its
+ * glyph width (DSH 0.2.1-rc.5), so the tab label must never be a React element.
  */
 import React from 'react';
 import { makeT, detectLocale } from '../locale.js';
