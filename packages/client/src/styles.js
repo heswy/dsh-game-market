@@ -2053,12 +2053,31 @@ export const CSS = `
 .dgm-settings-dialog .dgm-btn-ghost { color: var(--dgm-fg); }
 .dgm-settings-dialog .dgm-btn-ghost:hover { background: var(--dgm-hover); }
 .dgm-update-compact-summary {
-  margin: 0;
-  color: var(--dgm-fg-secondary);
-  font-size: 12.5px;
-  line-height: 1.5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 0;
+}
+.dgm-update-version-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--dgm-hairline);
+  border-radius: 999px;
+  background: var(--dgm-surface);
+  font-size: 11.5px;
+  line-height: 1.4;
   font-variant-numeric: tabular-nums;
 }
+.dgm-update-version-chip-label {
+  color: var(--dgm-fg-tertiary);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.dgm-update-version-chip-value { color: var(--dgm-fg); font-weight: 600; }
 .dgm-update-compact .dgm-section-head { align-items: center; margin-bottom: 8px; }
 .dgm-update-compact .dgm-section-titles { flex-direction: row; align-items: center; gap: 8px; }
 .dgm-update-compact-badge {
@@ -2096,6 +2115,8 @@ export const CSS = `
 }
 .dgm-btn-primary:hover { background: var(--dgm-ink); color: var(--dgm-ink-fg); filter: brightness(1.07); }
 .dgm-btn-primary:active { filter: brightness(0.95); transform: translateY(0.5px); }
+.dgm-btn-outline { border-color: var(--dgm-hairline-strong); background: var(--dgm-bg); color: var(--dgm-fg); }
+.dgm-btn-outline:hover { background: var(--dgm-surface); border-color: var(--dgm-fg-tertiary); }
 .dgm-chip {
   min-height: 30px;
   padding: 0 12px;
@@ -2989,6 +3010,18 @@ export const CSS = `
   border-radius: var(--dgm-radius-md);
   background: var(--dgm-bg);
 }
+.dgm-update-discovery[data-tone="info"] {
+  border-color: color-mix(in srgb, var(--dgm-brand) 22%, transparent);
+  background: color-mix(in srgb, var(--dgm-brand) 5%, var(--dgm-bg));
+}
+.dgm-update-discovery[data-tone="positive"] {
+  border-color: color-mix(in srgb, var(--dgm-success) 24%, transparent);
+  background: color-mix(in srgb, var(--dgm-success) 4%, var(--dgm-bg));
+}
+.dgm-update-discovery[data-tone="warn"] {
+  border-color: color-mix(in srgb, var(--dgm-danger) 24%, transparent);
+  background: color-mix(in srgb, var(--dgm-danger) 4%, var(--dgm-bg));
+}
 .dgm-update-discovery-dot {
   flex: none;
   width: 8px;
@@ -3003,7 +3036,7 @@ export const CSS = `
 .dgm-update-discovery-text { flex: 1 1 auto; min-width: 0; }
 .dgm-update-discovery-line { margin: 0; font-size: 13px; }
 .dgm-update-discovery-meta { margin: 3px 0 0; color: var(--dgm-fg-tertiary); font-size: 11px; }
-.dgm-update-refresh { flex: none; height: 26px; }
+.dgm-update-refresh { flex: none; height: 28px; padding: 0 12px; border-radius: 8px; }
 .dgm-update-offer { margin-top: 12px; }
 .dgm-update-error {
   margin: 12px 0 0;
@@ -3028,21 +3061,37 @@ export const CSS = `
 .dgm-update-coordination[data-status="failed"] { color: var(--dgm-danger); }
 .dgm-update-operation {
   margin-top: 16px;
-  padding: 14px 16px;
-  border: 1px solid var(--dgm-border);
-  border-radius: var(--dgm-radius-md);
+  padding: 16px 18px 15px;
+  border: 1px solid var(--dgm-hairline);
+  border-radius: 14px;
   background: var(--dgm-bg);
+  box-shadow: 0 1px 2px rgba(15, 18, 24, 0.03);
   animation: dgm-fade 140ms ease-out;
 }
 .dgm-update-operation[data-state="updated"] { border-color: color-mix(in srgb, var(--dgm-success) 38%, transparent); }
 .dgm-update-operation[data-state="failed"],
 .dgm-update-operation[data-state="verification-failed"],
 .dgm-update-operation[data-state="stale-runtime"] { border-color: color-mix(in srgb, var(--dgm-danger) 32%, transparent); }
-.dgm-update-operation-head { display: flex; align-items: center; gap: 9px; }
-.dgm-update-operation-dot {
+.dgm-update-operation-head { display: flex; align-items: center; gap: 10px; }
+.dgm-update-operation-badge {
   flex: none;
-  width: 8px;
-  height: 8px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--dgm-brand) 10%, var(--dgm-bg));
+}
+.dgm-update-operation-badge[data-state="updated"] { background: color-mix(in srgb, var(--dgm-success) 12%, var(--dgm-bg)); }
+.dgm-update-operation-badge[data-state="failed"],
+.dgm-update-operation-badge[data-state="verification-failed"],
+.dgm-update-operation-badge[data-state="stale-runtime"] { background: color-mix(in srgb, var(--dgm-danger) 10%, var(--dgm-bg)); }
+.dgm-update-operation-badge[data-state="cancelled"],
+.dgm-update-operation-badge[data-state="pending-restart"],
+.dgm-update-operation-badge[data-state="already-at-target"] { background: var(--dgm-tint); }
+.dgm-update-operation-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--dgm-brand);
   animation: dgm-pulse 1.6s ease-in-out infinite;
@@ -3054,17 +3103,65 @@ export const CSS = `
 .dgm-update-operation-dot[data-state="cancelled"],
 .dgm-update-operation-dot[data-state="pending-restart"],
 .dgm-update-operation-dot[data-state="already-at-target"] { background: var(--dgm-fg-tertiary); animation: none; }
-.dgm-update-operation-title { margin: 0; font-size: 14px; font-weight: 600; }
-.dgm-update-operation-body { margin: 6px 0 0; color: var(--dgm-fg-secondary); font-size: 12px; }
-.dgm-update-operation-code { margin: 6px 0 0; color: var(--dgm-fg-tertiary); font-family: var(--dgm-mono); font-size: 11px; }
-.dgm-update-operation-actions { margin-top: 12px; display: flex; gap: 8px; }
-.dgm-update-stages { display: flex; gap: 14px; margin: 12px 0 0; padding: 0; list-style: none; flex-wrap: wrap; }
-.dgm-update-stage { display: inline-flex; align-items: center; gap: 6px; color: var(--dgm-fg-tertiary); font-size: 11px; }
-.dgm-update-stage-dot { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--dgm-fg) 22%, transparent); }
-.dgm-update-stage[data-status="done"] { color: var(--dgm-fg-secondary); }
-.dgm-update-stage[data-status="done"] .dgm-update-stage-dot { background: var(--dgm-success); }
-.dgm-update-stage[data-status="current"] { color: var(--dgm-fg); font-weight: 600; }
-.dgm-update-stage[data-status="current"] .dgm-update-stage-dot { background: var(--dgm-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--dgm-brand) 20%, transparent); }
+.dgm-update-operation-title { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.dgm-update-operation-body { margin: 7px 0 0; color: var(--dgm-fg-secondary); font-size: 12.5px; line-height: 1.5; }
+.dgm-update-operation-code { margin: 7px 0 0; color: var(--dgm-fg-tertiary); font-family: var(--dgm-mono); font-size: 11px; }
+.dgm-update-operation-actions { margin-top: 16px; display: flex; justify-content: flex-end; gap: 8px; }
+.dgm-update-steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0 2px;
+  padding: 0;
+  list-style: none;
+}
+.dgm-update-steps::before {
+  content: '';
+  position: absolute;
+  top: 9px;
+  left: 12.5%;
+  right: 12.5%;
+  height: 1px;
+  background: var(--dgm-hairline-strong);
+}
+.dgm-update-step { display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 0; }
+.dgm-update-step-marker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--dgm-hairline-strong);
+  border-radius: 50%;
+  background: var(--dgm-bg);
+  color: var(--dgm-fg-tertiary);
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.dgm-update-step-label {
+  color: var(--dgm-fg-tertiary);
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+}
+.dgm-update-step[data-status="done"] .dgm-update-step-marker {
+  border-color: color-mix(in srgb, var(--dgm-success) 45%, transparent);
+  background: color-mix(in srgb, var(--dgm-success) 10%, var(--dgm-bg));
+  color: var(--dgm-success);
+}
+.dgm-update-step[data-status="done"] .dgm-update-step-label { color: var(--dgm-fg-secondary); }
+.dgm-update-step[data-status="current"] .dgm-update-step-marker {
+  border-color: var(--dgm-ink);
+  background: var(--dgm-ink);
+  color: var(--dgm-ink-fg);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--dgm-ink) 8%, transparent);
+}
+.dgm-update-step[data-status="current"] .dgm-update-step-label { color: var(--dgm-fg); font-weight: 600; }
 .dgm-update-footnote { margin: 12px 0 0; color: var(--dgm-fg-tertiary); font-size: 11px; }
 .dgm-update-banner .dgm-dot { background: var(--dgm-brand); }
 .dgm-update-dialog { width: min(440px, 100%); }
