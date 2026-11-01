@@ -8,7 +8,7 @@
 - 项目：`dsh-game-market`（DSH 内的小游戏市场与运行平台）
 - 线上仓库：<https://github.com/heswy/dsh-game-market>
 - 本地工作区：`/Users/orange/Orange Field/Matterhorn/dsh-game-market`
-- 当前目标：**rc.3 真实桌面与跨机功能验收均已通过；仅实体硬件跨机未实测，正式发布未放行**。M0–M4 已合入（M4 PR #10：`e700eea`）。M5 平台 PR #11 已合并为 `be8f610`，内容 PR #6 已合并为 `1d2abc3`。rc.3：P `23f753c5bb293065caf704c46e9f171f34c2307c`、R `cf39f571adf6027f712b27a04505dea3a6620e9c`，4 次隔离构建一致，`release:verify`、`npm run verify` 1570/1574 + `CHECK OK (44)` 通过。2026-10-30 真实 Desktop `0.2.1-rc.3` 隔离资料重跑：干净安装 12/12、1.3.0→rc.3 连续更新 22 项 required 全 PASS、存档迁移 11/11、完整 120 秒与累计 355617ms 实玩 34/34。2026-11-01 在 GitHub 托管独立 macOS arm64 主机（虚拟主机）完成跨机导入与重启 Continue，源机/目标机主机名不同、portable sha256 相同。P01 用独立账号 `Orangeheswy`（350164273，非内容仓库 collaborator）完成公网投稿→上架→1.0.1 更新→撤下，其 1.0.1 发布资产已在真实 Desktop 经市场 UI 本地 ZIP 路径安装并实玩（15/15）；该账号由用户本人创建并授权复用，不等于无关第三方真人作者。严格意义的实体硬件跨机仍未验证。当前权威矩阵见 `docs/verification/v1.5/m5-acceptance.md`；以下较早阶段记录保留为历史。
+- 当前目标：**v1.5.0 已正式发布并上线 stable 索引**（P `6756889f3d189008ad7b49d0da932069d5b4d97d`、R `6960993f7331eba9c89b2075152992d958f69fba`、I `a0fd9dbe104218dcdb1c0be2a6f7e79dac0abaf9`、tag `v1.5.0`；索引 URL 公网 200 且被随包 parser 解析为 1.5.0 → R；公网精确 commit 拉取的树摘要 `e1d07d67…` 与 `release.json` 一致）；仅实体硬件跨机未实测。M0–M4 已合入（M4 PR #10：`e700eea`）。M5 平台 PR #11 已合并为 `be8f610`，内容 PR #6 已合并为 `1d2abc3`。rc.3：P `23f753c5bb293065caf704c46e9f171f34c2307c`、R `cf39f571adf6027f712b27a04505dea3a6620e9c`，4 次隔离构建一致，`release:verify`、`npm run verify` 1570/1574 + `CHECK OK (44)` 通过。2026-10-30 真实 Desktop `0.2.1-rc.3` 隔离资料重跑：干净安装 12/12、1.3.0→rc.3 连续更新 22 项 required 全 PASS、存档迁移 11/11、完整 120 秒与累计 355617ms 实玩 34/34。2026-11-01 在 GitHub 托管独立 macOS arm64 主机（虚拟主机）完成跨机导入与重启 Continue，源机/目标机主机名不同、portable sha256 相同。P01 用独立账号 `Orangeheswy`（350164273，非内容仓库 collaborator）完成公网投稿→上架→1.0.1 更新→撤下，其 1.0.1 发布资产已在真实 Desktop 经市场 UI 本地 ZIP 路径安装并实玩（15/15）；该账号由用户本人创建并授权复用，不等于无关第三方真人作者。严格意义的实体硬件跨机仍未验证。当前权威矩阵见 `docs/verification/v1.5/m5-acceptance.md`；以下较早阶段记录保留为历史。
 - 2026-10-30 分支整理：平台本地 `main` 已快进到 `origin/main`；已删除已合入或等效合入的旧分支及四个干净旧阶段工作树。平台 M5 工作树、内容 M5 工作树、rc.2 测试候选分支保留；旧主目录 `codex/v1.5-development-guide` 的未提交修改保留。历史文本中的旧工作树路径不再保证存在，已合入证据以当前主分支及本工作树为准。未合入的旧投稿方案与内容工具链草稿保留供后续判断。
 - 历史：V1 验收/修复过程（M3 自动化、真机代执行、codex 两轮 review CR-01..09）见 `docs/V1-VERIFICATION.md`、`docs/verification/v1/AUTOMATED-EVIDENCE.md`、`docs/reviews/2026-10-19-codex-acceptance-review.md` 与 `git log`。
 - 权威规格：`PRD｜DSH Game Market.md`（**v2.2 + V1.1 呈现修订 + 社区投稿 §8.14 / D-038**；第 8–12 章为开发权威来源；全出血/安全区见 §9.6.1、D-037）
@@ -392,20 +392,21 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 - 2026-10-30 · **P01 受控独立账号外部链路**：用户新建独立账号 `Orangeheswy`（350164273）作为外部作者。该账号 not a collaborator（内容仓库 collaborators 仅 `heswy`）；以 `asset-zip-v2` 24 文件包完成 Issue #7 新投稿→PR #8 上架 1.0.0→Issue #9 / PR #10 更新 1.0.1→PR #11 撤下。Host 隔离验收从真实公网资产安装 1.0.0，刷新发现 `latestVersion=1.0.1` 后更新安装 1.0.1；撤下后 v1/v2 目录为空，owners/reviews 保留。证据在 `docs/verification/v1.5/raw/community-p01/`。该账号由用户本人创建并授权复用，不等同于无关第三方真人作者。
 - 2026-10-30 · **rc.3 真实桌面验收与 PR 合并**：平台 PR #11 复核后合并为 `be8f610`，内容 PR #6 为 `1d2abc3`。在已安装 Desktop `0.2.1-rc.3` 的隔离资料中重跑：干净安装 12/12；1.3.0（`f8244cf`）→rc.3 连续更新 22 项 required 全 PASS（存档逐值保留、两次真实重开、候选 ZIP 实跑）；存档导出→导入→重开 Continue 11/11；完整 120 秒自然结算与 5 个会话累计 355617ms 实玩 34/34；外部 1.0.1 发布资产经市场 UI 本地 ZIP 路径安装并实玩 15/15。新增脚本 `scripts/verification/v1.5/m5/external-package-desktop.mjs`。`migration.mjs` 增加 `--portable <file>` 目标机模式（证据记录 host 与 portable sha256，供跨机配对），`makeHome` 现在自动解包 `app.asar`，全新机器可直接执行。更新链首两次因验证代理固定 IP 对 codeload 404 失败，`M3_PREFER_PROXY=1` 后通过；失败记录保留。**剩余唯一门槛**：两台实体机迁移未实测；未打 tag、未发布。
 - 2026-11-01 · **跨机迁移（独立 macOS 主机）通过**：GitHub Actions `macos-14` arm64 主机安装官方 Desktop `0.2.1-rc.3`，导入源机（`chengweizedeMacBook-Air.local`）导出的 567 B JSON（sha256 `ef2926…`），19/19 checks，重启 Continue 3632→4224ms。手动工作流 `m5-cross-machine-target.yml`；证据 `raw/m5/M5-migration-target-2026-11-01T04-59-27-090Z.json`。目标主机是虚拟主机，不是实体 Mac；实体硬件跨机仍未实测。该轮同时修了探针的英文界面侧栏匹配、菜单竞态、仓库内文件路径暂存与 asar 解包前置。
+- 2026-11-01 · **v1.5.0 正式发布**：版本升 `1.5.0` 合入（P `6756889`，PR #26），`release:prepare --write` 生成 R `6960993`（93 文件 / 3496912 字节 / `e1d07d67…`），`release:verify` 通过；R 以 merge commit `91d53c4` 合入（PR #27，未 squash）。独立索引提交 I `a0fd9db`（仅 `platform-updates/plugins.json`，stable 钉 R）合并为 `898eb1b`（PR #28），公网 URL 200 且随包 parser 解析为 `1.5.0 → 6960993`。tag `v1.5.0` 打在 R 上；不建 GitHub Release 页面。公网按精确 commit 拉取的树摘要与 `release.json` 一致（93 文件 / 3496912 字节）。`CHECK OK (45)`、`release:verify` 复跑通过。内容仓库 pin 升 R 的 PR #12 合并为 `aba692c`，CI 11s 通过，两代目录无 diff、`validate-catalog`/`validate-assets` OK。
 
-**当前状态（2026-10-20，V1.2.0 已发布 / V1.5 M0、M1 已合入 / V1.5 M2 待复核）**：
+**当前状态（2026-11-01，V1.5.0 已正式发布）**：
 
-- **发布**：`package.json` 1.2.0；tag `v1.2.0` 指向本次 main 发布提交。平台 Git tag 分发，不创建 GitHub Release 页面、不上传新游戏资产；历史 tag 不动。
+- **发布**：`package.json` 1.5.0；R `6960993`（= tag `v1.5.0`）是不可变安装目标，stable 生产索引 `platform-updates/plugins.json`（I `a0fd9db`）钉住它。平台 Git tag 分发，不创建 GitHub Release 页面、不上传新游戏资产；历史 tag 不动。
 - **V1.5 M0（已完成并合入）**：分支 `feat/v1.5-m0` 经两轮复核后合入 `main`（`a762449`，PR #6），最终 head `3927d04`。交付物见 `docs/verification/v1.5/host-spikes.md`（主证据索引）、`docs/V1.5-CONTRACTS.md`、`support-matrix.md`。**探针结论改变了三处设计前提**（见 §5 V1-41）：真实 Desktop 是 HMR 开启、能力判定要轮询采样、资源服务必须独立 origin、open 问答不得 `dismiss()`。
 - **V1.5 M1（已合入 main）**：分支 `feat/v1.5-asset-packages`，经 CR7 复核修正后合入（合并提交 `9388b37`，PR #7）；实现 `asset-zip-v2` 归档链路、两代 Registry/catalog 投影、独立 loopback 资源 origin + 实例凭证 + wrapper、Runtime/SDK/Client 接入。**真实浏览器实测推翻了「唯一 iframe 一律 sandbox」的旧假设**，冻结为两层沙箱模型（契约 §7.5.2，见 §5 V1-46）。CR7 三项（同源文档 CSP、历史目录回滚、ZIP 原始字节上传）已修并带 A/B 浏览器证据（§5 V1-48）。
-- **V1.5 M2（当前阶段，CR8 修复后待复审）**：分支 `feat/v1.5-game-and-tooling`（从 `origin/main` `9388b37` 建）交付新内置 `orbit-courier`（builtin `asset-zip-v2`）、内置资源包 Host 支持、双格式 CLI/模板/Simulator、ZIP 投稿发布链、Skill 1.2.0（见 §5 V1-49～V1-53）。PR #8 首轮 head `a76f701` 经 Codex 复核提出 CR8-01..05（2×P1、3×P2），已**全部修复并补回归**：`npm run verify` **1189/1189**、`CHECK OK (42)`、构建字节可复现。**`html-v1` 的 wrapper 化仍为已知残余项**——方案 A 已获 Codex 认可，安排为 **M4 前置独立提交**，作为 M5 发布前门槛（`docs/V1.5-HTML-V1-WRAPPER-MIGRATION.md` §4.1）。
-- **V1.5 下一步**：M2 PR 交 Codex 复核 → 通过后按指南进 M3（插件更新 adapter/UI/保存协调）；M4/M5 未开始。
+- **V1.5 M2（已完成并合入）**：分支 `feat/v1.5-game-and-tooling`（从 `origin/main` `9388b37` 建）交付新内置 `orbit-courier`（builtin `asset-zip-v2`）、内置资源包 Host 支持、双格式 CLI/模板/Simulator、ZIP 投稿发布链、Skill 1.2.0（见 §5 V1-49～V1-53）。PR #8 首轮 head `a76f701` 经 Codex 复核提出 CR8-01..05（2×P1、3×P2），已**全部修复并补回归**：`npm run verify` **1189/1189**、`CHECK OK (42)`、构建字节可复现。**`html-v1` 的 wrapper 化仍为已知残余项**——方案 A 已获 Codex 认可，安排为 **M4 前置独立提交**，作为 M5 发布前门槛（`docs/V1.5-HTML-V1-WRAPPER-MIGRATION.md` §4.1）。
+- **V1.5 下一步**：M0–M5 已全部完成并发布 `v1.5.0`；剩余唯一边界是两台实体机迁移未实测。真实模型调用/审批环境等旧滚动项继续按需推进。
 - **合并 / 验收**：PR #4 `2b45b2e`、PR #5 `e247b93`；已验收 head `f862650` 为 840/840、CHECK OK (38)、registry 31/31。本次版本/文档收口的独立验证结果见 `docs/releases/v1.2.0.md`。
 - **入口**：作者 `docs/community-submission.md`；维护者 `docs/community-operations.md`；契约 `docs/community-publishing-contracts.md`；Skill `skills/dsh-game-developer/SKILL.md`；任务指南 `docs/plans/2026-10-19-community-publishing-mvp.md`。
 - **受控 M4 已完成**：内容仓库 `heswy/dsh-game-registry` 已配置规则/不可变 Release；受控作者公网投稿→1.0.0→1.0.1→撤下闭环通过，目录为空且保留审计。独立 Host 安装/启动、Release 重定向与 SHA 核验已有归档；见 `m4-public-loop.md` / `external-content-repo.md`。
 - **V1.5 交付分工**：主会话规划/review/验收，用户指定 DSH 实施；先交宿主更新/问答/资源/Logo 的 M0 探针与 V1.5-CONTRACTS，再按指南分阶段开 PR。不默认派发开发 Agent，不修改日常 profile 做验收。
-- **发布后续**：以独立内容仓库 PR 将 toolchain pin 从 `2b45b2e` 提升到本次平台发布提交并跑 CI；验证目标 AI 宿主的 Skill 安装/调用与真实外部作者/维护者生产流程。本次平台发版不自动改内容仓库。
-- **真实环境待验收**：真实 DSH App 安装与持久化、Host GM-4006 独立安装拒绝路径、完整真实 120 秒流程、跨机 save 传输、真实 Host 更新分发。C-22 save 恢复仍为模拟器证据。
+- **发布后续**：内容仓库 toolchain pin 已在 PR #12（`aba692c`）升到本次发布 R 并通过 CI；后续验证目标 AI 宿主的 Skill 安装/调用与真实外部作者/维护者生产流程。
+- **真实环境待验收**：两台实体机迁移（功能已验证于独立虚拟主机，实体硬件未实测）。真实 DSH App 安装/持久化、120 秒流程、存档迁移、Host 更新分发均已在 rc.3 真实 Desktop 通过；C-22 save 恢复仍为模拟器证据。
 - **后续迭代**：V1.5 多资源包与既有滚动项（真实审批、桌面性能终值、字号/减少动效、DEV-03/07、2048 PB、Tab 键盘链路）保留。
 - **日常桌面端**：需要 dev 行时用户执行 `npm run dev:enable -- --yes` 后重启 DSH；Client 改动刷新页面即可；Host 改动需重启/重载插件行。
 
@@ -418,7 +419,7 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 | M0–M2 | 宿主契约、ZIP/双目录/资源服务、Orbit Courier 与开发投稿工具；PR #6/#7/#8 已合入 | M5 正式用户/外部作者回归 |
 | M3 | 更新发现、保存/运行冻结、DSH 精确安装、恢复、双端身份和发布工具；1543/1543；固定候选两跳/保存重试/非 HMR/多窗口均通过；PR #9 已合入 | 正式发行与生产推广在 M5 |
 | M4 | HTML wrapper 迁移、真实桌面来源修复、官方 FishLogo/气泡、open/continued 原地问答、保存失败恢复、草稿/焦点/窄窗/动效边界 | 已通过 PR #10 合入 main，`e700eea` |
-| M5 | rc.3 候选 R=`cf39f57…`/P=`23f753c…`；自动化与确定性包通过；真实桌面干净安装、1.3.0→rc.3 更新、存档迁移、120 秒/355617ms 实玩、外部发布包桌面实玩与独立 macOS 主机跨机导入全部通过；平台 PR #11 合并 `be8f610`，内容 PR #6 合并 `1d2abc3` | 实体硬件跨机未实测；正式发行/生产推广需用户授权 |
+| M5 | rc.3 候选 R=`cf39f57…`/P=`23f753c…`；自动化与确定性包通过；真实桌面干净安装、1.3.0→rc.3 更新、存档迁移、120 秒/355617ms 实玩、外部发布包桌面实玩与独立 macOS 主机跨机导入全部通过；平台 PR #11 合并 `be8f610`，内容 PR #6 合并 `1d2abc3` | 实体硬件跨机未实测；**v1.5.0 已于 2026-11-01 正式发布**（R `6960993`、tag `v1.5.0`、stable 索引 I `a0fd9db`） |
 
 当前 M4 权威结论见 [M4 验收](./docs/verification/v1.5/m4-acceptance.md)；M3 的固定候选与历史证据见 [M3 验收](./docs/verification/v1.5/m3-restart-acceptance.md)。M4 功能提交 `96718e1`，最终受测源码/样式为 `cef4cb9`；后续证据提交单列；最终 PR 提交不能与 M3 的发行候选身份混淆。
 
@@ -426,9 +427,9 @@ V0 的真机 UI 验证不依赖用户日常 profile：
 
 **更新机制保持**：固定索引发现→用户确认→保存与运行冻结→DSH 管理器精确 Git commit 安装→Host/Client 实际身份确认。不自行覆盖或先卸载自己；master 新接口不视作 rc.3 发布能力，npm 分发未选定。跨进程更新锁只串行化更新，不支持同 profile 多独立 Host 活跃游戏协同冻结。
 
-**证据边界**：M4 已在安装的 rc.3 Electron App 的独立资料/窗口中验证实际游戏内普通问答，其余为隔离真实 Host/Client 链路。模型为本地脚本驱动原生工具，并非真实 DeepSeek 模型调用；强制 queued/损坏 face 等分支由自动化覆盖。M4 是开发行加载，不是新发行包安装；M5 必须重新生成正式版本/Host-Client 身份和确定性包，不能把 M3 release 元数据当作 M4 源码身份。当前无 tag、Release 或生产索引推广。
+**证据边界**：M4 已在安装的 rc.3 Electron App 的独立资料/窗口中验证实际游戏内普通问答，其余为隔离真实 Host/Client 链路。模型为本地脚本驱动原生工具，并非真实 DeepSeek 模型调用；强制 queued/损坏 face 等分支由自动化覆盖。M4 是开发行加载，不是新发行包安装；M5 必须重新生成正式版本/Host-Client 身份和确定性包，不能把 M3 release 元数据当作 M4 源码身份。2026-11-01 已发布 `v1.5.0`（tag + stable 生产索引，R `6960993`），不建 GitHub Release 页面；rc.3 仍只作为历史证据。
 
-下一步只剩实体硬件跨机与用户发布授权：功能跨机已在独立虚拟主机通过；若需实体机证据，按 `migration.mjs --portable` 在第二台 Mac 复跑，否则由用户明确接受后按原指南 §8 发布。不重开已完成的 M3/M4。
+下一步只剩实体硬件跨机：功能跨机已在独立虚拟主机通过；若需实体机证据，按 `migration.mjs --portable` 在第二台 Mac 复跑。发布已在用户授权后完成（`v1.5.0`）。不重开已完成的 M3/M4。
 
 **M5 固定候选（2026-10-30 rc.3）**：当前 rc.3 安装 R=`cf39f571adf6027f712b27a04505dea3a6620e9c`，Client 构建 P=`23f753c5bb293065caf704c46e9f171f34c2307c`；Host 实际运行报告 R。4 次隔离构建 93 文件 / 3.29 MiB，SHA 树 `8d9cb0a3e88cc63684aa7c26f7020c0096ff43a72022402849985938a1d0567a`；`release:verify` 与 `npm run verify`（1570/1574、0 fail、4 skip、`CHECK OK (44)`）通过；内容锁已改指 R。rc.3 真实桌面重跑已于 2026-10-30 全部通过；2026-11-01 跨机功能在独立 macOS 主机通过；仅实体硬件跨机未实测。历史 rc.1 R=`07f2ef1de6aea2b3857bc7e2983f7f083db7eb99`/P=`0ca0aacc4501f313776f4ea1e0683255cb14e62b` 与测试 rc.2（R=`fe181461c12b850ee0a3dc23abfaf4154f25f454`，P=`9b4a9c59c8e6bf78e35a1d2fd562154488ede0e5`）仅保留为历史证据，不再作为安装候选。完整原始失败与通过记录均保留，模型/索引均明确标注隔离脚本/夹具，不冒充真实模型或生产推广。
 
