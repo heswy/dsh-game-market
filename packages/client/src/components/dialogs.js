@@ -1,6 +1,7 @@
 /** Confirmation dialogs and the screenshot lightbox (PRD 9.4.4 / 9.5.1 / 9.10). */
 import React from 'react';
 import { CloseIcon, ChevronLeftIcon, ChevronRightIcon, RefreshIcon, SettingsIcon, TrashIcon } from '../icons.js';
+import { formatRelativeTime } from '../format.js';
 import { trapTabIndex } from '../keyboard.js';
 import { platformUpdateDialogCopy } from '../update-copy.js';
 import { UpdateSection } from './update-section.js';
@@ -456,12 +457,29 @@ export function PlatformUpdateDialog(props) {
   );
 }
 
+/** Registry states that mean the official catalog could not be read right now. */
+const REGISTRY_DEGRADED_STATES = Object.freeze(['offline', 'expired', 'seed', 'missing']);
+
 /** Settings surface: catalog refresh and platform version/update diagnostics. */
 export function SettingsDialog(props) {
   const t = props.t;
   const rootRef = React.useRef(null);
   const busy = props.catalogBusy === true;
   useFocusTrap(rootRef, props.onClose, true);
+
+  const registry = props.registry && typeof props.registry === 'object' ? props.registry : null;
+  const registryState = registry && typeof registry.state === 'string' ? registry.state : 'missing';
+  const registryDegraded = REGISTRY_DEGRADED_STATES.includes(registryState);
+  const registryNotes = {
+    stale: t('settings.catalog.state.stale'),
+    offline: t('settings.catalog.state.offline'),
+    expired: t('settings.catalog.state.expired'),
+    seed: t('settings.catalog.state.seed'),
+    missing: t('settings.catalog.state.missing'),
+  };
+  const registryNote = registryNotes[registryState] || null;
+  const registryFetchedAt =
+    registry && typeof registry.fetchedAt === 'string' ? formatRelativeTime(registry.fetchedAt, props.now, props.locale) : null;
 
   return h(
     'div',
@@ -484,7 +502,17 @@ export function SettingsDialog(props) {
       h(
         'div',
         { className: 'dgm-settings-head' },
-        h('h2', { className: 'dgm-settings-title', id: 'dgm-settings-title' }, t('settings.title')),
+        h(
+          'div',
+          { className: 'dgm-settings-head-main' },
+          h('h2', { className: 'dgm-settings-title', id: 'dgm-settings-title' }, t('settings.title')),
+          h(
+            'span',
+            { className: 'dgm-settings-status', 'data-offline': registryDegraded ? 'true' : 'false' },
+            h('span', { className: 'dgm-dot' }),
+            registryDegraded ? t('settings.catalog.offline') : t('settings.catalog.online')
+          )
+        ),
         h(
           'button',
           {
@@ -514,6 +542,17 @@ export function SettingsDialog(props) {
               t('settings.catalog.title')
             )
           ),
+          h('p', { className: 'dgm-settings-note' }, t('settings.catalog.note')),
+          registryNote || registryFetchedAt
+            ? h(
+                'p',
+                { className: 'dgm-settings-registry', role: 'status' },
+                registryNote ? h('span', { className: 'dgm-settings-registry-state' }, registryNote) : null,
+                registryFetchedAt
+                  ? h('span', { className: 'dgm-settings-registry-time' }, t('settings.catalog.updated', { relativeTime: registryFetchedAt }))
+                  : null
+              )
+            : null,
           h(
             'div',
             { className: 'dgm-settings-actions' },

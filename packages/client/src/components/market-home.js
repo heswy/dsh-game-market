@@ -243,8 +243,6 @@ export function MarketHome(props) {
     seen.add(game.id);
     return true;
   });
-  const registry = market.registry;
-  const registryFallback = Boolean(registry && registry.state === 'seed');
   const allFiltered = searching
     ? filterCatalog(games, { query: ui.query, category: ui.category, offline: market.offline === true, locale: locale })
     : sections.all;
@@ -296,20 +294,6 @@ export function MarketHome(props) {
     'div',
     { className: 'dgm-home' },
     !sections.hero && !searching ? h('h1', { className: 'dgm-sr-only', 'data-page-heading': true, tabIndex: -1 }, t('market.intro.title')) : null,
-    market.offline
-      ? h(InlineBanner, {
-          text: t('market.offline'),
-          actionLabel: t('market.offline.retry'),
-          onAction: props.onRetry,
-        })
-      : null,
-    registryFallback
-      ? h(InlineBanner, {
-          text: t('market.seed'),
-          actionLabel: t('market.seed.retry'),
-          onAction: props.onRefreshRegistry || props.onRetry,
-        })
-      : null,
     market.status === 'error'
       ? h(InlineBanner, {
           text: t('market.error.title'),

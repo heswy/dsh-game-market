@@ -18,6 +18,7 @@
  */
 import { DEFAULT_OFFICIAL_REGISTRY_V2_URL } from '../../shared/src/constants.js';
 import { GM } from '../../shared/src/errors.js';
+import { DEFAULT_OFFICIAL_REGISTRY_FALLBACK_URLS, DEFAULT_OFFICIAL_REGISTRY_V2_FALLBACK_URLS } from './registry-mirrors.js';
 import { createRegistryService } from './registry.js';
 
 function singleSettings(settings, source, extra) {
@@ -39,6 +40,12 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
   const registrySettings = settings.registry || {};
   const officialV2Url = registrySettings.officialV2Url || DEFAULT_OFFICIAL_REGISTRY_V2_URL;
   const officialV1Url = registrySettings.officialUrl;
+  const officialV2FallbackUrls = Array.isArray(registrySettings.officialV2FallbackUrls)
+    ? registrySettings.officialV2FallbackUrls
+    : DEFAULT_OFFICIAL_REGISTRY_V2_FALLBACK_URLS;
+  const officialV1FallbackUrls = Array.isArray(registrySettings.officialFallbackUrls)
+    ? registrySettings.officialFallbackUrls
+    : DEFAULT_OFFICIAL_REGISTRY_FALLBACK_URLS;
   const seedSource = registrySettings.seedSource;
 
   const officialV2 = createRegistryService({
@@ -46,7 +53,7 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
     settings: singleSettings(
       settings,
       { kind: 'https', url: officialV2Url, origin: new URL(officialV2Url).origin },
-      { cacheFile: undefined, persistCache: true, protocol: 'v2' }
+      { cacheFile: undefined, persistCache: true, protocol: 'v2', fallbackUrls: officialV2FallbackUrls }
     ),
     logger,
     now,
@@ -57,7 +64,7 @@ export function createLayeredRegistryService({ storage, settings, logger, now, h
     settings: singleSettings(
       settings,
       { kind: 'https', url: officialV1Url, origin: new URL(officialV1Url).origin },
-      { cacheFile: undefined, persistCache: true, protocol: 'v1' }
+      { cacheFile: undefined, persistCache: true, protocol: 'v1', fallbackUrls: officialV1FallbackUrls }
     ),
     logger,
     now,

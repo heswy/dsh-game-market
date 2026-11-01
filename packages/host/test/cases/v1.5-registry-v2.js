@@ -8,6 +8,7 @@ import {
   DEFAULT_OFFICIAL_REGISTRY_URL,
   DEFAULT_OFFICIAL_REGISTRY_V2_URL,
 } from '../../../shared/src/constants.js';
+import { DEFAULT_OFFICIAL_REGISTRY_V2_FALLBACK_URLS } from '../../src/registry-mirrors.js';
 import { ROUTES } from '../../../shared/src/contracts.js';
 import { GM } from '../../../shared/src/errors.js';
 import { normaliseConfig } from '../../src/config.js';
@@ -505,5 +506,38 @@ export function register() {
     const cache = await host.readDataJson('registry-cache-v2.json');
     assert.equal(cache.games.length, 1);
     assert.equal(cache.games[0].package.sha256, fixture.entry.package.sha256);
+  });
+
+  test('official index falls back to a mirror when the primary host is unreachable', async (t) => {
+    const fixture = buildV2Fixture({ id: 'mirror-v2', version: '1.0.0' });
+    const mirror = DEFAULT_OFFICIAL_REGISTRY_V2_FALLBACK_URLS[0];
+    let primaryAttempts = 0;
+    const host = await createHostHarness(t, {
+      useDefaultRegistry: true,
+      config: { registry: { allowedHosts: ['cdn.example.com'] } },
+      http: {
+        fetch: async (url) => {
+          const href = String(url);
+          if (href === DEFAULT_OFFICIAL_REGISTRY_V2_URL) {
+            primaryAttempts += 1;
+            throw new TypeError('simulated blocked host');
+          }
+          if (href === mirror) return new Response(JSON.stringify(fixture.document), { status: 200 });
+          return new Response('not found', { status: 404 });
+        },
+      },
+    });
+    await host.host.registry.ready();
+    const snapshot = await settledRegistry(host, (value) => value.officialV2 && value.officialV2.state === 'fresh');
+    assert.equal(primaryAttempts, 1);
+    assert.equal(snapshot.activeSource, 'official');
+    assert.equal(snapshot.generation, 'v2');
+    assert.equal(snapshot.count, 1);
+    const cache = await host.readDataJson('registry-cache-v2.json');
+    assert.equal(
+      cache.sourceUrl,
+      DEFAULT_OFFICIAL_REGISTRY_V2_URL,
+      'mirror fetches keep the primary cache identity'
+    );
   });
 }

@@ -150,6 +150,16 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
     (source ? (source.kind === 'file' ? source.path : source.url) : null);
   const configuredHosts = Array.isArray(registrySettings.allowedHosts) ? registrySettings.allowedHosts : [];
   const allowedHosts = [...new Set([...DEFAULT_ALLOWED_HOSTS, ...configuredHosts])];
+  const fallbackUrls =
+    source && source.kind === 'https' && Array.isArray(registrySettings.fallbackUrls)
+      ? registrySettings.fallbackUrls.filter(
+          (value, index, all) =>
+            typeof value === 'string' &&
+            /^https:\/\//.test(value) &&
+            value !== source.url &&
+            all.indexOf(value) === index
+        )
+      : [];
   const devMode = settings.devMode === true;
   const fetchImpl = typeof http.fetch === 'function' ? http.fetch : null;
   const sleep = typeof http.sleep === 'function' ? http.sleep : undefined;
@@ -415,18 +425,19 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
     return { ...nextCache, generation: validation.generation, changed };
   }
 
-  async function refreshFromRemote() {
+  async function fetchIndex(url) {
     const headers = {};
     if (cache && typeof cache.etag === 'string') headers['if-none-match'] = cache.etag;
     if (cache && typeof cache.lastModified === 'string') headers['if-modified-since'] = cache.lastModified;
-    let response;
+    // GitHub's contents API only serves the raw file when explicitly asked for.
+    if (/^https:\/\/api\.github\.com\//.test(url)) headers.accept = 'application/vnd.github.raw';
     try {
-      response = await fetchBytes(source.url, {
+      return await fetchBytes(url, {
         fetchImpl,
         sleep,
         resolveHost,
         devMode,
-        allowHttp: source.url.startsWith('http:'),
+        allowHttp: url.startsWith('http:'),
         headers,
         maxBytes: LIMITS.registryBytes,
         connectMs: TIMING.downloadConnectMs,
@@ -443,6 +454,28 @@ export function createRegistryService({ storage, settings = {}, logger = null, n
     } catch (error) {
       throw normaliseFetchError(error);
     }
+  }
+
+  async function refreshFromRemote() {
+    // Mirrors are attempted in order; the cache identity stays the primary URL
+    // (`source.url`) so a mirror switch never splits the cached snapshot.
+    const candidates = [source.url, ...fallbackUrls];
+    let response = null;
+    let lastFailure = null;
+    for (const candidate of candidates) {
+      try {
+        response = await fetchIndex(candidate);
+        break;
+      } catch (error) {
+        lastFailure = lastFailure || error;
+        logger?.warn?.(
+          '[game-market/host] registry-source-failed',
+          `url=${candidate}`,
+          `code=${error?.code || 'E_UNKNOWN'}`
+        );
+      }
+    }
+    if (response === null) throw lastFailure || registryUnavailable('Registry is unavailable', { reason: 'network' });
     if (response.status === 304) {
       if (!cache) throw rejects('Registry returned 304 without a cached copy', { reason: 'not-modified' });
       const fetchedAt = now().toISOString();
