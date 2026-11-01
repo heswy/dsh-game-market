@@ -1,8 +1,8 @@
 # M5 首版验收
 
-> **2026-10-30 rc.3 真实桌面验收已通过。** 三个存档迁移问题（导入与 `deleteData` 卸载并发、`meta.json` 写失败返回与实际提交不一致、近配额存档导出/导入界限）由 `8c1eeae` 修复，新增回归测试 10/10；完整 `npm run verify` 1570/1574（4 skip、0 fail）、`CHECK OK (44)`。rc.1 的产物已被修复改变，不能继续作为安装候选；重建 rc.3：R `cf39f571adf6027f712b27a04505dea3a6620e9c`、P `23f753c5bb293065caf704c46e9f171f34c2307c`，4 次隔离构建字节一致，`release:verify` 通过。rc.3 已在真实 Desktop `0.2.1-rc.3` 的隔离资料中完成干净安装、1.3.0→rc.3 连续更新、存档导出/导入/重启续玩、完整 120 秒与累计 355617ms 实玩，以及外部作者 1.0.1 发布包的安装与实玩（见下方 [2026-10-30 rc.3 真实桌面重跑](#2026-10-30-rc3-真实桌面重跑通过)）。M5 仅剩**两台实体机之间的跨机迁移**未实测；正式 tag、Release 与 stable 推广需全部门槛通过并经用户明确授权，当前未发布。
+> **2026-10-30 rc.3 真实桌面验收已通过。** 三个存档迁移问题（导入与 `deleteData` 卸载并发、`meta.json` 写失败返回与实际提交不一致、近配额存档导出/导入界限）由 `8c1eeae` 修复，新增回归测试 10/10；完整 `npm run verify` 1570/1574（4 skip、0 fail）、`CHECK OK (44)`。rc.1 的产物已被修复改变，不能继续作为安装候选；重建 rc.3：R `cf39f571adf6027f712b27a04505dea3a6620e9c`、P `23f753c5bb293065caf704c46e9f171f34c2307c`，4 次隔离构建字节一致，`release:verify` 通过。rc.3 已在真实 Desktop `0.2.1-rc.3` 的隔离资料中完成干净安装、1.3.0→rc.3 连续更新、存档导出/导入/重启续玩、完整 120 秒与累计 355617ms 实玩，以及外部作者 1.0.1 发布包的安装与实玩。2026-11-01 又在 GitHub 托管的**独立 macOS arm64 主机**（虚拟主机，非实体机）上完成跨机导入：源机导出的 567 B JSON（sha256 `ef2926…`）在目标机真实 Desktop 的市场 UI 导入，逐值一致，重启 Continue 恢复，主机名与源机不同。M5 的 P02 功能跨机项已通过；**严格意义的“两台实体机”仍未实测**。正式 tag、Release 与 stable 推广需用户明确授权，当前未发布。
 
-M4 已经用户授权通过 PR #10 合并，main 合并提交为 `e700eea445e3982adfb80dacf4efc9f6c60c702e`。本轮从该提交独立开展 M5，不将旧 1.3.0 发行候选当作当前代码身份。**除两台实体机跨机迁移外，M5 正式对外验收已通过**：平台 [PR #11](https://github.com/heswy/dsh-game-market/pull/11) 已按 rc.3 通过复核并合并为 `be8f6105cc46e84eb0ea564cb51e7917ed09dcfc`，内容 [PR #6](https://github.com/heswy/dsh-game-registry/pull/6) 已合并为 `1d2abc3`；生产发布尚未授权/执行。
+M4 已经用户授权通过 PR #10 合并，main 合并提交为 `e700eea445e3982adfb80dacf4efc9f6c60c702e`。本轮从该提交独立开展 M5，不将旧 1.3.0 发行候选当作当前代码身份。**M5 的 P02 功能门槛已通过（跨机迁移在独立 macOS 主机上验证）；严格意义的实体硬件跨机未实测**：平台 [PR #11](https://github.com/heswy/dsh-game-market/pull/11) 已按 rc.3 通过复核并合并为 `be8f6105cc46e84eb0ea564cb51e7917ed09dcfc`，内容 [PR #6](https://github.com/heswy/dsh-game-registry/pull/6) 已合并为 `1d2abc3`；生产发布尚未授权/执行。
 
 ## 要做哪些
 
@@ -45,6 +45,15 @@ rc.1 的 R `07f2ef1de6aea2b3857bc7e2983f7f083db7eb99` 与 P `0ca0aacc4501f313776
 
 外部包证据边界：公开目录在 P01 撤下后为空，因此这次不是“线上目录下载”，而是对**外部作者同一发布资产**的真实桌面安装与实玩；公网投稿/上架/更新/撤下与权限分离已由 P01 记录单独覆盖。两者合起来关闭 P01 的桌面空白，但不把它写成“无关第三方真人作者”。
 
+## 2026-11-01 跨机迁移（独立 macOS 主机，通过）
+
+| 项目 | 环境与结果 | 证据 |
+|---|---|---|
+| 跨机导入 | 源机（本机 `chengweizedeMacBook-Air.local`）导出 567 B JSON，sha256 `ef2926df…`；目标机为 GitHub 托管 `macos-14` arm64 独立主机（主机名 `iad20-fj919-…`，虚拟主机，非实体机），官方安装 Desktop `0.2.1-rc.3`，经市场 UI 英文 `Import progress` 导入；逐值一致，重启后 Continue 从 3632ms 恢复到 4224ms；**19/19 checks，exit 0** | [跨机记录](./raw/m5/M5-migration-target-2026-11-01T04-59-27-090Z.json)、[重启截图](./raw/m5/M5-migration-target-2026-11-01T04-59-27-090Z.png)、[目标机页面](./raw/m5/M5-migration-target-page-2026-11-01T04-59-27-090Z.png) |
+| 源机导出 | 同机双资料迁移与导出证据，记录源主机名与 portableFile sha256 | [源记录](./raw/m5/M5-migration-2026-10-31T08-33-30-433Z.json) |
+
+边界：目标主机是独立 macOS 实例，但不是实体 Mac。按计划 P02 的“跨机 save 导出/导入”，功能项已通过；严格意义的“两台实体机”仍未实测。手动工作流 [m5-cross-machine-target.yml](../../../.github/workflows/m5-cross-machine-target.yml) 负责在目标机安装官方 Desktop 并执行 `migration.mjs --portable`。
+
 ## 2026-10-28 补充验证
 
 | 项目 | 环境与结果 | 证据 |
@@ -65,9 +74,9 @@ rc.1 安装 R 为 `07f2ef1de6aea2b3857bc7e2983f7f083db7eb99`，构建 P 为 `0ca
 ## 还要做哪些
 
 - 平台 PR #11 已合并为 `be8f610`，内容 PR #6 已合并为 `1d2abc3`；rc.3 真实桌面安装、更新、迁移、长局与外部发布包桌面安装/实玩均已通过（见上表）。
-- **唯一未通过门槛**：两台实体机器间搬运未实测；同机双资料的受控 JSON 迁移已重跑。跨机执行方式已就绪：A 机运行默认 `migration.mjs`，证据记录 `host` 与 `portableFile.sha256`；把导出的 JSON 复制到 B 机后运行 `node scripts/verification/v1.5/m5/migration.mjs --portable <file>`，B 机证据记录自己的 `host`、同一文件 sha256、逐值一致与重启 Continue。两份证据主机名不同且 sha256 相同即构成跨机通过。目标模式已在本机用真实导出文件做过机制演练（不计入跨机证据）；`makeHome` 现会自动解包 `app.asar`，全新机器无需手工准备运行时。
+- **P02 跨机项已通过**：2026-11-01 在 GitHub 托管的独立 macOS arm64 主机（虚拟主机，非实体机）完成导出→导入→重启 Continue，源机与目标机主机名不同、portable sha256 相同。严格意义的“两台实体机”仍未实测。复跑命令：A 机运行默认 `migration.mjs` 导出；B 机运行 `node scripts/verification/v1.5/m5/migration.mjs --portable <file>`。
 - **P01 已补桌面证据**：外部账号 `Orangeheswy`（350164273，非内容仓库 collaborator）的公网投稿 Issue #7 → 上架 PR #8 → 更新 Issue #9 / PR #10 → 撤下 PR #11 已取证；其 1.0.1 发布资产已在真实 Desktop 隔离资料中安装并实玩。公开目录撤下后为空，因此桌面安装走真实市场 UI 的本地 ZIP 路径，不是线上目录下载；该账号由用户本人创建并授权复用，不等于无关第三方真人作者。证据见 [外部作者验收手册](./m5-external-author.md)、[原始记录](./raw/community-p01/2026-10-30-identity-and-links.json) 与 [桌面安装记录](./raw/m5/M5-external-package-2026-10-30T09-57-55-018Z.json)。
-- 正式 tag、GitHub Release、stable 索引推广必须等两台实体机门槛关闭或用户明确豁免，并经用户发布授权。当前不发布。
+- 正式 tag、GitHub Release、stable 索引推广需用户明确授权；发布说明须如实写明跨机证据来自独立虚拟主机，实体硬件跨机未实测。当前不发布。
 
 ## 测试边界与失败记录
 

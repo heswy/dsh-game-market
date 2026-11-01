@@ -1,0 +1,184 @@
+{
+  "id": "M5-Desktop-migration-target",
+  "title": "Cross-machine target profile imports exported progress and resumes after App restart",
+  "commands": [
+    "node scripts/verification/v1.5/m5/migration.mjs --portable docs/verification/v1.5/raw/m5/cross-machine/portable-orbit-courier-2026-10-31.json"
+  ],
+  "startedAt": "2026-11-01T04:59:27.099Z",
+  "finishedAt": "2026-11-01T05:00:02.864Z",
+  "passed": true,
+  "failed": [],
+  "checks": [
+    {
+      "name": "runtime",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "dshPackage": {
+          "name": "@deepseek-ai/dsh-desktop-runtime",
+          "version": "0.2.1-rc.3"
+        },
+        "pluginManager": {
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "version": "0.2.1-rc.3"
+        },
+        "electronApp": {
+          "name": "@deepseek-ai/dsh-desktop",
+          "version": "0.2.1-rc.3"
+        },
+        "asarExtractedAt": "2026-11-01T04:59:29.548Z"
+      }
+    },
+    {
+      "name": "host",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "hostname": "iad20-fj919-e0fc55b0-c9cb-4d01-a978-502027b3beed-025E8B6BA7C8.local",
+        "platform": "darwin",
+        "arch": "arm64"
+      }
+    },
+    {
+      "name": "mode",
+      "ok": true,
+      "required": false,
+      "detail": "target-machine"
+    },
+    {
+      "name": "portable file carries orbit-courier progress",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "portable file carries live elapsed progress",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "expectedElapsed": 3632
+      }
+    },
+    {
+      "name": "portableFile",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "file": "docs/verification/v1.5/raw/m5/cross-machine/portable-orbit-courier-2026-10-31.json",
+        "stagedFile": "/tmp/dgm-m5-portable-2026-11-01T04-59-27-090Z.json",
+        "sha256": "ef2926dfa631df7e1eab3b4c4297ac8933b518e16c0f811a4aa8133d8e145853",
+        "bytes": 567
+      }
+    },
+    {
+      "name": "myGamesDom-import",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "rows": [
+          "snake",
+          "orbit-courier"
+        ],
+        "root": true,
+        "empty": null
+      }
+    },
+    {
+      "name": "menuSelected-import",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "attempt": 1,
+        "selected": "selected:Import progress"
+      }
+    },
+    {
+      "name": "menuAfter-import",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "row": true,
+        "menu": null,
+        "overlays": 1,
+        "transfer": true,
+        "toasts": []
+      }
+    },
+    {
+      "name": "import dialog opens",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "transferDialog",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "phase": "idle",
+        "text": "Transfer game progress · 轨道信使\n\nClose this game in every window, then choose a progress file exported on your other computer. Save schemas must match. Existing local progress is backed up first.\n\nClose\nImport progress",
+        "fileInputs": 1
+      }
+    },
+    {
+      "name": "destination previews imported save",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "native import succeeds into clean profile",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "all portable values preserved byte-for-byte semantically",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "real App restart offers game Continue from imported progress",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "Continue restores imported elapsed progress after actual App restart",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "portableElapsed": 3632,
+        "after": 4224
+      }
+    },
+    {
+      "name": "owned Desktop instances stopped",
+      "ok": true,
+      "required": true,
+      "detail": null
+    },
+    {
+      "name": "browserConsole",
+      "ok": true,
+      "required": false,
+      "detail": []
+    },
+    {
+      "name": "browserLogs",
+      "ok": true,
+      "required": false,
+      "detail": [
+        {
+          "sessionId": null,
+          "at": 1793509188674,
+          "level": "error",
+          "source": "network",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "dsh-app://app/api/game-market/save?gameId=orbit-courier"
+        }
+      ]
+    }
+  ]
+}
