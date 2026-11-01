@@ -2030,6 +2030,18 @@ export const CSS = `
 .dgm-settings-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
 .dgm-settings-action { height: 34px; }
 .dgm-settings-auto { color: var(--dgm-fg-tertiary); font-size: 11.5px; }
+.dgm-settings-head-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.dgm-settings-note { margin: 0; color: var(--dgm-fg-secondary); font-size: 12.5px; line-height: 1.5; }
+.dgm-settings-registry {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 0;
+  color: var(--dgm-fg-tertiary);
+  font-size: 11.5px;
+}
+.dgm-settings-registry-time { font-variant-numeric: tabular-nums; }
 .dgm-settings-dialog .dgm-update {
   margin-top: 0;
   padding-top: 22px;

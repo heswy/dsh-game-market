@@ -516,13 +516,6 @@ export function MyGamesPage(props) {
   return h(
     'div',
     { className: 'dgm-mygames' },
-    market.offline
-      ? h(InlineBanner, {
-          text: t('market.offline'),
-          actionLabel: t('market.offline.retry'),
-          onAction: props.onRetry,
-        })
-      : null,
     market.status === 'error'
       ? h(InlineBanner, {
           text: t('mygames.error.load'),
@@ -580,15 +573,6 @@ export function MyGamesPage(props) {
           onTransfer: props.onTransfer,
         });
       })
-    ),
-    market.offline
-      ? h(
-          'footer',
-          { className: 'dgm-footer' },
-          h('span', { className: 'dgm-footer-offline' },
-            h('span', { className: 'dgm-dot', 'aria-hidden': 'true' }),
-            t('market.footer.offline'))
-        )
-      : null
+    )
   );
 }

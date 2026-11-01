@@ -721,15 +721,6 @@ export function GameMarketPanel(props) {
               })
             )
           : null,
-        state.market.offline
-          ? h('span', {
-              key: 'offline',
-              className: 'dgm-header-dot',
-              title: t('market.offline'),
-              'aria-label': t('a11y.offline'),
-              role: 'img',
-            })
-          : null,
         state.page === PAGES.MARKET
           ? h(
               'button',
@@ -917,6 +908,7 @@ export function GameMarketPanel(props) {
           locale: locale,
           now: now,
           updateView: updateView,
+          registry: state.market.registry,
           catalogBusy: settingsCatalogBusy,
           onRefreshCatalog: refreshCatalogFromSettings,
           onRefreshUpdate: refreshPlatformUpdate,

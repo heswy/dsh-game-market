@@ -4811,11 +4811,11 @@ New
 | 首次加载 | Header 立即可用；内容区 8 张卡片骨架，1.4s 循环微光；**延迟 300ms 才显示骨架**，避免闪白 | 数据到达后 160ms 淡入 |
 | 加载 > 800ms | 骨架下方出现“正在加载游戏列表”，不阻断滚动 | — |
 | 加载失败 | 内容区错误块：“游戏列表加载失败” + “重试”；已安装游戏列表照常显示 | 手动重试；不自动重试 |
-| 离线 | 内容区顶部 32px 条幅：“离线模式，仅显示已安装游戏” + “重试”；Hero 仍可用（本地数据）；Popular/New 隐藏 | 重新联机后自动刷新一次 |
+| 离线 / 目录不可用 | 市场与我的游戏不显示离线条幅（页头也不挂离线标记）；继续展示上次同步的目录，Hero 仍可用（本地数据） | 拉取时依次尝试主域名与备用镜像（jsDelivr / GitHub API）；在线状态、状态说明与上次同步时间只在“设置 → 游戏目录”展示，并提供手动刷新 |
 | 无已安装且离线 | 空态：“还没有安装任何游戏” + “重试” | — |
 | Registry 部分字段缺失 | 该游戏从对应区块剔除，不显示“未知”占位；本地已安装游戏不受影响 | 下次同步修正 |
 
-离线条幅不 sticky 在 header 下方遮挡内容，随内容滚动；header 右上角保留一个 6px 的离线状态点作为持续提示。
+离线状态不再用市场内条幅或页头状态点表达；只保留“设置 → 游戏目录”里的在线/离线标记、状态说明与上次同步时间。
 
 #### 9.3.7 键盘与红线
 
@@ -5217,7 +5217,7 @@ Esc 规则（必须精确，否则会与游戏冲突）：
 | `market.search.empty` | 没有找到相关游戏 | No games found | 搜索空态 | — |
 | `market.search.clear` | 清除搜索 | Clear search | 搜索空态按钮 | — |
 | `market.filter.all` | 全部 | All | 分类 chip | — |
-| `market.offline` | 离线模式，仅显示已安装游戏 | Offline. Showing installed games only. | 离线条幅 | — |
+| `market.offline` | 离线模式，仅显示已安装游戏 | Offline. Showing installed games only. | 保留文案；状态改在设置中展示 | — |
 | `market.retry` | 重试 | Retry | 通用重试 | — |
 | `market.loading` | 正在加载游戏列表 | Loading games | 加载提示 | — |
 | `market.error.title` | 游戏列表加载失败 | Could not load games | 错误块标题 | — |
