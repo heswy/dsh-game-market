@@ -211,7 +211,7 @@ v1.2.0 **没有更新 UI**，无法事后给它加按钮：
 | `E_RELEASE_RELEASE_JSON` | R 缺少或无法解析 `platform-updates/release.json`（不是 release:prepare 产出的提交） |
 | `E_RELEASE_ARTIFACT_DIGEST` | R 树内产物与 release.json 摘要不一致（禁止手改产物/identity） |
 | `E_RELEASE_PRERELEASE_STABLE` | stable 通道拒绝 prerelease：改用 test 通道演练 |
-| `E_RELEASE_SELF_REFERENCE` / `E_RELEASE_INDEX_IN_RELEASE` | R 内包含索引/指向自己的索引：索引必须独立提交 I |
+| `E_RELEASE_SELF_REFERENCE` / `E_RELEASE_INDEX_IN_RELEASE` | R 内指向自己的索引，或 R 新增/修改了索引：索引必须独立提交 I（后续 R 原样继承旧索引是允许的） |
 | `E_RELEASE_VERSION_IMMUTABLE` / `E_RELEASE_VERSION_ROLLBACK` | 同 version 不同 commit / 向旧版本回退：发布新版本或新索引提交 |
 | `E_RELEASE_PRODUCTION_INDEX_GUARD` | 未明确确认就写生产索引路径：加 `--production-index`（仅授权索引 PR） |
 | `E_RELEASE_OUT_REQUIRED` / `E_RELEASE_OUT_INVALID` | `--write` 缺 `--out`，或 `--out` 越界/命中 R 内文件 |
