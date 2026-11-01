@@ -2,17 +2,17 @@
 
 在 DeepSeek Harness（DSH）里，把 Agent 执行长任务时的等待时间变成一局小游戏：游戏占满主工作区，右下角的小鲸鱼负责维持 Agent 的存在感，任务完成时提醒但不打断。
 
-**当前发布：`v1.2.0`**。在 V1.1 的 Market 视觉交互、全出血 Runtime 与开发包呈现规范基础上，新增社区投稿契约、AI 开发者 Skill、GitHub 内容仓库模板与维护者上架工具；默认官方 HTTPS 目录与随包 seed 兜底已接通。PR #4 / #5 已复核合并，受控 M4 公网上架→更新→撤下及独立 Host 安装/启动已有证据。
+**当前发布：`v1.5.0`**。V1.5 带来多文件资源包与两代目录、内置多文件游戏 `orbit-courier`、平台持续更新与双端身份核验、游戏内原地问答、可移植存档，以及市场首页/详情/我的游戏与设置面板的前端改版。
 
-V1.2 发布验证与范围见[发布说明](./docs/releases/v1.2.0.md)。V1.5 新增的真实桌面安装/升级、完整长局与受控迁移结果见下方当前进度；独立外部作者和实体跨机验证仍待补齐。
+V1.5 发布验证与范围见[发布说明](./docs/releases/v1.5.0.md)；V1.2 发布说明保留在[这里](./docs/releases/v1.2.0.md)。独立外部作者闭环与独立主机跨机导入已通过；严格意义的实体硬件跨机未实测。
 V1.1 验收：`npm run verify` **787/787**、`CHECK OK (23)`；真机与隔离宿主证据见 [`docs/V1-VERIFICATION.md`](./docs/V1-VERIFICATION.md)、[`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./docs/verification/v1/AUTOMATED-EVIDENCE.md)、[`docs/verification/fullbleed-runtime/`](./docs/verification/fullbleed-runtime/)。
 
 
-### V1.5 开发进度（2026-10-28）
+### V1.5 发布（2026-11-01）
 
-M0–M2 已通过 PR #6/#7/#8 合入；M3 插件持续更新已通过 PR #9 合入 main。M4 已实现旧 HTML wrapper 迁移、正式鲸鱼/气泡和游戏内普通问答，并通过实际 DSH rc.3 桌面窗口的隔离验证，已通过 PR #10 合入 main。M5 本机工程验收已补齐：受控存档导出/导入与重开、公开固定候选直接安装、同资料连续两次更新、407秒真实实玩，以及1570项完整测试均通过。平台 PR #11 与内容 PR #6 待复核；独立外部作者及两台实体机迁移尚缺，V1.5 尚未正式发布。
+M0–M5 已全部合入 main。M5 完成 rc.3 真实桌面干净安装、连续更新、存档迁移、五分钟实玩、外部作者发布包桌面安装与实玩，并在独立 macOS 主机上完成跨机导入；前端改版经完整测试合入。平台发布 `1.5.0`，生产索引把安装精确钉到发布提交 R，设置页可检查更新。
 
-具体结果与范围见 [M4 验收](./docs/verification/v1.5/m4-acceptance.md)、[M3 更新验收](./docs/verification/v1.5/m3-restart-acceptance.md) 和 [项目记忆](./PROJECT_MEMORY.md)。M5 当前证据与未完成项见 [M5 验收](./docs/verification/v1.5/m5-acceptance.md)，迁移与恢复操作见 [恢复指南](./docs/releases/v1.5.0-recovery.md)。开发候选版本与本文“当前发布 v1.2.0”分别看待。
+具体结果与范围见 [M5 验收](./docs/verification/v1.5/m5-acceptance.md)、[M4 验收](./docs/verification/v1.5/m4-acceptance.md)、[M3 更新验收](./docs/verification/v1.5/m3-restart-acceptance.md) 和 [项目记忆](./PROJECT_MEMORY.md)，迁移与恢复操作见 [恢复指南](./docs/releases/v1.5.0-recovery.md)。严格意义上的两台实体机迁移未实测，发布说明如实标注。
 
 ### V1.1 主要变化
 
