@@ -751,7 +751,21 @@ function collectJs(dir, out) {
           if (!git.commitExists(commit)) {
             fail(`plugin index pins commit ${commit}, which does not exist in this repository`);
           } else if (git.objectExists(commit, INDEX_PATH)) {
-            fail(`plugin index self-reference: it pins ${commit}, but platform-updates/plugins.json is part of that same commit; commit the index separately`);
+            // Later releases inherit the index committed by an earlier index PR;
+            // R must never add, edit, or point the index at itself.
+            const inside = git.readTextFile(commit, INDEX_PATH);
+            let insideIndex = null;
+            try {
+              insideIndex = inside === null ? null : JSON.parse(inside);
+            } catch (_error) {
+              insideIndex = null;
+            }
+            const pinsItself = insideIndex !== null && collectIndexCommits(insideIndex).includes(commit);
+            const inherited = !pinsItself && git.parents(commit).some((parent) => git.objectExists(parent, INDEX_PATH)
+              && git.readTextFile(parent, INDEX_PATH) === inside);
+            if (!inherited) {
+              fail(`plugin index self-reference: it pins ${commit}, but platform-updates/plugins.json is added or changed inside that same commit; commit the index separately`);
+            }
           }
         }
         ok(`plugin index valid (${commits.length} pinned commit(s), separate-commit rule holds)`);
