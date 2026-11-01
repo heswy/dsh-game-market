@@ -1,9 +1,9 @@
 /** My Games library (PRD 9.4): ordered rows, update/uninstall/delete entry points. */
 import React from 'react';
-import { hasUpdate, isBuiltin, progressSummary, sortMyGames } from '../catalog.js';
+import { coverTone, hasUpdate, isBuiltin, progressSummary, sortMyGames } from '../catalog.js';
 import { formatCount, formatRelativeTime, formatScore } from '../format.js';
 import { isMenuOpenKey } from '../keyboard.js';
-import { MoreIcon, TrashIcon } from '../icons.js';
+import { MoreIcon, PlayIcon, TrashIcon } from '../icons.js';
 import { EmptyBlock, ErrorBlock, InlineBanner, SkeletonRows } from './state-views.js';
 import { GameCover } from './cover.js';
 import { useDelayedFlag } from '../hooks.js';
@@ -191,7 +191,6 @@ function MyGameRow(props) {
   const lastPlayed = game.lastPlayedAt
     ? t('mygames.lastPlayed', { relativeTime: formatRelativeTime(game.lastPlayedAt, now, locale) })
     : t('mygames.neverPlayed');
-  const best = typeof game.bestScore === 'number' ? t('mygames.best', { score: formatScore(game.bestScore, locale) }) : null;
   const status = job
     ? t('mygames.row.status.updating')
     : game.canContinue
@@ -303,15 +302,7 @@ function MyGameRow(props) {
             { className: 'dgm-row-meta' },
             progressText,
             h('span', { className: 'dgm-sep', 'aria-hidden': 'true' }, '·'),
-            lastPlayed,
-            best
-              ? h(
-                  React.Fragment,
-                  null,
-                  h('span', { className: 'dgm-sep', 'aria-hidden': 'true' }, '·'),
-                  h('span', { className: 'dgm-row-best' }, best)
-                )
-              : null
+            lastPlayed
           )
     ),
     h(
@@ -391,6 +382,82 @@ function MyGameRow(props) {
   );
 }
 
+function MyGameFeature(props) {
+  const game = props.game;
+  const t = props.t;
+  const locale = props.locale;
+  const now = props.now;
+  const tone = coverTone(game);
+  const progressText = rowProgress(game, t, locale);
+  const lastPlayed = game.lastPlayedAt
+    ? t('mygames.lastPlayed', { relativeTime: formatRelativeTime(game.lastPlayedAt, now, locale) })
+    : t('mygames.neverPlayed');
+  const status = t('mygames.row.status.continue');
+
+  function open() {
+    if (props.onOpen) props.onOpen(game.id);
+  }
+
+  return h(
+    'section',
+    {
+      className: 'dgm-feature',
+      'aria-label': t('market.section.continue'),
+      style: { '--dgm-tone-h': String(tone.hue), '--dgm-tone-h2': String(tone.hue2), '--dgm-tone-s': String(tone.saturation) + '%' },
+    },
+    h(
+      'button',
+      {
+        type: 'button',
+        className: 'dgm-feature-art',
+        onClick: open,
+        tabIndex: -1,
+        'aria-label': t('market.card.open'),
+      },
+      h(GameCover, { game: game, variant: 'hero' })
+    ),
+    h(
+      'div',
+      { className: 'dgm-feature-copy' },
+      h('p', { className: 'dgm-feature-kicker' }, t('market.section.continue')),
+      h(
+        'button',
+        {
+          type: 'button',
+          className: 'dgm-feature-title',
+          onClick: open,
+          'aria-label': t('mygames.row.a11y', { name: game.name || game.id, status: status, progress: progressText }),
+        },
+        game.name || game.id
+      ),
+      h(
+        'p',
+        { className: 'dgm-feature-meta' },
+        h('span', null, progressText),
+        h('span', { className: 'dgm-sep', 'aria-hidden': 'true' }, '·'),
+        h('span', null, lastPlayed)
+      ),
+      h(
+        'div',
+        { className: 'dgm-feature-actions' },
+        h(
+          'button',
+          {
+            type: 'button',
+            className: 'dgm-btn dgm-btn-primary dgm-feature-play',
+            onClick: function play() {
+              if (props.onPlay) props.onPlay(game);
+            },
+          },
+          h(PlayIcon, { size: 14 }),
+          t('mygames.action.continue')
+        ),
+        h('button', { type: 'button', className: 'dgm-link-btn dgm-feature-details', onClick: open }, t('market.hero.details'))
+      )
+    )
+  );
+}
+
 export function MyGamesPage(props) {
   const state = props.state;
   const t = props.t;
@@ -401,6 +468,15 @@ export function MyGamesPage(props) {
   const loading = market.status === 'loading' || market.status === 'idle';
   const showSkeleton = useDelayedFlag(loading && installed.length === 0, 250);
   const listRef = React.useRef(null);
+  const jobs = state.installJobs || {};
+  const featured = installed.filter(function resumable(game) {
+    return game.canContinue === true && activeJob(jobs[game.id]) === null;
+  })[0] || null;
+  const rest = featured
+    ? installed.filter(function remainder(game) {
+        return game.id !== featured.id;
+      })
+    : installed;
 
   if (installed.length === 0) {
     if (showSkeleton) {
@@ -466,14 +542,31 @@ export function MyGamesPage(props) {
       ),
       h('span', { className: 'dgm-library-count' }, t('mygames.count', { count: formatCount(installed.length, locale) }))
     ),
+    featured
+      ? h(MyGameFeature, {
+          game: featured,
+          t: t,
+          locale: locale,
+          now: now,
+          onOpen: props.onOpen,
+          onPlay: props.onPlay,
+        })
+      : null,
+    featured && rest.length > 0
+      ? h(
+          'div',
+          { className: 'dgm-list-head' },
+          h('h2', { className: 'dgm-list-title' }, t('market.section.all'))
+        )
+      : null,
     h(
       'div',
       { className: 'dgm-list', role: 'list', ref: listRef },
-      installed.map(function renderRow(game) {
+      rest.map(function renderRow(game) {
         return h(MyGameRow, {
           key: game.id,
           game: game,
-          job: state.installJobs ? state.installJobs[game.id] || null : null,
+          job: jobs[game.id] || null,
           t: t,
           locale: locale,
           now: now,
