@@ -7,7 +7,6 @@
  */
 import React from 'react';
 import { coverTone, initialFor } from '../catalog.js';
-import { GamepadIcon } from '../icons.js';
 import { GameArtwork, hasGameArtwork } from './game-artwork.js';
 
 const h = React.createElement;
@@ -19,6 +18,23 @@ function toneStyle(game) {
     '--dgm-tone-h2': String(tone.hue2),
     '--dgm-tone-s': String(tone.saturation) + '%',
   };
+}
+
+/**
+ * Poster composition for games without illustrated artwork. Category picks the
+ * family (motion / grid / rhythm) so the fallback still reads as that game.
+ */
+function compositionFor(game) {
+  const category = game && Array.isArray(game.categories) && game.categories.length > 0 ? game.categories[0] : '';
+  if (category === 'action' || category === 'arcade') return 0;
+  if (category === 'puzzle' || category === 'strategy' || category === 'card' || category === 'trivia') return 2;
+  if (category === 'idle' || category === 'sandbox') return 1;
+  const seed = String((game && (game.id || game.name)) || 'game');
+  let hash = 0;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 33 + seed.charCodeAt(index)) % 1000;
+  }
+  return hash % 3;
 }
 
 /**
@@ -41,6 +57,7 @@ export function GameCover(props) {
   );
 
   const showImage = typeof source === 'string' && source.length > 0 && !failed;
+  const composition = compositionFor(game);
   const className = ['dgm-cover', 'dgm-cover-' + variant, props.className || ''].filter(Boolean).join(' ');
   return h(
     'span',
@@ -48,12 +65,13 @@ export function GameCover(props) {
       className: className,
       style: toneStyle(game),
       'data-loaded': showImage && loaded ? 'true' : 'false',
+      'data-composition': illustrated ? null : String(composition),
       'aria-hidden': 'true',
     },
     h(
       'span',
       { className: 'dgm-cover-art' },
-      illustrated ? h(GameArtwork, { id: game.id }) : h('span', { className: 'dgm-cover-initial' }, initialFor(game.name || game.id))
+      illustrated ? h(GameArtwork, { id: game.id }) : null
     ),
     showImage
       ? h('img', {
@@ -72,8 +90,18 @@ export function GameCover(props) {
           },
         })
       : null,
+    illustrated ? null : h('span', { className: 'dgm-cover-shapes' }),
     illustrated ? null : h('span', { className: 'dgm-cover-grain' }),
-    variant === 'row' || illustrated ? null : h('span', { className: 'dgm-cover-glyph' }, h(GamepadIcon, { size: variant === 'hero' ? 22 : 16 }))
+    illustrated
+      ? null
+      : h(
+          'span',
+          { className: 'dgm-cover-mark' },
+          h('span', { className: 'dgm-cover-mark-letter' }, initialFor(game.name || game.id)),
+          variant === 'row'
+            ? h('span', { className: 'dgm-cover-mark-line' })
+            : h('span', { className: 'dgm-cover-mark-name' }, game.name || game.id)
+        )
   );
 }
 

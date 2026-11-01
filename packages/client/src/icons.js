@@ -147,6 +147,18 @@ export function RefreshIcon(props) {
   );
 }
 
+export function SettingsIcon(props) {
+  const size = props && typeof props.size === 'number' ? props.size : 14;
+  return h(
+    'svg',
+    svgProps(size, '0 0 16 16'),
+    h('path', { d: 'M2.8 4.4h10.4M2.8 8h10.4M2.8 11.6h10.4' }),
+    h('circle', { cx: 5.6, cy: 4.4, r: 1.35 }),
+    h('circle', { cx: 10.4, cy: 8, r: 1.35 }),
+    h('circle', { cx: 6.4, cy: 11.6, r: 1.35 })
+  );
+}
+
 export function ChevronRightIcon(props) {
   const size = props && typeof props.size === 'number' ? props.size : 14;
   return h('svg', svgProps(size, '0 0 16 16'), h('path', { d: 'm6.2 3.5 4.5 4.5-4.5 4.5' }));

@@ -1,6 +1,6 @@
 /** Game detail page: hero, two columns, the single primary action (PRD 9.5). */
 import React from 'react';
-import { authorName, categoryLabel, detailActionReasonKey, initialFor, resolveDetailAction, resolvePermissions, screenshotsFor } from '../catalog.js';
+import { authorName, categoryLabel, coverTone, detailActionReasonKey, initialFor, resolveDetailAction, resolvePermissions, screenshotsFor } from '../catalog.js';
 import { formatAbsoluteTime, formatBytes, formatRelativeTime, formatScore } from '../format.js';
 import { installStageTextKey } from '../errors-text.js';
 import { MAX_SCREENSHOTS } from '../constants.js';
@@ -255,11 +255,6 @@ function PreviewThumb(props) {
   );
 }
 
-function DetailHero(props) {
-  const game = props.game;
-  return h('div', { className: 'dgm-detail-hero' }, h(GameCover, { game: game, variant: 'detail' }));
-}
-
 /** Detail page body. */
 export function GameDetail(props) {
   const state = props.state;
@@ -341,58 +336,79 @@ export function GameDetail(props) {
     }
   }
 
+  const tone = coverTone(game);
   return h(
     'div',
     { className: 'dgm-detail' },
     h(
-      'div',
-      { className: 'dgm-detail-cols' },
+      'header',
+      {
+        className: 'dgm-detail-hero-band',
+        style: { '--dgm-tone-h': String(tone.hue), '--dgm-tone-h2': String(tone.hue2), '--dgm-tone-s': String(tone.saturation) + '%' },
+      },
       h(
         'div',
+        { className: 'dgm-detail-hero-art' },
+        h(GameCover, { game: game, variant: 'detail' })
+      ),
+      h('span', { className: 'dgm-detail-hero-scrim', 'aria-hidden': 'true' }),
+      h(
+        'div',
+        { className: 'dgm-detail-hero-inner' },
+        categories.length > 0
+          ? h('p', { className: 'dgm-detail-kicker' }, categories.map(function label(category) {
+              return categoryLabel(category, locale);
+            }).join(' · '))
+          : null,
+        h(
+          'div',
+          { className: 'dgm-detail-title-line' },
+          h('h1', { className: 'dgm-detail-title', tabIndex: -1, 'data-page-heading': true }, game.name || game.id),
+          game.updateAvailable && game.updateVersion
+            ? h('span', { className: 'dgm-pill dgm-pill-update' }, t('detail.update.available', { version: game.updateVersion }))
+            : null,
+          game.installed
+            ? h(
+                'span',
+                { className: 'dgm-pill dgm-pill-installed' },
+                h(CheckIcon, { size: 11 }),
+                t('market.card.installed')
+              )
+            : null
+        ),
+        subtitleParts.length > 0 ? h('p', { className: 'dgm-detail-subtitle' }, subtitleParts.join(' · ')) : null,
+        h(
+          'div',
+          { className: 'dgm-detail-actions' },
+          h(PrimaryAction, {
+            action: action,
+            job: job,
+            t: t,
+            onInstall: props.onInstall,
+            onCancelInstall: props.onCancelInstall,
+            onUpdate: props.onUpdate,
+            onPlay: props.onPlay,
+          }),
+          action.secondary ? h(SecondaryAction, { secondary: action.secondary, t: t, onClick: handleSecondary }) : null
+        )
+      )
+    ),
+    h(
+      'div',
+      { className: 'dgm-detail-body' },
+      h(
+        'main',
         { className: 'dgm-detail-main' },
         h(
-          'div',
-          { className: 'dgm-detail-head' },
-          h(DetailHero, { game: game }),
+          'section',
+          { className: 'dgm-detail-about' },
+          h('h2', { className: 'dgm-about-title' }, t('detail.about')),
           h(
             'div',
-            { className: 'dgm-detail-head-copy' },
-            h(
-              'div',
-              { className: 'dgm-detail-title-line' },
-              h('h1', { className: 'dgm-detail-title', tabIndex: -1, 'data-page-heading': true }, game.name || game.id),
-              game.updateAvailable && game.updateVersion
-                ? h('span', { className: 'dgm-pill dgm-pill-update' }, t('detail.update.available', { version: game.updateVersion }))
-                : null,
-              game.installed
-                ? h(
-                    'span',
-                    { className: 'dgm-pill dgm-pill-installed' },
-                    h(CheckIcon, { size: 11 }),
-                    t('market.card.installed')
-                  )
-                : null
-            ),
-            subtitleParts.length > 0 ? h('p', { className: 'dgm-detail-subtitle' }, subtitleParts.join(' · ')) : null,
-            h(PrimaryAction, {
-              action: action,
-              job: job,
-              t: t,
-              onInstall: props.onInstall,
-              onCancelInstall: props.onCancelInstall,
-              onUpdate: props.onUpdate,
-              onPlay: props.onPlay,
-            }),
-            action.secondary ? h(SecondaryAction, { secondary: action.secondary, t: t, onClick: handleSecondary }) : null
-          )
-        ),
-        h('h2', { className: 'dgm-about-title' }, t('detail.about')),
-        h(
-          'div',
-          { className: `dgm-detail-description${longDescription && !expanded ? ' is-collapsed' : ''}` },
-          h('p', null, description)
-        ),
-        longDescription
+            { className: `dgm-detail-description${longDescription && !expanded ? ' is-collapsed' : ''}` },
+            h('p', null, description)
+          ),
+          longDescription
           ? h(
               'button',
               {
@@ -405,7 +421,8 @@ export function GameDetail(props) {
               },
               t(expanded ? 'detail.collapse' : 'detail.expand')
             )
-          : null,
+          : null
+        ),
         ['snake', '2048', 'jump', 'breakout'].includes(game.id)
           ? h(
               'section',

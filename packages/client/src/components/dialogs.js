@@ -1,8 +1,9 @@
 /** Confirmation dialogs and the screenshot lightbox (PRD 9.4.4 / 9.5.1 / 9.10). */
 import React from 'react';
-import { CloseIcon, ChevronLeftIcon, ChevronRightIcon, TrashIcon } from '../icons.js';
+import { CloseIcon, ChevronLeftIcon, ChevronRightIcon, RefreshIcon, SettingsIcon, TrashIcon } from '../icons.js';
 import { trapTabIndex } from '../keyboard.js';
 import { platformUpdateDialogCopy } from '../update-copy.js';
+import { UpdateSection } from './update-section.js';
 
 const h = React.createElement;
 
@@ -450,6 +451,98 @@ export function PlatformUpdateDialog(props) {
           },
           busy ? copy.busyLabel : copy.primary
         )
+      )
+    )
+  );
+}
+
+/** Settings surface: catalog refresh and platform version/update diagnostics. */
+export function SettingsDialog(props) {
+  const t = props.t;
+  const rootRef = React.useRef(null);
+  const busy = props.catalogBusy === true;
+  useFocusTrap(rootRef, props.onClose, true);
+
+  return h(
+    'div',
+    {
+      className: 'dgm-overlay dgm-dialog-overlay',
+      role: 'presentation',
+      onMouseDown: function backdrop(event) {
+        if (event.target === event.currentTarget) props.onClose();
+      },
+    },
+    h(
+      'div',
+      {
+        className: 'dgm-dialog dgm-settings-dialog',
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'dgm-settings-title',
+        ref: rootRef,
+      },
+      h(
+        'div',
+        { className: 'dgm-settings-head' },
+        h('h2', { className: 'dgm-settings-title', id: 'dgm-settings-title' }, t('settings.title')),
+        h(
+          'button',
+          {
+            type: 'button',
+            className: 'dgm-icon-btn dgm-settings-close',
+            'data-autofocus': 'true',
+            'aria-label': t('common.close'),
+            title: t('common.close'),
+            onClick: props.onClose,
+          },
+          h(CloseIcon, { size: 15 })
+        )
+      ),
+      h(
+        'div',
+        { className: 'dgm-settings-body' },
+        h(
+          'section',
+          { className: 'dgm-settings-block', 'aria-labelledby': 'dgm-settings-catalog-title' },
+          h(
+            'div',
+            { className: 'dgm-settings-block-head' },
+            h(
+              'h3',
+              { className: 'dgm-settings-block-title', id: 'dgm-settings-catalog-title' },
+              h(SettingsIcon, { size: 13 }),
+              t('settings.catalog.title')
+            )
+          ),
+          h(
+            'div',
+            { className: 'dgm-settings-actions' },
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dgm-btn dgm-settings-action',
+                disabled: busy,
+                onClick: props.onRefreshCatalog,
+              },
+              h(RefreshIcon, { size: 13 }),
+              busy ? t('settings.catalog.refreshing') : t('market.refresh')
+            )
+          )
+        ),
+        props.updateView && !props.updateView.hidden
+          ? h(UpdateSection, {
+              view: props.updateView,
+              t: t,
+              locale: props.locale,
+              now: props.now,
+              compact: true,
+              onRefresh: props.onRefreshUpdate,
+              onOpenUpdate: props.onOpenUpdate,
+              onCancel: props.onCancelUpdate,
+              onRefreshPage: props.onRefreshPage,
+            })
+          : null
       )
     )
   );

@@ -143,8 +143,10 @@ export function UpdateSection(props) {
   const view = props.view;
   const locale = props.locale;
   const now = props.now;
+  const compact = props.compact === true;
   if (!view || view.hidden) return null;
   const discovery = describeDiscovery(view, t, locale, now);
+  const compactWarn = compact && discovery.tone === 'warn';
   const identity = view.identity;
   const inspection = view.inspection;
   const blocked = view.blocked ? BLOCKED_KEYS[view.blocked.reason] || BLOCKED_KEYS.unknown : null;
@@ -179,7 +181,11 @@ export function UpdateSection(props) {
 
   return h(
     'section',
-    { className: 'dgm-section dgm-update', 'aria-labelledby': 'dgm-update-title', 'data-update-hidden': 'false' },
+    {
+      className: 'dgm-section dgm-update' + (compact ? ' dgm-update-compact' : ''),
+      'aria-labelledby': 'dgm-update-title',
+      'data-update-hidden': 'false',
+    },
     h(
       'div',
       { className: 'dgm-section-head' },
@@ -187,27 +193,35 @@ export function UpdateSection(props) {
         'div',
         { className: 'dgm-section-titles' },
         h('h2', { className: 'dgm-section-title', id: 'dgm-update-title' }, t('update.section.title')),
-        h('span', { className: 'dgm-section-kicker' }, t('update.section.kicker'))
+        compact ? null : h('span', { className: 'dgm-section-kicker' }, t('update.section.kicker'))
       )
     ),
-    h('p', { className: 'dgm-update-note' }, t('update.section.note')),
-    h(
-      'div',
-      { className: 'dgm-update-identities' },
-      h(IdentityRow, {
-        t: t,
-        label: t('update.identity.host'),
-        version: identity.hostVersion,
-        commit: identity.hostCommit,
-      }),
-      h(IdentityRow, {
-        t: t,
-        label: t('update.identity.client'),
-        version: identity.clientEmbedded ? identity.clientVersion : null,
-        commit: identity.clientEmbedded ? identity.clientCommit : null,
-        hint: identity.clientEmbedded ? null : t('update.identity.notEmbedded'),
-      })
-    ),
+    compact ? null : h('p', { className: 'dgm-update-note' }, t('update.section.note')),
+    compact
+      ? h(
+          'p',
+          { className: 'dgm-update-compact-summary' },
+          'Host ' + (identity.hostVersion || t('update.identity.unknown')),
+          h('span', { className: 'dgm-sep', 'aria-hidden': 'true' }, '·'),
+          'Client ' + (identity.clientEmbedded ? identity.clientVersion : t('update.identity.unknown'))
+        )
+      : h(
+          'div',
+          { className: 'dgm-update-identities' },
+          h(IdentityRow, {
+            t: t,
+            label: t('update.identity.host'),
+            version: identity.hostVersion,
+            commit: identity.hostCommit,
+          }),
+          h(IdentityRow, {
+            t: t,
+            label: t('update.identity.client'),
+            version: identity.clientEmbedded ? identity.clientVersion : null,
+            commit: identity.clientEmbedded ? identity.clientCommit : null,
+            hint: identity.clientEmbedded ? null : t('update.identity.notEmbedded'),
+          })
+        ),
     h(
       'div',
       { className: 'dgm-update-discovery', 'data-tone': discovery.tone, 'data-testid': 'update-discovery' },
@@ -215,10 +229,16 @@ export function UpdateSection(props) {
       h(
         'div',
         { className: 'dgm-update-discovery-text' },
-        h('p', { className: 'dgm-update-discovery-line' }, t(discovery.key, discovery.params)),
-        discovery.meta ? h('p', { className: 'dgm-update-discovery-meta' }, discovery.meta) : null,
+        h(
+          'p',
+          { className: 'dgm-update-discovery-line' },
+          compactWarn ? t('settings.update.checkFailed') : t(discovery.key, discovery.params)
+        ),
+        compact || !discovery.meta ? null : h('p', { className: 'dgm-update-discovery-meta' }, discovery.meta),
         anomalyText ? h('p', { className: 'dgm-update-discovery-meta', 'data-anomaly': 'same-version-different-commit' }, anomalyText) : null,
-        channel !== null ? h('p', { className: 'dgm-update-discovery-meta' }, t('update.discovery.channel', { channel: channel })) : null
+        compact || channel === null
+          ? null
+          : h('p', { className: 'dgm-update-discovery-meta' }, t('update.discovery.channel', { channel: channel }))
       ),
       h(
         'button',
@@ -259,7 +279,7 @@ export function UpdateSection(props) {
           t('update.error.action') + ' · ' + t(updateActionErrorKey(view.actionError.code))
         )
       : null,
-    blocked
+    blocked && !compact
       ? h(
           'div',
           { className: 'dgm-update-blocked', 'data-reason': view.blocked.reason, role: 'note' },
@@ -284,7 +304,7 @@ export function UpdateSection(props) {
           onRefreshPage: props.onRefreshPage,
         })
       : null,
-    lastChecked ? h('p', { className: 'dgm-update-footnote' }, lastChecked) : null
+    compact || !lastChecked ? null : h('p', { className: 'dgm-update-footnote' }, lastChecked)
   );
 }
 

@@ -636,9 +636,21 @@ export function detailActionReasonKey(action) {
   return action.reasonKey || null;
 }
 
+/**
+ * Tone pairs sampled from the first-party illustrations so the tinted hero and
+ * detail bands continue the artwork instead of fighting it.
+ */
+const GAME_TONES = Object.freeze({
+  '2048': { hue: 34, hue2: 22, saturation: 42 },
+  snake: { hue: 168, hue2: 150, saturation: 36 },
+  breakout: { hue: 222, hue2: 206, saturation: 46 },
+  jump: { hue: 236, hue2: 258, saturation: 38 },
+});
+
 /** Deterministic hue pair used by procedural cover art (content layer only). */
 export function coverTone(game) {
   const seed = String((game && (game.id || game.name)) || 'game');
+  if (Object.prototype.hasOwnProperty.call(GAME_TONES, seed)) return GAME_TONES[seed];
   let hash = 0;
   for (let index = 0; index < seed.length; index += 1) {
     hash = (hash * 31 + seed.charCodeAt(index)) % 360;

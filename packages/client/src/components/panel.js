@@ -13,17 +13,17 @@ import { deriveUpdateView } from '../update-state.js';
 import { getUpdateManager } from '../update-manager.js';
 import { formatBytes } from '../format.js';
 import { LOCAL_INSTALL_ACCEPT, findLocalOverwriteTarget, validateLocalInstallSelection } from '../local-install.js';
-import { BackIcon, MoreIcon, RefreshIcon, UploadIcon } from '../icons.js';
+import { BackIcon, MoreIcon, SettingsIcon, UploadIcon } from '../icons.js';
 import { StyleTag } from '../styles.js';
 import { backToConversation, openGameMarket } from '../navigation.js';
 import { useActivePanel, useClock, useSessionBinding, useStoreState } from '../hooks.js';
 import { isImeComposing, isSearchShortcut, resolveEscapeAction } from '../keyboard.js';
 import { RuntimeView } from './runtime.js';
-import { UpdateBanner, UpdateSection } from './update-section.js';
+import { UpdateBanner } from './update-section.js';
 import { MarketHome } from './market-home.js';
 import { MyGamesPage } from './my-games.js';
 import { GameDetail } from './detail.js';
-import { ConfirmDialog, Lightbox, PlatformUpdateDialog } from './dialogs.js';
+import { ConfirmDialog, Lightbox, PlatformUpdateDialog, SettingsDialog } from './dialogs.js';
 import { ToastViewport } from './toast.js';
 import { PopoverMenu } from './menu.js';
 import { SearchBox, SearchToggle } from './search-box.js';
@@ -66,9 +66,13 @@ export function GameMarketPanel(props) {
   const searchRef = React.useRef(null);
   const fileInputRef = React.useRef(null);
   const menuButtonRef = React.useRef(null);
+  const settingsButtonRef = React.useRef(null);
   const prevPageRef = React.useRef(null);
   const staleRefreshRef = React.useRef(false);
+  const autoRefreshRef = React.useRef(false);
   const [headerMenuOpen, setHeaderMenuOpen] = React.useState(false);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
+  const [settingsCatalogBusy, setSettingsCatalogBusy] = React.useState(false);
 
   const sessionId = binding.sessionId || state.bindingSessionId;
   const api = getMarketApi();
@@ -104,6 +108,18 @@ export function GameMarketPanel(props) {
       if (state.page === PAGES.RUNTIME) return;
       if (state.market.status !== 'idle') return;
       void loadCatalog({ store: store, api: getMarketApi(), now: Date.now() });
+    },
+    [state.page, state.market.status]
+  );
+
+  React.useEffect(
+    function autoRefreshCatalogOnEntry() {
+      if (autoRefreshRef.current) return;
+      if (state.page === PAGES.RUNTIME) return;
+      if (state.market.status === 'idle' || state.market.status === 'loading') return;
+      autoRefreshRef.current = true;
+      // Pull newly approved games once per Market entry, without a success toast.
+      void refreshRegistryAction({ store: store, api: api, force: true, silent: true });
     },
     [state.page, state.market.status]
   );
@@ -329,6 +345,23 @@ export function GameMarketPanel(props) {
       return;
     }
     void loadCatalog({ store: store, api: api, now: Date.now() });
+  }
+
+  async function refreshCatalogFromSettings() {
+    if (settingsCatalogBusy) return;
+    setSettingsCatalogBusy(true);
+    try {
+      await refreshRegistryAction({ store: store, api: api });
+    } finally {
+      setSettingsCatalogBusy(false);
+    }
+  }
+
+  function closeSettings() {
+    setSettingsOpen(false);
+    requestAnimationFrame(function restoreFocus() {
+      if (settingsButtonRef.current) settingsButtonRef.current.focus();
+    });
   }
 
   function browseAll() {
@@ -701,22 +734,6 @@ export function GameMarketPanel(props) {
           ? h(
               'button',
               {
-                key: 'refresh',
-                type: 'button',
-                className: 'dgm-icon-btn dgm-refresh',
-                onClick: function refresh() {
-                  void refreshRegistryAction({ store: store, api: api });
-                },
-                'aria-label': t('market.refresh'),
-                title: t('market.refresh'),
-              },
-              h(RefreshIcon, { size: 14 })
-            )
-          : null,
-        state.page === PAGES.MARKET
-          ? h(
-              'button',
-              {
                 key: 'local',
                 type: 'button',
                 className: 'dgm-btn dgm-upload dgm-local-install',
@@ -728,6 +745,23 @@ export function GameMarketPanel(props) {
               h('span', { className: 'dgm-upload-label' }, t('market.upload'))
             )
           : null,
+        h(
+          'button',
+          {
+            key: 'settings',
+            ref: settingsButtonRef,
+            type: 'button',
+            className: 'dgm-icon-btn dgm-settings-btn',
+            onClick: function openSettings() {
+              setSettingsOpen(true);
+            },
+            'aria-label': t('settings.title'),
+            title: t('settings.title'),
+            'aria-haspopup': 'dialog',
+            'aria-expanded': settingsOpen ? 'true' : 'false',
+          },
+          h(SettingsIcon, { size: 15 })
+        ),
       ];
 
   return h(
@@ -860,18 +894,6 @@ export function GameMarketPanel(props) {
                 onRefreshRegistry: function refresh() {
                   void refreshRegistryAction({ store: store, api: api });
                 },
-              }),
-          isDetail
-            ? null
-            : h(UpdateSection, {
-                view: updateView,
-                t: t,
-                locale: locale,
-                now: now,
-                onRefresh: refreshPlatformUpdate,
-                onOpenUpdate: openPlatformUpdateDialog,
-                onCancel: cancelPlatformUpdate,
-                onRefreshPage: reloadUpdatePage,
               })
         )
       )
@@ -887,6 +909,21 @@ export function GameMarketPanel(props) {
           onChange: function change(index) {
             store.dispatch(lightboxChanged(index));
           },
+        })
+      : null,
+    settingsOpen && state.dialog === null
+      ? h(SettingsDialog, {
+          t: t,
+          locale: locale,
+          now: now,
+          updateView: updateView,
+          catalogBusy: settingsCatalogBusy,
+          onRefreshCatalog: refreshCatalogFromSettings,
+          onRefreshUpdate: refreshPlatformUpdate,
+          onOpenUpdate: openPlatformUpdateDialog,
+          onCancelUpdate: cancelPlatformUpdate,
+          onRefreshPage: reloadUpdatePage,
+          onClose: closeSettings,
         })
       : null,
     state.dialog && state.dialog.kind === 'platform-update'
