@@ -19,3 +19,6 @@ node_modules/
 .prd-draft/
 worktrees/
 coverage/
+# Keep Finder metadata out even under evidence trees that are otherwise
+# explicitly un-ignored above.
+**/.DS_Store
