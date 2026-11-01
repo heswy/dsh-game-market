@@ -1,0 +1,31 @@
+{
+  "format": 1,
+  "title": "DSH Game Market",
+  "description": "Game market and runtime plugin for DeepSeek Harness.",
+  "plugins": [
+    {
+      "name": "dsh-game-market",
+      "title": "DSH Game Market",
+      "description": "Game market and runtime plugin for DeepSeek Harness.",
+      "author": "heswy",
+      "homepage": "https://github.com/heswy/dsh-game-market",
+      "repository": {
+        "url": "https://github.com/heswy/dsh-game-market"
+      },
+      "versions": [
+        {
+          "version": "1.5.0",
+          "publishTimestamp": 1793521042,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/heswy/dsh-game-market",
+            "commit": "6960993f7331eba9c89b2075152992d958f69fba"
+          },
+          "engines": {
+            "dsh": ">=0.2.0 <0.3.0"
+          }
+        }
+      ]
+    }
+  ]
+}
