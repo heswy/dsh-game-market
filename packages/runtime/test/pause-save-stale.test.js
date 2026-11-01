@@ -104,7 +104,7 @@ test('a failed pause save is not reported as saved by a second pause on the same
   assert.equal(beforeSaveEvents(iframe).length, 1);
   await answerNextSave(context, iframe, 'save-1');
   const firstResult = await first;
-  assert.deepEqual(firstResult, { ok: false, saveStale: true });
+  assert.deepEqual(firstResult, { ok: false, saveStale: true, skipped: false });
   assert.equal(context.controller.getState().state, 'paused');
   assert.equal(setSaveCalls(context.api), 1);
   assert.equal(pauseEvents(iframe).length, 1);
@@ -116,7 +116,7 @@ test('a failed pause save is not reported as saved by a second pause on the same
   assert.equal(pauseEvents(iframe).length, 1, 'no duplicate PAUSE event for an already-paused game');
   await answerNextSave(context, iframe, 'save-2');
   const secondResult = await second;
-  assert.deepEqual(secondResult, { ok: false, saveStale: true }, 'a stale retry is never reported saved');
+  assert.deepEqual(secondResult, { ok: false, saveStale: true, skipped: false }, 'a stale retry is never reported saved');
   assert.equal(setSaveCalls(context.api), 2, 'storage.save was called a second time');
   assert.equal(context.controller.getState().state, 'paused');
 
@@ -125,7 +125,7 @@ test('a failed pause save is not reported as saved by a second pause on the same
   const third = context.controller.pause('user');
   assert.equal(beforeSaveEvents(iframe).length, 3);
   await answerNextSave(context, iframe, 'save-3');
-  assert.deepEqual(await third, { ok: false, saveStale: true });
+  assert.deepEqual(await third, { ok: false, saveStale: true, skipped: false });
   assert.equal(setSaveCalls(context.api), 3);
   context.controller.destroy();
 });
@@ -138,17 +138,17 @@ test('after storage recovers, the retry performs exactly one real save and clear
 
   const first = context.controller.pause('leave');
   await answerNextSave(context, iframe, 'save-1');
-  assert.deepEqual(await first, { ok: false, saveStale: true });
+  assert.deepEqual(await first, { ok: false, saveStale: true, skipped: false });
 
   const retry = context.controller.pause('leave');
   assert.equal(beforeSaveEvents(iframe).length, 2);
   await answerNextSave(context, iframe, 'save-2');
-  assert.deepEqual(await retry, { ok: true, saveStale: false });
+  assert.deepEqual(await retry, { ok: true, saveStale: false, skipped: false });
   assert.equal(setSaveCalls(context.api), 2, 'exactly one new save on the retry');
 
   // Once saved, a further pause is honest without another write.
   const alreadySaved = await context.controller.pause('leave');
-  assert.deepEqual(alreadySaved, { ok: true, saveStale: false });
+  assert.deepEqual(alreadySaved, { ok: true, saveStale: false, skipped: false });
   assert.equal(setSaveCalls(context.api), 2, 'no redundant storage write when already saved');
   assert.equal(pauseEvents(iframe).length, 1);
   context.controller.destroy();
@@ -163,7 +163,7 @@ test('the first successful pause path is unchanged', async function () {
   assert.equal(pauseEvents(iframe).length, 1);
   assert.equal(beforeSaveEvents(iframe).length, 1);
   await answerNextSave(context, iframe, 'save-1');
-  assert.deepEqual(await pending, { ok: true, saveStale: false });
+  assert.deepEqual(await pending, { ok: true, saveStale: false, skipped: false });
   assert.equal(context.controller.getState().state, 'paused');
   assert.equal(setSaveCalls(context.api), 1);
   assert.ok(context.events.some((event) => event.type === 'save-status' && event.status === 'saved'));
@@ -177,13 +177,13 @@ test('a save timeout leaves the instance stale and the next pause retries for re
 
   const first = context.controller.pause('leave');
   context.clock.tick(1500); // scheduler saveTimeoutMs: the game never answers
-  assert.deepEqual(await first, { ok: false, saveStale: true });
+  assert.deepEqual(await first, { ok: false, saveStale: true, skipped: true });
   assert.equal(context.controller.getState().state, 'paused');
 
   const retry = context.controller.pause('user');
   assert.equal(beforeSaveEvents(iframe).length, 2);
   await answerNextSave(context, iframe, 'save-retry');
-  assert.deepEqual(await retry, { ok: true, saveStale: false });
+  assert.deepEqual(await retry, { ok: true, saveStale: false, skipped: false });
   assert.equal(setSaveCalls(context.api), 1);
   context.controller.destroy();
 });
@@ -192,8 +192,8 @@ test('games without the storage capability keep the nothing-to-save semantics', 
   const context = makeContext();
   await context.controller.launch(makeLaunchInfo({ capabilities: [] }));
   const iframe = await handshake(context);
-  assert.deepEqual(await context.controller.pause('user'), { ok: true, saveStale: false });
-  assert.deepEqual(await context.controller.pause('user'), { ok: true, saveStale: false });
+  assert.deepEqual(await context.controller.pause('user'), { ok: true, saveStale: false, skipped: false });
+  assert.deepEqual(await context.controller.pause('user'), { ok: true, saveStale: false, skipped: false });
   assert.equal(beforeSaveEvents(iframe).length, 0);
   assert.equal(pauseEvents(iframe).length, 1);
   context.controller.destroy();
@@ -204,7 +204,7 @@ test('pause after the Runtime was destroyed reports an honest stale result', asy
   await context.controller.launch(makeLaunchInfo());
   await handshake(context);
   context.controller.destroy();
-  assert.deepEqual(await context.controller.pause('leave'), { ok: false, saveStale: true });
+  assert.deepEqual(await context.controller.pause('leave'), { ok: false, saveStale: true, skipped: false });
 });
 
 test('coalesced pause calls share one save and one result', async function () {
@@ -216,7 +216,7 @@ test('coalesced pause calls share one save and one result', async function () {
   const second = context.controller.pause('leave');
   assert.equal(first, second, 'pausePromise coalescing is preserved');
   await answerNextSave(context, iframe, 'save-1');
-  assert.deepEqual(await first, { ok: true, saveStale: false });
+  assert.deepEqual(await first, { ok: true, saveStale: false, skipped: false });
   assert.equal(beforeSaveEvents(iframe).length, 1);
   assert.equal(setSaveCalls(context.api), 1);
   context.controller.destroy();

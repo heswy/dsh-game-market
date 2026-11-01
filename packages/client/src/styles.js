@@ -5,7 +5,8 @@ const h = React.createElement;
 
 export const CSS = `
 .dgm-root,
-.dgm-entry-view {
+.dgm-entry-view,
+.dgm-leave-notice {
   --dgm-bg: var(--dsw-alias-bg-base, #ffffff);
   --dgm-fg: var(--dsw-alias-label-primary, #1f2328);
   --dgm-fg-secondary: var(--dsw-alias-label-secondary, #5c6470);
@@ -52,6 +53,82 @@ export const CSS = `
 
 .dgm-entry-view p { margin: 0; }
 
+/* Transient leave confirmation above the composer (Session scope). */
+.dgm-leave-notice {
+  position: absolute;
+  top: -54px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(420px, calc(100vw - 48px));
+  padding: 7px 10px 7px 12px;
+  border: 1px solid var(--dgm-border);
+  border-radius: 999px;
+  background: var(--dgm-overlay);
+  color: var(--dgm-fg);
+  box-shadow: var(--dgm-shadow-soft);
+  font-family: var(--dgm-font);
+  font-size: 12px;
+  pointer-events: auto;
+  animation: dgm-leave-notice-in 160ms var(--dgm-ease-out);
+}
+
+.dgm-leave-notice-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dgm-success);
+}
+
+.dgm-leave-notice[data-kind='no-progress'] .dgm-leave-notice-dot { background: var(--dgm-fg-tertiary); }
+
+.dgm-leave-notice-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dgm-leave-notice-action {
+  flex: none;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dgm-brand);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dgm-leave-notice-action:hover { background: var(--dgm-hover); }
+
+.dgm-leave-notice-dismiss {
+  flex: none;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dgm-fg-tertiary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dgm-leave-notice-dismiss:hover { background: var(--dgm-hover); color: var(--dgm-fg); }
+
+@keyframes dgm-leave-notice-in {
+  from { opacity: 0; transform: translate(-50%, 4px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dgm-leave-notice { animation: none; }
+}
+
 .dgm-root {
   position: relative;
   display: flex;
@@ -73,10 +150,14 @@ export const CSS = `
 .dgm-root *::after,
 .dgm-entry-view *,
 .dgm-entry-view *::before,
-.dgm-entry-view *::after { box-sizing: border-box; }
+.dgm-entry-view *::after,
+.dgm-leave-notice *,
+.dgm-leave-notice *::before,
+.dgm-leave-notice *::after { box-sizing: border-box; }
 
 .dgm-root :focus-visible,
-.dgm-entry-view :focus-visible {
+.dgm-entry-view :focus-visible,
+.dgm-leave-notice :focus-visible {
   outline: var(--dgm-focus-width) solid var(--dgm-focus);
   outline-offset: 2px;
 }

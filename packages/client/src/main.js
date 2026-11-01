@@ -24,6 +24,7 @@ import { getUpdateManager } from './update-manager.js';
 import { GameMarketPanel } from './components/panel.js';
 import { GameMarketSidebarIcon } from './components/sidebar-icon.js';
 import { GameEntryView } from './components/game-entry-view.js';
+import { GameLeaveNotice } from './components/leave-notice.js';
 
 export const inject = ['slots', 'layout', 'locale'];
 
@@ -162,6 +163,25 @@ export function apply(ctx) {
     );
   });
   if (gameTabController === null) reportDiagnostic('game-tab-registration-failed');
+
+  // Session-scoped, transient: shows the saved / no-progress notice with a
+  // one-click resume after returning from a game, then auto-dismisses.
+  const leaveNoticeController = injectSlot('conversation.input.overlay', function registerLeaveNotice() {
+    return registerSlot(
+      {
+        name: 'conversation.input.overlay',
+        id: 'leave-notice',
+        order: 20,
+        locale: NS,
+        inject: function injectLeaveNotice(sessionId) {
+          return { sessionId: typeof sessionId === 'string' ? sessionId : '' };
+        },
+      },
+      GameLeaveNotice,
+      'conversation.input.overlay'
+    );
+  });
+  if (leaveNoticeController === null) reportDiagnostic('leave-notice-registration-failed');
 
   ctx.effect(function startQuestions() { return configureQuestions(ctx); }, 'dsh-game-market: questions');
 

@@ -121,8 +121,8 @@ test('apply registers locale, main panel, sidebar row and the Game tab inside ef
   assert.equal(localeCall.ns, 'dshGameMarket');
   assert.ok(localeCall.zh['entry.chip.waiting']);
   assert.ok(localeCall.en['entry.chip.waiting']);
-  assert.deepEqual(injected, ['main', 'sidebar.panellist', 'conversation.view']);
-  assert.equal(registered.length, 3);
+  assert.deepEqual(injected, ['main', 'sidebar.panellist', 'conversation.view', 'conversation.input.overlay']);
+  assert.equal(registered.length, 4);
   assert.equal(registered[0].options.name, 'main');
   assert.equal(registered[0].options.key, 'dsh-game-market');
   assert.equal(registered[0].options.locale, 'dshGameMarket');
@@ -141,5 +141,12 @@ test('apply registers locale, main panel, sidebar row and the Game tab inside ef
   assert.equal(tabLabel, '游戏');
   assert.equal(typeof registered[1].options.label, 'function');
   assert.equal(registered[1].options.label(), 'Game Market');
+  // Transient leave notice: session-scoped overlay entry, no View label.
+  assert.equal(registered[3].options.name, 'conversation.input.overlay');
+  assert.equal(registered[3].options.id, 'leave-notice');
+  assert.equal(registered[3].options.order, 20);
+  assert.equal(registered[3].options.label, undefined);
+  assert.equal(typeof registered[3].options.inject, 'function');
+  assert.equal(registered[3].options.inject('session-1').sessionId, 'session-1');
   assert.ok(effects.length >= 3);
 });

@@ -2,9 +2,9 @@
 
 在 DeepSeek Harness（DSH）里，把 Agent 执行长任务时的等待时间变成一局小游戏：游戏占满主工作区，右下角的小鲸鱼负责维持 Agent 的存在感，任务完成时提醒但不打断。
 
-**当前发布：`v1.5.1`**（会话入口兼容修复）。V1.5 带来多文件资源包与两代目录、内置多文件游戏 `orbit-courier`、平台持续更新与双端身份核验、游戏内原地问答、可移植存档，以及市场首页/详情/我的游戏与设置面板的前端改版。`v1.5.1` 修复 DSH Desktop `0.2.1-rc.5` 下会话 View 标签自定义 label 导致标题栏不渲染、Game 标签消失的问题。
+**当前发布：`v1.5.2`**（保存提示柔和化）。V1.5 带来多文件资源包与两代目录、内置多文件游戏 `orbit-courier`、平台持续更新与双端身份核验、游戏内原地问答、可移植存档，以及市场首页/详情/我的游戏与设置面板的前端改版。`v1.5.1` 修复 DSH Desktop `0.2.1-rc.5` 下会话 View 标签自定义 label 导致标题栏不渲染、Game 标签消失的问题；`v1.5.2` 修复菜单态“无需保存”被误报为保存失败，并在返回会话后显示 `已保存 / 本局暂无新进度 · 继续游戏` 的轻提示。
 
-V1.5 发布验证与范围见[发布说明](./docs/releases/v1.5.0.md)与[补丁说明](./docs/releases/v1.5.1.md)；V1.2 发布说明保留在[这里](./docs/releases/v1.2.0.md)。独立外部作者闭环与独立主机跨机导入已通过；严格意义的实体硬件跨机未实测。
+V1.5 发布验证与范围见[发布说明](./docs/releases/v1.5.0.md)、[补丁说明](./docs/releases/v1.5.1.md) 与 [v1.5.2](./docs/releases/v1.5.2.md)；V1.2 发布说明保留在[这里](./docs/releases/v1.2.0.md)。独立外部作者闭环与独立主机跨机导入已通过；严格意义的实体硬件跨机未实测。
 V1.1 验收：`npm run verify` **787/787**、`CHECK OK (23)`；真机与隔离宿主证据见 [`docs/V1-VERIFICATION.md`](./docs/V1-VERIFICATION.md)、[`docs/verification/v1/AUTOMATED-EVIDENCE.md`](./docs/verification/v1/AUTOMATED-EVIDENCE.md)、[`docs/verification/fullbleed-runtime/`](./docs/verification/fullbleed-runtime/)。
 
 

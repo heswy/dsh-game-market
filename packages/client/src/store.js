@@ -99,6 +99,7 @@ export function createInitialState(overrides) {
     ui: initialUi(),
     scroll: { market: 0, 'my-games': 0 },
     toasts: [],
+    leaveNotice: null,
     dialog: null,
     installJobs: {},
     sessionGames: {},
@@ -118,6 +119,9 @@ export function createInitialState(overrides) {
     ui: { ...base.ui, ...(overrides.ui || {}) },
     scroll: { ...base.scroll, ...(overrides.scroll || {}) },
     toasts: Array.isArray(overrides.toasts) ? overrides.toasts : base.toasts,
+    leaveNotice: overrides.leaveNotice && typeof overrides.leaveNotice === 'object'
+      ? { ...(base.leaveNotice || {}), ...overrides.leaveNotice }
+      : base.leaveNotice,
     installJobs: overrides.installJobs && typeof overrides.installJobs === 'object' ? overrides.installJobs : base.installJobs,
     sessionGames: overrides.sessionGames && typeof overrides.sessionGames === 'object' ? overrides.sessionGames : base.sessionGames,
     surface: { ...base.surface, ...(overrides.surface || {}) },
@@ -862,6 +866,25 @@ export function reduce(state, action) {
       return { ...state, runtime: initialRuntime() };
     }
 
+    case 'leave-notice-set': {
+      const notice = action.notice;
+      if (!notice || typeof notice !== 'object') return state;
+      if (notice.kind !== 'saved' && notice.kind !== 'no-progress') return state;
+      return {
+        ...state,
+        leaveNotice: {
+          kind: notice.kind,
+          gameId: isGameId(notice.gameId) ? notice.gameId : null,
+          sessionId: isSessionId(notice.sessionId) ? notice.sessionId : null,
+          at: typeof notice.at === 'number' && Number.isFinite(notice.at) ? notice.at : 0,
+        },
+      };
+    }
+
+    case 'leave-notice-clear': {
+      return state.leaveNotice ? { ...state, leaveNotice: null } : state;
+    }
+
     case 'leave-complete': {
       return {
         ...state,
@@ -1132,6 +1155,15 @@ export function runtimeReset() {
 
 export function leaveCompleted() {
   return { type: 'leave-complete' };
+}
+
+/** Transient "saved / nothing new" notice shown after returning to the Session. */
+export function leaveNoticeSet(notice) {
+  return { type: 'leave-notice-set', notice: notice || null };
+}
+
+export function leaveNoticeCleared() {
+  return { type: 'leave-notice-clear' };
 }
 
 export function surfaceChanged(name, value) {

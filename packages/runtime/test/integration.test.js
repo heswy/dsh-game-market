@@ -130,7 +130,7 @@ test('real Runtime + real SDK: handshake, autosave, pause and destroy', async ()
 
   const pauseResult = await context.controller.pause('user');
   await flushAsync();
-  assert.deepEqual(pauseResult, { ok: true, saveStale: false });
+  assert.deepEqual(pauseResult, { ok: true, saveStale: false, skipped: false });
   assert.equal(context.controller.getState().state, 'paused');
   assert.deepEqual(lifecycle, [['pause', 'user']]);
 
