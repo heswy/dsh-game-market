@@ -22836,6 +22836,64 @@ window.__ModuleLoader__.load({
     return { GameMarketPanel };
     })();
 
+    // module: packages/client/src/components/sidebar-icon.js
+    __mods["packages/client/src/components/sidebar-icon.js"] = (function () {
+    const __external_0 = require("react");
+    const React = __external_0;
+    const store = __mods["packages/client/src/store.js"].store;
+    const sessionBound = __mods["packages/client/src/store.js"].sessionBound;
+    const GameMarketIcon = __mods["packages/client/src/icons.js"].GameMarketIcon;
+    const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
+    const translate = __mods["packages/client/src/locale.js"].translate;
+    const openGameMarket = __mods["packages/client/src/navigation.js"].openGameMarket;
+    const useSessionBinding = __mods["packages/client/src/hooks.js"].useSessionBinding;
+    /**
+     * Sidebar entry icon.
+     *
+     * The host sidebar owns the row button, focus ring, aria-label and the
+     * `selectPanel` click. This component is the glyph only: runtime state lives on
+     * the session Game tab, not on the sidebar row (UX review 2026-10-19).
+     */
+
+    const h = React.createElement;
+
+    function GameMarketSidebarIcon(props) {
+      const size = props && typeof props.size === 'number' ? props.size : 18;
+      const interactive = Boolean(props && props.interactive === true);
+      const diagnosticRef = React.useRef(false);
+      const binding = useSessionBinding(props || {}, diagnosticRef);
+
+      React.useEffect(
+        function bindCurrentSession() {
+          if (binding.sessionId && binding.sessionId !== store.getState().bindingSessionId) {
+            store.dispatch(sessionBound(binding.sessionId));
+          }
+        },
+        [binding.sessionId]
+      );
+
+      const buttonProps = interactive
+        ? {
+            role: 'button',
+            tabIndex: 0,
+            'aria-label': translate(detectLocale(), 'sidebar.label'),
+            style: { cursor: 'pointer', position: 'relative', display: 'inline-flex', color: 'inherit' },
+            onClick: openGameMarket,
+            onKeyDown: function activate(event) {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openGameMarket();
+              }
+            },
+          }
+        : { 'aria-hidden': 'true', style: { position: 'relative', display: 'inline-flex', color: 'inherit' } };
+
+      return h('span', buttonProps, h(GameMarketIcon, { size: size }));
+    }
+
+    return { GameMarketSidebarIcon };
+    })();
+
     // module: packages/client/src/entry-flow.js
     __mods["packages/client/src/entry-flow.js"] = (function () {
     const selectGameEntry = __mods["packages/client/src/store.js"].selectGameEntry;
@@ -22900,6 +22958,9 @@ window.__ModuleLoader__.load({
      * Browsing the Market again stays available from the sidebar / the game's own
      * back-to-market action. The decision + side effects live in `entry-flow.js`
      * so they can be unit-tested without React.
+     *
+     * The host renders this view's `label` as a plain string and estimates its
+     * glyph width (DSH 0.2.1-rc.5), so the tab label must never be a React element.
      */
 
     const h = React.createElement;
@@ -22942,157 +23003,6 @@ window.__ModuleLoader__.load({
     return { GameEntryView };
     })();
 
-    // module: packages/client/src/components/sidebar-icon.js
-    __mods["packages/client/src/components/sidebar-icon.js"] = (function () {
-    const __external_0 = require("react");
-    const React = __external_0;
-    const store = __mods["packages/client/src/store.js"].store;
-    const sessionBound = __mods["packages/client/src/store.js"].sessionBound;
-    const GameMarketIcon = __mods["packages/client/src/icons.js"].GameMarketIcon;
-    const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
-    const translate = __mods["packages/client/src/locale.js"].translate;
-    const openGameMarket = __mods["packages/client/src/navigation.js"].openGameMarket;
-    const useSessionBinding = __mods["packages/client/src/hooks.js"].useSessionBinding;
-    /**
-     * Sidebar entry icon.
-     *
-     * The host sidebar owns the row button, focus ring, aria-label and the
-     * `selectPanel` click. This component is the glyph only: runtime state lives on
-     * the session Game tab, not on the sidebar row (UX review 2026-10-19).
-     */
-
-    const h = React.createElement;
-
-    function GameMarketSidebarIcon(props) {
-      const size = props && typeof props.size === 'number' ? props.size : 18;
-      const interactive = Boolean(props && props.interactive === true);
-      const diagnosticRef = React.useRef(false);
-      const binding = useSessionBinding(props || {}, diagnosticRef);
-
-      React.useEffect(
-        function bindCurrentSession() {
-          if (binding.sessionId && binding.sessionId !== store.getState().bindingSessionId) {
-            store.dispatch(sessionBound(binding.sessionId));
-          }
-        },
-        [binding.sessionId]
-      );
-
-      const buttonProps = interactive
-        ? {
-            role: 'button',
-            tabIndex: 0,
-            'aria-label': translate(detectLocale(), 'sidebar.label'),
-            style: { cursor: 'pointer', position: 'relative', display: 'inline-flex', color: 'inherit' },
-            onClick: openGameMarket,
-            onKeyDown: function activate(event) {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                openGameMarket();
-              }
-            },
-          }
-        : { 'aria-hidden': 'true', style: { position: 'relative', display: 'inline-flex', color: 'inherit' } };
-
-      return h('span', buttonProps, h(GameMarketIcon, { size: size }));
-    }
-
-    return { GameMarketSidebarIcon };
-    })();
-
-    // module: packages/client/src/components/game-tab-label.js
-    __mods["packages/client/src/components/game-tab-label.js"] = (function () {
-    const __external_0 = require("react");
-    const React = __external_0;
-    const store = __mods["packages/client/src/store.js"].store;
-    const deriveTabStatus = __mods["packages/client/src/chip-state.js"].deriveTabStatus;
-    const detectLocale = __mods["packages/client/src/locale.js"].detectLocale;
-    const translate = __mods["packages/client/src/locale.js"].translate;
-    const useClock = __mods["packages/client/src/hooks.js"].useClock;
-    const useStoreState = __mods["packages/client/src/hooks.js"].useStoreState;
-    /**
-     * Conversation "Game" tab label with a compact state badge.
-     *
-     * The host renders a view's `label` as the tab button child, so this component
-     * is mounted inside that button and subscribes to the module store directly.
-     * The sidebar entry deliberately carries no state (UX review 2026-10-19): the
-     * status belongs to this session-level Game button.
-     */
-
-    const h = React.createElement;
-
-    const BADGE_STYLES = Object.freeze({
-      waiting: { color: '#4d6bfe', background: 'rgba(77, 107, 254, 0.13)' },
-      completed: { color: '#178a4c', background: 'rgba(23, 138, 76, 0.13)' },
-      error: { color: '#c93c37', background: 'rgba(201, 60, 55, 0.13)' },
-      resume: { color: '#b26b00', background: 'rgba(178, 107, 0, 0.14)' },
-    });
-
-    function resolvedLabel(labels, key) {
-      if (labels && typeof labels[key] === 'string' && labels[key].length > 0) return labels[key];
-      return null;
-    }
-
-    function GameTabLabel(props) {
-      const state = useStoreState();
-      const now = useClock(1000);
-      const locale = detectLocale();
-      const labels = props && props.labels ? props.labels : null;
-      const status = deriveTabStatus(state, now, { sessionId: state.bindingSessionId });
-      const badge = status ? BADGE_STYLES[status] : null;
-      const gameLabel = resolvedLabel(labels, 'game') || translate(locale, 'entry.tab.game');
-      const badgeLabel = status
-        ? resolvedLabel(labels, status) || translate(locale, 'entry.tab.badge.' + status)
-        : null;
-      return h(
-        'span',
-        {
-          style: {
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            lineHeight: '1',
-          },
-        },
-        gameLabel,
-        badge
-          ? h(
-              'span',
-              {
-                'data-game-tab-status': status,
-                style: {
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  height: '18px',
-                  padding: '0 7px',
-                  borderRadius: '999px',
-                  fontSize: '10.5px',
-                  fontWeight: 700,
-                  letterSpacing: '0.01em',
-                  whiteSpace: 'nowrap',
-                  color: badge.color,
-                  background: badge.background,
-                },
-              },
-              h('span', {
-                'aria-hidden': 'true',
-                style: {
-                  width: '5px',
-                  height: '5px',
-                  borderRadius: '50%',
-                  background: 'currentColor',
-                },
-              }),
-              badgeLabel
-            )
-          : null
-      );
-    }
-
-    return { GameTabLabel };
-    })();
-
     // module: packages/client/src/main.js
     __mods["packages/client/src/main.js"] = (function () {
     const __external_0 = require("react");
@@ -23113,22 +23023,23 @@ window.__ModuleLoader__.load({
     const createAgentPoller = __mods["packages/client/src/agent-polling.js"].createAgentPoller;
     const getUpdateManager = __mods["packages/client/src/update-manager.js"].getUpdateManager;
     const GameMarketPanel = __mods["packages/client/src/components/panel.js"].GameMarketPanel;
-    const GameEntryView = __mods["packages/client/src/components/game-entry-view.js"].GameEntryView;
     const GameMarketSidebarIcon = __mods["packages/client/src/components/sidebar-icon.js"].GameMarketSidebarIcon;
-    const GameTabLabel = __mods["packages/client/src/components/game-tab-label.js"].GameTabLabel;
+    const GameEntryView = __mods["packages/client/src/components/game-entry-view.js"].GameEntryView;
     /**
      * DSH Client plugin entry.
      *
-     * Verified registration forms (DSH Desktop 0.2.1-rc.2):
+     * Verified registration forms (DSH Desktop 0.2.1-rc.3 / rc.5):
      *   - `main` keyed slot + `sidebar.panellist` row with the same id
      *   - `conversation.view` list slot for the persistent Game tab
      *   - `ctx.locale.register(ns, { zh, en })` inside `ctx.effect`
      *   - `ctx.layout.selectPanel(id | null)` for panel navigation
+     *
+     * rc.5 estimates every View tab label's glyph width (`for … of label`), so the
+     * Game tab label must be a plain string; a React element crashes the whole
+     * session header (title row + tab row disappear).
      */
 
     const inject = ['slots', 'layout', 'locale'];
-
-    const h = React.createElement;
 
     function noopDisposer() {
       return function noop() {};
@@ -23194,19 +23105,11 @@ window.__ModuleLoader__.load({
         return typeof value === 'string' && value.length > 0 ? value : translate('zh', 'sidebar.label');
       }
 
-      // The host resolves a label thunk on the active locale and re-runs it when the
-      // locale changes; resolve the visible strings through the host dictionary so a
-      // zh host never shows the en fallback ("Game"/"Done").
+      // rc.5 measures View tab label glyphs, so this must stay a plain string. The
+      // host re-runs the thunk when the locale changes.
       function gameTabLabel() {
-        return h(GameTabLabel, {
-          labels: {
-            game: hostTranslate('entry.tab.game'),
-            waiting: hostTranslate('entry.tab.badge.waiting'),
-            completed: hostTranslate('entry.tab.badge.completed'),
-            error: hostTranslate('entry.tab.badge.error'),
-            resume: hostTranslate('entry.tab.badge.resume'),
-          },
-        });
+        const value = hostTranslate('entry.tab.game');
+        return typeof value === 'string' && value.length > 0 ? value : translate('zh', 'entry.tab.game');
       }
 
       function injectSlot(slotName, callback) {

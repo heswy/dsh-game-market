@@ -64,7 +64,7 @@ test('bundle materializes with only react and exports inject/apply', function ()
   assert.equal(typeof exportsObject.apply, 'function');
 });
 
-test('apply registers locale, main panel, sidebar row and header chip inside effects', function () {
+test('apply registers locale, main panel, sidebar row and the Game tab inside effects', function () {
   const spec = loadBundle();
   const exportsObject = spec.factory(function requireModule(name) {
     if (name === 'react') return fakeReact();
@@ -132,17 +132,13 @@ test('apply registers locale, main panel, sidebar row and header chip inside eff
   assert.equal(registered[2].options.name, 'conversation.view');
   assert.equal(registered[2].options.id, 'game');
   assert.equal(registered[2].options.order, 100);
-  // The Game tab owns the runtime-status badge now; its label is a component
-  // element, not a static string (sidebar carries no state).
+  // rc.5 estimates View tab label glyph widths (`for … of label`): a React
+  // element label crashes the whole session header, so the label must be a
+  // plain string (the status badge moved out of the tab).
   assert.equal(typeof registered[2].options.label, 'function');
   const tabLabel = registered[2].options.label();
-  assert.equal(typeof tabLabel, 'object');
-  assert.equal(typeof tabLabel.type, 'function');
-  // Host locale (zh) wins over navigator.language; the labels are re-resolved
-  // by the host on locale changes and passed into the mounted component.
-  assert.equal(tabLabel.props.labels.game, '游戏');
-  assert.equal(tabLabel.props.labels.completed, '完成');
-  assert.equal(tabLabel.props.labels.error, '出错');
+  assert.equal(typeof tabLabel, 'string');
+  assert.equal(tabLabel, '游戏');
   assert.equal(typeof registered[1].options.label, 'function');
   assert.equal(registered[1].options.label(), 'Game Market');
   assert.ok(effects.length >= 3);
