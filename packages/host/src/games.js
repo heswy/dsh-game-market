@@ -334,11 +334,28 @@ function placeholderManifest(catalogEntry) {
  * at build time. The probe runs once at catalog construction (host activation).
  */
 function builtinPackageShipped(root, catalogEntry) {
-  if (!catalogEntry || catalogEntry.format !== ASSET_ZIP_V2) return true;
   const directoryCandidates = [
     path.resolve(root, path.basename(String(catalogEntry.dir || ''))),
     path.resolve(root, String(catalogEntry.dir || '')),
   ];
+  // html-v1 built-ins are inlined single files: a missing directory means the
+  // tree does not ship that game at all (dev/test trees), so skip it instead of
+  // publishing an unrelated placeholder. A present-but-broken tree still stays
+  // visible for diagnostics (the V1 behaviour).
+  if (!catalogEntry || catalogEntry.format !== ASSET_ZIP_V2) {
+    for (const directory of directoryCandidates) {
+      if (!isInside(root, directory)) continue;
+      try {
+        if (statSync(directory).isDirectory()) return true;
+      } catch (error) {
+        const code = error && typeof error.code === 'string' ? error.code : '';
+        if (code === 'ENOENT' || code === 'ENOTDIR') continue;
+        // Permission/IO errors must not hide a shipped built-in.
+        return true;
+      }
+    }
+    return false;
+  }
   const packageRel = typeof catalogEntry.packageDir === 'string' && catalogEntry.packageDir.length > 0
     ? catalogEntry.packageDir
     : path.posix.dirname(String(catalogEntry.entryFile || ''));
