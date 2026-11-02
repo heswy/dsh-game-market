@@ -41,4 +41,36 @@ export const BUILTIN_GAMES = Object.freeze([
     packageDir: 'dist',
     viewport: Object.freeze({ width: 720, height: 1280, fit: 'contain' }),
   }),
+  /**
+   * The three first-party games shipped in `games/` are built-in too: a fresh
+   * install can play them immediately and they never depend on the community
+   * catalog. They stay `html-v1` single-file packages, so no `format` is set.
+   */
+  Object.freeze({
+    id: '2048',
+    name: '2048',
+    version: '1.0.0',
+    dir: 'games/2048',
+    manifestFile: 'game.json',
+    entryFile: 'dist/index.html',
+    viewport: Object.freeze({ width: 720, height: 720, fit: 'contain' }),
+  }),
+  Object.freeze({
+    id: 'breakout',
+    name: 'Breakout',
+    version: '1.0.0',
+    dir: 'games/breakout',
+    manifestFile: 'game.json',
+    entryFile: 'dist/index.html',
+    viewport: Object.freeze({ width: 960, height: 540, fit: 'contain' }),
+  }),
+  Object.freeze({
+    id: 'jump',
+    name: 'Jump',
+    version: '1.0.0',
+    dir: 'games/jump',
+    manifestFile: 'game.json',
+    entryFile: 'dist/index.html',
+    viewport: Object.freeze({ width: 540, height: 960, fit: 'contain' }),
+  }),
 ]);

@@ -73,7 +73,7 @@ V0 已完成并验收，验证游戏是贪吃蛇（snake）。
 |---|---|
 | Game Market / My Games / 详情 / 搜索 / 分类 | ✅ |
 | 静态 Registry 安装/更新/卸载；本地安装；默认随包 Registry | ✅ |
-| 首发四款：`snake`（内置）/`jump`/`2048`/`breakout` | ✅ |
+| 内置五款（安装即玩）：`snake`/`2048`/`breakout`/`jump`/`orbit-courier` | ✅ |
 | 平台暂停/恢复、Continue、Game tab 直连恢复、Agent presence（含 AskUserQuestion 提醒） | ✅ |
 | SDK v1 + Runtime Simulator + `dsh-game` CLI + `create-dsh-game` 模板 | ✅ |
 | 存档契约（配额/CAS/真实删除）、运行实例心跳与按实例释放 | ✅ |

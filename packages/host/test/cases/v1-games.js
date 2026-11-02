@@ -3,6 +3,7 @@ import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { ROUTES } from '../../../shared/src/contracts.js';
 import { GM } from '../../../shared/src/errors.js';
@@ -14,6 +15,9 @@ import {
   buildPackageHtml,
   createFileRegistry,
 } from '../support/packages.js';
+
+const REPO_GAMES_ROOT = path.resolve(fileURLToPath(new URL('../../../../games/', import.meta.url)));
+const FIRST_PARTY_GAME_IDS = ['2048', 'breakout', 'jump', 'orbit-courier', 'snake'];
 
 function assertError(payload, code) {
   assert.equal(payload.ok, false);
@@ -263,5 +267,22 @@ export function register() {
     assert.equal(health.installations.updateAvailable, 0);
     assert.equal(health.sessions.staleRunningPreserved, true);
     assert.equal(health.games.builtinCount, 1);
+  });
+
+  test('a fresh install ships every first-party game as an installed built-in', async (t) => {
+    const host = await createHostHarness(t, { fixtureRoot: REPO_GAMES_ROOT });
+    const games = await host.data(ROUTES.GAMES);
+    const builtins = games.items.filter((item) => item.builtin === true);
+    assert.deepEqual(builtins.map((item) => item.id).sort(), FIRST_PARTY_GAME_IDS);
+    for (const item of builtins) {
+      assert.equal(item.source, 'builtin');
+      assert.equal(item.installed, true);
+      assert.equal(item.entryAvailable, true);
+    }
+    const installed = await host.data(ROUTES.INSTALLED);
+    assert.deepEqual(installed.items.map((item) => item.id).sort(), FIRST_PARTY_GAME_IDS);
+    const health = await host.data(ROUTES.HEALTH);
+    assert.equal(health.games.builtinCount, FIRST_PARTY_GAME_IDS.length);
+    assert.deepEqual(health.games.issues, []);
   });
 }
