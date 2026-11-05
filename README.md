@@ -12,7 +12,8 @@
 开发者的游戏也能投进来，审核通过后上架，所有人可玩。</p>
 
 <p>
-  <a href="https://github.com/heswy/dsh-game-market/tree/v1.5.6"><img src="https://img.shields.io/github/v/tag/heswy/dsh-game-market?style=flat-square&label=release&color=8b5cf6" alt="release"></a>
+  <a href="https://github.com/heswy/dsh-game-market/tree/v1.5.7"><img src="https://img.shields.io/github/v/tag/heswy/dsh-game-market?style=flat-square&label=release&color=8b5cf6" alt="release"></a>
+  <a href="https://www.npmjs.com/package/dsh-game-market"><img src="https://img.shields.io/npm/v/dsh-game-market?style=flat-square&label=npm&color=cb3837" alt="npm"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-22c55e?style=flat-square" alt="license: MIT"></a>
   <img src="https://img.shields.io/badge/DSH-0.2.x-3b82f6?style=flat-square" alt="DSH 0.2.x">
   <img src="https://img.shields.io/badge/node-%E2%89%A5%2020-339933?style=flat-square" alt="node >= 20">
@@ -234,7 +235,7 @@ npm run dev                                   # 本地 Runtime Simulator，无�
 
 | 项 | 值 |
 | --- | --- |
-| 当前版本 | **v1.5.6**（2026-11-02），tag `v1.5.6`，发布提交 `6637faa` |
+| 当前版本 | **v1.5.7**（2026-11-05），tag `v1.5.7`，发布提交 `619bb5a`；npm `dsh-game-market` |
 | 兼容 DSH | `>=0.2.0 <0.3.0` |
 | Node | `>= 20` |
 | 验证 | `node --test` 1580 例：1575 通过 / 4 跳过 / 1 例环境相关失败（干净 CI 为 0 fail）；`CHECK OK (45)`；安装产物 93 文件 / 3,511,894 字节 |
@@ -245,6 +246,7 @@ npm run dev                                   # 本地 Runtime Simulator，无�
 
 | 版本 | 内容 |
 | --- | --- |
+| v1.5.7 | 发布到 npm：`dsh plugin add dsh-game-market`；补 repository / keywords / homepage；发布工具支持公开包 |
 | v1.5.0 | 首版公开发行：多文件资源包、平台自更新、游戏内问答、可移植存档、市场前端改版 |
 | v1.5.1 | 修复 DSH 0.2.1-rc.5 下会话标题栏不渲染、游戏入口消失 |
 | v1.5.2 | 「无需保存」不再误报为保存失败 |
@@ -283,7 +285,7 @@ npm run dev                                   # 本地 Runtime Simulator，无�
 | [投稿契约](docs/community-publishing-contracts.md) | 字段、字节与审核绑定 |
 | [V1.5 契约](docs/V1.5-CONTRACTS.md) | 包格式、安全边界、更新协议 |
 | [发布流程](docs/plugin-update-release.md) | 版本、索引与发布 |
-| [发布记录](docs/releases/v1.5.6.md) | 每个版本改了什么 |
+| [发布记录](docs/releases/v1.5.7.md) | 每个版本改了什么 |
 
 ---
 
@@ -320,11 +322,14 @@ Developers can submit their own games too: once reviewed, they go live for every
 
 ### Install
 
-1. **Plugins** in the DSH sidebar → **Add plugin**, and enter `https://github.com/heswy/dsh-game-market`
-2. Restart DSH.
-3. **Game Market** appears in the sidebar.
+Two ways, pick either:
 
-Installs the latest release (currently 1.5.6). Requires DSH `>=0.2.0 <0.3.0` and Node `>=20`.
+1. npm: `dsh plugin add dsh-game-market`
+2. **Plugins** in the DSH sidebar → **Add plugin**, and enter `https://github.com/heswy/dsh-game-market`
+
+Restart DSH afterwards; **Game Market** appears in the sidebar.
+
+Installs the latest release (currently 1.5.7). Requires DSH `>=0.2.0 <0.3.0` and Node `>=20`.
 
 ### The five built-in games
 
@@ -370,7 +375,7 @@ The community catalog lives in [heswy/dsh-game-registry](https://github.com/hesw
 
 | Item | Value |
 | --- | --- |
-| Current version | **v1.5.6** (2026-11-02), tag `v1.5.6`, release commit `6637faa` |
+| Current version | **v1.5.7** (2026-11-05), tag `v1.5.7`, release commit `619bb5a`; npm `dsh-game-market` |
 | DSH | `>=0.2.0 <0.3.0` |
 | Node | `>= 20` |
 | Verification | `node --test`: 1580 tests, 1575 pass, 4 skip, 1 environment-related failure (0 fail on clean CI); `CHECK OK (45)`; 93-file / 3,511,894-byte artifact |
