@@ -34,11 +34,14 @@
 
 ## 安装
 
-1. 侧栏「插件」→「添加插件」，填入仓库地址：`https://github.com/heswy/dsh-game-market`
-2. 装完后重启 DSH。
-3. 侧栏出现「游戏市场」。
+两种方式，任选其一：
 
-装的是最新发布版（当前 1.5.6）。需要 DSH `>=0.2.0 <0.3.0`、Node `>=20`。
+1. npm：`dsh plugin add dsh-game-market`
+2. GitHub 仓库：侧栏「插件」→「添加插件」，填入 `https://github.com/heswy/dsh-game-market`
+
+装完后重启 DSH，侧栏出现「游戏市场」。
+
+装的是最新发布版（当前 1.5.7）。需要 DSH `>=0.2.0 <0.3.0`、Node `>=20`。
 
 ---
 

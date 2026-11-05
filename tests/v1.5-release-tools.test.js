@@ -109,7 +109,6 @@ function git(dir, args, options = {}) {
 function fixturePackageJson({ version = STABLE_VERSION, engines = { node: '>=20', dsh: '>=0.2.0 <0.3.0' }, files } = {}) {  return {
     name: 'dsh-game-market',
     version,
-    private: true,
     type: 'module',
     main: 'index.js',
     exports: { '.': './index.js', './client': './client.js', './package.json': './package.json' },
