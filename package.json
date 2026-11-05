@@ -40,7 +40,6 @@
   },
   "icon": "./icon.svg",
   "license": "MIT",
-  "private": true,
   "engines": {
     "node": ">=20",
     "dsh": ">=0.2.0 <0.3.0"
