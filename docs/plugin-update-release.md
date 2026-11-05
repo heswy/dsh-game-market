@@ -62,7 +62,7 @@ npm run release:prepare -- --version 1.3.0
 dry-run **零写入**，会做：
 
 1. 工作区干净 / origin 绑定 / 分支 / HEAD 不是 release commit；
-2. `package.json` 版本、`private:true`、bundle/client/exports、`engines.node`、`engines.dsh`、`files` 完整性；
+2. `package.json` 版本、`private` 不得为 true（包已发布到 npm）、bundle/client/exports、`engines.node`、`engines.dsh`、`files` 完整性；
 3. **在临时副本中构建两次**：`client.js`、`games/**`、`registry/**` 必须字节一致；且构建不得依赖 `release.json` 里 artifacts 之外的字段（防止循环依赖）；
 4. 生成 `platform-updates/release.json` 候选（含 artifacts 摘要）并校验 Client bundle 确实嵌入了 `version=1.3.0 buildCommit=<P>`；
 5. 打印计划提交信息 `chore(release): v1.3.0 build <P>` 与产物清单。

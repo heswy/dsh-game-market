@@ -33,7 +33,7 @@ export function validateReleasePackage(pkg, options = {}) {
   if (!isValidVersion(pkg.version)) add('E_RELEASE_PACKAGE_VERSION', 'version must be an exact SemVer 2.0.0 version');
   if (pkg.type !== 'module') add('E_RELEASE_PACKAGE_TYPE', 'type must be "module"');
   if (pkg.main !== 'index.js') add('E_RELEASE_PACKAGE_MAIN', 'main must be "index.js"');
-  if (pkg.private !== true) add('E_RELEASE_PACKAGE_PRIVATE', 'private must stay true (git installs do not require a public npm package)');
+  if (pkg.private === true) add('E_RELEASE_PACKAGE_PRIVATE', 'private must not be true: the package is published to npm');
   if (pkg.exports === undefined || pkg.exports['./client'] !== './client.js') {
     add('E_RELEASE_PACKAGE_EXPORTS', 'exports["./client"] must point at "./client.js"');
   }
